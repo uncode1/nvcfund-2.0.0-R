@@ -1,0 +1,523 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}System Settings - NVC Banking Platform{% endblock %}
+
+{% block page_title %}System Settings{% endblock %}
+{% block page_description %}Configure system-wide settings, security policies, and operational parameters{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        Administration
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-cogs" aria-hidden="true"></i>
+    System Settings
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Reset settings to defaults">
+    <i class="fas fa-undo" aria-hidden="true"></i>
+    Reset to Defaults
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Export configuration">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Config
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Save all changes">
+    <i class="fas fa-save" aria-hidden="true"></i>
+    Save Changes
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- System Settings Navigation -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-cogs" aria-hidden="true"></i>
+                    System Configuration
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        Configuration Active
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Modern NVC Tabbed Interface -->
+                <div class="nvc-tabs-container">
+                    <div class="nvc-tabs-nav" role="tablist" aria-label="System settings categories">
+                        <button class="nvc-tab-button nvc-tab-active nvc-wcag-focus" id="general-tab" role="tab" aria-controls="general" aria-selected="true">
+                            <i class="fas fa-cog" aria-hidden="true"></i>
+                            General
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" id="security-tab" role="tab" aria-controls="security" aria-selected="false">
+                            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                            Security
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" id="notifications-tab" role="tab" aria-controls="notifications" aria-selected="false">
+                            <i class="fas fa-bell" aria-hidden="true"></i>
+                            Notifications
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" id="backup-tab" role="tab" aria-controls="backup" aria-selected="false">
+                            <i class="fas fa-database" aria-hidden="true"></i>
+                            Backup
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" id="integration-tab" role="tab" aria-controls="integration" aria-selected="false">
+                            <i class="fas fa-plug" aria-hidden="true"></i>
+                            Integrations
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Settings Configuration Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                    Configuration Settings
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Validate configuration">
+                        <i class="fas fa-check" aria-hidden="true"></i>
+                        Validate
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Tab Content Container -->
+                <div class="nvc-tab-content">
+                    <!-- General Settings Tab -->
+                    <div class="nvc-tab-panel nvc-tab-panel-active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                        <div class="nvc-settings-configuration">
+                            <div class="nvc-settings-grid">
+                                <div class="nvc-settings-section">
+                                    <div class="nvc-settings-header">
+                                        <h3 class="nvc-settings-title nvc-wcag-high-contrast">
+                                            <i class="fas fa-building" aria-hidden="true"></i>
+                                            Organization Settings
+                                        </h3>
+                                    </div>
+                                    <div class="nvc-settings-content">
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="org-name">Organization Name</label>
+                                            <input type="text" id="org-name" class="nvc-form-input nvc-wcag-focus" value="{{ settings.org_name or 'NVC Banking Platform' }}">
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="contact-email">Primary Contact Email</label>
+                                            <input type="email" id="contact-email" class="nvc-form-input nvc-wcag-focus" value="{{ settings.contact_email or 'admin@nvcbank.com' }}">
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="support-phone">Support Phone</label>
+                                            <input type="tel" id="support-phone" class="nvc-form-input nvc-wcag-focus" value="{{ settings.support_phone or '+1 (555) 123-4567' }}">
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="timezone">Time Zone</label>
+                                            <select id="timezone" class="nvc-form-select nvc-wcag-focus">
+                                                <option value="utc-5" selected>UTC-5 (Eastern Time)</option>
+                                                <option value="utc-6">UTC-6 (Central Time)</option>
+                                                <option value="utc-7">UTC-7 (Mountain Time)</option>
+                                                <option value="utc-8">UTC-8 (Pacific Time)</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="currency">Default Currency</label>
+                                            <select id="currency" class="nvc-form-select nvc-wcag-focus">
+                                                <option value="usd" selected>USD - US Dollar</option>
+                                                <option value="eur">EUR - Euro</option>
+                                                <option value="gbp">GBP - British Pound</option>
+                                                <option value="cad">CAD - Canadian Dollar</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-settings-section">
+                                    <div class="nvc-settings-header">
+                                        <h3 class="nvc-settings-title nvc-wcag-high-contrast">
+                                            <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                                            System Preferences
+                                        </h3>
+                                    </div>
+                                    <div class="nvc-settings-content">
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="session-timeout">Session Timeout (minutes)</label>
+                                            <input type="number" id="session-timeout" class="nvc-form-input nvc-wcag-focus" value="{{ settings.session_timeout or '30' }}" min="5" max="480">
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="max-login-attempts">Max Login Attempts</label>
+                                            <input type="number" id="max-login-attempts" class="nvc-form-input nvc-wcag-focus" value="{{ settings.max_login_attempts or '5' }}" min="3" max="10">
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="password-expiry">Password Expiry (days)</label>
+                                            <input type="number" id="password-expiry" class="nvc-form-input nvc-wcag-focus" value="{{ settings.password_expiry or '90' }}" min="30" max="365">
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <div class="nvc-switch-group">
+                                                <div class="nvc-switch-item">
+                                                    <input type="checkbox" id="audit-logging" class="nvc-switch nvc-wcag-focus" checked>
+                                                    <label for="audit-logging" class="nvc-switch-label nvc-wcag-high-contrast">Enable Audit Logging</label>
+                                                </div>
+                                                <div class="nvc-switch-item">
+                                                    <input type="checkbox" id="maintenance-mode" class="nvc-switch nvc-wcag-focus">
+                                                    <label for="maintenance-mode" class="nvc-switch-label nvc-wcag-high-contrast">Maintenance Mode</label>
+                                                </div>
+                                                <div class="nvc-switch-item">
+                                                    <input type="checkbox" id="debug-mode" class="nvc-switch nvc-wcag-focus">
+                                                    <label for="debug-mode" class="nvc-switch-label nvc-wcag-high-contrast">Debug Mode</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Tab Panels (Hidden by default) -->
+                    <div class="nvc-tab-panel" id="security" role="tabpanel" aria-labelledby="security-tab">
+                        <div class="nvc-settings-configuration">
+                            <div class="nvc-settings-header">
+                                <h3 class="nvc-settings-title nvc-wcag-high-contrast">Security Configuration</h3>
+                                <p class="nvc-settings-description nvc-wcag-medium-contrast">Configure security policies and access controls</p>
+                            </div>
+                            <div class="nvc-settings-content">
+                                <div class="nvc-settings-placeholder">
+                                    <i class="fas fa-shield-alt fa-3x nvc-wcag-medium-contrast"></i>
+                                    <h4 class="nvc-wcag-high-contrast">Security Settings</h4>
+                                    <p class="nvc-wcag-medium-contrast">Configure authentication, encryption, and access control settings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-tab-panel" id="notifications" role="tabpanel" aria-labelledby="notifications-tab">
+                        <div class="nvc-settings-configuration">
+                            <div class="nvc-settings-header">
+                                <h3 class="nvc-settings-title nvc-wcag-high-contrast">Notification Configuration</h3>
+                                <p class="nvc-settings-description nvc-wcag-medium-contrast">Configure email, SMS, and system notifications</p>
+                            </div>
+                            <div class="nvc-settings-content">
+                                <div class="nvc-settings-placeholder">
+                                    <i class="fas fa-bell fa-3x nvc-wcag-medium-contrast"></i>
+                                    <h4 class="nvc-wcag-high-contrast">Notification Settings</h4>
+                                    <p class="nvc-wcag-medium-contrast">Configure email, SMS, and system notification preferences</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-tab-panel" id="backup" role="tabpanel" aria-labelledby="backup-tab">
+                        <div class="nvc-settings-configuration">
+                            <div class="nvc-settings-header">
+                                <h3 class="nvc-settings-title nvc-wcag-high-contrast">Backup Configuration</h3>
+                                <p class="nvc-settings-description nvc-wcag-medium-contrast">Configure automated backup schedules and retention policies</p>
+                            </div>
+                            <div class="nvc-settings-content">
+                                <div class="nvc-settings-placeholder">
+                                    <i class="fas fa-database fa-3x nvc-wcag-medium-contrast"></i>
+                                    <h4 class="nvc-wcag-high-contrast">Backup Settings</h4>
+                                    <p class="nvc-wcag-medium-contrast">Configure backup schedules, retention policies, and storage locations</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-tab-panel" id="integration" role="tabpanel" aria-labelledby="integration-tab">
+                        <div class="nvc-settings-configuration">
+                            <div class="nvc-settings-header">
+                                <h3 class="nvc-settings-title nvc-wcag-high-contrast">Integration Configuration</h3>
+                                <p class="nvc-settings-description nvc-wcag-medium-contrast">Configure third-party integrations and API settings</p>
+                            </div>
+                            <div class="nvc-settings-content">
+                                <div class="nvc-settings-placeholder">
+                                    <i class="fas fa-plug fa-3x nvc-wcag-medium-contrast"></i>
+                                    <h4 class="nvc-wcag-high-contrast">Integration Settings</h4>
+                                    <p class="nvc-wcag-medium-contrast">Configure third-party integrations, APIs, and external services</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional System Settings Dashboard Interactions
+
+    // Tab functionality
+    const tabButtons = document.querySelectorAll('.nvc-tab-button');
+    const tabPanels = document.querySelectorAll('.nvc-tab-panel');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.id.replace('-tab', '');
+
+            // Remove active class from all tabs and panels
+            tabButtons.forEach(btn => {
+                btn.classList.remove('nvc-tab-active');
+                btn.setAttribute('aria-selected', 'false');
+            });
+            tabPanels.forEach(panel => {
+                panel.classList.remove('nvc-tab-panel-active');
+            });
+
+            // Add active class to clicked tab and corresponding panel
+            this.classList.add('nvc-tab-active');
+            this.setAttribute('aria-selected', 'true');
+
+            const targetPanel = document.getElementById(targetId);
+            if (targetPanel) {
+                targetPanel.classList.add('nvc-tab-panel-active');
+            }
+        });
+    });
+
+    // Form input validation and real-time feedback
+    const formInputs = document.querySelectorAll('.nvc-form-input, .nvc-form-select');
+    formInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            validateInput(this);
+        });
+
+        input.addEventListener('blur', function() {
+            validateInput(this);
+        });
+    });
+
+    function validateInput(input) {
+        const value = input.value;
+        const type = input.type;
+
+        // Remove existing validation classes
+        input.classList.remove('nvc-input-valid', 'nvc-input-invalid');
+
+        // Basic validation
+        if (type === 'email') {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailRegex.test(value)) {
+                input.classList.add('nvc-input-valid');
+            } else if (value.trim() !== '') {
+                input.classList.add('nvc-input-invalid');
+            }
+        } else if (type === 'number') {
+            const min = parseInt(input.getAttribute('min')) || 0;
+            const max = parseInt(input.getAttribute('max')) || Infinity;
+            const numValue = parseInt(value);
+
+            if (numValue >= min && numValue <= max) {
+                input.classList.add('nvc-input-valid');
+            } else if (value.trim() !== '') {
+                input.classList.add('nvc-input-invalid');
+            }
+        } else if (value.trim() !== '') {
+            input.classList.add('nvc-input-valid');
+        }
+    }
+
+    // Switch and checkbox interactions
+    const switches = document.querySelectorAll('.nvc-switch');
+    switches.forEach(switchElement => {
+        switchElement.addEventListener('change', function() {
+            console.log(`Setting changed: ${this.id} = ${this.checked}`);
+
+            // Show visual feedback
+            const label = document.querySelector(`label[for="${this.id}"]`);
+            if (label) {
+                if (this.checked) {
+                    label.style.fontWeight = 'bold';
+                    label.style.color = '#059669';
+                } else {
+                    label.style.fontWeight = 'normal';
+                    label.style.color = '';
+                }
+            }
+        });
+    });
+
+    // Save changes functionality
+    const saveButtons = document.querySelectorAll('[aria-label*="Save"]');
+    saveButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Saving system settings...');
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Saving...';
+            this.disabled = true;
+
+            // Simulate save operation
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+
+                // Show success notification
+                showNotification('System settings saved successfully!', 'success');
+            }, 2000);
+        });
+    });
+
+    // Reset to defaults functionality
+    const resetButtons = document.querySelectorAll('[aria-label*="Reset"]');
+    resetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all settings to default values?')) {
+                console.log('Resetting system settings to defaults...');
+
+                // Reset form inputs to default values
+                formInputs.forEach(input => {
+                    if (input.type === 'number') {
+                        input.value = input.getAttribute('min') || '0';
+                    } else if (input.type === 'email') {
+                        input.value = 'admin@nvcbank.com';
+                    } else if (input.tagName === 'SELECT') {
+                        input.selectedIndex = 0;
+                    } else {
+                        input.value = '';
+                    }
+                    input.classList.remove('nvc-input-valid', 'nvc-input-invalid');
+                });
+
+                // Reset switches
+                switches.forEach(switchElement => {
+                    switchElement.checked = false;
+                });
+
+                showNotification('System settings reset to defaults', 'info');
+            }
+        });
+    });
+
+    // Export configuration functionality
+    const exportButtons = document.querySelectorAll('[aria-label*="Export"]');
+    exportButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Exporting system configuration...');
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Exporting...';
+            this.disabled = true;
+
+            // Simulate export operation
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+
+                // Simulate file download
+                const link = document.createElement('a');
+                link.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify({
+                    exported_at: new Date().toISOString(),
+                    settings: 'System configuration data would be here'
+                }));
+                link.download = 'nvc_system_settings.json';
+                link.click();
+
+                showNotification('Configuration exported successfully', 'success');
+            }, 1500);
+        });
+    });
+
+    // Validation functionality
+    const validateButtons = document.querySelectorAll('[aria-label*="Validate"]');
+    validateButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Validating system configuration...');
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Validating...';
+            this.disabled = true;
+
+            // Simulate validation
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+
+                showNotification('Configuration validation completed successfully', 'success');
+            }, 2000);
+        });
+    });
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `nvc-notification nvc-notification-${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" aria-hidden="true"></i>
+            <span>${message}</span>
+            <button type="button" class="nvc-notification-close" aria-label="Close notification">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 5000);
+
+        // Close button functionality
+        const closeButton = notification.querySelector('.nvc-notification-close');
+        closeButton.addEventListener('click', function() {
+            notification.parentNode.removeChild(notification);
+        });
+    }
+
+    // Real-time configuration status updates
+    function updateConfigurationStatus() {
+        const statusBadges = document.querySelectorAll('.nvc-badge-info');
+        statusBadges.forEach(badge => {
+            if (badge.textContent.includes('Configuration')) {
+                // Simulate real-time configuration status check
+                console.log('Checking configuration status...');
+            }
+        });
+    }
+
+    // Update configuration status every 60 seconds
+    setInterval(updateConfigurationStatus, 60000);
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

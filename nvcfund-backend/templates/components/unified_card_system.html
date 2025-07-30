@@ -1,0 +1,320 @@
+<!-- ===================================================================
+     NVC Banking Platform - Unified Card System
+     World-Class Fintech UI Components with Premium Interactions
+     Version: 4.0.0 - Enhanced for Global Standards
+     =================================================================== -->
+
+<!-- ===================================================================
+     STANDARD METRIC CARD
+     Usage: metric_card_standard(title, value, icon, change, change_type, color, url)
+     =================================================================== -->
+{% macro metric_card_standard(title, value, icon, change=None, change_type="positive", color="primary", url=None, subtitle="", trend_data=None, premium=false) %}
+<div class="nvc-card nvc-metric-card{% if premium %} nvc-card-premium{% endif %} nvc-metric-{{ color }}{% if url %} nvc-clickable-card{% endif %} nvc-wcag-focus"
+     {% if url %}data-href="{{ url }}" role="button" tabindex="0" aria-label="View {{ title }} details"{% endif %}
+     role="article"
+     aria-labelledby="metric-{{ title|replace(' ', '-')|lower }}">
+    <div class="nvc-card-body">
+        <div class="nvc-metric-header">
+            <div class="nvc-metric-icon" aria-hidden="true">
+                <i class="{{ icon }}"></i>
+            </div>
+            {% if change %}
+            <div class="nvc-metric-change nvc-change-{{ change_type }}"
+                 aria-label="Change: {{ change }} {{ change_type }}">
+                <i class="fas fa-{{ 'arrow-up' if change_type == 'positive' else 'arrow-down' if change_type == 'negative' else 'minus' }}" aria-hidden="true"></i>
+                {{ change }}
+            </div>
+            {% endif %}
+        </div>
+        <div class="nvc-metric-content">
+            <div class="nvc-metric-value" aria-label="{{ title }}: {{ value }}">{{ value }}</div>
+            <h3 id="metric-{{ title|replace(' ', '-')|lower }}" class="nvc-metric-title">{{ title }}</h3>
+            {% if subtitle %}
+            <p class="nvc-metric-subtitle">{{ subtitle }}</p>
+            {% endif %}
+        </div>
+        {% if trend_data %}
+        <div class="nvc-metric-trend" aria-label="Trend visualization for {{ title }}">
+            <div class="nvc-mini-sparkline" data-values="{{ trend_data|join(',') }}"></div>
+        </div>
+        {% endif %}
+        {% if url %}
+        <div class="nvc-card-hover-indicator" aria-hidden="true">
+            <i class="fas fa-arrow-right"></i>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD ACTION CARD
+     Usage: action_card_standard(title, description, icon, url, color)
+     =================================================================== -->
+{% macro action_card_standard(title, description, icon, url, color="primary") %}
+<a href="{{ url }}" class="nvc-card nvc-action-card nvc-action-{{ color }} text-decoration-none">
+    <div class="nvc-card-body">
+        <div class="nvc-action-icon">
+            <i class="{{ icon }}"></i>
+        </div>
+        <div class="nvc-action-content">
+            <h6 class="nvc-action-title">{{ title }}</h6>
+            <p class="nvc-action-description">{{ description }}</p>
+        </div>
+        <div class="nvc-action-arrow">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+    </div>
+</a>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD CONTENT CARD
+     Usage: content_card_standard(title, content, actions, color)
+     =================================================================== -->
+{% macro content_card_standard(title, content=None, actions=None, color="default", icon=None) %}
+<div class="nvc-card nvc-content-card nvc-card-{{ color }}">
+    {% if title %}
+    <div class="nvc-card-header">
+        <h5 class="nvc-card-title mb-0">
+            {% if icon %}<i class="{{ icon }} me-2"></i>{% endif %}
+            {{ title }}
+        </h5>
+        {% if actions %}
+        <div class="nvc-card-actions">
+            {{ actions }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% if content %}
+    <div class="nvc-card-body">
+        {{ content }}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD ACCOUNT CARD
+     Usage: account_card_standard(account_type, account_number, balance, icon, status, actions)
+     =================================================================== -->
+{% macro account_card_standard(account_type, account_number, balance, icon, status="active", actions=None) %}
+<div class="nvc-card nvc-account-card nvc-account-{{ status }}">
+    <div class="nvc-card-body">
+        <div class="nvc-account-header">
+            <div class="nvc-account-icon">
+                <i class="{{ icon }}"></i>
+            </div>
+            <div class="nvc-account-status">
+                <span class="nvc-status-badge nvc-status-{{ status }}">{{ status.title() }}</span>
+            </div>
+        </div>
+        <div class="nvc-account-content">
+            <h5 class="nvc-account-type">{{ account_type }}</h5>
+            <p class="nvc-account-number">{{ account_number }}</p>
+            <div class="nvc-account-balance">{{ balance }}</div>
+        </div>
+        {% if actions %}
+        <div class="nvc-account-actions">
+            {{ actions }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD TRANSACTION ROW
+     Usage: transaction_row_standard(date, description, amount, type, status, actions)
+     =================================================================== -->
+{% macro transaction_row_standard(date, description, amount, type, status="completed", actions=None, tx_id=None) %}
+<div class="nvc-transaction-row nvc-transaction-{{ status }}"{% if tx_id %} data-tx-id="{{ tx_id }}"{% endif %}>
+    <div class="nvc-transaction-icon">
+        <i class="fas fa-{{ 'arrow-up' if type == 'credit' else 'arrow-down' }} nvc-transaction-{{ type }}"></i>
+    </div>
+    <div class="nvc-transaction-details">
+        <div class="nvc-transaction-description">{{ description }}</div>
+        <div class="nvc-transaction-date">{{ date }}</div>
+    </div>
+    <div class="nvc-transaction-amount nvc-amount-{{ type }}">
+        {{ '+' if type == 'credit' else '-' }}{{ amount }}
+    </div>
+    <div class="nvc-transaction-status">
+        <span class="nvc-status-badge nvc-status-{{ status }}">{{ status.title() }}</span>
+    </div>
+    {% if actions %}
+    <div class="nvc-transaction-actions">
+        {{ actions }}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD STATS GRID
+     Usage: stats_grid_standard(stats_list)
+     =================================================================== -->
+{% macro stats_grid_standard(stats_list, columns=4) %}
+<div class="nvc-stats-grid nvc-stats-grid-{{ columns }}">
+    {% for stat in stats_list %}
+    <div class="nvc-stats-item">
+        {{ metric_card_standard(stat.title, stat.value, stat.icon, stat.change, stat.change_type, stat.color, stat.url) }}
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD QUICK ACTIONS GRID
+     Usage: quick_actions_grid_standard(actions_list)
+     =================================================================== -->
+{% macro quick_actions_grid_standard(actions_list, columns=3) %}
+<div class="nvc-quick-actions-grid nvc-actions-grid-{{ columns }}">
+    {% for action in actions_list %}
+    <div class="nvc-action-item">
+        {{ action_card_standard(action.title, action.description, action.icon, action.url, action.color) }}
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD NOTIFICATION BANNER
+     Usage: notification_banner_standard(message, type, dismissible)
+     =================================================================== -->
+{% macro notification_banner_standard(message, type="info", dismissible=True, icon=None) %}
+<div class="nvc-notification-banner nvc-notification-{{ type }}{% if dismissible %} nvc-dismissible{% endif %}">
+    <div class="nvc-notification-content">
+        {% if icon %}
+        <div class="nvc-notification-icon">
+            <i class="{{ icon }}"></i>
+        </div>
+        {% endif %}
+        <div class="nvc-notification-message">{{ message }}</div>
+    </div>
+    {% if dismissible %}
+    <button type="button" class="nvc-notification-close nvc-wcag-focus"
+            data-action="dismiss-notification"
+            aria-label="Close notification">
+        <i class="fas fa-times" aria-hidden="true"></i>
+        <span class="nvc-sr-only">Close</span>
+    </button>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD PROGRESS BAR
+     Usage: progress_bar_standard(value, max_value, label, color)
+     =================================================================== -->
+{% macro progress_bar_standard(value, max_value=100, label=None, color="primary", show_percentage=True) %}
+<div class="nvc-progress-container">
+    {% if label %}
+    <div class="nvc-progress-label">
+        <span>{{ label }}</span>
+        {% if show_percentage %}
+        <span class="nvc-progress-percentage">{{ "%.1f"|format((value/max_value)*100) }}%</span>
+        {% endif %}
+    </div>
+    {% endif %}
+    <div class="nvc-progress nvc-progress-{{ color }}" role="progressbar" aria-valuenow="{{ value }}" aria-valuemin="0" aria-valuemax="{{ max_value }}" aria-label="{{ title }} progress">
+        <div class="nvc-progress-bar" data-progress="{{ (value/max_value)*100 }}"></div>
+    </div>
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD LOADING SPINNER
+     Usage: loading_spinner_standard(size, color)
+     =================================================================== -->
+{% macro loading_spinner_standard(size="md", color="primary", text=None) %}
+<div class="nvc-loading-spinner nvc-spinner-{{ size }} nvc-spinner-{{ color }}">
+    <div class="nvc-spinner"></div>
+    {% if text %}
+    <div class="nvc-spinner-text">{{ text }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD EMPTY STATE
+     Usage: empty_state_standard(title, description, icon, action)
+     =================================================================== -->
+{% macro empty_state_standard(title, description=None, icon="fas fa-inbox", action=None) %}
+<div class="nvc-empty-state">
+    <div class="nvc-empty-icon">
+        <i class="{{ icon }}"></i>
+    </div>
+    <div class="nvc-empty-content">
+        <h4 class="nvc-empty-title">{{ title }}</h4>
+        {% if description %}
+        <p class="nvc-empty-description">{{ description }}</p>
+        {% endif %}
+        {% if action %}
+        <div class="nvc-empty-action">
+            {{ action }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD FORM INPUT
+     Usage: form_input_standard(name, label, type, value, placeholder, required)
+     =================================================================== -->
+{% macro form_input_standard(name, label=None, type="text", value="", placeholder="", required=False, help_text=None, error=None) %}
+<div class="nvc-form-group">
+    {% if label %}
+    <label for="{{ name }}" class="nvc-form-label{% if required %} nvc-required{% endif %}">
+        {{ label }}
+        {% if required %}<span class="nvc-required-indicator">*</span>{% endif %}
+    </label>
+    {% endif %}
+    <input type="{{ type }}" 
+           id="{{ name }}" 
+           name="{{ name }}" 
+           class="nvc-form-control{% if error %} nvc-form-error{% endif %}"
+           value="{{ value }}"
+           {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+           {% if required %}required{% endif %}>
+    {% if help_text %}
+    <div class="nvc-form-help">{{ help_text }}</div>
+    {% endif %}
+    {% if error %}
+    <div class="nvc-form-error-message">{{ error }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STANDARD FORM SELECT
+     Usage: form_select_standard(name, label, options, value, required)
+     =================================================================== -->
+{% macro form_select_standard(name, label=None, options=[], value="", required=False, help_text=None, error=None) %}
+<div class="nvc-form-group">
+    {% if label %}
+    <label for="{{ name }}" class="nvc-form-label{% if required %} nvc-required{% endif %}">
+        {{ label }}
+        {% if required %}<span class="nvc-required-indicator">*</span>{% endif %}
+    </label>
+    {% endif %}
+    <select id="{{ name }}" 
+            name="{{ name }}" 
+            class="nvc-form-control nvc-form-select{% if error %} nvc-form-error{% endif %}"
+            {% if required %}required{% endif %}>
+        {% for option in options %}
+        <option value="{{ option.value }}"{% if option.value == value %} selected{% endif %}>
+            {{ option.label }}
+        </option>
+        {% endfor %}
+    </select>
+    {% if help_text %}
+    <div class="nvc-form-help">{{ help_text }}</div>
+    {% endif %}
+    {% if error %}
+    <div class="nvc-form-error-message">{{ error }}</div>
+    {% endif %}
+</div>
+{% endmacro %}

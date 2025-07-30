@@ -1,0 +1,338 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Sharia Compliance Dashboard{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-white">
+            <i class="fas fa-shield-alt text-primary me-2"></i>
+            Sharia Compliance Dashboard
+        </h1>
+        <div class="text-white-50">
+            <i class="fas fa-check-circle me-1"></i>
+            Compliance Score: {{ "%.1f"|format(compliance_data.compliance_metrics.overall_compliance_score) }%}
+        </div>
+    </div>
+
+    <!-- Compliance Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-certificate me-2"></i>
+                        Overall Score
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body text-center">
+                    <h2 class="text-success">{{ "%.1f"|format(compliance_data.compliance_metrics.overall_compliance_score) }%}</h2>
+                    <div class="progress mt-2" class="nvc-h-10">
+                        <div class="progress-bar bg-success" style="width: {{ compliance_data.compliance_metrics.overall_compliance_score }%}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list-check me-2"></i>
+                        Products Certified
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body text-center">
+                    <h2 class="text-primary">{{ compliance_data.compliance_metrics.products_certified }}/{{ compliance_data.compliance_metrics.products_reviewed }}</h2>
+                    <small class="text-light">{{ "%.1f"|format((compliance_data.compliance_metrics.products_certified / compliance_data.compliance_metrics.products_reviewed) * 100) }%} Certification Rate</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-warning text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Violations
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body text-center">
+                    <h2 class="text-{{ 'success' if compliance_data.compliance_metrics.compliance_violations == 0 else 'warning' }}">{{ compliance_data.compliance_metrics.compliance_violations }}</h2>
+                    <small class="text-light">Zero Tolerance Policy</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Pending Reviews
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body text-center">
+                    <h2 class="text-info">{{ compliance_data.compliance_metrics.pending_reviews }}</h2>
+                    <small class="text-light">Under Assessment</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sharia Board Information -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Sharia Supervisory Board
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Chairman:</span>
+                            <span class="fw-bold">{{ compliance_data.sharia_board.chairman }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Board Members:</span>
+                            <span class="fw-bold">{{ compliance_data.sharia_board.members }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Meeting Frequency:</span>
+                            <span class="fw-bold">{{ compliance_data.sharia_board.meeting_frequency }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Last Meeting:</span>
+                            <span class="fw-bold">{{ compliance_data.sharia_board.last_meeting }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Next Meeting:</span>
+                            <span class="fw-bold text-info">{{ compliance_data.sharia_board.next_meeting }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6 class="text-light mb-2">Certifications</h6>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for certification in compliance_data.sharia_board.certifications %}
+                            <span class="badge bg-outline-primary">{{ certification }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        Screening Framework
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <h6 class="text-light mb-3">Financial Screening Ratios</h6>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Debt to Market Cap:</span>
+                            <span class="fw-bold">{{ compliance_data.screening_framework.equity_screening.financial_ratios.debt_to_market_cap }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Cash to Market Cap:</span>
+                            <span class="fw-bold">{{ compliance_data.screening_framework.equity_screening.financial_ratios.cash_to_market_cap }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Non-Halal Income:</span>
+                            <span class="fw-bold">{{ compliance_data.screening_framework.equity_screening.financial_ratios.non_halal_income }}</span>
+                        </div>
+                    </div>
+                    
+                    <h6 class="text-light mb-3">Transaction Controls</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-ban text-danger me-2"></i>
+                            {{ compliance_data.screening_framework.transaction_screening.interest_prohibition }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-shield-alt text-warning me-2"></i>
+                            {{ compliance_data.screening_framework.transaction_screening.uncertainty_limits }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-times-circle text-danger me-2"></i>
+                            {{ compliance_data.screening_framework.transaction_screening.speculation_controls }}
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {{ compliance_data.screening_framework.transaction_screening.asset_backing }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Excluded Sectors -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-ban me-2"></i>
+                        Prohibited Sectors
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        {% for sector in compliance_data.screening_framework.equity_screening.excluded_sectors %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                <span>{{ sector }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gavel me-2"></i>
+                        Recent Fatwas
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Total Fatwas:</span>
+                            <span class="fw-bold">{{ compliance_data.fatwa_database.total_fatwas }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Product Fatwas:</span>
+                            <span class="fw-bold">{{ compliance_data.fatwa_database.product_fatwas }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Transaction Fatwas:</span>
+                            <span class="fw-bold">{{ compliance_data.fatwa_database.transaction_fatwas }}</span>
+                        </div>
+                    </div>
+                    
+                    <h6 class="text-light mb-3">Recent Rulings</h6>
+                    {% for ruling in compliance_data.fatwa_database.recent_rulings %}
+                    <div class="border-start border-primary ps-3 mb-3">
+                        <div class="fw-bold">{{ ruling.topic }}</div>
+                        <div class="text-light small">{{ ruling.date }}</div>
+                        <div class="text-success">{{ ruling.ruling }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Activities -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-check me-2"></i>
+                        Audit Activities
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-light mb-3">Internal Audits</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-center p-3 border rounded">
+                                        <h4 class="text-success">{{ compliance_data.audit_activities.internal_audits.completed_ytd }}</h4>
+                                        <small class="text-light">Completed YTD</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center p-3 border rounded">
+                                        <h4 class="text-info">{{ compliance_data.audit_activities.internal_audits.scheduled_remaining }}</h4>
+                                        <small class="text-light">Remaining</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Total Findings:</span>
+                                    <span class="fw-bold">{{ compliance_data.audit_activities.internal_audits.findings }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Resolved:</span>
+                                    <span class="fw-bold text-success">{{ compliance_data.audit_activities.internal_audits.resolved }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Pending:</span>
+                                    <span class="fw-bold text-{{ 'success' if compliance_data.audit_activities.internal_audits.pending == 0 else 'warning' }}">{{ compliance_data.audit_activities.internal_audits.pending }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-light mb-3">External Audits</h6>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Audit Firm:</span>
+                                    <span class="fw-bold">{{ compliance_data.audit_activities.external_audits.sharia_audit_firm }}</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Last Audit:</span>
+                                    <span class="fw-bold">{{ compliance_data.audit_activities.external_audits.last_audit }}</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Audit Opinion:</span>
+                                    <span class="badge bg-success">{{ compliance_data.audit_activities.external_audits.audit_opinion }}</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Next Audit:</span>
+                                    <span class="fw-bold text-info">{{ compliance_data.audit_activities.external_audits.next_audit }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.badge.bg-outline-primary {
+    border: 1px solid #0d6efd;
+    color: #0d6efd;
+    background-color: transparent;
+}
+</style>
+</div>
+{% endblock %}

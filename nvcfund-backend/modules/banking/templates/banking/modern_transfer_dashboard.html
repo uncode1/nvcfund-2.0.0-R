@@ -1,0 +1,944 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Modern Transfer Hub - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Modern Transfer Hub{% endblock %}
+{% block page_description %}Comprehensive transfer options for traditional banking and digital assets{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-history"></i>
+    Transfer History
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-users"></i>
+    Manage Payees
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-bolt"></i>
+    Quick Transfer
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Modern Transfer Dashboard -->
+<div class="row g-4">
+        <div class="d-flex gap-2">
+            <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">
+                <i class="fas fa-sync-alt me-1"></i>Refresh
+            </button>
+            <a href="{{ url_for('banking.transfer_history') }}" class="btn nvc-btn nvc-btn-primary btn-sm">
+                <i class="fas fa-history me-1"></i>Transfer History
+            </a>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} nvc-alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'info-circle' }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Transfer Statistics Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-primary">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="ms-3">
+                        <p class="stat-label mb-1">Total Volume</p>
+                        <h4 class="stat-value mb-0">${{ "{:,.2f}".format(transfer_stats.total_volume) }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-success">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="ms-3">
+                        <p class="stat-label mb-1">Total Transfers</p>
+                        <h4 class="stat-value mb-0">{{ "{:,}".format(transfer_stats.total_transfers) }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-info">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="ms-3">
+                        <p class="stat-label mb-1">Success Rate</p>
+                        <h4 class="stat-value mb-0">{{ transfer_stats.success_rate }}%</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="ms-3">
+                        <p class="stat-label mb-1">Pending</p>
+                        <h4 class="stat-value mb-0">{{ transfer_stats.pending_transfers }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Channels Grid -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">
+                        <i class="fas fa-network-wired me-2"></i>Available Transfer Channels
+                    </h5>
+                    <span class="badge bg-success">{{ transfer_stats.channels_active }} Active</span>
+                </div>
+                <div class="nvc-nvc-card-body p-4">
+                    <div class="row g-4">
+                        {% for channel in transfer_channels %}
+                        <div class="col-lg-6 col-xl-4">
+                            <div class="transfer-channel-nvc-card h-100" data-channel="{{ channel.name|lower|replace(' ', '-') }}">
+                                <div class="channel-header">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div class="channel-logo-container">
+                                            {% if channel.name == 'Internal Transfer' %}
+                                                <div class="channel-logo nvc-logo">
+                                                    <span class="logo-text">NVC</span>
+                                                </div>
+                                            {% elif channel.name == 'ACH Transfer' %}
+                                                <div class="channel-logo ach-logo">
+                                                    <span class="logo-text">ACH</span>
+                                                    <small class="logo-subtext">NETWORK</small>
+                                                </div>
+                                            {% elif channel.name == 'Wire Transfer' %}
+                                                <div class="channel-logo fedwire-logo">
+                                                    <span class="logo-text">FEDWIRE</span>
+                                                </div>
+                                            {% elif channel.name == 'SWIFT Transfer' %}
+                                                <div class="channel-logo swift-logo">
+                                                    <div class="swift-icon">S</div>
+                                                    <span class="logo-text">SWIFT</span>
+                                                </div>
+                                            {% elif channel.name == 'Fedwire' %}
+                                                <div class="channel-logo federal-reserve-logo">
+                                                    <div class="fed-seal">
+                                                        <span class="fed-text">FED</span>
+                                                    </div>
+                                                    <small class="logo-subtext">RESERVE</small>
+                                                </div>
+                                            {% elif channel.name == 'Blockchain Transfer' %}
+                                                <div class="channel-logo blockchain-logo">
+                                                    <div class="crypto-icon">₿</div>
+                                                    <span class="logo-text">CRYPTO</span>
+                                                </div>
+                                            {% elif channel.name == 'NVCT Transfer' %}
+                                                <div class="channel-logo nvct-logo">
+                                                    <div class="nvct-coin">N</div>
+                                                    <span class="logo-text">NVCT</span>
+                                                </div>
+                                            {% elif channel.name == 'Mobile Transfer' %}
+                                                <div class="channel-logo mobile-logo">
+                                                    <div class="mobile-icon">📱</div>
+                                                    <span class="logo-text">MOBILE</span>
+                                                </div>
+                                            {% elif channel.name == 'PayPal Transfer' %}
+                                                <div class="channel-logo paypal-logo">
+                                                    <div class="paypal-p">P</div>
+                                                    <span class="logo-text">PAYPAL</span>
+                                                </div>
+                                            {% elif channel.name == 'Stripe Transfer' %}
+                                                <div class="channel-logo stripe-logo">
+                                                    <div class="stripe-s">S</div>
+                                                    <span class="logo-text">STRIPE</span>
+                                                </div>
+                                            {% elif channel.name == 'Flutterwave' %}
+                                                <div class="channel-logo flutterwave-logo">
+                                                    <div class="flutter-icon">▲</div>
+                                                    <span class="logo-text">FLUTTER</span>
+                                                </div>
+                                            {% elif channel.name == 'Mojaloop' %}
+                                                <div class="channel-logo mojaloop-logo">
+                                                    <div class="moja-icon">○</div>
+                                                    <span class="logo-text">MOJA</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        {% if channel.available %}
+                                            <span class="badge bg-success">Available</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Coming Soon</span>
+                                        {% endif %}
+                                    </div>
+                                    <h6 class="channel-title mb-2">{{ channel.name }}</h6>
+                                    <p class="channel-description text-light mb-3">{{ channel.description }}</p>
+                                </div>
+                                
+                                <div class="channel-details mb-3">
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-6">
+                                            <small class="text-light d-block">Speed</small>
+                                            <strong class="text-{{ channel.color }}">{{ channel.speed }}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-light d-block">Cost</small>
+                                            <strong class="text-{{ channel.color }}">{{ channel.cost }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-light d-block">Daily Limit</small>
+                                        <strong>{{ channel.limit }}</strong>
+                                    </div>
+                                </div>
+
+                                <div class="channel-features mb-3">
+                                    <small class="text-light d-block mb-2">Key Features</small>
+                                    {% for feature in channel.features %}
+                                        <div class="feature-item">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <small>{{ feature }}</small>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="channel-actions mt-auto">
+                                    {% if channel.available %}
+                                        <button type="button" class="btn btn-{{ channel.color }} btn-sm w-100" 
+                                                data-action="custom-action">
+                                            <i class="fas fa-arrow-right me-2"></i>Start Transfer
+                                        </button>
+                                    {% else %}
+                                        <button type="button" class="btn nvc-btn nvc-btn-secondary btn-sm w-100" disabled>
+                                            <i class="fas fa-hourglass-half me-2"></i>Coming Soon
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transfer Activity -->
+    {% if transfer_history %}
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Transfer Activity
+                    </h5>
+                    <a href="{{ url_for('banking.transfer_history') }}" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                        View All
+                    </a>
+                </div>
+                <div class="nvc-nvc-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Reference</th>
+                                    <th>Channel</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Description</th>
+                                    <th class="text-end">Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transfer in transfer_history %}
+                                <tr>
+                                    <td>
+                                        <small class="text-light">
+                                            {{ transfer.created_at.strftime('%m/%d/%y %H:%M') if transfer.created_at else 'N/A' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <code class="text-primary">{{ transfer.transfer_id[:8] }}...</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if 'Internal' in transfer.type else 'info' if 'ACH' in transfer.type else 'warning' }}">
+                                            {{ transfer.type }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ transfer.from_account[:8] }}...{{ transfer.from_account[-4:] if transfer.from_account|length > 8 else transfer.from_account }}</small>
+                                    </td>
+                                    <td>
+                                        <small>{{ transfer.to_account[:8] }}...{{ transfer.to_account[-4:] if transfer.to_account|length > 8 else transfer.to_account }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-light">{{ transfer.description[:30] + '...' if transfer.description and transfer.description|length > 30 else transfer.description or 'No description' }}</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong class="text-{{ 'success' if transfer.type == 'Deposit' else 'primary' }}">
+                                            {{ '+' if transfer.type == 'Deposit' else '' }}${{ "{:,.2f}".format(transfer.amount) }}
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if transfer.status == 'Completed' else 'warning' if transfer.status == 'Pending' else 'danger' }}">
+                                            <i class="fas fa-{{ 'check' if transfer.status == 'Completed' else 'clock' if transfer.status == 'Pending' else 'times' }} me-1"></i>
+                                            {{ transfer.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Transfer Initiation Modal -->
+<div class="modal fade" id="transferModal" tabindex="-1" aria-labelledby="transferModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-light" id="transferModalLabel">
+                    <i class="fas fa-exchange-alt me-2"></i>Initiate Transfer
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-light mt-3">Redirecting to transfer interface...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Transfer Channel Cards */
+.transfer-channel-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Channel Logo Styling */
+.channel-logo-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.channel-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 50px;
+    border-radius: 8px;
+    position: relative;
+    font-weight: bold;
+}
+
+/* NVC Internal Transfer Logo */
+.nvc-logo {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+}
+
+.nvc-logo .logo-text {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* ACH Network Logo */
+.ach-logo {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+}
+
+.ach-logo .logo-text {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.ach-logo .logo-subtext {
+    font-size: 8px;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* Fedwire Logo */
+.fedwire-logo {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+}
+
+.fedwire-logo .logo-text {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* SWIFT Network Logo */
+.swift-logo {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.swift-icon {
+    width: 18px;
+    height: 18px;
+    background: white;
+    color: #0ea5e9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.swift-logo .logo-text {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* Federal Reserve Logo */
+.federal-reserve-logo {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    color: white;
+}
+
+.fed-seal {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #fbbf24;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+
+.fed-text {
+    font-size: 8px;
+    font-weight: 900;
+    color: #fbbf24;
+}
+
+.federal-reserve-logo .logo-subtext {
+    font-size: 7px;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* Blockchain/Crypto Logo */
+.blockchain-logo {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.crypto-icon {
+    font-size: 18px;
+    font-weight: 900;
+    color: white;
+}
+
+.blockchain-logo .logo-text {
+    font-size: 9px;
+    font-weight: 700;
+}
+
+/* NVCT Stablecoin Logo */
+.nvct-logo {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.nvct-coin {
+    width: 20px;
+    height: 20px;
+    background: white;
+    color: #8b5cf6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.nvct-logo .logo-text {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* Mobile Transfer Logo */
+.mobile-logo {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.mobile-icon {
+    font-size: 16px;
+}
+
+.mobile-logo .logo-text {
+    font-size: 9px;
+    font-weight: 700;
+}
+
+/* PayPal Logo */
+.paypal-logo {
+    background: linear-gradient(135deg, #003087 0%, #009cde 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.paypal-p {
+    width: 20px;
+    height: 20px;
+    background: #ffc439;
+    color: #003087;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    font-style: italic;
+}
+
+.paypal-logo .logo-text {
+    font-size: 9px;
+    font-weight: 700;
+}
+
+/* Stripe Logo */
+.stripe-logo {
+    background: linear-gradient(135deg, #635bff 0%, #5851e6 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.stripe-s {
+    width: 18px;
+    height: 18px;
+    background: white;
+    color: #635bff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    font-style: italic;
+}
+
+.stripe-logo .logo-text {
+    font-size: 9px;
+    font-weight: 700;
+}
+
+/* Flutterwave Logo */
+.flutterwave-logo {
+    background: linear-gradient(135deg, #f5a623 0%, #f39019 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.flutter-icon {
+    font-size: 16px;
+    font-weight: 900;
+    color: white;
+    transform: rotate(90deg);
+}
+
+.flutterwave-logo .logo-text {
+    font-size: 8px;
+    font-weight: 700;
+}
+
+/* Mojaloop Logo */
+.mojaloop-logo {
+    background: linear-gradient(135deg, #00a651 0%, #007d3c 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.moja-icon {
+    width: 18px;
+    height: 18px;
+    border: 2px solid white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 900;
+}
+
+.mojaloop-logo .logo-text {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* Additional hover effects for payment services */
+.channel-card:hover .paypal-logo {
+    background: linear-gradient(135deg, #001f5c 0%, #0080cc 100%);
+    transform: scale(1.05);
+}
+
+.channel-card:hover .stripe-logo {
+    background: linear-gradient(135deg, #5849d4 0%, #4e44cc 100%);
+    transform: scale(1.05);
+}
+
+.channel-card:hover .flutterwave-logo {
+    background: linear-gradient(135deg, #e4941f 0%, #d6840f 100%);
+    transform: scale(1.05);
+}
+
+.channel-card:hover .mojaloop-logo {
+    background: linear-gradient(135deg, #008544 0%, #006a33 100%);
+    transform: scale(1.05);
+}
+
+/* Logo Hover Effects */
+.channel-logo {
+    transition: all 0.3s ease;
+}
+
+.transfer-channel-card:hover .channel-logo {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Additional Financial Network Branding */
+.channel-logo::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    background: #10b981;
+    border-radius: 50%;
+    border: 2px solid #1e293b;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.transfer-channel-card .channel-logo.nvc-logo::after,
+.transfer-channel-card .channel-logo.ach-logo::after,
+.transfer-channel-card .channel-logo.swift-logo::after,
+.transfer-channel-card .channel-logo.nvct-logo::after {
+    opacity: 1;
+}
+
+/* Network Status Indicators */
+.channel-logo-container::after {
+    content: 'LIVE';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 6px;
+    font-weight: 700;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 1px 4px;
+    border-radius: 3px;
+    border: 1px solid #10b981;
+    opacity: 0.8;
+}
+
+/* Professional Banking Network Styling */
+.nvc-logo {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.ach-logo {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.swift-logo {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.federal-reserve-logo {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.transfer-channel-card:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+}
+
+.channel-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.channel-title {
+    color: #f1f5f9;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.channel-description {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+}
+
+.feature-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Stat Cards Enhancement */
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    margin-bottom: 0;
+}
+
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+/* Table Enhancements */
+.table-dark th {
+    background-color: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Button Enhancements */
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: none;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: translateY(-1px);
+}
+
+/* Modal Enhancements */
+.modal-content {
+    border: 1px solid #334155;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .transfer-channel-card {
+        padding: 1rem;
+    }
+    
+    .channel-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+    }
+}
+</style>
+
+<script>
+function initiateTransfer(route, channelName) {
+    // Enhanced logging for transfer action
+    const targetUrl = '{{ url_for("banking.new_transfer") }}';
+    const timestamp = new Date().toISOString();
+    
+    console.log(`🎯 [${timestamp}] TRANSFER ACTION: Initiating ${channelName} transfer`);
+    console.log(`🎯 [${timestamp}] TARGET ROUTE: ${route}`);
+    console.log(`🎯 [${timestamp}] CHANNEL NAME: ${channelName}`);
+    
+    // Send detailed action log to server
+    fetch('/banking/log-action', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            action: `TRANSFER_INITIATION`,
+            element: `transfer-channel-card.${channelName.replace(' ', '-').toLowerCase()}`,
+            targetUrl: targetUrl + '?channel=' + channelName,
+            channelName: channelName,
+            route: route,
+            timestamp: timestamp
+        })
+    }).then(response => response.json())
+      .then(data => console.log('🎯 Action logged:', data))
+      .catch(e => console.log('🎯 Logging failed:', e));
+    
+    // Show loading modal
+    const modal = new bootstrap.Modal(document.getElementById('transferModal'));
+    modal.show();
+    
+    // Simulate loading and redirect
+    setTimeout(() => {
+        // Map channel names to proper channel IDs for unique interfaces
+        const channelMap = {
+            'Internal Transfer': 'internal_transfer',
+            'PayPal Transfer': 'paypal_transfer', 
+            'Stripe Transfer': 'stripe_transfer',
+            'Flutterwave': 'flutterwave',
+            'Wire Transfer': 'wire_transfer',
+            'ACH Transfer': 'ach_transfer',
+            'SWIFT Transfer': 'swift_transfer',
+            'Fedwire Transfer': 'fedwire',
+            'Blockchain Transfer': 'blockchain_transfer',
+            'NVCT Transfer': 'nvct_stablecoin',
+            'Mobile Transfer': 'mobile_transfer',
+            'Mojaloop': 'mojaloop'
+        };
+        
+        const channelId = channelMap[channelName] || channelName.toLowerCase().replace(/\s+/g, '_');
+        const finalUrl = '{{ url_for("banking.new_transfer") }}?channel=' + channelId;
+        
+        console.log(`🎯 [${new Date().toISOString()}] REDIRECTING TO: ${finalUrl}`);
+        
+        // Always redirect to new_transfer with proper channel parameter
+        window.location.href = finalUrl;
+    }, 1000);
+}
+
+// Add click handlers for channel cards with enhanced logging
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 Transfer Dashboard: DOM loaded, setting up enhanced click handlers');
+    
+    const channelCards = document.querySelectorAll('.transfer-channel-card');
+    console.log(`🎯 Found ${channelCards.length} transfer channel cards`);
+    
+    channelCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const button = this.querySelector('.transfer-btn');
+            const channelName = button ? button.dataset.channel : this.dataset.channel;
+            
+            console.log(`🎯 [${new Date().toISOString()}] CARD CLICKED: ${channelName}`);
+            console.log(`🎯 Card element:`, this);
+            console.log(`🎯 Button element:`, button);
+            
+            if (button) {
+                const route = button.getAttribute('onclick')?.match(/initiateTransfer\('([^']+)'/)?.[1] || 'unknown';
+                console.log(`🎯 Extracted route: ${route}`);
+                initiateTransfer(route, channelName);
+            } else {
+                // Try to find button by other selectors
+                const transferBtn = this.querySelector('.btn:not([disabled])');
+                const cardChannel = this.dataset.channel || 'unknown';
+                console.log(`🎯 Fallback: Found button:`, transferBtn, 'Channel:', cardChannel);
+                
+                if (transferBtn) {
+                    const route = transferBtn.getAttribute('onclick')?.match(/initiateTransfer\('([^']+)'/)?.[1] || '/banking/transfers/new';
+                    console.log(`🎯 Using fallback route: ${route}`);
+                    initiateTransfer(route, cardChannel);
+                } else {
+                    console.log('🎯 ERROR: No transfer button found in card');
+                }
+            }
+            if (button) {
+                button.click();
+            }
+        });
+    });
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,314 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Claims Management - Insurance Services{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-warning">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h2 text-dark mb-1">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Claims Management
+                            </h1>
+                            <p class="text-dark mb-0">Process and manage insurance claims efficiently</p>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('insurance.main_dashboard') }}" class="btn btn-dark me-2">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                            </a>
+                            <button type="button" class="btn nvc-btn nvc-btn-primary" data-action="custom-action">
+                                <i class="fas fa-plus me-1"></i>New Claim
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claims Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-clock fa-2x text-warning mb-3"></i>
+                    <h4>Pending Claims</h4>
+                    <h3 class="text-primary">47</h3>
+                    <small class="text-light">Awaiting Review</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-cog fa-2x text-info mb-3"></i>
+                    <h4>Processing</h4>
+                    <h3 class="text-primary">23</h3>
+                    <small class="text-light">Under Investigation</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                    <h4>Approved</h4>
+                    <h3 class="text-primary">156</h3>
+                    <small class="text-light">This Month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-dollar-sign fa-2x text-success mb-3"></i>
+                    <h4>Paid Amount</h4>
+                    <h3 class="text-primary">$1.8M</h3>
+                    <small class="text-light">This Month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Claims Activity -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Recent Claims</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Claim ID</th>
+                                    <th>Policyholder</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>CLM-2025-0047</strong></td>
+                                    <td>David Wilson</td>
+                                    <td><span class="badge bg-danger">Auto Accident</span></td>
+                                    <td>$12,500</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-eye me-1"></i>Review
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>CLM-2025-0046</strong></td>
+                                    <td>Lisa Garcia</td>
+                                    <td><span class="badge bg-info">Property Damage</span></td>
+                                    <td>$8,750</td>
+                                    <td><span class="badge bg-info">Processing</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-eye me-1"></i>Review
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>CLM-2025-0045</strong></td>
+                                    <td>Robert Taylor</td>
+                                    <td><span class="badge bg-warning">Medical</span></td>
+                                    <td>$25,000</td>
+                                    <td><span class="badge bg-success">Approved</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                            <i class="fas fa-dollar-sign me-1"></i>Pay
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Claims by Category</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="claimsChart" width="300" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0"><i class="fas fa-bell me-2"></i>Priority Alerts</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="alert nvc-nvc-alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>High Value Claim:</strong> CLM-2025-0048 requires senior approval ($75,000)
+                    </div>
+                    <div class="alert nvc-nvc-alert-warning" role="alert">
+                        <i class="fas fa-clock me-2"></i>
+                        <strong>SLA Warning:</strong> 5 claims approaching review deadline
+                    </div>
+                    <div class="alert nvc-nvc-alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Update:</strong> Fraud detection flagged 2 suspicious claims
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claims Processing Workflow -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0"><i class="fas fa-sitemap me-2"></i>Claims Processing Workflow</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row text-center">
+                        <div class="col-md-2">
+                            <div class="workflow-step">
+                                <div class="workflow-icon bg-primary">
+                                    <i class="fas fa-file-alt text-white"></i>
+                                </div>
+                                <h6 class="mt-2">Submission</h6>
+                                <small class="text-light">Claim Filed</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="workflow-step">
+                                <div class="workflow-icon bg-warning">
+                                    <i class="fas fa-search text-white"></i>
+                                </div>
+                                <h6 class="mt-2">Review</h6>
+                                <small class="text-light">Initial Assessment</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="workflow-step">
+                                <div class="workflow-icon bg-info">
+                                    <i class="fas fa-cog text-white"></i>
+                                </div>
+                                <h6 class="mt-2">Investigation</h6>
+                                <small class="text-light">Detailed Analysis</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="workflow-step">
+                                <div class="workflow-icon bg-secondary">
+                                    <i class="fas fa-gavel text-white"></i>
+                                </div>
+                                <h6 class="mt-2">Decision</h6>
+                                <small class="text-light">Approve/Deny</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="workflow-step">
+                                <div class="workflow-icon bg-success">
+                                    <i class="fas fa-dollar-sign text-white"></i>
+                                </div>
+                                <h6 class="mt-2">Payment</h6>
+                                <small class="text-light">Settlement</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="workflow-step">
+                                <div class="workflow-icon bg-dark">
+                                    <i class="fas fa-check text-white"></i>
+                                </div>
+                                <h6 class="mt-2">Closure</h6>
+                                <small class="text-light">Case Closed</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.workflow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.workflow-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize claims chart
+    const ctx = document.getElementById('claimsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Auto', 'Property', 'Medical', 'Life', 'Business'],
+            datasets: [{
+                data: [35, 25, 20, 15, 5],
+                backgroundColor: [
+                    '#dc3545',
+                    '#28a745',
+                    '#ffc107',
+                    '#17a2b8',
+                    '#6c757d'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    function reviewClaim(claimId) {
+        alert('Reviewing claim: ' + claimId);
+    }
+    
+    function processPayout(claimId) {
+        alert('Processing payout for claim: ' + claimId);
+    }
+    
+    function newClaimModal() {
+        alert('Opening new claim modal');
+    }
+
+    // Make functions globally available
+    window.reviewClaim = reviewClaim;
+    window.processPayout = processPayout;
+    window.newClaimModal = newClaimModal;
+});
+</script>
+</div>
+{% endblock %}

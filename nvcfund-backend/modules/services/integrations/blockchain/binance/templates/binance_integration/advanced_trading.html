@@ -1,0 +1,292 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Advanced Trading - {{ symbol }} - Cryptocurrency Trading{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Trading Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-dark">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="h2 text-white mb-2">
+                                <i class="fas fa-chart-candlestick me-2"></i>Advanced Trading - {{ symbol }}
+                            </h1>
+                            <p class="text-light mb-0">Professional trading interface with real-time charts and order book</p>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-light btn-sm" data-action="custom-action">
+                                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                                </button>
+                                <a href="{{ url_for('binance.market_data_dashboard') }}" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                    <i class="fas fa-chart-bar me-1"></i>Market Data
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Price Info -->
+    {% if price_data.get('status') == 'success' %}
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-primary">
+                <div class="nvc-nvc-card-body text-center">
+                    <h4 class="text-white">Current Price</h4>
+                    <h2 class="text-white">${{ "%.2f"|format(price_data.price_data.price|float) }}</h2>
+                    <small class="text-light">{{ symbol }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <h4 class="text-white">24h High</h4>
+                    <h2 class="text-white" id="highPrice">-</h2>
+                    <small class="text-light">Highest Today</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-danger">
+                <div class="nvc-nvc-card-body text-center">
+                    <h4 class="text-white">24h Low</h4>
+                    <h2 class="text-white" id="lowPrice">-</h2>
+                    <small class="text-light">Lowest Today</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <h4 class="text-white">24h Volume</h4>
+                    <h2 class="text-white" id="volume">-</h2>
+                    <small class="text-light">Trading Volume</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Trading Interface -->
+    <div class="row mb-4">
+        <!-- Price Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Price Chart (24h)
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="priceChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Book -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-list me-2"></i>Order Book
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if order_book.get('status') == 'success' %}
+                        <div class="row">
+                            <div class="col-6">
+                                <h6 class="text-success">Bids</h6>
+                                <div class="order-book-section">
+                                    {% for bid in order_book.order_book.bids[:10] %}
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="text-success">${{ "%.2f"|format(bid[0]|float) }}</span>
+                                        <span>{{ "%.4f"|format(bid[1]|float) }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h6 class="text-danger">Asks</h6>
+                                <div class="order-book-section">
+                                    {% for ask in order_book.order_book.asks[:10] %}
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="text-danger">${{ "%.2f"|format(ask[0]|float) }}</span>
+                                        <span>{{ "%.4f"|format(ask[1]|float) }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-light">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Order book data unavailable
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Trades -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>Recent Trades
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if trades.get('status') == 'success' %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                        <th>Side</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trade in trades.trades[:20] %}
+                                    <tr>
+                                        <td>{{ moment(trade.time).format('HH:mm:ss') if trade.time else '-' }}</td>
+                                        <td>${{ "%.2f"|format(trade.price|float) }}</td>
+                                        <td>{{ "%.4f"|format(trade.qty|float) }}</td>
+                                        <td>${{ "%.2f"|format((trade.price|float) * (trade.qty|float)) }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if trade.isBuyerMaker else 'danger' }}">
+                                                {{ 'Buy' if trade.isBuyerMaker else 'Sell' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-light">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Recent trades data unavailable
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Price Chart
+{% if klines.get('status') == 'success' %}
+const ctx = document.getElementById('priceChart').getContext('2d');
+const chartData = {
+    labels: [
+        {% for kline in klines.klines %}
+        '{{ moment(kline.open_time).format('HH:mm') }}',
+        {% endfor %}
+    ],
+    datasets: [{
+        label: '{{ symbol }} Price',
+        data: [
+            {% for kline in klines.klines %}
+            {{ kline.close_price }},
+            {% endfor %}
+        ],
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+        tension: 0.1,
+        fill: true
+    }]
+};
+
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: chartData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: false,
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                },
+                ticks: {
+                    color: '#e2e8f0'
+                }
+            },
+            x: {
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                },
+                ticks: {
+                    color: '#e2e8f0'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                labels: {
+                    color: '#e2e8f0'
+                }
+            }
+        }
+    }
+});
+{% endif %}
+
+function refreshData() {
+    location.reload();
+}
+
+// Auto-refresh every 60 seconds
+setInterval(refreshData, 60000);
+</script>
+
+<style>
+.order-book-section {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.card {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+}
+
+.card-header {
+    background-color: #334155;
+    border-bottom: 1px solid #475569;
+}
+
+.table {
+    color: #e2e8f0;
+}
+
+.table thead th {
+    border-bottom: 2px solid #475569;
+    color: #f1f5f9;
+}
+
+.table td {
+    border-top: 1px solid #475569;
+}
+</style>
+</div>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Advanced MFA Setup - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Advanced Security Setup{% endblock %}
+{% block page_description %}Multi-factor authentication for banking and cryptocurrency protection{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-clock"></i>
+    Skip for Now
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-book"></i>
+    Security Guide
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-check"></i>
+    Complete Setup
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Modern MFA Setup -->
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent border-0">
+                <div class="text-center">
+                    <div class="security-icon mb-3">
+                        <i class="fas fa-shield-alt text-primary" class="nvc-fs-3rem"></i>
+                    </div>
+                    <h3 class="text-primary mb-2">Advanced Security Protection</h3>
+                    <p class="text-muted">Secure your banking and cryptocurrency assets with enterprise-grade authentication</p>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <!-- MFA Method Selection -->
+                <div class="mfa-methods">
+                    <h5 class="mb-4">
+                        <i class="fas fa-cog text-primary me-2"></i>
+                        Choose Your Authentication Methods
+                    </h5>
+
+                    <div class="row g-4">
+                        <!-- Authenticator App -->
+                        <div class="col-md-6">
+                            <div class="mfa-method-nvc-card" data-method="authenticator">
+                                <div class="method-icon bg-primary">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="method-content">
+                                    <h6>Authenticator App</h6>
+                                    <p class="text-muted small">Use Google Authenticator, Authy, or similar apps</p>
+                                    <div class="method-features">
+                                        <span class="badge bg-success">Recommended</span>
+                                        <span class="badge bg-info">Offline</span>
+                                    </div>
+                                </div>
+                                <div class="method-action">
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">
+                                        Setup
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SMS Authentication -->
+                        <div class="col-md-6">
+                            <div class="mfa-method-nvc-card" data-method="sms">
+                                <div class="method-icon bg-success">
+                                    <i class="fas fa-sms"></i>
+                                </div>
+                                <div class="method-content">
+                                    <h6>SMS Verification</h6>
+                                    <p class="text-muted small">Receive codes via text message</p>
+                                    <div class="method-features">
+                                        <span class="badge bg-warning">Backup</span>
+                                        <span class="badge bg-secondary">Simple</span>
+                                    </div>
+                                </div>
+                                <div class="method-action">
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-sm" data-action="custom-action">
+                                        Setup
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hardware Security Key -->
+                        <div class="col-md-6">
+                            <div class="mfa-method-nvc-card" data-method="hardware">
+                                <div class="method-icon bg-warning">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <div class="method-content">
+                                    <h6>Hardware Security Key</h6>
+                                    <p class="text-muted small">YubiKey, FIDO2, or WebAuthn devices</p>
+                                    <div class="method-features">
+                                        <span class="badge bg-danger">Enterprise</span>
+                                        <span class="badge bg-success">Secure</span>
+                                    </div>
+                                </div>
+                                <div class="method-action">
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm" data-action="custom-action">
+                                        Setup
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Biometric Authentication -->
+                        <div class="col-md-6">
+                            <div class="mfa-method-nvc-card" data-method="biometric">
+                                <div class="method-icon bg-info">
+                                    <i class="fas fa-fingerprint"></i>
+                                </div>
+                                <div class="method-content">
+                                    <h6>Biometric Authentication</h6>
+                                    <p class="text-muted small">Fingerprint, Face ID, or Touch ID</p>
+                                    <div class="method-features">
+                                        <span class="badge bg-primary">Modern</span>
+                                        <span class="badge bg-info">Fast</span>
+                                    </div>
+                                </div>
+                                <div class="method-action">
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm" data-action="custom-action">
+                                        Setup
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="alert nvc-nvc-alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Enhanced Security:</strong> Multi-factor authentication adds an extra layer of security to your account by requiring a verification code from your mobile device.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Step 1: Scan QR Code</h5>
+                            <p class="text-light">Use your authenticator app (Google Authenticator, Authy, etc.) to scan this QR code:</p>
+                            
+                            <div class="text-center mb-3">
+                                <img src="{{ qr_code }}" alt="MFA QR Code" class="img-fluid" style="max-width: 250px;">
+                            </div>
+
+                            <div class="alert nvc-alert-secondary">
+                                <strong>Manual Entry Key:</strong><br>
+                                <code>{{ manual_key }}</code>
+                                <p class="small mt-2 mb-0">If you can't scan the QR code, enter this key manually in your authenticator app.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h5>Step 2: Verify Setup</h5>
+                            <p class="text-light">Enter the 6-digit code from your authenticator app to complete setup:</p>
+
+                            <form method="POST" action="{{ url_for('auth.setup_mfa') }}">
+                                <div class="form-group mb-3">
+                                    <label for="verification_token" class="nvc-form-label">Verification Code</label>
+                                    <input type="text" 
+                                           class="form-control nvc-form-input-lg text-center" 
+                                           id="verification_token" 
+                                           name="verification_token" 
+                                           placeholder="000000"
+                                           maxlength="6"
+                                           pattern="[0-9]{6}"
+                                           required
+                                           style="letter-spacing: 5px; font-family: monospace;">
+                                    <div class="form-text">Enter the 6-digit code from your authenticator app</div>
+                                </div>
+
+                                <button type="submit" class="btn nvc-btn nvc-btn-primary btn-lg w-100">
+                                    <i class="fas fa-check-circle"></i>
+                                    Complete MFA Setup
+                                </button>
+                            </form>
+
+                            <div class="mt-4">
+                                <h6>Backup Codes</h6>
+                                <p class="text-light small">Save these backup codes in a secure location. You can use them to access your account if you lose your device:</p>
+                                
+                                <div class="alert nvc-nvc-alert-warning">
+                                    <div class="row">
+                                        {% for code in backup_codes %}
+                                        <div class="col-6 mb-1">
+                                            <code class="small">{{ code }}</code>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <small class="text-light">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Each backup code can only be used once.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6>Important Security Notes:</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success"></i> Keep your device secure and don't share your authenticator app</li>
+                                    <li><i class="fas fa-check text-success"></i> Save backup codes in a secure location (password manager, safe, etc.)</li>
+                                    <li><i class="fas fa-check text-success"></i> If you lose your device, use a backup code to access your account</li>
+                                    <li><i class="fas fa-check text-success"></i> Contact support immediately if you lose access to both your device and backup codes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <a href="{{ url_for('dashboard.main_dashboard') }}" class="btn nvc-btn nvc-btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Skip for Now
+                        </a>
+                        <span class="text-light mx-3">|</span>
+                        <small class="text-light">You can set up MFA later from your security settings</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-format verification code input
+document.getElementById('verification_token').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length > 6) {
+        value = value.substring(0, 6);
+    }
+    e.target.value = value;
+});
+
+// Auto-submit when 6 digits are entered
+document.getElementById('verification_token').addEventListener('input', function(e) {
+    if (e.target.value.length === 6) {
+        // Slight delay to allow user to see the complete code
+        setTimeout(function() {
+            e.target.form.submit();
+        }, 500);
+    }
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

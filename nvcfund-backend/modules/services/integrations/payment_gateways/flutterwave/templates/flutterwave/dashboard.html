@@ -1,0 +1,246 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Flutterwave Integration Dashboard{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">
+                            <i class="fas fa-globe-africa me-2" style="color: #f5a623;"></i>
+                            Flutterwave Payment Gateway
+                        </h3>
+                        <p class="text-light mb-0">African payment processing and financial inclusion platform</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success px-3 py-2">{{ service_status.upper() }}</span>
+                        <div class="small text-light mt-1">{{ supported_countries }} countries supported</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Total Transactions</h6>
+                            <h3 class="text-primary">{{ "{:,}".format(total_transactions) }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Monthly Volume</h6>
+                            <h3 class="text-success">${{ "${:,.2f}".format(monthly_volume) }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-dollar-sign fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Success Rate</h6>
+                            <h3 class="text-info">{{ success_rate }}%</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Avg Processing</h6>
+                            <h3 class="text-warning">{{ avg_processing_time }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions & Payment Methods -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Recent Transactions</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Country</th>
+                                    <th>Status</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td><code>{{ transaction.id }}</code></td>
+                                    <td>{{ transaction.customer }}</td>
+                                    <td>{{ "%.2f"|format(transaction.amount) }} {{ transaction.currency }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ transaction.country }}</span>
+                                    </td>
+                                    <td>
+                                        {% if transaction.status == 'successful' %}
+                                            <span class="badge bg-success">{{ transaction.status.title() }}</span>
+                                        {% elif transaction.status == 'pending' %}
+                                            <span class="badge bg-warning">{{ transaction.status.title() }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ transaction.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ transaction.timestamp }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Payment Methods</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="paymentMethodsChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Countries & Integration Features -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Top Countries by Volume</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% for country in top_countries %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <strong>{{ country.name }}</strong>
+                            <div class="small text-light">{{ "{:,}".format(country.transactions) }} transactions</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold">{{ country.volume }}%</div>
+                            <div class="progress nvc-style-d25407" >
+                                <div class="progress-bar bg-warning" style="width: {{ country.volume }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Available Features</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        {% for feature in integration_features %}
+                        <div class="col-12 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>{{ feature }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-4">
+                        <button type="button" class="btn nvc-btn nvc-btn-warning me-2">
+                            <i class="fas fa-cog me-1"></i>
+                            Configure Settings
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary">
+                            <i class="fas fa-chart-bar me-1"></i>
+                            View Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Payment Methods Chart
+const ctx = document.getElementById('paymentMethodsChart').getContext('2d');
+const paymentMethodsChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Bank Transfer', 'Mobile Money', 'Card Payments', 'USSD'],
+        datasets: [{
+            data: [{{ payment_methods.bank_transfer }}, {{ payment_methods.mobile_money }}, {{ payment_methods.card_payments }}, {{ payment_methods.ussd }}],
+            backgroundColor: [
+                '#f5a623',
+                '#27ae60',
+                '#e74c3c',
+                '#3498db'
+            ],
+            borderWidth: 2,
+            borderColor: '#1e293b'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: '#e2e8f0',
+                    padding: 15
+                }
+            }
+        }
+    }
+});
+</script>
+</div>
+{% endblock %}

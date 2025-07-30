@@ -1,0 +1,403 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Compliance Settings - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Compliance Settings{% endblock %}
+{% block page_description %}Configure compliance parameters and risk management settings{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Config
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-undo"></i>
+    Reset Defaults
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-save"></i>
+    Save Settings
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Compliance Settings Functions
+function exportSettings() {
+    const csvData = 'Setting,Category,Value,Last Modified\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'compliance_settings.csv';
+    a.click();
+}
+
+function resetToDefaults() {
+    if (confirm('Are you sure you want to reset all settings to defaults?')) {
+        fetch('/compliance/settings/reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error resetting settings');
+            }
+        });
+    }
+}
+
+function saveSettings() {
+    const form = document.getElementById('complianceSettingsForm');
+    if (form) {
+        const formData = new FormData(form);
+        fetch('/compliance/settings/save', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert('Settings saved successfully');
+            } else {
+                alert('Error saving settings');
+            }
+        });
+    }
+}
+
+function testConnection(serviceType) {
+    alert('Testing ' + serviceType + ' connection...');
+    // TODO: Implement connection testing
+}
+
+function validateSetting(settingName, value) {
+    // TODO: Implement setting validation
+    console.log('Validating setting:', settingName, value);
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Compliance Settings -->
+<div class="row g-4">
+                    </h3>
+                    <p class="text-light mb-0">Configure compliance parameters and risk management settings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Compliance Configuration -->
+        <div class="col-md-6">
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Compliance Configuration
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="complianceForm">
+                        <div class="mb-3">
+                            <label class="nvc-form-label">AML/KYC Threshold</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="nvc-form-input" value="10000" min="1000" max="100000">
+                            </div>
+                            <small class="text-light">Minimum transaction amount for enhanced monitoring</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Risk Assessment Frequency</label>
+                            <select class="nvc-form-select">
+                                <option value="daily">Daily</option>
+                                <option value="weekly" selected>Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Auto-Report Generation</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                                <label class="form-check-label">Enable automated compliance reports</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Regulatory Alerts</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                                <label class="form-check-label">Real-time regulatory notifications</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn nvc-btn nvc-btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Configuration
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Management Settings -->
+        <div class="col-md-6">
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Risk Management Settings
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="riskForm">
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Risk Tolerance Level</label>
+                            <select class="nvc-form-select">
+                                <option value="conservative">Conservative</option>
+                                <option value="moderate" selected>Moderate</option>
+                                <option value="aggressive">Aggressive</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Credit Risk Limit (%)</label>
+                            <input type="range" class="form-range" min="1" max="20" value="10" id="creditRiskSlider">
+                            <div class="d-flex justify-content-between">
+                                <small>1%</small>
+                                <small id="creditRiskValue">10%</small>
+                                <small>20%</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Market Risk Monitoring</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                                <label class="form-check-label">Enable real-time market risk analysis</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Operational Risk Alerts</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                                <label class="form-check-label">Immediate operational risk notifications</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn nvc-btn nvc-btn-warning">
+                            <i class="fas fa-save me-2"></i>Update Risk Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Regulatory Framework Settings -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gavel me-2"></i>Regulatory Framework Settings
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="nvc-card border-success">
+                                <div class="nvc-nvc-card-header bg-success text-white">
+                                    <h6 class="mb-0">GDPR Compliance</h6>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Data Protection</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Privacy Rights</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Consent Management</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="nvc-card border-info">
+                                <div class="nvc-nvc-card-header bg-info text-white">
+                                    <h6 class="mb-0">PCI DSS</h6>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Data Security</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Network Security</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Access Control</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="nvc-card border-warning">
+                                <div class="nvc-nvc-card-header bg-warning text-dark">
+                                    <h6 class="mb-0">SOX Compliance</h6>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Financial Controls</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Audit Requirements</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox">
+                                        <label class="form-check-label">Quarterly Reviews</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="nvc-card border-primary">
+                                <div class="nvc-nvc-card-header bg-primary text-white">
+                                    <h6 class="mb-0">Basel III</h6>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Capital Requirements</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Liquidity Coverage</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Leverage Ratio</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Settings -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bell me-2"></i>Notification Settings
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Email Notifications</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">High-priority alerts</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">Daily compliance reports</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox">
+                            <label class="form-check-label">Weekly summaries</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">SMS Notifications</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">Critical violations only</label>
+                        </div>
+                    </div>
+                    <button type="button" class="btn nvc-btn nvc-btn-success">
+                        <i class="fas fa-save me-2"></i>Save Notification Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Settings -->
+        <div class="col-md-6">
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plug me-2"></i>Integration Settings
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">External Systems</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">SWIFT Network Integration</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">Federal Reserve Integration</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">Regulatory Reporting APIs</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Data Synchronization</label>
+                        <select class="nvc-form-select">
+                            <option value="realtime" selected>Real-time</option>
+                            <option value="hourly">Hourly</option>
+                            <option value="daily">Daily</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-info">
+                        <i class="fas fa-sync me-2"></i>Update Integration Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update credit risk slider value
+    const creditRiskSlider = document.getElementById('creditRiskSlider');
+    const creditRiskValue = document.getElementById('creditRiskValue');
+    
+    creditRiskSlider.addEventListener('input', function() {
+        creditRiskValue.textContent = this.value + '%';
+    });
+    
+    // Form submission handlers
+    document.getElementById('complianceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Compliance configuration saved successfully!');
+    });
+    
+    document.getElementById('riskForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Risk management settings updated successfully!');
+    });
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

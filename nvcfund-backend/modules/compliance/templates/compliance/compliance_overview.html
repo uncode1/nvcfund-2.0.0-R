@@ -1,0 +1,422 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Compliance Overview - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Compliance Overview{% endblock %}
+{% block page_description %}Real-time compliance monitoring and risk assessment dashboard{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Overview
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-shield-alt"></i>
+    Run Check
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Compliance Overview Functions
+function exportOverview() {
+    const csvData = 'Category,Score,Status,Risk Level,Last Updated\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'compliance_overview.csv';
+    a.click();
+}
+
+function refreshCompliance() {
+    location.reload();
+}
+
+function runComplianceCheck() {
+    alert('Running comprehensive compliance check...');
+    // TODO: Implement compliance check
+}
+
+function viewComplianceDetails(category) {
+    window.location.href = "{{ url_for('compliance.compliance_assessment') }}?category=" + category;
+}
+
+function manageRisk(riskId) {
+    window.location.href = "{{ url_for('compliance.risk_management') }}?id=" + riskId;
+}
+
+// Add drilldown functionality for dashboard cards
+document.addEventListener('DOMContentLoaded', function() {
+    const dashboardCards = document.querySelectorAll('.dashboard-stat-card, .hover-card');
+    dashboardCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Compliance Score')) {
+                window.location.href = "{{ url_for('compliance.compliance_assessment') }}";
+            } else if (cardTitle?.includes('Risk Level')) {
+                window.location.href = "{{ url_for('compliance.risk_management') }}";
+            } else if (cardTitle?.includes('Violations')) {
+                window.location.href = "{{ url_for('compliance.compliance_violations') }}";
+            } else if (cardTitle?.includes('Reports')) {
+                window.location.href = "{{ url_for('compliance.compliance_reports') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <!-- Compliance Overview Section -->
+    <div class="nvc-content-section" id="overview">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-shield-alt"></i> Compliance & Risk Overview
+            </h3>
+            <div class="nvc-content-section-actions">
+                <span class="nvc-badge nvc-badge-success">
+                    <i class="fas fa-clock"></i> Real-time monitoring
+                </span>
+            </div>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="nvc-card nvc-card-elevated">
+                <div class="nvc-card-body">
+                    <p class="nvc-text-muted mb-0">Real-time compliance monitoring and risk assessment dashboard</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Section -->
+    <div class="nvc-content-section" id="metrics">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-chart-bar"></i> Key Compliance Metrics
+            </h3>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ url_for('compliance.compliance_assessment') }}" class="nvc-metric-link">
+                        <div class="nvc-card nvc-card-metric nvc-card-success">
+                            <div class="nvc-card-body">
+                                <div class="nvc-metric-content">
+                                    <div class="nvc-metric-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="nvc-metric-details">
+                                        <div class="nvc-metric-value">98.7%</div>
+                                        <div class="nvc-metric-label">Compliance Score</div>
+                                        <div class="nvc-metric-status nvc-status-success">Excellent rating</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ url_for('compliance.compliance_violations') }}" class="nvc-metric-link">
+                        <div class="nvc-card nvc-card-metric nvc-card-warning">
+                            <div class="nvc-card-body">
+                                <div class="nvc-metric-content">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="nvc-metric-details">
+                                        <div class="nvc-metric-value">23</div>
+                                        <div class="nvc-metric-label">Open Issues</div>
+                                        <div class="nvc-metric-status nvc-status-warning">Needs attention</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ url_for('compliance.compliance_reports') }}" class="nvc-metric-link">
+                        <div class="nvc-card nvc-card-metric nvc-card-info">
+                            <div class="nvc-card-body">
+                                <div class="nvc-metric-content">
+                                    <div class="nvc-metric-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="nvc-metric-details">
+                                        <div class="nvc-metric-value">847</div>
+                                        <div class="nvc-metric-label">Reports Generated</div>
+                                        <div class="nvc-metric-status nvc-status-info">Monthly reports</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ url_for('compliance.risk_management') }}" class="nvc-metric-link">
+                        <div class="nvc-card nvc-card-metric nvc-card-primary">
+                            <div class="nvc-card-body">
+                                <div class="nvc-metric-content">
+                                    <div class="nvc-metric-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="nvc-metric-details">
+                                        <div class="nvc-metric-value">Low</div>
+                                        <div class="nvc-metric-label">Risk Score</div>
+                                        <div class="nvc-metric-status nvc-status-success">Well managed</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Status and Risk Analysis -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-check me-2"></i>Compliance Status
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>AML/KYC Compliance</span>
+                            <span class="badge bg-success">100%</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-success" class="w-100"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>PCI DSS Compliance</span>
+                            <span class="badge bg-success">99.2%</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-success" class="nvc-w-99"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>GDPR Compliance</span>
+                            <span class="badge bg-success">97.8%</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-success" style="width: 97.8%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>SOX Compliance</span>
+                            <span class="badge bg-warning">95.5%</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-warning" style="width: 95.5%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Risk Analysis
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Credit Risk</span>
+                            <span class="badge bg-success">Low</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-success" class="progress-bar-25"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Operational Risk</span>
+                            <span class="badge bg-warning">Medium</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-warning" class="progress-bar-55"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Market Risk</span>
+                            <span class="badge bg-success">Low</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-success" class="progress-bar-30"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Liquidity Risk</span>
+                            <span class="badge bg-success">Low</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-success" class="progress-bar-20"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Compliance Activities -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Compliance Activities
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Activity</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-07-06</td>
+                                    <td>AML Transaction Review</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td><span class="badge bg-info">High</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-05</td>
+                                    <td>KYC Document Verification</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-04</td>
+                                    <td>Risk Assessment Update</td>
+                                    <td><span class="badge bg-warning">In Progress</span></td>
+                                    <td><span class="badge bg-info">High</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-03</td>
+                                    <td>Regulatory Report Filing</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td><span class="badge bg-info">High</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-02</td>
+                                    <td>Security Audit</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td><span class="badge bg-danger">Critical</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bell me-2"></i>Alerts & Notifications
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="alert nvc-nvc-alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>SOX Compliance Review</strong><br>
+                        <small>Quarterly review due in 3 days</small>
+                    </div>
+                    <div class="alert nvc-nvc-alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>New Regulation Update</strong><br>
+                        <small>Basel III requirements updated</small>
+                    </div>
+                    <div class="alert nvc-nvc-alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Audit Completed</strong><br>
+                        <small>Annual security audit passed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Regulatory Framework Status -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gavel me-2"></i>Regulatory Framework Status
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-university fa-3x text-primary mb-2"></i>
+                                <h6>Basel III</h6>
+                                <span class="badge bg-success">Compliant</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-shield-alt fa-3x text-success mb-2"></i>
+                                <h6>GDPR</h6>
+                                <span class="badge bg-success">Compliant</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-credit-nvc-card fa-3x text-info mb-2"></i>
+                                <h6>PCI DSS</h6>
+                                <span class="badge bg-success">Compliant</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-search-dollar fa-3x text-warning mb-2"></i>
+                                <h6>AML/KYC</h6>
+                                <span class="badge bg-success">Compliant</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Compliance-specific scripts can go here
+</script>
+{% endblock %}

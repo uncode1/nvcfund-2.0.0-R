@@ -1,0 +1,544 @@
+{% extends "unified_base.html" %}
+
+{% block title %}User Analytics - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            background-color: #0a2447;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .main-content {
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid #66ccff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.3);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 100%);
+            border-bottom: 1px solid #66ccff;
+            color: #66ccff;
+            font-weight: bold;
+        }
+        .metric-card {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.4);
+        }
+        .metric-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #66ccff;
+        }
+        .metric-label {
+            font-size: 0.9em;
+            color: #ccc;
+            margin-top: 5px;
+        }
+        .metric-change {
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
+        .trend-stable { color: #ffc107; }
+        .chart-container {
+            background: rgba(30, 60, 114, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .user-segment {
+            padding: 15px;
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: rgba(30, 60, 114, 0.2);
+        }
+        .activity-timeline {
+            position: relative;
+        }
+        .timeline-item {
+            padding: 15px 0;
+            border-left: 2px solid #66ccff;
+            margin-left: 20px;
+            padding-left: 20px;
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 20px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #66ccff;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            border: none;
+            color: #0a2447;
+            font-weight: bold;
+        }
+        .form-control, .form-select {
+            background: #1e3c72;
+            border: 1px solid #66ccff;
+            color: #ffffff;
+        }
+        .form-control:focus, .form-select:focus {
+            background: #1e3c72;
+            border-color: #66ccff;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1><i class="fas fa-users"></i> User Analytics</h1>
+                            <p class="mb-0">Comprehensive user behavior and engagement analysis</p>
+                        </div>
+                        <div>
+                            <span class="badge bg-info">Live Data</span>
+                            <span class="text-light ms-2">Updated: Real-time</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Overview Metrics -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="metric-nvc-card">
+                        <div class="metric-value">12,547</div>
+                        <div class="metric-label">Total Users</div>
+                        <div class="metric-change trend-up">
+                            <i class="fas fa-arrow-up"></i> 8.3% this month
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-nvc-card">
+                        <div class="metric-value">2,834</div>
+                        <div class="metric-label">Active Users (30d)</div>
+                        <div class="metric-change trend-up">
+                            <i class="fas fa-arrow-up"></i> 12.7% increase
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-nvc-card">
+                        <div class="metric-value">445</div>
+                        <div class="metric-label">New Users (7d)</div>
+                        <div class="metric-change trend-up">
+                            <i class="fas fa-arrow-up"></i> 15.2% increase
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-nvc-card">
+                        <div class="metric-value">89.4%</div>
+                        <div class="metric-label">User Retention</div>
+                        <div class="metric-change trend-stable">
+                            <i class="fas fa-minus"></i> Stable
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- User Growth Chart -->
+                <div class="col-md-8">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-chart-area"></i> User Growth Trends</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="chart-container">
+                                <canvas id="userGrowthChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Segmentation -->
+                <div class="col-md-4">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-pie-chart"></i> User Segments</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="user-segment">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Individual Accounts</strong>
+                                        <div class="text-light small">Personal banking users</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success">8,245</div>
+                                        <div class="text-light small">65.7%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="user-segment">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Business Clients</strong>
+                                        <div class="text-light small">Corporate accounts</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-info">3,456</div>
+                                        <div class="text-light small">27.5%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="user-segment">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Partner Program</strong>
+                                        <div class="text-light small">Premium partners</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-warning">846</div>
+                                        <div class="text-light small">6.8%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <!-- User Activity Heatmap -->
+                <div class="col-md-6">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-fire"></i> Activity Heatmap</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="chart-container">
+                                <canvas id="activityHeatmap" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Geographic Distribution -->
+                <div class="col-md-6">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-globe"></i> Geographic Distribution</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="chart-container">
+                                <canvas id="geoChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <!-- Top User Activities -->
+                <div class="col-md-8">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-list"></i> Top User Activities</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Activity</th>
+                                            <th>Users</th>
+                                            <th>Sessions</th>
+                                            <th>Avg Duration</th>
+                                            <th>Growth</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><i class="fas fa-chart-line text-success"></i> Dashboard Views</td>
+                                            <td>2,547</td>
+                                            <td>8,923</td>
+                                            <td>3m 24s</td>
+                                            <td class="text-success">+12.3%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fas fa-exchange-alt text-info"></i> Fund Transfers</td>
+                                            <td>1,834</td>
+                                            <td>4,567</td>
+                                            <td>2m 15s</td>
+                                            <td class="text-success">+8.7%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fas fa-credit-nvc-card text-warning"></i> Card Management</td>
+                                            <td>1,245</td>
+                                            <td>2,890</td>
+                                            <td>4m 12s</td>
+                                            <td class="text-success">+15.4%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fas fa-chart-bar text-primary"></i> Account Analytics</td>
+                                            <td>967</td>
+                                            <td>1,923</td>
+                                            <td>5m 43s</td>
+                                            <td class="text-success">+22.1%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fas fa-cog text-secondary"></i> Settings Management</td>
+                                            <td>723</td>
+                                            <td>1,234</td>
+                                            <td>3m 56s</td>
+                                            <td class="text-warning">+2.3%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent User Activity -->
+                <div class="col-md-4">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-clock"></i> Recent Activity</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="activity-timeline">
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>New User Registration</strong>
+                                        <small class="text-light">2m ago</small>
+                                    </div>
+                                    <div class="text-light small">john.doe@nvcfund.com</div>
+                                </div>
+                                
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Large Transfer</strong>
+                                        <small class="text-light">5m ago</small>
+                                    </div>
+                                    <div class="text-light small">$25,000 transfer completed</div>
+                                </div>
+                                
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Business Account Created</strong>
+                                        <small class="text-light">12m ago</small>
+                                    </div>
+                                    <div class="text-light small">TechCorp Solutions LLC</div>
+                                </div>
+                                
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Card Application</strong>
+                                        <small class="text-light">18m ago</small>
+                                    </div>
+                                    <div class="text-light small">Premium credit card</div>
+                                </div>
+                                
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>MFA Enabled</strong>
+                                        <small class="text-light">25m ago</small>
+                                    </div>
+                                    <div class="text-light small">Security enhancement</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Engagement Metrics -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-user-clock"></i> User Engagement Metrics</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="metric-nvc-card">
+                                        <div class="metric-value text-success">3.4</div>
+                                        <div class="metric-label">Sessions/User</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="metric-nvc-card">
+                                        <div class="metric-value text-info">7m 23s</div>
+                                        <div class="metric-label">Avg Session</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="metric-nvc-card">
+                                        <div class="metric-value text-warning">4.7</div>
+                                        <div class="metric-label">Pages/Session</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="metric-nvc-card">
+                                        <div class="metric-value text-primary">23.4%</div>
+                                        <div class="metric-label">Bounce Rate</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="metric-nvc-card">
+                                        <div class="metric-value text-success">76.8%</div>
+                                        <div class="metric-label">Feature Adoption</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="metric-nvc-card">
+                                        <div class="metric-value text-info">4.2/5</div>
+                                        <div class="metric-label">User Rating</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Chart configurations
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#ffffff'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(102, 204, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#ffffff'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(102, 204, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#ffffff'
+                    }
+                }
+            }
+        };
+
+        // User Growth Chart
+        const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+        new Chart(userGrowthCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                datasets: [{
+                    label: 'New Users',
+                    data: [245, 289, 334, 398, 467, 523, 578],
+                    borderColor: '#66ccff',
+                    backgroundColor: 'rgba(102, 204, 255, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Active Users',
+                    data: [1420, 1567, 1823, 2034, 2245, 2467, 2634],
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Activity Heatmap (simplified as bar chart)
+        const activityCtx = document.getElementById('activityHeatmap').getContext('2d');
+        new Chart(activityCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'User Activity',
+                    data: [2847, 3124, 3456, 3289, 2967, 1834, 1567],
+                    backgroundColor: 'rgba(102, 204, 255, 0.8)'
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Geographic Distribution
+        const geoCtx = document.getElementById('geoChart').getContext('2d');
+        new Chart(geoCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['North America', 'Europe', 'Asia', 'South America', 'Other'],
+                datasets: [{
+                    data: [45.2, 28.7, 18.3, 5.4, 2.4],
+                    backgroundColor: [
+                        'rgba(102, 204, 255, 0.8)',
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(220, 53, 69, 0.8)',
+                        'rgba(108, 117, 125, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Auto-refresh every 30 seconds
+        setInterval(function() {
+            location.reload();
+        }, 30000);
+    </script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

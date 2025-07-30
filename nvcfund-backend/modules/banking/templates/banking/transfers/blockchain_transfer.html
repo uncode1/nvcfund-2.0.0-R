@@ -1,0 +1,412 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Blockchain Transfer - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Blockchain Transfer{% endblock %}
+{% block page_description %}Secure cryptocurrency transfers on multiple blockchain networks{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-history"></i>
+    Transaction History
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-network-wired"></i>
+    Network Status
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fab fa-bitcoin"></i>
+    Send Transaction
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.blockchain-gradient {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.blockchain-card {
+    border: 2px solid #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.blockchain-badge {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+.blockchain-button {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.blockchain-button:hover {
+    background: linear-gradient(135deg, #e5941f 0%, #c2741f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+}
+
+.blockchain-icon {
+    color: #f59e0b;
+}
+</style>
+
+<div class="container-fluid">
+    <!-- Blockchain Transfer Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card blockchain-nvc-card">
+                <div class="nvc-nvc-card-body text-center py-4">
+                    <div class="blockchain-logo d-inline-flex align-items-center justify-content-center mb-3" 
+                         class="nvc-h-60">
+                        <img src="{{ url_for('static', filename='images/logos/bitcoin-logo.png') }}" 
+                             alt="Bitcoin Logo" 
+                             class="nvc-h-40"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="nvc-style-ef27e2">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fab fa-bitcoin nvc-colored-2effc2" ></i>
+                            </div>
+                            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 700; font-size: 18px; color: #f59e0b;">
+                                Blockchain
+                            </div>
+                        </div>
+                    </div>
+                    <h2 class="mb-2" style="color: #f59e0b; font-weight: 600;">{{ channel_config.title }}</h2>
+                    <p class="text-light mb-3">{{ channel_config.description }}</p>
+                    <div class="row justify-content-center">
+                        {% for feature in channel_config.features %}
+                        <div class="col-auto">
+                            <span class="badge blockchain-badge me-2 mb-2">{{ feature }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Form -->
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header blockchain-gradient text-white">
+                    <h5 class="mb-0"><i class="fab fa-bitcoin me-2"></i>Blockchain Transfer Details</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('banking.process_send_transfer') }}">
+                        <input type="hidden" name="transfer_channel" value="blockchain_transfer">
+                        
+                        <!-- Cryptocurrency Selection -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="cryptocurrency" class="nvc-form-label">
+                                    <i class="fab fa-bitcoin blockchain-icon me-2"></i>Cryptocurrency
+                                </label>
+                                <select class="nvc-form-select" id="cryptocurrency" name="cryptocurrency" required>
+                                    <option value="">Select cryptocurrency</option>
+                                    <option value="BTC">Bitcoin (BTC)</option>
+                                    <option value="ETH">Ethereum (ETH)</option>
+                                    <option value="USDT">Tether USD (USDT)</option>
+                                    <option value="USDC">USD Coin (USDC)</option>
+                                    <option value="BNB">Binance Coin (BNB)</option>
+                                    <option value="ADA">Cardano (ADA)</option>
+                                    <option value="SOL">Solana (SOL)</option>
+                                    <option value="DOT">Polkadot (DOT)</option>
+                                    <option value="MATIC">Polygon (MATIC)</option>
+                                    <option value="NVCT">NVC Token (NVCT)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="from_account" class="nvc-form-label">From Account</label>
+                                <select class="nvc-form-select" name="from_account" required>
+                                    <option value="">Select source account</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.account_number }}">
+                                        {{ account.account_type.title() }} - ****{{ account.account_number[-4:] }} 
+                                        (${{ "%.2f"|format(account.balance) }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Network Selection -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="blockchain_network" class="nvc-form-label">Blockchain Network</label>
+                                <select class="nvc-form-select" id="blockchain_network" name="blockchain_network" required>
+                                    <option value="">Select network</option>
+                                    <option value="bitcoin">Bitcoin Network</option>
+                                    <option value="ethereum">Ethereum Mainnet</option>
+                                    <option value="bsc">Binance Smart Chain</option>
+                                    <option value="polygon">Polygon Network</option>
+                                    <option value="arbitrum">Arbitrum One</option>
+                                    <option value="optimism">Optimism</option>
+                                    <option value="avalanche">Avalanche C-Chain</option>
+                                    <option value="solana">Solana</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="gas_fee_tier" class="nvc-form-label">Transaction Speed</label>
+                                <select class="nvc-form-select" name="gas_fee_tier" required>
+                                    <option value="slow">Slow (Lower fees, 30+ minutes)</option>
+                                    <option value="standard" selected>Standard (Moderate fees, 5-15 minutes)</option>
+                                    <option value="fast">Fast (Higher fees, 1-3 minutes)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Recipient Address -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label for="recipient_address" class="nvc-form-label">Recipient Wallet Address</label>
+                                <input type="text" class="nvc-form-input" id="recipient_address" name="recipient_address" 
+                                       placeholder="0x742d35Cc434C7935" required>
+                                <div class="form-text">Enter the complete cryptocurrency wallet address</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="address_book" class="nvc-form-label">Address Book</label>
+                                <select class="nvc-form-select" id="address_book" name="address_book">
+                                    <option value="">Select saved address</option>
+                                    <option value="personal_wallet">Personal Wallet</option>
+                                    <option value="exchange_binance">Binance Exchange</option>
+                                    <option value="hardware_ledger">Ledger Hardware</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Amount and Conversion -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="amount_fiat" class="nvc-form-label">Amount (USD)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" id="amount_fiat" name="amount_fiat" 
+                                           min="{{ channel_config.limits.min }}" 
+                                           max="{{ channel_config.limits.max }}" 
+                                           step="0.01" placeholder="0.00" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="amount_crypto" class="nvc-form-label">Crypto Amount</label>
+                                <div class="input-group">
+                                    <input type="number" class="nvc-form-input" id="amount_crypto" name="amount_crypto" 
+                                           step="0.00000001" placeholder="0.00000000" readonly>
+                                    <span class="input-group-text" id="crypto-symbol">BTC</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="exchange_rate" class="nvc-form-label">Exchange Rate</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" id="exchange_rate" name="exchange_rate" 
+                                           step="0.01" placeholder="0.00" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transaction Options -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="memo_tag" class="nvc-form-label">Memo/Tag (Optional)</label>
+                                <input type="text" class="nvc-form-input" id="memo_tag" name="memo_tag" 
+                                       placeholder="Memo for recipient">
+                                <div class="form-text">Required for some exchanges and wallets</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="confirmation_blocks" class="nvc-form-label">Confirmation Requirement</label>
+                                <select class="nvc-form-select" name="confirmation_blocks">
+                                    <option value="1">1 Confirmation (Fast)</option>
+                                    <option value="3" selected>3 Confirmations (Standard)</option>
+                                    <option value="6">6 Confirmations (Secure)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Smart Contract Options -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="contract_interaction" class="nvc-form-label">Smart Contract</label>
+                                <select class="nvc-form-select" name="contract_interaction">
+                                    <option value="none">Simple Transfer</option>
+                                    <option value="defi">DeFi Protocol Interaction</option>
+                                    <option value="nft">NFT Transfer</option>
+                                    <option value="multisig">Multi-signature Wallet</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="slippage_tolerance" class="nvc-form-label">Slippage Tolerance</label>
+                                <select class="nvc-form-select" name="slippage_tolerance">
+                                    <option value="0.1">0.1% (Low)</option>
+                                    <option value="0.5" selected>0.5% (Medium)</option>
+                                    <option value="1.0">1.0% (High)</option>
+                                    <option value="3.0">3.0% (Very High)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Fee Estimation -->
+                        <div class="alert nvc-nvc-alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Blockchain Transfer Information</h6>
+                            <div id="fee-breakdown">
+                                <ul class="mb-0">
+                                    <li><strong>Platform Fee:</strong> {{ channel_config.fee }}%</li>
+                                    <li><strong>Network Fee:</strong> Varies by network congestion</li>
+                                    <li><strong>Processing Time:</strong> {{ channel_config.processing_time }}</li>
+                                    <li><strong>Confirmations:</strong> Required for finality</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Security Warning -->
+                        <div class="alert nvc-nvc-alert-warning">
+                            <h6><i class="fas fa-shield-alt me-2"></i>Security Notice</h6>
+                            <p class="mb-0">
+                                Cryptocurrency transactions are irreversible. Please verify the recipient address carefully. 
+                                Network fees are deducted from your account separately and vary based on network congestion.
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Transfers
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn blockchain-button w-100">
+                                    <i class="fab fa-bitcoin me-2"></i>Send Cryptocurrency
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cryptoSelect = document.getElementById('cryptocurrency');
+    const networkSelect = document.getElementById('blockchain_network');
+    const fiatAmountInput = document.getElementById('amount_fiat');
+    const cryptoAmountInput = document.getElementById('amount_crypto');
+    const exchangeRateInput = document.getElementById('exchange_rate');
+    const cryptoSymbol = document.getElementById('crypto-symbol');
+    const addressInput = document.getElementById('recipient_address');
+    
+    // Mock exchange rates (in production, fetch from real API)
+    const exchangeRates = {
+        'BTC': 45000,
+        'ETH': 2800,
+        'USDT': 1.00,
+        'USDC': 1.00,
+        'BNB': 320,
+        'ADA': 0.45,
+        'SOL': 95,
+        'DOT': 12,
+        'MATIC': 0.85,
+        'NVCT': 1.20
+    };
+    
+    // Update crypto symbol and calculate amount
+    cryptoSelect.addEventListener('change', function() {
+        const selectedCrypto = this.value;
+        cryptoSymbol.textContent = selectedCrypto;
+        
+        if (selectedCrypto && exchangeRates[selectedCrypto]) {
+            exchangeRateInput.value = exchangeRates[selectedCrypto];
+            calculateCryptoAmount();
+        }
+        
+        updateNetworkOptions(selectedCrypto);
+    });
+    
+    // Calculate crypto amount when fiat amount changes
+    fiatAmountInput.addEventListener('input', calculateCryptoAmount);
+    
+    function calculateCryptoAmount() {
+        const fiatAmount = parseFloat(fiatAmountInput.value) || 0;
+        const rate = parseFloat(exchangeRateInput.value) || 0;
+        
+        if (fiatAmount > 0 && rate > 0) {
+            const cryptoAmount = fiatAmount / rate;
+            cryptoAmountInput.value = cryptoAmount.toFixed(8);
+        } else {
+            cryptoAmountInput.value = '';
+        }
+    }
+    
+    // Update network options based on cryptocurrency
+    function updateNetworkOptions(crypto) {
+        const networkOptions = {
+            'BTC': [['bitcoin', 'Bitcoin Network']],
+            'ETH': [['ethereum', 'Ethereum Mainnet'], ['polygon', 'Polygon'], ['arbitrum', 'Arbitrum']],
+            'USDT': [['ethereum', 'Ethereum (ERC-20)'], ['bsc', 'BSC (BEP-20)'], ['polygon', 'Polygon']],
+            'USDC': [['ethereum', 'Ethereum (ERC-20)'], ['polygon', 'Polygon'], ['arbitrum', 'Arbitrum']],
+            'BNB': [['bsc', 'Binance Smart Chain']],
+            'SOL': [['solana', 'Solana']],
+            'NVCT': [['ethereum', 'Ethereum (ERC-20)'], ['bsc', 'BSC (BEP-20)']]
+        };
+        
+        networkSelect.innerHTML = '<option value="">Select network</option>';
+        
+        if (networkOptions[crypto]) {
+            networkOptions[crypto].forEach(([value, text]) => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = text;
+                networkSelect.appendChild(option);
+            });
+        }
+    }
+    
+    // Validate wallet address format
+    addressInput.addEventListener('blur', function() {
+        const address = this.value;
+        const crypto = cryptoSelect.value;
+        
+        if (address && crypto) {
+            let isValid = false;
+            
+            if (crypto === 'BTC' && address.match(/^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/)) {
+                isValid = true;
+            } else if ((crypto === 'ETH' || crypto === 'USDT' || crypto === 'USDC') && 
+                       address.match(/^0x[a-fA-F0-9]{40}$/)) {
+                isValid = true;
+            }
+            
+            if (!isValid && address.length > 0) {
+                this.setCustomValidity(`Invalid ${crypto} address format`);
+            } else {
+                this.setCustomValidity('');
+            }
+        }
+    });
+    
+    // Address book selection
+    document.getElementById('address_book').addEventListener('change', function() {
+        const addresses = {
+            'personal_wallet': '0x742d35Cc434C7935',
+            'exchange_binance': '0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE',
+            'hardware_ledger': '0x1234567890123456789012345678901234567890'
+        };
+        
+        if (this.value && addresses[this.value]) {
+            addressInput.value = addresses[this.value];
+        }
+    });
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

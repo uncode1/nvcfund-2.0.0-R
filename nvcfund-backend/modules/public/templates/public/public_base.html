@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block meta_description %}NVC Banking Platform - Next-generation digital banking with blockchain technology, secure transactions, and global accessibility.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}digital banking, blockchain, cryptocurrency, secure banking, NVC Banking, financial services{% endblock %}">
+    <meta name="author" content="NVC Banking Platform">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:image" content="{{ url_for('static', filename='images/logos/nvc-og-image.png', _external=True) }}">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ self.title() }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ self.meta_description() }}{% endblock %}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='images/logos/nvc-twitter-card.png', _external=True) }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
+    
+    <!-- Title -->
+    <title>{% block title %}NVC Banking Platform{% endblock %}</title>
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="{{ url_for('static', filename='css/nvc-central-theme.css') }}" as="style">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- NVC Central Theme (Primary) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nvc-central-theme.css') }}">
+    
+    <!-- Page-specific CSS -->
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FinancialService",
+        "name": "NVC Banking Platform",
+        "description": "Next-generation digital banking platform with blockchain technology",
+        "url": "{{ request.url_root }}",
+        "logo": "{{ url_for('static', filename='images/logos/nvc-logo.png', _external=True) }}",
+        "sameAs": [
+            "https://twitter.com/nvcbanking",
+            "https://linkedin.com/company/nvc-banking"
+        ],
+        "serviceType": "Digital Banking",
+        "areaServed": "Worldwide",
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Banking Services",
+            "itemListElement": [
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "Digital Banking",
+                        "description": "Comprehensive digital banking services"
+                    }
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "Cryptocurrency Trading",
+                        "description": "Secure cryptocurrency trading and management"
+                    }
+                }
+            ]
+        }
+    }
+    </script>
+</head>
+
+<body class="nvc-public-page h-100">
+    <!-- Skip to main content for accessibility -->
+    <a class="visually-hidden-focusable" href="#main-content">Skip to main content</a>
+    
+    <!-- Navigation -->
+    {% block navigation %}
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top nvc-public-navbar">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center nvc-wcag-focus" href="{{ url_for('public.index') }}" aria-label="NVC Banking Platform Home">
+                <!-- Modern Logo Design -->
+                <div class="nvc-logo-container me-3">
+                    <svg width="45" height="45" viewBox="0 0 45 45" xmlns="http://www.w3.org/2000/svg" class="nvc-logo">
+                        <!-- Outer Circle -->
+                        <circle cx="22.5" cy="22.5" r="21" fill="none" stroke="url(#logoGradient)" stroke-width="2"/>
+                        <!-- Inner Design -->
+                        <g transform="translate(22.5, 22.5)">
+                            <!-- Central Diamond -->
+                            <path d="M-8,-8 L8,-8 L12,0 L8,8 L-8,8 L-12,0 Z" fill="url(#logoGradient)" opacity="0.9"/>
+                            <!-- Side Elements -->
+                            <circle cx="-15" cy="0" r="3" fill="url(#logoAccent)"/>
+                            <circle cx="15" cy="0" r="3" fill="url(#logoAccent)"/>
+                            <!-- Top/Bottom Elements -->
+                            <rect x="-2" y="-18" width="4" height="8" rx="2" fill="url(#logoAccent)"/>
+                            <rect x="-2" y="10" width="4" height="8" rx="2" fill="url(#logoAccent)"/>
+                        </g>
+                        <!-- Gradient Definitions -->
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="logoAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span class="fw-bold text-white nvc-brand-text">NVC Banking Platform</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('public.services') }}">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('public.documentation') }}">Documentation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('public.about') }}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('public.contact') }}">Contact</a>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user and current_user.is_authenticated %}
+                        <!-- Authenticated User Menu -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="nvc-user-avatar me-2">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <span class="d-none d-md-inline">{{ current_user.username or 'User' }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end nvc-dropdown-menu" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('dashboard.main_dashboard') }}">
+                                        <i class="fas fa-tachometer-alt me-2"></i>
+                                        Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('dashboard.profile') }}">
+                                        <i class="fas fa-user me-2"></i>
+                                        Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('dashboard.settings') }}">
+                                        <i class="fas fa-cog me-2"></i>
+                                        Settings
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                        <i class="fas fa-sign-out-alt me-2"></i>
+                                        Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <!-- Non-authenticated User Menu -->
+                        <li class="nav-item">
+                            <a class="nav-link text-white nvc-wcag-focus" href="{{ url_for('auth.login') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i>
+                                Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-light ms-2 px-3 text-white nvc-wcag-focus" href="{{ url_for('auth.register') }}">
+                                <i class="fas fa-user-plus me-1"></i>
+                                Get Started
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endblock %}
+    
+    <!-- Main Content -->
+    <main id="main-content" class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Unified Footer -->
+    {% block footer %}
+    <footer class="nvc-footer">
+        <div class="nvc-footer-container">
+            <div class="nvc-footer-content">
+                <div class="nvc-footer-section">
+                    <h5 class="nvc-footer-title">
+                        <i class="fas fa-university"></i>
+                        nvc banking platform
+                    </h5>
+                    <p class="nvc-footer-text">Enterprise-grade banking solutions</p>
+                    <div class="nvc-social-links">
+                        <a href="https://twitter.com/nvcbanking" class="nvc-social-link" title="Twitter" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a>
+                        <a href="https://linkedin.com/company/nvcbanking" class="nvc-social-link" title="LinkedIn" target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://facebook.com/nvcbanking" class="nvc-social-link" title="Facebook" target="_blank" rel="noopener"><i class="fab fa-facebook"></i></a>
+                        <a href="https://github.com/nvcbanking" class="nvc-social-link" title="GitHub" target="_blank" rel="noopener"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                <div class="nvc-footer-section">
+                    <h6 class="nvc-footer-subtitle">Quick Links</h6>
+                    <ul class="nvc-footer-links">
+                        <li><a href="{{ url_for('public.about') }}"><i class="fas fa-info-circle"></i>About Us</a></li>
+                        <li><a href="{{ url_for('public.contact') }}"><i class="fas fa-envelope"></i>Contact</a></li>
+                        <li><a href="{{ url_for('public.api_documentation') }}"><i class="fas fa-code"></i>API Docs</a></li>
+                        <li><a href="{{ url_for('public.documentation') }}"><i class="fas fa-book"></i>Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="nvc-footer-section">
+                    <h6 class="nvc-footer-subtitle">Contact Info</h6>
+                    <ul class="nvc-footer-info">
+                        <li><i class="fas fa-envelope"></i>info@nvcfund.com</li>
+                        <li><i class="fas fa-phone"></i>+1 (555) 123-4567</li>
+                        <li><i class="fas fa-clock"></i>24/7 Support Available</li>
+                        <li><i class="fas fa-shield-alt"></i>Bank-grade Security</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="nvc-footer-bottom">
+                <div class="nvc-footer-copyright">
+                    <i class="fas fa-copyright"></i>
+                    2025 nvc banking platform. All rights reserved.
+                </div>
+                <div class="nvc-footer-badges">
+                    <span class="nvc-badge"><i class="fas fa-lock"></i>Secure</span>
+                    <span class="nvc-badge"><i class="fas fa-check"></i>Compliant</span>
+                    <span class="nvc-badge"><i class="fas fa-rocket"></i>Innovative</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Unified Public JavaScript -->
+    <script src="{{ url_for('static', filename='js/public-unified.js') }}"></script>
+
+    <!-- Page-specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+
+    <!-- Analytics and Performance Monitoring -->
+    {% block analytics %}
+    <script>
+        // Performance monitoring
+        window.addEventListener('load', function() {
+            if ('performance' in window) {
+                const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+                console.log(`📊 Page load time: ${loadTime}ms`);
+
+                // Log to analytics if available
+                if (typeof window.NVCPublicManager !== 'undefined') {
+                    window.NVCPublicManager.logUserAction('page_load', `${loadTime}ms`, window.location.pathname);
+                }
+            }
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

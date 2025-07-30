@@ -1,0 +1,99 @@
+2025-07-16T02:10:41.666402 - DASHBOARD_ERROR: Could not build url for endpoint 'investments.portfolio_analysis'. Did you mean 'investments.portfolio' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T16:16:41.130578 - Banking dashboard error: Could not build url for endpoint 'compliance.compliance_dashboard'. Did you mean 'compliance.main_dashboard' instead?: 1
+---
+2025-07-16T19:16:46.936599 - NEW_ACCOUNT_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:46.964801 - OVERVIEW_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:46.991098 - DASHBOARD_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:48.781725 - NEW_ACCOUNT_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:48.801098 - OVERVIEW_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:48.821178 - DASHBOARD_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:51.111803 - DRILL_DOWN_ACTIVE_ACCOUNTS_PAGE_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:51.131830 - DASHBOARD_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:52.705005 - DASHBOARD_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:53.867791 - DASHBOARD_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:58.273277 - NEW_ACCOUNT_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:58.291927 - OVERVIEW_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:16:58.310933 - DASHBOARD_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:17:29.835503 - NEW_ACCOUNT_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:17:29.864777 - OVERVIEW_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:17:29.893917 - DASHBOARD_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:20:55.613151 - DASHBOARD_ERROR: Could not build url for endpoint 'notifications.dashboard'. Did you mean 'accounts.dashboard' instead?
+Details: {'user_id': 1}
+---
+2025-07-16T19:28:41.539113 - DASHBOARD_ERROR: Encountered unknown tag 'endblock'.
+Details: {'user_id': 1}
+---
+2025-07-16T19:29:54.681468 - DATA_TABLE_ACCOUNT_BALANCES_ERROR: accounts/data_table_account_balances.html
+Details: {'user_id': 1}
+---
+2025-07-16T19:29:57.701237 - DATA_TABLE_ACCOUNT_BALANCES_ERROR: accounts/data_table_account_balances.html
+Details: {'user_id': 1}
+---
+2025-07-16T19:30:00.809983 - DATA_TABLE_PENDING_OPERATIONS_ERROR: accounts/data_table_pending_operations.html
+Details: {'user_id': 1}
+---
+2025-07-16T19:30:03.119598 - DATA_TABLE_SECURITY_METRICS_ERROR: accounts/data_table_security_metrics.html
+Details: {'user_id': 1}
+---
+2025-07-16T19:51:05.628372 - DASHBOARD_ERROR: Encountered unknown tag 'endblock'.
+Details: {'user_id': 1}
+---
+2025-07-16T19:51:17.444493 - RISK_MGMT_ERROR: base.html
+Details: {'user_id': 1}
+---
+2025-07-16T20:02:36.009259 - DATA_TABLE_ACCOUNT_BALANCES_ERROR: accounts/data_table_account_balances.html
+Details: {'user_id': 1}
+---
+2025-07-16T20:47:53.089376 - Cards page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-16T20:47:58.739434 - Cards page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-16T20:48:03.758458 - Transaction history error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-16T20:48:08.190113 - Accounts page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-16T20:48:23.730122 - CARDS_MANAGEMENT_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-16T20:48:27.964109 - TRANSFERS_MANAGEMENT_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-16T20:48:31.139012 - TRANSACTIONS_ANALYSIS_ERROR: banking/transaction_history.html
+Details: {'user_id': 1}
+---
+2025-07-16T20:49:07.418781 - Cards page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---

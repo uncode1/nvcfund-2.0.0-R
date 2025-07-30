@@ -1,0 +1,552 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Mobile Transfer - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a !important; color: #e2e8f0 !important; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif !important; margin: 0; padding: 20px; }
+        .dashboard-stat-card { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 8px !important; padding: 1.5rem; margin-bottom: 1rem; }
+        .card { background: #1e293b !important; border: 1px solid #334155 !important; color: #e2e8f0 !important; }
+        .btn-primary { background: #3b82f6 !important; border-color: #3b82f6 !important; }
+        .table-dark { background: #1e293b !important; }
+        .table-dark td, .table-dark th { border-color: #334155 !important; color: #e2e8f0 !important; }
+    
+{% endblock %}
+
+{% block content %}
+
+
+
+<style>
+.mobile-gradient {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.mobile-card {
+    border: 2px solid #8b5cf6;
+    background: linear-gradient(135deg, #faf5ff 0%, #ffffff 100%);
+}
+
+.mobile-badge {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+}
+
+.mobile-button {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.mobile-button:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.mobile-icon {
+    color: #8b5cf6;
+}
+</style>
+
+<div class="container-fluid">
+    <!-- Mobile Transfer Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mobile-nvc-card">
+                <div class="nvc-nvc-card-body text-center py-4">
+                    <div class="mobile-logo d-inline-flex align-items-center justify-content-center mb-3" 
+                         class="nvc-h-60">
+                        <img src="{{ url_for('static', filename='images/logos/mobile-transfer-logo.svg') }}" 
+                             alt="Mobile Transfer Logo" 
+                             class="nvc-style-ce791c"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="nvc-style-ef27e2">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-mobile-alt nvc-colored-2effc2" ></i>
+                            </div>
+                            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 700; font-size: 18px; color: #8b5cf6;">
+                                Mobile Transfer
+                            </div>
+                        </div>
+                    </div>
+                    <h2 class="mb-2 nvc-colored-b26713" >{{ channel_config.title }}</h2>
+                    <p class="text-light mb-3">{{ channel_config.description }}</p>
+                    <div class="row justify-content-center">
+                        {% for feature in channel_config.features %}
+                        <div class="col-auto">
+                            <span class="badge mobile-badge me-2 mb-2">{{ feature }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Form -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header mobile-gradient text-white">
+                    <h5 class="mb-0"><i class="fas fa-mobile-alt me-2"></i>Mobile Transfer Details</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('banking.process_send_transfer') }}">
+                        <input type="hidden" name="transfer_channel" value="mobile_transfer">
+                        
+                        <!-- Transfer Method -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="transfer_method" class="nvc-form-label">
+                                    <i class="fas fa-mobile-alt mobile-icon me-2"></i>Transfer Method
+                                </label>
+                                <select class="nvc-form-select" id="transfer_method" name="transfer_method" required>
+                                    <option value="">Select method</option>
+                                    <option value="sms">SMS-Based Transfer</option>
+                                    <option value="ussd">USSD Code Transfer</option>
+                                    <option value="mobile_app">Mobile App Transfer</option>
+                                    <option value="mobile_wallet">Mobile Wallet</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="from_account" class="nvc-form-label">From Account</label>
+                                <select class="nvc-form-select" name="from_account" required>
+                                    <option value="">Select source account</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.account_number }}">
+                                        {{ account.account_type.title() }} - ****{{ account.account_number[-4:] }} 
+                                        (${{ "%.2f"|format(account.balance) }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Provider -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="mobile_provider" class="nvc-form-label">Mobile Network Provider</label>
+                                <select class="nvc-form-select" id="mobile_provider" name="mobile_provider" required>
+                                    <option value="">Select provider</option>
+                                    <option value="verizon">Verizon Wireless</option>
+                                    <option value="att">AT&T</option>
+                                    <option value="tmobile">T-Mobile</option>
+                                    <option value="sprint">Sprint</option>
+                                    <option value="boost">Boost Mobile</option>
+                                    <option value="metropcs">Metro by T-Mobile</option>
+                                    <option value="cricket">Cricket Wireless</option>
+                                    <option value="straight_talk">Straight Talk</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="recipient_phone" class="nvc-form-label">Recipient Mobile Number</label>
+                                <input type="tel" class="nvc-form-input" id="recipient_phone" name="recipient_phone" 
+                                       placeholder="+1 (555) 123-4567" required>
+                            </div>
+                        </div>
+
+                        <!-- Recipient Details -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="recipient_name" class="nvc-form-label">Recipient Name</label>
+                                <input type="text" class="nvc-form-input" id="recipient_name" name="recipient_name" 
+                                       placeholder="John Doe" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="recipient_carrier" class="nvc-form-label">Recipient Carrier</label>
+                                <select class="nvc-form-select" id="recipient_carrier" name="recipient_carrier" required>
+                                    <option value="">Auto-detect carrier</option>
+                                    <option value="verizon">Verizon</option>
+                                    <option value="att">AT&T</option>
+                                    <option value="tmobile">T-Mobile</option>
+                                    <option value="sprint">Sprint</option>
+                                    <option value="mvno">MVNO/Prepaid</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Amount and Limits -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="amount" class="nvc-form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" id="amount" name="amount" 
+                                           min="{{ channel_config.limits.min }}" 
+                                           max="{{ channel_config.limits.max }}" 
+                                           step="0.01" placeholder="0.00" required>
+                                </div>
+                                <div class="form-text">
+                                    Limits: ${{ channel_config.limits.min }} - ${{ "{:,}".format(channel_config.limits.max) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="delivery_method" class="nvc-form-label">Delivery Method</label>
+                                <select class="nvc-form-select" name="delivery_method" required>
+                                    <option value="sms_code">SMS Code (Recipient redeems)</option>
+                                    <option value="mobile_wallet">Direct to Mobile Wallet</option>
+                                    <option value="prepaid_card">Prepaid Card Top-up</option>
+                                    <option value="cash_pickup">Cash Pickup Location</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Authentication Method -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="auth_method" class="nvc-form-label">Authentication Method</label>
+                                <select class="nvc-form-select" name="auth_method" required>
+                                    <option value="pin">PIN Code</option>
+                                    <option value="security_question">Security Question</option>
+                                    <option value="biometric">Biometric (if supported)</option>
+                                    <option value="two_factor">Two-Factor SMS</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="notification_preference" class="nvc-form-label">Notification</label>
+                                <select class="nvc-form-select" name="notification_preference">
+                                    <option value="sms">SMS Notification</option>
+                                    <option value="push">Push Notification</option>
+                                    <option value="both">SMS + Push</option>
+                                    <option value="none">No Notification</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Security Questions (conditional) -->
+                        <div class="row mb-3" id="security_questions" class="d-none">
+                            <div class="col-md-6">
+                                <label for="security_question" class="nvc-form-label">Security Question</label>
+                                <select class="nvc-form-select" name="security_question">
+                                    <option value="mother_maiden">Mother's maiden name?</option>
+                                    <option value="first_pet">First pet's name?</option>
+                                    <option value="birth_city">City where you were born?</option>
+                                    <option value="first_school">First school attended?</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="security_answer" class="nvc-form-label">Answer</label>
+                                <input type="text" class="nvc-form-input" name="security_answer" 
+                                       placeholder="Security answer">
+                            </div>
+                        </div>
+
+                        <!-- Message and Instructions -->
+                        <div class="mb-3">
+                            <label for="transfer_message" class="nvc-form-label">Message to Recipient (Optional)</label>
+                            <textarea class="nvc-form-input" id="transfer_message" name="transfer_message" rows="2" 
+                                      placeholder="Money from family" maxlength="160"></textarea>
+                            <div class="form-text">Maximum 160 characters (SMS length)</div>
+                        </div>
+
+                        <!-- Mobile Transfer Information -->
+                        <div class="alert nvc-nvc-alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Mobile Transfer Information</h6>
+                            <ul class="mb-0">
+                                <li><strong>Fee:</strong> ${{ "%.2f"|format(channel_config.fee) }} + carrier charges</li>
+                                <li><strong>Processing:</strong> {{ channel_config.processing_time }}</li>
+                                <li><strong>Expiration:</strong> SMS codes expire in 7 days</li>
+                                <li><strong>Support:</strong> Works on all mobile devices</li>
+                            </ul>
+                        </div>
+
+                        <!-- Important Notes -->
+                        <div class="alert nvc-nvc-alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Important Notes</h6>
+                            <ul class="mb-0">
+                                <li>Recipient will receive instructions via SMS</li>
+                                <li>No smartphone or internet required for basic transfers</li>
+                                <li>Transfer codes are case-sensitive</li>
+                                <li>Carrier message and data rates may apply</li>
+                            </ul>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Transfers
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn mobile-button w-100">
+                                    <i class="fas fa-mobile-alt me-2"></i>Send Mobile Transfer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Transfer Benefits -->
+    <div class="row mt-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <h6 class="nvc-card-title"><i class="fas fa-mobile-alt mobile-icon me-2"></i>Mobile Transfer Benefits</h6>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-signal mobile-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">No Internet Required</h6>
+                            <p class="text-light small">Works with basic SMS and USSD</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-universal-access mobile-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Universal Access</h6>
+                            <p class="text-light small">Works on any mobile device</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-clock mobile-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Instant</h6>
+                            <p class="text-light small">Immediate delivery via SMS</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const authMethodSelect = document.querySelector('select[name="auth_method"]');
+    const securityQuestions = document.getElementById('security_questions');
+    const phoneInput = document.getElementById('recipient_phone');
+    const carrierSelect = document.getElementById('recipient_carrier');
+    const messageTextarea = document.getElementById('transfer_message');
+    
+    // Show/hide security questions
+    authMethodSelect.addEventListener('change', function() {
+        if (this.value === 'security_question') {
+            securityQuestions.style.display = 'block';
+            document.querySelector('select[name="security_question"]').required = true;
+            document.querySelector('input[name="security_answer"]').required = true;
+        } else {
+            securityQuestions.style.display = 'none';
+            document.querySelector('select[name="security_question"]').required = false;
+            document.querySelector('input[name="security_answer"]').required = false;
+        }
+    });
+    
+    // Format phone number
+    phoneInput.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        
+        if (value.startsWith('1') && value.length > 1) {
+            value = value.substring(1);
+        }
+        
+        if (value.length >= 10) {
+            value = value.substring(0, 10);
+            this.value = `+1 (${value.substring(0, 3)}) ${value.substring(3, 6)}-${value.substring(6)}`;
+        } else {
+            this.value = value;
+        }
+        
+        // Auto-detect carrier based on number prefix
+        if (value.length === 10) {
+            const prefix = value.substring(0, 3);
+            const carrierMap = {
+                '212': 'verizon', '646': 'att', '917': 'tmobile',
+                '310': 'att', '323': 'tmobile', '415': 'verizon'
+            };
+            
+            if (carrierMap[prefix]) {
+                carrierSelect.value = carrierMap[prefix];
+            }
+        }
+    });
+    
+    // Character counter for message
+    messageTextarea.addEventListener('input', function() {
+        const remaining = 160 - this.value.length;
+        let counter = document.getElementById('char-counter');
+        
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.id = 'char-counter';
+            counter.className = 'form-text';
+            this.parentElement.appendChild(counter);
+        }
+        
+        counter.textContent = `${remaining} characters remaining`;
+        counter.style.color = remaining < 20 ? '#dc2626' : '#6b7280';
+    });
+    
+    // Calculate fees based on amount and method
+    const amountInput = document.getElementById('amount');
+    const deliveryMethodSelect = document.querySelector('select[name="delivery_method"]');
+    
+    function updateFees() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const method = deliveryMethodSelect.value;
+        
+        let baseFee = {{ channel_config.fee }};
+        let carrierFee = 0;
+        
+        switch(method) {
+            case 'sms_code':
+                carrierFee = 0.10; // SMS fee
+                break;
+            case 'mobile_wallet':
+                carrierFee = 0.25; // Wallet fee
+                break;
+            case 'prepaid_card':
+                carrierFee = 0.50; // Card processing
+                break;
+            case 'cash_pickup':
+                carrierFee = 1.00; // Location fee
+                break;
+        }
+        
+        let feeDisplay = document.getElementById('fee-display');
+        if (!feeDisplay) {
+            feeDisplay = document.createElement('div');
+            feeDisplay.id = 'fee-display';
+            feeDisplay.className = 'form-text';
+            amountInput.parentElement.appendChild(feeDisplay);
+        }
+        
+        if (amount > 0) {
+            const totalFee = baseFee + carrierFee;
+            const total = amount + totalFee;
+            feeDisplay.innerHTML = `
+                Platform fee: $${baseFee.toFixed(2)} + Carrier fee: $${carrierFee.toFixed(2)} = 
+                Total fee: $${totalFee.toFixed(2)} | Total: $${total.toFixed(2)}
+            `;
+        } else {
+            feeDisplay.innerHTML = '';
+        }
+    }
+    
+    amountInput.addEventListener('input', updateFees);
+    deliveryMethodSelect.addEventListener('change', updateFees);
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const authMethodSelect = document.querySelector('select[name="auth_method"]');
+    const securityQuestions = document.getElementById('security_questions');
+    const phoneInput = document.getElementById('recipient_phone');
+    const carrierSelect = document.getElementById('recipient_carrier');
+    const messageTextarea = document.getElementById('transfer_message');
+    
+    // Show/hide security questions
+    authMethodSelect.addEventListener('change', function() {
+        if (this.value === 'security_question') {
+            securityQuestions.style.display = 'block';
+            document.querySelector('select[name="security_question"]').required = true;
+            document.querySelector('input[name="security_answer"]').required = true;
+        } else {
+            securityQuestions.style.display = 'none';
+            document.querySelector('select[name="security_question"]').required = false;
+            document.querySelector('input[name="security_answer"]').required = false;
+        }
+    });
+    
+    // Format phone number
+    phoneInput.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        
+        if (value.startsWith('1') && value.length > 1) {
+            value = value.substring(1);
+        }
+        
+        if (value.length >= 10) {
+            value = value.substring(0, 10);
+            this.value = `+1 (${value.substring(0, 3)}) ${value.substring(3, 6)}-${value.substring(6)}`;
+        } else {
+            this.value = value;
+        }
+        
+        // Auto-detect carrier based on number prefix
+        if (value.length === 10) {
+            const prefix = value.substring(0, 3);
+            const carrierMap = {
+                '212': 'verizon', '646': 'att', '917': 'tmobile',
+                '310': 'att', '323': 'tmobile', '415': 'verizon'
+            };
+            
+            if (carrierMap[prefix]) {
+                carrierSelect.value = carrierMap[prefix];
+            }
+        }
+    });
+    
+    // Character counter for message
+    messageTextarea.addEventListener('input', function() {
+        const remaining = 160 - this.value.length;
+        let counter = document.getElementById('char-counter');
+        
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.id = 'char-counter';
+            counter.className = 'form-text';
+            this.parentElement.appendChild(counter);
+        }
+        
+        counter.textContent = `${remaining} characters remaining`;
+        counter.style.color = remaining < 20 ? '#dc2626' : '#6b7280';
+    });
+    
+    // Calculate fees based on amount and method
+    const amountInput = document.getElementById('amount');
+    const deliveryMethodSelect = document.querySelector('select[name="delivery_method"]');
+    
+    function updateFees() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const method = deliveryMethodSelect.value;
+        
+        let baseFee = {{ channel_config.fee }};
+        let carrierFee = 0;
+        
+        switch(method) {
+            case 'sms_code':
+                carrierFee = 0.10; // SMS fee
+                break;
+            case 'mobile_wallet':
+                carrierFee = 0.25; // Wallet fee
+                break;
+            case 'prepaid_card':
+                carrierFee = 0.50; // Card processing
+                break;
+            case 'cash_pickup':
+                carrierFee = 1.00; // Location fee
+                break;
+        }
+        
+        let feeDisplay = document.getElementById('fee-display');
+        if (!feeDisplay) {
+            feeDisplay = document.createElement('div');
+            feeDisplay.id = 'fee-display';
+            feeDisplay.className = 'form-text';
+            amountInput.parentElement.appendChild(feeDisplay);
+        }
+        
+        if (amount > 0) {
+            const totalFee = baseFee + carrierFee;
+            const total = amount + totalFee;
+            feeDisplay.innerHTML = `
+                Platform fee: $${baseFee.toFixed(2)} + Carrier fee: $${carrierFee.toFixed(2)} = 
+                Total fee: $${totalFee.toFixed(2)} | Total: $${total.toFixed(2)}
+            `;
+        } else {
+            feeDisplay.innerHTML = '';
+        }
+    }
+    
+    amountInput.addEventListener('input', updateFees);
+    deliveryMethodSelect.addEventListener('change', updateFees);
+});
+
+{% endblock %}

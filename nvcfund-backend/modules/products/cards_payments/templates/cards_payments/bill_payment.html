@@ -1,0 +1,400 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-light mb-1">Bill Payment Center</h2>
+            <p class="text-light mb-0">Manage and pay your bills securely</p>
+        </div>
+        <div class="d-flex gap-3">
+            <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm" data-action="custom-action">
+                <i class="fas fa-sync-alt me-2"></i>Refresh
+            </button>
+            <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newBillerModal">
+                <i class="fas fa-plus me-2"></i>Add Biller
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quick Pay Section -->
+        <div class="col-lg-8">
+            <div class="dashboard-stat-nvc-card mb-4">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title text-light mb-4">
+                        <i class="fas fa-bolt text-primary me-2"></i>Quick Pay
+                    </h5>
+                    
+                    <form id="billPaymentForm" method="POST" action="{{ url_for('cards_payments.process_bill_payment') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="biller_id" class="nvc-form-label text-light">Select Biller</label>
+                                <select class="nvc-form-select" id="biller_id" name="biller_id" required>
+                                    <option value="">Choose a biller...</option>
+                                    {% for biller in saved_billers %}
+                                    <option value="{{ biller.id }}" 
+                                            data-category="{{ biller.category }}"
+                                            data-account="{{ biller.account_number }}"
+                                            data-average="{{ biller.average_payment }}">
+                                        {{ biller.name }} ({{ biller.category }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="payment_account" class="nvc-form-label text-light">Payment From</label>
+                                <select class="nvc-form-select" id="payment_account" name="payment_account" required>
+                                    <option value="">Choose account...</option>
+                                    {% for account in available_accounts %}
+                                    <option value="{{ account.id }}" data-balance="{{ account.balance }}">
+                                        {{ account.name }} ({{ account.number }}) - ${{ "%.2f"|format(account.balance) }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="amount" class="nvc-form-label text-light">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" id="amount" name="amount" 
+                                           step="0.01" min="1" max="50000" required>
+                                </div>
+                                <small class="text-light">Average: $<span id="averageAmount">0.00</span></small>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="payment_date" class="nvc-form-label text-light">Payment Date</label>
+                                <input type="date" class="nvc-form-input" id="payment_date" name="payment_date" 
+                                       value="{{ today }}" required>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="account_number" class="nvc-form-label text-light">Account Number</label>
+                                <input type="text" class="nvc-form-input" id="account_number" name="account_number" 
+                                       placeholder="Enter account number" required>
+                                <small class="text-light">Last 4 digits: <span id="lastFourDigits">****</span></small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="memo" class="nvc-form-label text-light">Memo (Optional)</label>
+                                <input type="text" class="nvc-form-input" id="memo" name="memo" 
+                                       placeholder="Add a note for this payment">
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmPayment" required>
+                                <label class="form-check-label text-light" for="confirmPayment">
+                                    I confirm this payment information is correct
+                                </label>
+                            </div>
+                            <button type="submit" class="btn nvc-btn nvc-btn-primary" id="payButton" disabled>
+                                <i class="fas fa-credit-nvc-card me-2"></i>Process Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Payment History -->
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title text-light mb-4">
+                        <i class="fas fa-history text-info me-2"></i>Recent Payments
+                    </h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Biller</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Confirmation</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payment_history %}
+                                <tr>
+                                    <td>{{ payment.biller_name }}</td>
+                                    <td>${{ "%.2f"|format(payment.amount) }}</td>
+                                    <td>{{ payment.payment_date }}</td>
+                                    <td>
+                                        {% if payment.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% elif payment.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><code>{{ payment.confirmation }}</code></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" 
+                                                data-action="custom-action">
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Saved Billers Sidebar -->
+        <div class="col-lg-4">
+            <div class="dashboard-stat-nvc-card mb-4">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title text-light mb-4">
+                        <i class="fas fa-bookmark text-success me-2"></i>Saved Billers
+                    </h5>
+                    
+                    {% for biller in saved_billers %}
+                    <div class="border border-secondary rounded p-3 mb-3 biller-nvc-card" 
+                         data-action="custom-action">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="text-light mb-1">{{ biller.name }}</h6>
+                                <small class="text-light">{{ biller.category }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% if biller.auto_pay %}
+                                    <span class="badge bg-primary">Auto Pay</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <div class="row text-sm">
+                                <div class="col-6">
+                                    <small class="text-light">Account:</small><br>
+                                    <small class="text-light">{{ biller.account_number }}</small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-light">Next Due:</small><br>
+                                    <small class="text-light">{{ biller.next_due_date }}</small>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-6">
+                                    <small class="text-light">Last Payment:</small><br>
+                                    <small class="text-success">${{ "%.2f"|format(biller.last_payment) }}</small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-light">Average:</small><br>
+                                    <small class="text-info">${{ "%.2f"|format(biller.average_payment) }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title text-light mb-4">
+                        <i class="fas fa-chart-line text-warning me-2"></i>Payment Summary
+                    </h5>
+                    
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="border-end border-secondary">
+                                <h4 class="text-primary mb-1">{{ payment_history|length }}</h4>
+                                <small class="text-light">This Month</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success mb-1">
+                                ${% set total = payment_history|sum(attribute='amount') %}{{ "%.2f"|format(total) }}
+                            </h4>
+                            <small class="text-light">Total Paid</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end border-secondary">
+                                <h4 class="text-info mb-1">{{ saved_billers|length }}</h4>
+                                <small class="text-light">Saved Billers</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning mb-1">
+                                {{ saved_billers|selectattr('auto_pay')|list|length }}
+                            </h4>
+                            <small class="text-light">Auto Pay</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Biller Modal -->
+<div class="modal fade" id="newBillerModal" tabindex="-1" aria-labelledby="newBillerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-light" id="newBillerModalLabel">Add New Biller</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newBillerForm">
+                    <div class="mb-3">
+                        <label for="billerName" class="nvc-form-label text-light">Biller Name</label>
+                        <input type="text" class="nvc-form-input" id="billerName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="billerCategory" class="nvc-form-label text-light">Category</label>
+                        <select class="nvc-form-select" id="billerCategory" required>
+                            <option value="">Choose category...</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Telecommunications">Telecommunications</option>
+                            <option value="Credit">Credit Cards</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Loans">Loans</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="billerAccount" class="nvc-form-label text-light">Account Number</label>
+                        <input type="text" class="nvc-form-input" id="billerAccount" required>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="enableAutoPay">
+                        <label class="form-check-label text-light" for="enableAutoPay">
+                            Enable Auto Pay
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn nvc-btn nvc-btn-primary" data-action="custom-action">Save Biller</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('payment_date').value = today;
+    
+    // Initialize form handlers
+    initializeFormHandlers();
+});
+
+function initializeFormHandlers() {
+    const billerSelect = document.getElementById('biller_id');
+    const confirmCheckbox = document.getElementById('confirmPayment');
+    const payButton = document.getElementById('payButton');
+    
+    // Handle biller selection
+    billerSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            const average = selectedOption.getAttribute('data-average');
+            const accountNumber = selectedOption.getAttribute('data-account');
+            
+            document.getElementById('averageAmount').textContent = parseFloat(average).toFixed(2);
+            document.getElementById('lastFourDigits').textContent = accountNumber;
+            document.getElementById('amount').value = average;
+        }
+    });
+    
+    // Handle confirm checkbox
+    confirmCheckbox.addEventListener('change', function() {
+        payButton.disabled = !this.checked;
+    });
+    
+    // Form validation
+    document.getElementById('billPaymentForm').addEventListener('submit', function(e) {
+        if (!validatePaymentForm()) {
+            e.preventDefault();
+        }
+    });
+}
+
+function selectBiller(billerId) {
+    document.getElementById('biller_id').value = billerId;
+    document.getElementById('biller_id').dispatchEvent(new Event('change'));
+}
+
+function validatePaymentForm() {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const selectedAccount = document.getElementById('payment_account').value;
+    
+    if (amount <= 0 || amount > 50000) {
+        alert('Please enter a valid payment amount between $1 and $50,000');
+        return false;
+    }
+    
+    if (!selectedAccount) {
+        alert('Please select a payment account');
+        return false;
+    }
+    
+    return true;
+}
+
+function refreshBillData() {
+    window.location.reload();
+}
+
+function viewPaymentDetails(paymentId) {
+    // Implementation for viewing payment details
+    console.log('Viewing payment details for:', paymentId);
+}
+
+function saveBiller() {
+    // Implementation for saving new biller
+    const form = document.getElementById('newBillerForm');
+    if (form.checkValidity()) {
+        alert('Biller saved successfully!');
+        bootstrap.Modal.getInstance(document.getElementById('newBillerModal')).hide();
+    } else {
+        form.reportValidity();
+    }
+}
+
+// CSS for biller cards hover effect
+const style = document.createElement('style');
+style.textContent = `
+    .biller-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .biller-card:hover {
+        background-color: rgba(59, 130, 246, 0.1);
+        border-color: #3b82f6 !important;
+    }
+`;
+document.head.appendChild(style);
+</script>
+</div>
+{% endblock %}

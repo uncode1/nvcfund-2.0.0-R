@@ -1,0 +1,35 @@
+2025-07-17T02:20:12.942865 - Cards page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-17T02:20:18.634304 - Cards page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-17T02:20:20.644335 - DASHBOARD_ERROR: Encountered unknown tag 'endblock'.
+Details: {'user_id': 1}
+---
+2025-07-17T02:20:55.254549 - TRANSFERS_MANAGEMENT_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-17T03:34:47.935262 - Cards page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-17T03:34:49.593763 - DASHBOARD_ERROR: Encountered unknown tag 'endblock'.
+Details: {'user_id': 1}
+---
+2025-07-17T03:34:58.405070 - RISK_MGMT_ERROR: base.html
+Details: {'user_id': 1}
+---
+2025-07-17T03:35:19.592260 - Accounts page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-17T03:35:26.759912 - Transaction history error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-17T03:36:09.627373 - Cards page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-17T17:14:14.383791 - Banking dashboard error: Encountered unknown tag 'endblock'. You probably made a nesting mistake. Jinja is expecting this tag, but currently looking for 'elif' or 'else' or 'endif'. The innermost block that needs to be closed is 'if'.: 1
+---
+2025-07-17T17:14:17.868061 - Banking dashboard error: Encountered unknown tag 'endblock'. You probably made a nesting mistake. Jinja is expecting this tag, but currently looking for 'elif' or 'else' or 'endif'. The innermost block that needs to be closed is 'if'.: 1
+---
+2025-07-17T17:14:19.318006 - Banking dashboard error: Encountered unknown tag 'endblock'. You probably made a nesting mistake. Jinja is expecting this tag, but currently looking for 'elif' or 'else' or 'endif'. The innermost block that needs to be closed is 'if'.: 1
+---
+2025-07-17T17:14:20.341325 - Banking dashboard error: Encountered unknown tag 'endblock'. You probably made a nesting mistake. Jinja is expecting this tag, but currently looking for 'elif' or 'else' or 'endif'. The innermost block that needs to be closed is 'if'.: 1
+---
+2025-07-17T17:15:00.322600 - DASHBOARD_ERROR: Encountered unknown tag 'endblock'. You probably made a nesting mistake. Jinja is expecting this tag, but currently looking for 'elif' or 'else' or 'endif'. The innermost block that needs to be closed is 'if'.
+Details: {'user_id': 1}
+---

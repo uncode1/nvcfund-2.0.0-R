@@ -1,0 +1,276 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Product Catalog - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Product Catalog{% endblock %}
+{% block page_description %}Comprehensive banking products and services portfolio management{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="btn btn-outline-primary">
+    <i class="fas fa-download"></i>
+    Export Catalog
+</button>
+<button type="button" class="btn btn-secondary">
+    <i class="fas fa-plus"></i>
+    Add Product
+</button>
+<button type="button" class="btn btn-primary">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Data
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Product Categories -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-th-large me-2"></i>
+                        Product Categories
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for category in product_categories or [
+                            {'name': 'Deposit Accounts', 'count': '12', 'revenue': '$234M', 'customers': '89K', 'icon': 'piggy-bank', 'color': 'success'},
+                            {'name': 'Loans & Credit', 'count': '18', 'revenue': '$456M', 'customers': '34K', 'icon': 'hand-holding-usd', 'color': 'primary'},
+                            {'name': 'Investment Products', 'count': '25', 'revenue': '$189M', 'customers': '12K', 'icon': 'chart-line', 'color': 'info'},
+                            {'name': 'Cards & Payments', 'count': '8', 'revenue': '$123M', 'customers': '67K', 'icon': 'credit-card', 'color': 'warning'},
+                            {'name': 'Insurance', 'count': '15', 'revenue': '$78M', 'customers': '23K', 'icon': 'shield-alt', 'color': 'secondary'},
+                            {'name': 'Digital Services', 'count': '22', 'revenue': '$145M', 'customers': '78K', 'icon': 'mobile-alt', 'color': 'dark'}
+                        ] %}
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="card border-{{ category.color }} h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-{{ category.icon }} fa-3x text-{{ category.color }} mb-3"></i>
+                                    <h5>{{ category.name }}</h5>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <h6 class="text-{{ category.color }}">{{ category.count }}</h6>
+                                            <small class="text-muted">Products</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <h6 class="text-{{ category.color }}">{{ category.revenue }}</h6>
+                                            <small class="text-muted">Revenue</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <h6 class="text-{{ category.color }}">{{ category.customers }}</h6>
+                                            <small class="text-muted">Customers</small>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-{{ category.color }} btn-sm mt-3">
+                                        <i class="fas fa-arrow-right me-1"></i>
+                                        View Products
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Performance -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-area me-2"></i>
+                        Product Performance Trends
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container nvc-style-54c806" >
+                        <canvas id="productPerformanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        Top Performing Products
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for product in top_products or [
+                        {'name': 'Premium Savings Account', 'revenue': '$45M', 'growth': '+23.5%', 'customers': '12.3K'},
+                        {'name': 'Business Credit Line', 'revenue': '$38M', 'growth': '+18.7%', 'customers': '2.1K'},
+                        {'name': 'Investment Portfolio', 'revenue': '$32M', 'growth': '+15.2%', 'customers': '1.8K'},
+                        {'name': 'Digital Wallet', 'revenue': '$28M', 'growth': '+45.8%', 'customers': '34.5K'},
+                        {'name': 'Auto Loan', 'revenue': '$25M', 'growth': '+12.1%', 'customers': '3.2K'}
+                    ] %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 border rounded">
+                        <div>
+                            <h6 class="mb-1">{{ product.name }}</h6>
+                            <small class="text-muted">{{ product.customers }} customers</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-primary fw-bold">{{ product.revenue }}</div>
+                            <small class="text-success">{{ product.growth }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Catalog Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Complete Product Catalog
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                        <button type="button" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i>
+                            Add Product
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Filter Options -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="Search products...">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option value="">All Categories</option>
+                                <option value="deposits">Deposit Accounts</option>
+                                <option value="loans">Loans & Credit</option>
+                                <option value="investments">Investments</option>
+                                <option value="cards">Cards & Payments</option>
+                                <option value="insurance">Insurance</option>
+                                <option value="digital">Digital Services</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="discontinued">Discontinued</option>
+                                <option value="development">In Development</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option value="">All Segments</option>
+                                <option value="retail">Retail</option>
+                                <option value="corporate">Corporate</option>
+                                <option value="premium">Premium</option>
+                                <option value="digital">Digital</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Target Segment</th>
+                                    <th>Customers</th>
+                                    <th>Revenue</th>
+                                    <th>Growth</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in product_catalog or [
+                                    {'name': 'Premium Savings Account', 'category': 'Deposit Accounts', 'segment': 'Premium', 'customers': '12,345', 'revenue': '$45M', 'growth': '+23.5%', 'status': 'Active'},
+                                    {'name': 'Business Credit Line', 'category': 'Loans & Credit', 'segment': 'Corporate', 'customers': '2,156', 'revenue': '$38M', 'growth': '+18.7%', 'status': 'Active'},
+                                    {'name': 'Investment Portfolio', 'category': 'Investment Products', 'segment': 'Premium', 'customers': '1,834', 'revenue': '$32M', 'growth': '+15.2%', 'status': 'Active'},
+                                    {'name': 'Digital Wallet', 'category': 'Digital Services', 'segment': 'Digital', 'customers': '34,567', 'revenue': '$28M', 'growth': '+45.8%', 'status': 'Active'},
+                                    {'name': 'Auto Loan', 'category': 'Loans & Credit', 'segment': 'Retail', 'customers': '3,245', 'revenue': '$25M', 'growth': '+12.1%', 'status': 'Active'},
+                                    {'name': 'Student Checking', 'category': 'Deposit Accounts', 'segment': 'Retail', 'customers': '8,923', 'revenue': '$12M', 'growth': '+8.3%', 'status': 'Active'},
+                                    {'name': 'Crypto Trading', 'category': 'Investment Products', 'segment': 'Digital', 'customers': '5,678', 'revenue': '$18M', 'growth': '+67.2%', 'status': 'Active'},
+                                    {'name': 'Travel Insurance', 'category': 'Insurance', 'segment': 'Retail', 'customers': '2,345', 'revenue': '$8M', 'growth': '+5.4%', 'status': 'Active'},
+                                    {'name': 'Corporate Cards', 'category': 'Cards & Payments', 'segment': 'Corporate', 'customers': '1,567', 'revenue': '$22M', 'growth': '+14.6%', 'status': 'Active'},
+                                    {'name': 'Legacy Savings', 'category': 'Deposit Accounts', 'segment': 'Retail', 'customers': '15,234', 'revenue': '$35M', 'growth': '-2.1%', 'status': 'Discontinued'}
+                                ] %}
+                                <tr class="{{ 'table-secondary' if product.status == 'Discontinued' else '' }}">
+                                    <td>
+                                        <strong>{{ product.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if product.category == 'Deposit Accounts' else 'primary' if product.category == 'Loans & Credit' else 'info' if product.category == 'Investment Products' else 'warning' if product.category == 'Cards & Payments' else 'secondary' if product.category == 'Insurance' else 'dark' }}">
+                                            {{ product.category }}
+                                        </span>
+                                    </td>
+                                    <td>{{ product.segment }}</td>
+                                    <td>{{ product.customers }}</td>
+                                    <td>
+                                        <strong>{{ product.revenue }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="text-{{ 'success' if product.growth.startswith('+') else 'danger' }}">
+                                            {{ product.growth }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if product.status == 'Active' else 'secondary' if product.status == 'Inactive' else 'danger' if product.status == 'Discontinued' else 'warning' }}">
+                                            {{ product.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" title="Edit Product">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info" title="Analytics">
+                                                <i class="fas fa-chart-bar"></i>
+                                            </button>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-copy me-2"></i>Duplicate</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-users me-2"></i>Customer List</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-chart-line me-2"></i>Performance Report</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    {% if product.status == 'Active' %}
+                                                    <li><a class="dropdown-item text-warning" href="#"><i class="fas fa-pause me-2"></i>Deactivate</a></li>
+                                                    {% else %}
+                                                    <li><a class="dropdown-item text-success" href="#"><i class="fas fa-play me-2"></i>Activate</a></li>
+                                                    {% endif %}
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Discontinue</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

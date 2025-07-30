@@ -1,0 +1,378 @@
+{% extends "unified_base.html" %}
+
+{% block title %}NVCT Stablecoin Operations - NVC Banking Platform{% endblock %}
+
+{% block page_title %}NVCT Stablecoin Operations{% endblock %}
+{% block page_description %}Sovereign banking stablecoin operations and management{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('sovereign.sovereign_dashboard_main') }}">Sovereign Banking</a>
+</li>
+<li class="nvc-breadcrumb-item active">NVCT Stablecoin</li>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <style>
+        .card { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; }
+        .card-header { background: #1e293b; border-bottom: 1px solid #334155; }
+        .card-body { background: #1e293b; }
+        .bg-gradient-crypto { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .bg-primary { background: #3b82f6 !important; }
+        .bg-success { background: #10b981 !important; }
+        .bg-info { background: #06b6d4 !important; }
+        .bg-warning { background: #f59e0b !important; }
+        .bg-danger { background: #ef4444 !important; }
+        .text-white { color: #ffffff !important; }
+        .text-light { color: #f8fafc !important; }
+        .btn-light { background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; }
+        .btn-light:hover { background: #e2e8f0; border-color: #cbd5e1; }
+        .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+        .btn-primary:hover { background: #2563eb; border-color: #2563eb; }
+        .table-dark { background: #1e293b; color: #e2e8f0; }
+        .table-dark th { border-color: #374151; }
+        .table-dark td { border-color: #374151; }
+        .bg-light { background: #f8fafc !important; }
+        .bg-opacity-20 { background-color: rgba(255, 255, 255, 0.2) !important; }
+        .border-0 { border: 0 !important; }
+        .main-content { padding: 20px; }
+        .container-fluid { padding: 0; }
+    </style>
+</head>
+<body>
+<div class="main-content">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="nvc-card bg-gradient-crypto border-0">
+                    <div class="nvc-nvc-card-header border-0">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h1 class="nvc-card-title text-white mb-0">
+                                    <i class="fab fa-bitcoin me-2"></i>NVCT Stablecoin Operations
+                                </h1>
+                                <p class="nvc-card-description text-light mb-0">30 Trillion NVCT Token Management & BSC Network Operations</p>
+                            </div>
+                            <div class="col-auto">
+                                <a href="{{ url_for('sovereign.operations_overview') }}" class="btn btn-light">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Operations
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="nvc-card bg-primary text-white">
+                    <div class="nvc-nvc-card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="nvc-card-subtitle mb-1">Total Supply</h6>
+                                <h3 class="nvc-card-title mb-0">30T NVCT</h3>
+                            </div>
+                            <div class="bg-light bg-opacity-20 rounded p-2">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="nvc-card bg-success text-white">
+                    <div class="nvc-nvc-card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="nvc-card-subtitle mb-1">Market Cap</h6>
+                                <h3 class="nvc-card-title mb-0">$30T</h3>
+                            </div>
+                            <div class="bg-light bg-opacity-20 rounded p-2">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="nvc-card bg-warning text-white">
+                    <div class="nvc-nvc-card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="nvc-card-subtitle mb-1">Current Price</h6>
+                                <h3 class="nvc-card-title mb-0">$1.00</h3>
+                            </div>
+                            <div class="bg-light bg-opacity-20 rounded p-2">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="nvc-card bg-info text-white">
+                    <div class="nvc-nvc-card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="nvc-card-subtitle mb-1">Collateralization</h6>
+                                <h3 class="nvc-card-title mb-0">189%</h3>
+                            </div>
+                            <div class="bg-light bg-opacity-20 rounded p-2">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NVCT Operations Dashboard -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="nvc-card">
+                    <div class="nvc-nvc-card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>NVCT Token Analytics</h5>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-light">Supply Distribution</h6>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Circulating Supply</span>
+                                        <span>67%</span>
+                                    </div>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-primary" class="progress-bar-67"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Treasury Reserve</span>
+                                        <span>28%</span>
+                                    </div>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-success" class="progress-bar-28"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Locked/Staked</span>
+                                        <span>5%</span>
+                                    </div>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-warning" class="progress-bar-5"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-light">Asset Backing ($56.7T)</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <td>US Treasury Bonds</td>
+                                                <td>$28.5T</td>
+                                                <td><span class="badge bg-success">50.3%</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Gold Reserves</td>
+                                                <td>$12.8T</td>
+                                                <td><span class="badge bg-warning">22.6%</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Corporate Bonds</td>
+                                                <td>$8.9T</td>
+                                                <td><span class="badge bg-info">15.7%</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Real Estate</td>
+                                                <td>$6.5T</td>
+                                                <td><span class="badge bg-primary">11.4%</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nvc-card mt-4">
+                    <div class="nvc-nvc-card-header">
+                        <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Recent NVCT Transactions</h5>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Address</th>
+                                        <th>Status</th>
+                                        <th>TX Hash</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>17:54:32</td>
+                                        <td>Transfer</td>
+                                        <td>500,000 NVCT</td>
+                                        <td>0x7a...3d2f</td>
+                                        <td><span class="badge bg-success">Confirmed</span></td>
+                                        <td><small>0xabc...123</small></td>
+                                    </tr>
+                                    <tr>
+                                        <td>17:52:18</td>
+                                        <td>Mint</td>
+                                        <td>1,000,000 NVCT</td>
+                                        <td>0x2b...8e4a</td>
+                                        <td><span class="badge bg-success">Confirmed</span></td>
+                                        <td><small>0xdef...456</small></td>
+                                    </tr>
+                                    <tr>
+                                        <td>17:49:05</td>
+                                        <td>Stake</td>
+                                        <td>250,000 NVCT</td>
+                                        <td>0x9c...5f1b</td>
+                                        <td><span class="badge bg-warning">Pending</span></td>
+                                        <td><small>0x789...abc</small></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="nvc-card">
+                    <div class="nvc-nvc-card-header">
+                        <h5 class="mb-0"><i class="fas fa-tools me-2"></i>NVCT Operations</h5>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn nvc-btn nvc-btn-primary">
+                                <i class="fas fa-plus me-2"></i>Mint NVCT Tokens
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-success">
+                                <i class="fas fa-exchange-alt me-2"></i>Transfer Tokens
+                            </button>
+                            <button type="button" class="btn btn-info">
+                                <i class="fas fa-lock me-2"></i>Stake Tokens
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-warning">
+                                <i class="fas fa-fire me-2"></i>Burn Tokens
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-secondary">
+                                <i class="fas fa-chart-line me-2"></i>Analytics Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nvc-card mt-4">
+                    <div class="nvc-nvc-card-header">
+                        <h5 class="mb-0"><i class="fas fa-network-wired me-2"></i>BSC Network Status</h5>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <small class="text-light">Block Height</small>
+                                <div class="fw-bold">42,891,256</div>
+                                <span class="badge bg-success">Synced</span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-light">Gas Price</small>
+                                <div class="fw-bold">5 Gwei</div>
+                                <span class="badge bg-info">Optimal</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <small class="text-light">Network Status</small>
+                                <div class="fw-bold text-success">Healthy</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-light">TPS</small>
+                                <div class="fw-bold">2,100</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nvc-card mt-4">
+                    <div class="nvc-nvc-card-header">
+                        <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Smart Contract</h5>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <div class="mb-3">
+                            <small class="text-light">Contract Address</small>
+                            <div class="fw-bold text-break">0x742d35Cc6554C38ef6C9F...8A93c2681b</div>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-light">Contract Version</small>
+                            <div class="fw-bold">v2.1.0</div>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-light">Last Audit</small>
+                            <div class="fw-bold">June 2025</div>
+                            <span class="badge bg-success">Verified</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nvc-card mt-4">
+                    <div class="nvc-nvc-card-header">
+                        <h5 class="mb-0"><i class="fas fa-bell me-2"></i>NVCT Alerts</h5>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <div class="alert nvc-nvc-alert-success">
+                            <small><strong>Stability:</strong> NVCT price maintaining $1.00 peg</small>
+                        </div>
+                        <div class="alert nvc-nvc-alert-info">
+                            <small><strong>Collateral:</strong> Asset backing increased to 189%</small>
+                        </div>
+                        <div class="alert nvc-nvc-alert-warning">
+                            <small><strong>Network:</strong> BSC network experiencing slight congestion</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nvc-card mt-4">
+                    <div class="nvc-nvc-card-header">
+                        <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security Features</h5>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <small>Multi-sig treasury controls</small>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <small>Real-time collateral monitoring</small>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <small>Automated stability mechanisms</small>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <small>Third-party audit verified</small>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,468 @@
+<!-- Enhanced Sidebar Navigation Component with Complete Icons -->
+<div class="enhanced-sidebar">
+    <style>
+        .enhanced-sidebar {
+            background: linear-gradient(180deg, rgba(30, 60, 114, 0.95) 0%, rgba(42, 82, 152, 0.95) 100%);
+            border-radius: 15px;
+            padding: 20px 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            min-height: calc(100vh - 200px);
+            position: sticky;
+            top: 20px;
+        }
+        
+        .sidebar-brand {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-brand h5 {
+            color: #ffd700;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .nav-section {
+            margin-bottom: 25px;
+        }
+        
+        .nav-section-title {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #ffd700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-section-icon {
+            font-size: 0.9rem;
+            color: #ffd700;
+        }
+        
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 3px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9rem;
+            font-weight: 500;
+            position: relative;
+            border: 1px solid transparent;
+            overflow: hidden;
+        }
+        
+        .nav-link:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .nav-link:hover:before {
+            left: 100%;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            transform: translateX(8px) scale(1.02);
+            border-color: rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 100%);
+            color: #ffffff;
+            border-left: 4px solid #ffd700;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+            font-weight: 600;
+            transform: translateX(4px);
+        }
+        
+        .nav-icon {
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+            font-size: 1rem;
+            color: #ffd700;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .nav-link:hover .nav-icon {
+            color: #ffffff;
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .nav-link.active .nav-icon {
+            color: #ffd700;
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+        }
+        
+        .nav-badge {
+            margin-left: auto;
+            background: linear-gradient(45deg, #ff4757, #ff3742);
+            color: white;
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3); }
+            50% { box-shadow: 0 2px 4px rgba(255, 71, 87, 0.6); }
+            100% { box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3); }
+        }
+        
+        .nav-subtitle {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 2px;
+            margin-left: 32px;
+            font-weight: 400;
+        }
+        
+        .nav-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            margin: 20px 0;
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .quick-actions h6 {
+            color: #ffd700;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .quick-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            margin: 2px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        
+        .quick-action-btn:hover {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            transform: translateY(-2px) scale(1.05);
+        }
+    </style>
+    
+    <!-- Sidebar Brand -->
+    <div class="sidebar-brand">
+        <h5>
+            <i class="fas fa-university nav-section-icon"></i>
+            Banking Portal
+        </h5>
+    </div>
+    
+    <!-- Core Banking Section -->
+    <div class="nav-section">
+        <div class="nav-section-title">
+            <i class="fas fa-university nav-section-icon"></i>
+            Core Banking
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="{{ url_for('dashboard.main_dashboard') }}" class="nav-link {{ 'active' if request.endpoint == 'dashboard.main_dashboard' }}">
+                    <i class="fas fa-tachometer-alt nav-icon"></i>
+                    Dashboard
+                    <span class="nav-badge">New</span>
+                </a>
+                <div class="nav-subtitle">Overview & Analytics</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('accounts.main_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'accounts' in request.endpoint }}">
+                    <i class="fas fa-user nav-icon"></i>
+                    My Accounts
+                </a>
+                <div class="nav-subtitle">Account Management</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('banking.transfers') }}" class="nav-link {{ 'active' if request.endpoint and 'transfers' in request.endpoint }}">
+                    <i class="fas fa-exchange-alt nav-icon"></i>
+                    Transfers
+                </a>
+                <div class="nav-subtitle">Money Movement</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('banking.transactions') }}" class="nav-link {{ 'active' if request.endpoint and 'transactions' in request.endpoint }}">
+                    <i class="fas fa-receipt nav-icon"></i>
+                    Transactions
+                </a>
+                <div class="nav-subtitle">Transaction History</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('products.cards_payments_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'nvc-cards' in request.endpoint }}">
+                    <i class="fas fa-credit-nvc-card nav-icon"></i>
+                    Cards & Payments
+                </a>
+                <div class="nav-subtitle">Card Management</div>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="nav-divider"></div>
+    
+    <!-- Investment & Trading Section -->
+    <div class="nav-section">
+        <div class="nav-section-title">
+            <i class="fas fa-chart-line nav-section-icon"></i>
+            Investment & Trading
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="{{ url_for('products.investments_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'investments' in request.endpoint }}">
+                    <i class="fas fa-chart-bar nav-icon"></i>
+                    Portfolio
+                </a>
+                <div class="nav-subtitle">Investment Management</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('products.trading_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'trading' in request.endpoint }}">
+                    <i class="fas fa-coins nav-icon"></i>
+                    Trading Platform
+                    <span class="nav-badge">Live</span>
+                </a>
+                <div class="nav-subtitle">Active Trading</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('nvct_stablecoin.main_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'nvct' in request.endpoint }}">
+                    <i class="fas fa-dollar-sign nav-icon"></i>
+                    NVCT Stablecoin
+                </a>
+                <div class="nav-subtitle">Digital Currency</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('services.analytics_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'analytics' in request.endpoint }}">
+                    <i class="fas fa-chart-pie nav-icon"></i>
+                    Market Analytics
+                </a>
+                <div class="nav-subtitle">Market Intelligence</div>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="nav-divider"></div>
+    
+    <!-- Services Section -->
+    <div class="nav-section">
+        <div class="nav-section-title">
+            <i class="fas fa-concierge-bell nav-section-icon"></i>
+            Financial Services
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="{{ url_for('products.loans_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'loans' in request.endpoint }}">
+                    <i class="fas fa-hand-holding-usd nav-icon"></i>
+                    Loans & Credit
+                </a>
+                <div class="nav-subtitle">Lending Services</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('products.insurance_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'insurance' in request.endpoint }}">
+                    <i class="fas fa-umbrella nav-icon"></i>
+                    Insurance
+                </a>
+                <div class="nav-subtitle">Protection Plans</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('products.islamic_banking_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'islamic' in request.endpoint }}">
+                    <i class="fas fa-mosque nav-icon"></i>
+                    Islamic Banking
+                </a>
+                <div class="nav-subtitle">Sharia Compliant</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('sovereign.main_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'sovereign' in request.endpoint }}">
+                    <i class="fas fa-crown nav-icon"></i>
+                    Sovereign Banking
+                </a>
+                <div class="nav-subtitle">Elite Services</div>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="nav-divider"></div>
+    
+    <!-- Treasury & Corporate Section -->
+    <div class="nav-section">
+        <div class="nav-section-title">
+            <i class="fas fa-building nav-section-icon"></i>
+            Treasury & Corporate
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="{{ url_for('treasury.main_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'treasury' in request.endpoint }}">
+                    <i class="fas fa-vault nav-icon"></i>
+                    Treasury Management
+                </a>
+                <div class="nav-subtitle">Cash Management</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('compliance.compliance_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'compliance' in request.endpoint }}">
+                    <i class="fas fa-balance-scale nav-icon"></i>
+                    Compliance Center
+                </a>
+                <div class="nav-subtitle">Regulatory Compliance</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('banking.institutional') }}" class="nav-link {{ 'active' if request.endpoint and 'institutional' in request.endpoint }}">
+                    <i class="fas fa-landmark nav-icon"></i>
+                    Institutional Banking
+                </a>
+                <div class="nav-subtitle">Corporate Services</div>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="nav-divider"></div>
+    
+    <!-- Security & Support Section -->
+    <div class="nav-section">
+        <div class="nav-section-title">
+            <i class="fas fa-shield-alt nav-section-icon"></i>
+            Security & Support
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="{{ url_for('security_center.main_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'security' in request.endpoint }}">
+                    <i class="fas fa-user-shield nav-icon"></i>
+                    Security Center
+                    <span class="nav-badge">3</span>
+                </a>
+                <div class="nav-subtitle">Security Monitoring</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('services.mfa_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'mfa' in request.endpoint }}">
+                    <i class="fas fa-key nav-icon"></i>
+                    2FA Settings
+                </a>
+                <div class="nav-subtitle">Authentication</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('services.support_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'support' in request.endpoint }}">
+                    <i class="fas fa-headset nav-icon"></i>
+                    Customer Support
+                </a>
+                <div class="nav-subtitle">Help & Assistance</div>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('user_management.main_dashboard') }}" class="nav-link {{ 'active' if request.endpoint and 'user_management' in request.endpoint }}">
+                    <i class="fas fa-users nav-icon"></i>
+                    User Management
+                </a>
+                <div class="nav-subtitle">Account Settings</div>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h6><i class="fas fa-bolt"></i> Quick Actions</h6>
+        <div class="d-flex flex-wrap gap-1">
+            <a href="{{ url_for('accounts.new_account') }}" class="quick-action-btn" title="New Account">
+                <i class="fas fa-plus"></i>
+            </a>
+            <a href="{{ url_for('banking.quick_transfer') }}" class="quick-action-btn" title="Quick Transfer">
+                <i class="fas fa-paper-plane"></i>
+            </a>
+            <a href="{{ url_for('services.live_chat') }}" class="quick-action-btn" title="Live Chat">
+                <i class="fas fa-comments"></i>
+            </a>
+            <a href="{{ url_for('services.calculator') }}" class="quick-action-btn" title="Calculator">
+                <i class="fas fa-calculator"></i>
+            </a>
+            <a href="{{ url_for('banking.statements') }}" class="quick-action-btn" title="Statements">
+                <i class="fas fa-file-alt"></i>
+            </a>
+            <a href="{{ url_for('services.notifications') }}" class="quick-action-btn" title="Notifications">
+                <i class="fas fa-bell"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Status Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add active state based on current URL
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && currentPath.includes(href) && href !== '/') {
+            link.classList.add('active');
+        }
+    });
+    
+    // Smooth scroll for sidebar
+    const sidebar = document.querySelector('.enhanced-sidebar');
+    if (sidebar) {
+        sidebar.addEventListener('scroll', function() {
+            // Add scroll shadow effect
+            if (this.scrollTop > 0) {
+                this.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+            } else {
+                this.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)';
+            }
+        });
+    }
+    
+    // Icon loading check
+    console.log('Enhanced sidebar navigation loaded with icons');
+});
+</script>

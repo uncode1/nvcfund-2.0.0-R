@@ -1,0 +1,502 @@
+{# ===== FINRA-Compliant Transaction Table Macros ===== #}
+{# NVC Banking Platform - Regulatory Compliance #}
+{# Version: 3.0.0 - FINRA Rule 4511 Compliant #}
+
+{# Enhanced FINRA-compliant transaction table with full accessibility #}
+{% macro finra_transaction_table(transactions, table_id="finra-table", title="Transaction History", show_audit=true, sortable=true, responsive=true, show_finra_code=true) %}
+<div class="nvc-finra-table-container" role="region" aria-labelledby="{{ table_id }}-caption">
+  <!-- FINRA Compliance Header -->
+  <div class="nvc-finra-compliance-header">
+    <div class="nvc-compliance-info">
+      <i class="fas fa-shield-alt" aria-hidden="true"></i>
+      <span class="nvc-compliance-badge">FINRA Compliant</span>
+      <span class="nvc-compliance-badge">Rule 4511</span>
+      <span class="nvc-compliance-badge">Audit Ready</span>
+    </div>
+    <div class="nvc-audit-trail">
+      <span>Session: {{ session.get('session_id', 'N/A') }}</span> |
+      <span class="nvc-audit-timestamp">{{ now.strftime('%Y-%m-%d %H:%M:%S UTC') if now else 'N/A' }}</span>
+    </div>
+  </div>
+
+  <!-- Transaction Table -->
+  <table
+    id="{{ table_id }}"
+    class="nvc-finra-table{% if responsive %} nvc-table-responsive{% endif %}"
+    data-finra-compliant="true"
+    data-audit-enabled="{{ show_audit|lower }}"
+    role="table"
+    aria-label="FINRA-compliant transaction records"
+  >
+    <caption id="{{ table_id }}-caption" class="nvc-sr-only">
+      {{ title }} - Financial transaction records compliant with FINRA regulations.
+      Contains {{ transactions|length }} transactions with full audit trail.
+    </caption>
+
+    <thead role="rowgroup">
+      <tr role="row">
+        <th
+          scope="col"
+          class="nvc-col-timestamp{% if sortable %} nvc-sortable{% endif %}"
+          {% if sortable %}
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+          data-sort="timestamp"
+          {% endif %}
+        >
+          <span class="nvc-wcag-high-contrast">Timestamp</span>
+          <span class="nvc-sr-only">(UTC)</span>
+        </th>
+
+        <th
+          scope="col"
+          class="nvc-col-transaction-id{% if sortable %} nvc-sortable{% endif %}"
+          {% if sortable %}
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+          data-sort="transaction_id"
+          {% endif %}
+        >
+          <span class="nvc-wcag-high-contrast">Transaction ID</span>
+        </th>
+
+        <th scope="col" class="nvc-col-type">
+          <span class="nvc-wcag-high-contrast">Type</span>
+        </th>
+
+        <th
+          scope="col"
+          class="nvc-col-amount{% if sortable %} nvc-sortable{% endif %}"
+          {% if sortable %}
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+          data-sort="amount"
+          {% endif %}
+        >
+          <span class="nvc-wcag-high-contrast">Amount</span>
+        </th>
+
+        <th
+          scope="col"
+          class="nvc-col-status{% if sortable %} nvc-sortable{% endif %}"
+          {% if sortable %}
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+          data-sort="status"
+          {% endif %}
+        >
+          <span class="nvc-wcag-high-contrast">Status</span>
+        </th>
+
+        {% if show_finra_code and check_permission('can_view_finra_codes') %}
+        <th scope="col" class="nvc-col-finra-code">
+          <span class="nvc-wcag-high-contrast">FINRA Code</span>
+        </th>
+        {% endif %}
+
+        {% if show_audit %}
+        <th scope="col" class="nvc-col-audit">
+          <span class="nvc-wcag-high-contrast">Audit</span>
+          <span class="nvc-sr-only">Trail</span>
+        </th>
+        {% endif %}
+
+        <th scope="col" class="nvc-col-actions">
+          <span class="nvc-wcag-high-contrast">Actions</span>
+        </th>
+      </tr>
+    </thead>
+
+    <tbody role="rowgroup">
+      {% for transaction in transactions %}
+      <tr
+        role="row"
+        class="{% if transaction.flagged %}nvc-row-flagged{% elif transaction.status == 'pending' %}nvc-row-pending{% endif %}"
+        data-transaction-id="{{ transaction.id }}"
+        data-audit-user="{{ transaction.created_by }}"
+        data-audit-timestamp="{{ transaction.created_at.isoformat() }}"
+      >
+        <!-- Timestamp -->
+        <td
+          class="nvc-col-timestamp"
+          data-label="Timestamp"
+          role="gridcell"
+        >
+          <time
+            datetime="{{ transaction.created_at.isoformat() }}"
+            class="nvc-timestamp-wrapper"
+          >
+            <span class="nvc-timestamp-date">{{ transaction.created_at.strftime('%Y-%m-%d') }}</span>
+            <span class="nvc-timestamp-time">{{ transaction.created_at.strftime('%H:%M:%S') }}</span>
+          </time>
+        </td>
+
+        <!-- Transaction ID -->
+        <td
+          class="nvc-col-transaction-id"
+          data-label="Transaction ID"
+          role="gridcell"
+        >
+          <a
+            href="{{ url_for('banking.transaction_detail', id=transaction.id) }}"
+            class="nvc-transaction-link nvc-wcag-focus"
+            aria-label="View transaction {{ transaction.id }} details"
+          >
+            {{ transaction.id }}
+          </a>
+        </td>
+
+        <!-- Type -->
+        <td
+          class="nvc-col-type"
+          data-label="Type"
+          role="gridcell"
+        >
+          <span class="nvc-text-accessible">{{ transaction.type|title }}</span>
+        </td>
+
+        <!-- Amount -->
+        <td
+          class="nvc-col-amount"
+          data-label="Amount"
+          role="gridcell"
+          data-sort-value="{{ transaction.amount }}"
+        >
+          <span class="nvc-amount-wrapper">
+            <span class="nvc-currency-symbol" aria-hidden="true">$</span>
+            <span
+              class="{% if transaction.amount > 0 %}nvc-amount-positive{% elif transaction.amount < 0 %}nvc-amount-negative{% else %}nvc-amount-neutral{% endif %}"
+              aria-label="{{ '${:,.2f}'.format(abs(transaction.amount)) }} {{ 'credit' if transaction.amount > 0 else 'debit' if transaction.amount < 0 else 'neutral' }}"
+            >
+              {{ '{:,.2f}'.format(abs(transaction.amount)) }}
+            </span>
+          </span>
+        </td>
+
+        <!-- Status -->
+        <td
+          class="nvc-col-status"
+          data-label="Status"
+          role="gridcell"
+        >
+          <span
+            class="nvc-status-badge nvc-status-{{ transaction.status }}"
+            role="status"
+            aria-label="Transaction status: {{ transaction.status }}"
+          >
+            {{ transaction.status|title }}
+          </span>
+        </td>
+
+        <!-- FINRA Code -->
+        {% if show_finra_code and check_permission('can_view_finra_codes') %}
+        <td
+          class="nvc-col-finra-code"
+          data-label="FINRA Code"
+          role="gridcell"
+        >
+          <code class="nvc-finra-code">{{ transaction.finra_code or 'N/A' }}</code>
+        </td>
+        {% endif %}
+
+        <!-- Audit Trail -->
+        {% if show_audit %}
+        <td
+          class="nvc-col-audit"
+          data-label="Audit"
+          role="gridcell"
+        >
+          <button
+            type="button"
+            class="nvc-audit-icon nvc-wcag-focus nvc-touch-target"
+            data-bs-toggle="tooltip"
+            data-bs-placement="left"
+            title="View audit trail for transaction {{ transaction.id }}"
+            aria-label="View audit trail for transaction {{ transaction.id }}"
+            data-audit-transaction="{{ transaction.id }}"
+          >
+            <i class="fas fa-history" aria-hidden="true"></i>
+          </button>
+        </td>
+        {% endif %}
+
+        <!-- Actions -->
+        <td
+          class="nvc-col-actions"
+          data-label="Actions"
+          role="gridcell"
+        >
+          <div class="nvc-action-group" role="group" aria-label="Transaction actions">
+            <button
+              type="button"
+              class="nvc-btn nvc-btn-sm nvc-btn-secondary nvc-touch-target nvc-wcag-focus"
+              aria-label="View transaction {{ transaction.id }} details"
+              onclick="window.location.href='{{ url_for('banking.transaction_detail', id=transaction.id) }}'"
+            >
+              <i class="fas fa-eye" aria-hidden="true"></i>
+              <span class="nvc-sr-only">View</span>
+            </button>
+
+            {% if check_permission('can_edit_transactions') %}
+            <button
+              type="button"
+              class="nvc-btn nvc-btn-sm nvc-btn-warning nvc-touch-target nvc-wcag-focus"
+              aria-label="Edit transaction {{ transaction.id }}"
+              data-edit-transaction="{{ transaction.id }}"
+            >
+              <i class="fas fa-edit" aria-hidden="true"></i>
+              <span class="nvc-sr-only">Edit</span>
+            </button>
+            {% endif %}
+
+            {% if check_permission('can_export_transactions') %}
+            <button
+              type="button"
+              class="nvc-btn nvc-btn-sm nvc-btn-info nvc-touch-target nvc-wcag-focus"
+              aria-label="Export transaction {{ transaction.id }}"
+              data-export-transaction="{{ transaction.id }}"
+            >
+              <i class="fas fa-download" aria-hidden="true"></i>
+              <span class="nvc-sr-only">Export</span>
+            </button>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr role="row">
+        <td
+          colspan="{% if show_finra_code and check_permission('can_view_finra_codes') %}{% if show_audit %}8{% else %}7{% endif %}{% else %}{% if show_audit %}7{% else %}6{% endif %}"
+          class="nvc-empty-state"
+          role="gridcell"
+        >
+          <div class="nvc-empty-state-content">
+            <i class="fas fa-inbox nvc-empty-state-icon" aria-hidden="true"></i>
+            <p class="nvc-empty-state-title">No transactions found matching the current criteria.</p>
+            <p class="nvc-empty-state-subtitle">Transactions will appear here when available.</p>
+          </div>
+        </td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+
+    {% if transactions %}
+    <tfoot role="rowgroup">
+      <tr role="row">
+        <td colspan="{% if show_finra_code and check_permission('can_view_finra_codes') %}{% if show_audit %}8{% else %}7{% endif %}{% else %}{% if show_audit %}7{% else %}6{% endif %}" role="gridcell">
+          <div class="nvc-table-summary">
+            <span class="nvc-wcag-high-contrast">
+              Showing {{ transactions|length }} transactions
+            </span>
+            <span class="nvc-text-muted">
+              | Last updated: {{ moment().utcnow().strftime('%Y-%m-%d %H:%M:%S UTC') }}
+            </span>
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+    {% endif %}
+  </table>
+</div>
+
+<!-- ARIA Live Region for Dynamic Updates -->
+<div
+  id="{{ table_id }}-announcements"
+  class="nvc-aria-live nvc-aria-live-polite"
+  aria-live="polite"
+  aria-atomic="true"
+></div>
+{% endmacro %}
+
+{# Simplified transaction row for embedded use #}
+{% macro finra_transaction_row(transaction, show_audit=true, show_finra_code=true) %}
+<tr
+  role="row"
+  class="{% if transaction.flagged %}nvc-row-flagged{% elif transaction.status == 'pending' %}nvc-row-pending{% endif %}"
+  data-transaction-id="{{ transaction.id }}"
+>
+  <td class="nvc-col-timestamp" role="gridcell" data-label="Timestamp">
+    <time datetime="{{ transaction.created_at.isoformat() }}">
+      <span class="nvc-timestamp-date">{{ transaction.created_at.strftime('%Y-%m-%d') }}</span>
+      <span class="nvc-timestamp-time">{{ transaction.created_at.strftime('%H:%M:%S') }}</span>
+    </time>
+  </td>
+
+  <td class="nvc-col-transaction-id" role="gridcell" data-label="Transaction ID">
+    <a href="{{ url_for('banking.transaction_detail', id=transaction.id) }}" class="nvc-transaction-link nvc-wcag-focus">
+      {{ transaction.id }}
+    </a>
+  </td>
+
+  <td class="nvc-col-type" role="gridcell" data-label="Type">
+    {{ transaction.type|title }}
+  </td>
+
+  <td class="nvc-col-amount" role="gridcell" data-label="Amount">
+    <span class="{% if transaction.amount > 0 %}nvc-amount-positive{% elif transaction.amount < 0 %}nvc-amount-negative{% else %}nvc-amount-neutral{% endif %}">
+      ${{ '{:,.2f}'.format(abs(transaction.amount)) }}
+    </span>
+  </td>
+
+  <td class="nvc-col-status" role="gridcell" data-label="Status">
+    <span class="nvc-status-badge nvc-status-{{ transaction.status }}">
+      {{ transaction.status|title }}
+    </span>
+  </td>
+
+  {% if show_finra_code and check_permission('can_view_finra_codes') %}
+  <td class="nvc-col-finra-code" role="gridcell" data-label="FINRA Code">
+    <code class="nvc-finra-code">{{ transaction.finra_code or 'N/A' }}</code>
+  </td>
+  {% endif %}
+
+  {% if show_audit %}
+  <td class="nvc-col-audit" role="gridcell" data-label="Audit">
+    <button
+      type="button"
+      class="nvc-audit-icon nvc-wcag-focus nvc-touch-target"
+      data-audit-transaction="{{ transaction.id }}"
+      aria-label="View audit trail for transaction {{ transaction.id }}"
+    >
+      <i class="fas fa-history" aria-hidden="true"></i>
+    </button>
+  </td>
+  {% endif %}
+
+  <td class="nvc-col-actions" role="gridcell" data-label="Actions">
+    <div class="nvc-action-group" role="group" aria-label="Transaction actions">
+      <button
+        type="button"
+        class="nvc-btn nvc-btn-sm nvc-btn-secondary nvc-touch-target nvc-wcag-focus"
+        aria-label="View transaction {{ transaction.id }}"
+        onclick="window.location.href='{{ url_for('banking.transaction_detail', id=transaction.id) }}'"
+      >
+        <i class="fas fa-eye" aria-hidden="true"></i>
+        <span class="nvc-sr-only">View</span>
+      </button>
+    </div>
+  </td>
+</tr>
+{% endmacro %}
+
+{# FINRA compliance summary widget #}
+{% macro finra_compliance_summary(compliance_data) %}
+<div class="nvc-finra-compliance-summary nvc-card" role="complementary" aria-labelledby="compliance-summary-title">
+  <div class="nvc-card-header">
+    <h3 id="compliance-summary-title" class="nvc-card-title nvc-wcag-high-contrast">
+      <i class="fas fa-shield-alt" aria-hidden="true"></i>
+      FINRA Compliance Status
+    </h3>
+  </div>
+
+  <div class="nvc-card-body">
+    <div class="nvc-compliance-metrics">
+      <div class="nvc-metric">
+        <span class="nvc-metric-label">Audit Trail Coverage</span>
+        <span class="nvc-metric-value nvc-wcag-high-contrast">{{ compliance_data.audit_coverage }}%</span>
+        <div class="nvc-metric-bar">
+          <div class="nvc-metric-progress" data-progress="{{ compliance_data.audit_coverage }}"></div>
+        </div>
+      </div>
+
+      <div class="nvc-metric">
+        <span class="nvc-metric-label">Record Retention</span>
+        <span class="nvc-metric-value nvc-wcag-high-contrast">{{ compliance_data.retention_days }} days</span>
+        <small class="nvc-text-muted">Required: 3 years minimum</small>
+      </div>
+
+      <div class="nvc-metric">
+        <span class="nvc-metric-label">Last Audit</span>
+        <span class="nvc-metric-value nvc-wcag-high-contrast">{{ compliance_data.last_audit_date }}</span>
+        <small class="nvc-text-muted">Next: {{ compliance_data.next_audit_date }}</small>
+      </div>
+    </div>
+
+    <div class="nvc-compliance-status">
+      <span class="nvc-status-badge nvc-status-{{ 'approved' if compliance_data.is_compliant else 'rejected' }}">
+        <i class="fas fa-{{ 'check-circle' if compliance_data.is_compliant else 'exclamation-triangle' }}" aria-hidden="true"></i>
+        {{ 'Compliant' if compliance_data.is_compliant else 'Non-Compliant' }}
+      </span>
+
+      {% if not compliance_data.is_compliant %}
+      <div class="nvc-compliance-issues">
+        <h4 class="nvc-wcag-high-contrast">Issues to Address:</h4>
+        <ul class="nvc-issue-list">
+          {% for issue in compliance_data.issues %}
+          <li class="nvc-issue-item">
+            <i class="fas fa-exclamation-circle nvc-text-danger" aria-hidden="true"></i>
+            {{ issue }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{# FINRA audit trail modal #}
+{% macro finra_audit_modal(transaction_id) %}
+<div class="modal fade" id="auditModal-{{ transaction_id }}" tabindex="-1" aria-labelledby="auditModalLabel-{{ transaction_id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header nvc-finra-compliance-header">
+        <h5 class="modal-title" id="auditModalLabel-{{ transaction_id }}">
+          <i class="fas fa-history" aria-hidden="true"></i>
+          Audit Trail - Transaction {{ transaction_id }}
+        </h5>
+        <button type="button" class="btn-close nvc-wcag-focus" data-bs-dismiss="modal" aria-label="Close audit trail"></button>
+      </div>
+      <div class="modal-body">
+        <div class="nvc-audit-trail-content" id="auditContent-{{ transaction_id }}">
+          <!-- Audit trail content will be loaded here -->
+          <div class="nvc-loading-accessible" aria-busy="true">
+            <span class="nvc-sr-only">Loading audit trail...</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="nvc-btn nvc-btn-secondary nvc-wcag-focus" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="nvc-btn nvc-btn-primary nvc-wcag-focus" onclick="exportAuditTrail('{{ transaction_id }}')">
+          <i class="fas fa-download" aria-hidden="true"></i>
+          Export Audit Trail
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{# FINRA export controls #}
+{% macro finra_export_controls(table_id, export_formats=['csv', 'pdf', 'excel']) %}
+<div class="nvc-export-controls" role="group" aria-labelledby="export-controls-title">
+  <h4 id="export-controls-title" class="nvc-sr-only">Export Options</h4>
+
+  <div class="nvc-export-buttons">
+    {% for format in export_formats %}
+    <button
+      type="button"
+      class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus nvc-touch-target"
+      onclick="exportTable('{{ table_id }}', '{{ format }}')"
+      aria-label="Export table as {{ format.upper() }}"
+    >
+      <i class="fas fa-{{ 'file-csv' if format == 'csv' else 'file-pdf' if format == 'pdf' else 'file-excel' }}" aria-hidden="true"></i>
+      {{ format.upper() }}
+    </button>
+    {% endfor %}
+  </div>
+
+  <div class="nvc-export-info">
+    <small class="nvc-text-muted">
+      <i class="fas fa-info-circle" aria-hidden="true"></i>
+      Exports include full audit trail and FINRA compliance metadata
+    </small>
+  </div>
+</div>
+{% endmacro %}

@@ -1,0 +1,102 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Threat Monitoring - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Threat Monitoring{% endblock %}
+{% block page_description %}Real-time threat detection and monitoring for banking and cryptocurrency operations{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-bell"></i>
+    Configure Alerts
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-eye"></i>
+    Threat Intel
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .threat-monitoring {
+        background: linear-gradient(135deg, #7c2d12 0%, #991b1b 100%);
+        min-height: 100vh;
+        color: #ffffff;
+        padding: 20px;
+    }
+    
+    .threat-alert {
+        background: rgba(220, 38, 38, 0.2);
+        border: 1px solid rgba(220, 38, 38, 0.5);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .status-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="threat-monitoring">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-eye"></i> Threat Monitoring</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="status-nvc-card">
+                <h3>{{ threat_data.active_threats or 0 }}</h3>
+                <p>Active Threats</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="status-nvc-card">
+                <h3>{{ threat_data.blocked_attempts or 0 }}</h3>
+                <p>Blocked Attempts</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="status-nvc-card">
+                <h3>{{ threat_data.threat_level or 'Low' }}</h3>
+                <p>Threat Level</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <h2>Recent Threats</h2>
+            {% for threat in threat_data.recent_threats %}
+            <div class="threat-nvc-alert">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5>{{ threat.type }}</h5>
+                        <p>Source: {{ threat.source }} - {{ threat.time }}</p>
+                    </div>
+                    <div>
+                        <span class="badge bg-{{ 'success' if threat.status == 'Blocked' else 'danger' }}">{{ threat.status }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

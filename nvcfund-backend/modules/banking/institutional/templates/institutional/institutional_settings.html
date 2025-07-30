@@ -1,0 +1,27 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Institutional Banking Settings{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>Institutional Banking Settings
+                    </h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <h5 class="text-light">Configure Institutional Banking parameters</h5>
+                    <p class="text-light">Manage system settings and operational parameters.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

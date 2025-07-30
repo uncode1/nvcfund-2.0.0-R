@@ -1,0 +1,447 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Asset Liability Manager - Strategic Rate Management{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- ALM Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">Asset Liability Manager Dashboard</h1>
+            <p class="text-light">Strategic Interest Rate & Portfolio Management</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-warning">Rate Authority: 1.00%</span>
+            <span class="badge bg-info">ALM Manager</span>
+        </div>
+    </div>
+
+    <!-- Strategic Metrics Row -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="nvc-card bg-primary text-white">
+                <div class="nvc-nvc-card-body text-center">
+                    <h6 class="nvc-card-title">Net Interest Margin</h6>
+                    <h3 class="mb-0">{{ net_interest_margin }%}</h3>
+                    <small>{{ nim_trend }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="nvc-card bg-success text-white">
+                <div class="nvc-nvc-card-body text-center">
+                    <h6 class="nvc-card-title">Duration Gap</h6>
+                    <h3 class="mb-0">{{ duration_gap }}</h3>
+                    <small>{{ gap_status }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="nvc-card bg-info text-white">
+                <div class="nvc-nvc-card-body text-center">
+                    <h6 class="nvc-card-title">Asset Yield</h6>
+                    <h3 class="mb-0">{{ asset_yield }%}</h3>
+                    <small>Portfolio Average</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="nvc-card bg-warning text-white">
+                <div class="nvc-nvc-card-body text-center">
+                    <h6 class="nvc-card-title">Cost of Funds</h6>
+                    <h3 class="mb-0">{{ cost_of_funds }%}</h3>
+                    <small>Weighted Average</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="nvc-card bg-danger text-white">
+                <div class="nvc-nvc-card-body text-center">
+                    <h6 class="nvc-card-title">Rate Risk Score</h6>
+                    <h3 class="mb-0">{{ rate_risk_score }}</h3>
+                    <small>{{ risk_level }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="nvc-card bg-secondary text-white">
+                <div class="nvc-nvc-card-body text-center">
+                    <h6 class="nvc-card-title">Liquidity Ratio</h6>
+                    <h3 class="mb-0">{{ liquidity_ratio }%}</h3>
+                    <small>{{ liquidity_status }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategic Rate Management -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Strategic Rate Management (Your Authority)</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Mortgage & Real Estate</h6>
+                            <div class="list-group mb-3">
+                                <a href="{{ url_for('interest_rate_management.manage_mortgage_rates') }}" class="list-group-item list-group-item-action">
+                                    <strong>30-Year Fixed Mortgages</strong>
+                                    <br><small>Current: {{ mortgage_30_rate }%} | Adjustment Authority: ±1.00%</small>
+                                </a>
+                                <a href="{{ url_for('interest_rate_management.manage_mortgage_rates') }}" class="list-group-item list-group-item-action">
+                                    <strong>15-Year Fixed Mortgages</strong>
+                                    <br><small>Current: {{ mortgage_15_rate }%} | Premium to 30-year</small>
+                                </a>
+                                <a href="{{ url_for('interest_rate_management.manage_arm_rates') }}" class="list-group-item list-group-item-action">
+                                    <strong>Adjustable Rate Mortgages</strong>
+                                    <br><small>ARM products and rate caps management</small>
+                                </a>
+                            </div>
+                            
+                            <h6>Commercial Lending</h6>
+                            <div class="list-group">
+                                <a href="{{ url_for('interest_rate_management.manage_commercial_rates') }}" class="list-group-item list-group-item-action">
+                                    <strong>Commercial Real Estate</strong>
+                                    <br><small>Current: {{ cre_rate }%} | Risk-based pricing</small>
+                                </a>
+                                <a href="{{ url_for('interest_rate_management.manage_business_loans') }}" class="list-group-item list-group-item-action">
+                                    <strong>Business Term Loans</strong>
+                                    <br><small>SBA and conventional business lending</small>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Deposit Portfolio Management</h6>
+                            <div class="list-group mb-3">
+                                <a href="{{ url_for('interest_rate_management.manage_cd_rates') }}" class="list-group-item list-group-item-action">
+                                    <strong>Certificate of Deposit Rates</strong>
+                                    <br><small>Term structure and yield curve optimization</small>
+                                </a>
+                                <a href="{{ url_for('interest_rate_management.manage_money_market') }}" class="list-group-item list-group-item-action">
+                                    <strong>Money Market Accounts</strong>
+                                    <br><small>Tiered rate structure management</small>
+                                </a>
+                                <a href="{{ url_for('interest_rate_management.manage_savings_rates') }}" class="list-group-item list-group-item-action">
+                                    <strong>High-Yield Savings</strong>
+                                    <br><small>Competitive positioning strategy</small>
+                                </a>
+                            </div>
+                            
+                            <h6>Request Higher Authority</h6>
+                            <div class="list-group">
+                                <a href="{{ url_for('interest_rate_management.request_policy_authority') }}" class="list-group-item list-group-item-action">
+                                    <strong>Institutional Rate Changes</strong>
+                                    <br><small>Requires CFO/Board approval (>1.00%)</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Asset Liability Analysis</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <h6>Interest Rate Sensitivity</h6>
+                    <div class="mb-3">
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-success" style="width: {{ asset_sensitivity }%}">Assets</div>
+                        </div>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-warning" style="width: {{ liability_sensitivity }%}">Liabilities</div>
+                        </div>
+                        <small>Rate Sensitivity Gap: {{ sensitivity_gap }%}</small>
+                    </div>
+                    
+                    <h6>Maturity Buckets</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Term</th>
+                                    <th>Assets</th>
+                                    <th>Liabilities</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>0-1Y</td>
+                                    <td>${{ assets_0_1y }}B</td>
+                                    <td>${{ liabilities_0_1y }}B</td>
+                                </tr>
+                                <tr>
+                                    <td>1-5Y</td>
+                                    <td>${{ assets_1_5y }}B</td>
+                                    <td>${{ liabilities_1_5y }}B</td>
+                                </tr>
+                                <tr>
+                                    <td>5Y+</td>
+                                    <td>${{ assets_5y_plus }}B</td>
+                                    <td>${{ liabilities_5y_plus }}B</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate Setting Forms and Analysis -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Strategic Rate Adjustment</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('interest_rate_management.strategic_rate_update') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="nvc-form-label">Product Category</label>
+                                <select name="product_category" class="nvc-form-select" required>
+                                    <option value="">Select Category</option>
+                                    <option value="mortgage_30_year">30-Year Mortgages</option>
+                                    <option value="mortgage_15_year">15-Year Mortgages</option>
+                                    <option value="commercial_real_estate">Commercial RE</option>
+                                    <option value="business_loans">Business Loans</option>
+                                    <option value="money_market">Money Market</option>
+                                    <option value="certificates_deposit">CDs</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="nvc-form-label">Risk Tier</label>
+                                <select name="risk_tier" class="nvc-form-select" required>
+                                    <option value="">Select Tier</option>
+                                    <option value="prime">Prime (740+)</option>
+                                    <option value="near_prime">Near Prime (660-739)</option>
+                                    <option value="subprime">Subprime (580-659)</option>
+                                    <option value="alt_a">Alt-A (Documentation)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="nvc-form-label">Current Rate (%)</label>
+                                <input type="number" name="current_rate" class="nvc-form-input" step="0.0001" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="nvc-form-label">New Rate (%)</label>
+                                <input type="number" name="new_rate" class="nvc-form-input" step="0.0001" min="0" max="25" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Strategic Justification</label>
+                            <textarea name="justification" class="nvc-form-input" rows="3" required placeholder="Portfolio optimization, competitive positioning, risk management..."></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="nvc-form-label">Effective Date</label>
+                                <input type="datetime-local" name="effective_date" class="nvc-form-input" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="nvc-form-label">Rate Strategy</label>
+                                <select name="rate_strategy" class="nvc-form-select" required>
+                                    <option value="duration_matching">Duration Matching</option>
+                                    <option value="yield_optimization">Yield Optimization</option>
+                                    <option value="risk_mitigation">Risk Mitigation</option>
+                                    <option value="competitive_response">Competitive Response</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn nvc-btn nvc-btn-primary w-100">Execute Strategic Rate Change</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Rate Impact Simulation</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <h6>Portfolio Impact Analysis</h6>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Net Interest Income Impact:</span>
+                            <span class="text-{{ 'success' if nii_impact > 0 else 'danger' }}">
+                                {{ "+" if nii_impact > 0 else "" }}${{ nii_impact }}M
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Duration Risk Change:</span>
+                            <span>{{ duration_risk_change }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Customer Impact:</span>
+                            <span>{{ customer_impact_score }}</span>
+                        </div>
+                    </div>
+                    
+                    <h6>Market Positioning</h6>
+                    <div class="mb-3">
+                        {% for competitor in top_competitors %}
+                        <div class="d-flex justify-content-between">
+                            <span>{{ competitor.name }}:</span>
+                            <span>{{ "%.3f"|format(competitor.rate) }%}</span>
+                        </div>
+                        {% endfor %}
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Market Average:</strong>
+                            <strong>{{ "%.3f"|format(market_average) }%}</strong>
+                        </div>
+                    </div>
+                    
+                    <h6>Stress Test Scenarios</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Scenario</th>
+                                    <th>NIM Impact</th>
+                                    <th>Risk Level</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>+200 bps rates</td>
+                                    <td class="{{ 'text-success' if stress_200_up > 0 else 'text-danger' }}">{{ stress_200_up }%}</td>
+                                    <td>{{ stress_200_risk }}</td>
+                                </tr>
+                                <tr>
+                                    <td>-100 bps rates</td>
+                                    <td class="{{ 'text-success' if stress_100_down > 0 else 'text-danger' }}">{{ stress_100_down }%}</td>
+                                    <td>{{ stress_100_risk }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Yield curve flattening</td>
+                                    <td class="{{ 'text-success' if stress_flatten > 0 else 'text-danger' }}">{{ stress_flatten }%}</td>
+                                    <td>{{ stress_flatten_risk }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Strategic Changes -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Recent Strategic Rate Changes</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Product Category</th>
+                                    <th>Rate Change</th>
+                                    <th>Strategic Rationale</th>
+                                    <th>Portfolio Impact</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for change in recent_strategic_changes %}
+                                <tr>
+                                    <td>{{ change.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ change.product_category }}</td>
+                                    <td>
+                                        {{ "%.4f"|format(change.from_rate) }%} → {{ "%.4f"|format(change.to_rate) }%}
+                                        <br><small class="{{ 'text-success' if change.change_amount > 0 else 'text-danger' }}">
+                                            {{ "+" if change.change_amount > 0 else "" }}{{ "%.3f"|format(change.change_amount) }%}
+                                        </small>
+                                    </td>
+                                    <td>{{ change.strategic_rationale }}</td>
+                                    <td>
+                                        NIM: {{ "+" if change.nim_impact > 0 else "" }}{{ "%.2f"|format(change.nim_impact) }%}
+                                        <br><small>Duration: {{ change.duration_impact }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if change.status == 'implemented' else 'warning' }}">
+                                            {{ change.status.title() }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: 1px solid #2d5aa0;
+    background: #0a2447;
+    color: #ffffff;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #2d5aa0 0%, #1e3a8a 100%);
+    border-bottom: 1px solid #66ccff;
+}
+
+.list-group-item {
+    background: #0a2447;
+    border: 1px solid #2d5aa0;
+    color: #ffffff;
+}
+
+.list-group-item:hover {
+    background: #1e3a8a;
+    color: #66ccff;
+}
+
+.table-dark {
+    background: #0a2447;
+    color: #ffffff;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2d5aa0 0%, #1e3a8a 100%);
+    border: 1px solid #66ccff;
+}
+
+.form-control, .form-select {
+    background: #0a2447;
+    border: 1px solid #2d5aa0;
+    color: #ffffff;
+}
+
+.form-control:focus, .form-select:focus {
+    background: #0a2447;
+    border-color: #66ccff;
+    box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+    color: #ffffff;
+}
+
+.progress {
+    background-color: #2d5aa0;
+}
+
+.table th, .table td {
+    border-color: #2d5aa0;
+    color: #ffffff;
+}
+</style>
+</div>
+{% endblock %}

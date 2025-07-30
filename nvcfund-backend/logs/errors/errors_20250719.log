@@ -1,0 +1,256 @@
+2025-07-19T05:07:55.171939 - DATA_TABLE_ACCOUNT_BALANCES_ERROR: accounts/data_table_account_balances.html
+Details: {'user_id': 1}
+---
+2025-07-19T05:07:57.312512 - DATA_TABLE_PENDING_OPERATIONS_ERROR: accounts/data_table_pending_operations.html
+Details: {'user_id': 1}
+---
+2025-07-19T05:07:59.655898 - DATA_TABLE_SECURITY_METRICS_ERROR: accounts/data_table_security_metrics.html
+Details: {'user_id': 1}
+---
+2025-07-19T05:34:53.563661 - DATA_TABLE_ACCOUNT_BALANCES_ERROR: accounts/data_table_account_balances.html
+Details: {'user_id': 1}
+---
+2025-07-19T05:34:57.376048 - DATA_TABLE_PENDING_OPERATIONS_ERROR: accounts/data_table_pending_operations.html
+Details: {'user_id': 1}
+---
+2025-07-19T05:34:59.849585 - DATA_TABLE_SECURITY_METRICS_ERROR: accounts/data_table_security_metrics.html
+Details: {'user_id': 1}
+---
+2025-07-19T05:44:14.153053 - DATA_TABLE_ACCOUNT_BALANCES_ERROR: accounts/data_table_account_balances.html
+Details: {'user_id': 1}
+---
+2025-07-19T05:44:49.215696 - DATA_TABLE_PENDING_OPERATIONS_ERROR: accounts/data_table_pending_operations.html
+Details: {'user_id': 1}
+---
+2025-07-19T05:45:09.902867 - DATA_TABLE_SECURITY_METRICS_ERROR: accounts/data_table_security_metrics.html
+Details: {'user_id': 1}
+---
+2025-07-19T05:45:18.064112 - DATA_TABLE_SECURITY_METRICS_ERROR: accounts/data_table_security_metrics.html
+Details: {'user_id': 1}
+---
+2025-07-19T05:47:24.157652 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:47:41.123077 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:47:51.624964 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:47:56.082053 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:47:57.842226 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:48:25.746731 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:48:37.459541 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:49:33.581964 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:49:45.750289 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:50:46.206626 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:50:48.003748 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:51:04.035416 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:51:44.631013 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:52:30.631289 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:53:40.216547 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:55:41.680081 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:56:24.226780 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:56:33.401823 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:57:58.355029 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:58:13.749170 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:58:43.841467 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T05:59:29.753813 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:00:04.379173 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:00:41.165403 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:02:38.436114 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:02:48.997760 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:03:30.766220 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:04:12.261418 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:04:24.082695 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:07:24.979344 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:07:39.950904 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:08:18.871251 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:08:37.692600 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:09:00.705850 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:10:17.241034 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:10:55.838546 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:13:48.463067 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:25:31.047976 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:26:34.218001 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:27:49.378871 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T06:28:48.698400 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T07:32:27.110404 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T07:33:55.142629 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T07:34:18.042247 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T07:36:21.711893 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T07:36:47.175025 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T07:37:14.583094 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T09:20:52.523916 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T09:21:07.506844 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T09:29:15.143669 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T09:30:10.864017 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T09:39:17.837658 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T09:44:33.665856 - DASHBOARD_ERROR: 'builtin_function_or_method' object is not iterable
+Details: {'user_id': 1}
+---
+2025-07-19T10:29:31.307761 - DATA_TABLE_ACCOUNT_BALANCES_ERROR: accounts/data_table_account_balances.html
+Details: {'user_id': 1}
+---
+2025-07-19T10:29:32.525150 - DATA_TABLE_PENDING_OPERATIONS_ERROR: accounts/data_table_pending_operations.html
+Details: {'user_id': 1}
+---
+2025-07-19T18:41:07.688254 - CARDS_MANAGEMENT_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-19T18:41:10.887489 - TRANSFERS_MANAGEMENT_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-19T18:41:14.659355 - TRANSACTIONS_ANALYSIS_ERROR: banking/transaction_history.html
+Details: {'user_id': 1}
+---
+2025-07-19T18:46:42.531565 - Banking dashboard error: 'moment' is undefined: 1
+---
+2025-07-19T18:47:22.213833 - Banking dashboard error: 'moment' is undefined: 1
+---
+2025-07-19T18:47:43.049745 - Banking dashboard error: 'moment' is undefined: 1
+---
+2025-07-19T19:09:24.296394 - Banking dashboard error: 'moment' is undefined: 1
+---
+2025-07-19T19:09:29.678516 - DASHBOARD_ERROR: Could not build url for endpoint 'treasury.transaction_details' with values ['transaction_id']. Did you mean 'banking.transaction_details' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T19:20:59.331397 - DATA_TABLE_ACCOUNT_BALANCES_ERROR: accounts/data_table_account_balances.html
+Details: {'user_id': 1}
+---
+2025-07-19T19:45:52.288920 - Banking dashboard error: 'moment' is undefined: 1
+---
+2025-07-19T20:14:05.042467 - Banking dashboard error: 'moment' is undefined: 1
+---
+2025-07-19T20:57:42.621194 - Banking dashboard error: 'moment' is undefined: 1
+---
+2025-07-19T20:57:45.664697 - DASHBOARD_ERROR: Could not build url for endpoint 'treasury.transaction_details' with values ['transaction_id']. Did you mean 'banking.transaction_details' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T21:09:39.303957 - EDIT_ACCOUNT_ERROR: Could not build url for endpoint 'services.help_center'. Did you mean 'services.settlement_services' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T21:09:39.339256 - OVERVIEW_ERROR: Could not build url for endpoint 'services.help_center'. Did you mean 'services.settlement_services' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T21:09:39.367082 - DASHBOARD_ERROR: Could not build url for endpoint 'services.help_center'. Did you mean 'services.settlement_services' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T21:09:43.229927 - ACCOUNT_DETAILS_ERROR: Could not build url for endpoint 'services.help_center'. Did you mean 'services.settlement_services' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T21:09:43.263399 - OVERVIEW_ERROR: Could not build url for endpoint 'services.help_center'. Did you mean 'services.settlement_services' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T21:09:43.293162 - DASHBOARD_ERROR: Could not build url for endpoint 'services.help_center'. Did you mean 'services.settlement_services' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T21:09:44.424582 - DATA_TABLE_ACTIVE_ACCOUNTS_ERROR: Could not build url for endpoint 'services.help_center'. Did you mean 'services.settlement_services' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T21:09:44.459733 - DASHBOARD_ERROR: Could not build url for endpoint 'services.help_center'. Did you mean 'services.settlement_services' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T21:09:45.427660 - DASHBOARD_ERROR: Could not build url for endpoint 'services.help_center'. Did you mean 'services.settlement_services' instead?
+Details: {'user_id': 1}
+---
+2025-07-19T21:40:15.165951 - Banking dashboard error: 'moment' is undefined: 1
+---

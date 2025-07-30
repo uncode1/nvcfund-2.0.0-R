@@ -1,0 +1,230 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Account Settings - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Account Settings{% endblock %}
+{% block page_description %}Manage your account preferences, notifications, and personal information{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('accounts.main_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        Accounts
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-cog" aria-hidden="true"></i>
+    Settings
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Reset settings to default">
+    <i class="fas fa-undo" aria-hidden="true"></i>
+    Reset to Default
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Export settings">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Settings
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Save changes">
+    <i class="fas fa-save" aria-hidden="true"></i>
+    Save Changes
+</button>
+{% endblock %}
+
+{% block sidebar %}
+<!-- No sidebar for modern dashboard layout -->
+{% endblock %}
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Settings Navigation Tabs -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-cog" aria-hidden="true"></i>
+                    Account Settings
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">Auto-Save Enabled</span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-settings-tabs">
+                    <nav class="nvc-tab-nav" role="tablist">
+                        <button class="nvc-tab-button nvc-tab-active nvc-wcag-focus" role="tab" aria-selected="true" aria-controls="profile-panel" id="profile-tab">
+                            <i class="fas fa-user" aria-hidden="true"></i>
+                            Profile
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" role="tab" aria-selected="false" aria-controls="notifications-panel" id="notifications-tab">
+                            <i class="fas fa-bell" aria-hidden="true"></i>
+                            Notifications
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" role="tab" aria-selected="false" aria-controls="security-panel" id="security-tab">
+                            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                            Security
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" role="tab" aria-selected="false" aria-controls="preferences-panel" id="preferences-tab">
+                            <i class="fas fa-user-cog" aria-hidden="true"></i>
+                            Preferences
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Settings Panel -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary" id="profile-panel" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="nvc-section-header">
+                <h3 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-user" aria-hidden="true"></i>
+                    Profile Information
+                </h3>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus">
+                        <i class="fas fa-save" aria-hidden="true"></i>
+                        Save Profile
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <form class="nvc-settings-form">
+                    <div class="nvc-form-grid">
+                        <div class="nvc-form-group">
+                            <label for="first-name" class="nvc-form-label nvc-wcag-high-contrast">First Name</label>
+                            <input type="text" id="first-name" name="first_name" class="nvc-form-input nvc-wcag-focus" value="{{ user.first_name or 'John' }}" aria-describedby="first-name-help">
+                            <small id="first-name-help" class="nvc-form-help">Your legal first name</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="last-name" class="nvc-form-label nvc-wcag-high-contrast">Last Name</label>
+                            <input type="text" id="last-name" name="last_name" class="nvc-form-input nvc-wcag-focus" value="{{ user.last_name or 'Doe' }}" aria-describedby="last-name-help">
+                            <small id="last-name-help" class="nvc-form-help">Your legal last name</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="email" class="nvc-form-label nvc-wcag-high-contrast">Email Address</label>
+                            <input type="email" id="email" name="email" class="nvc-form-input nvc-wcag-focus" value="{{ user.email or 'john.doe@example.com' }}" aria-describedby="email-help">
+                            <small id="email-help" class="nvc-form-help">Primary email for account notifications</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="phone" class="nvc-form-label nvc-wcag-high-contrast">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" class="nvc-form-input nvc-wcag-focus" value="{{ user.phone or '+1 (555) 123-4567' }}" aria-describedby="phone-help">
+                            <small id="phone-help" class="nvc-form-help">For security verification and alerts</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="date-of-birth" class="nvc-form-label nvc-wcag-high-contrast">Date of Birth</label>
+                            <input type="date" id="date-of-birth" name="date_of_birth" class="nvc-form-input nvc-wcag-focus" value="{{ user.date_of_birth or '1990-01-01' }}" aria-describedby="dob-help">
+                            <small id="dob-help" class="nvc-form-help">Required for identity verification</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="timezone" class="nvc-form-label nvc-wcag-high-contrast">Time Zone</label>
+                            <select id="timezone" name="timezone" class="nvc-form-select nvc-wcag-focus" aria-describedby="timezone-help">
+                                <option value="ET" selected>Eastern Time (ET)</option>
+                                <option value="CT">Central Time (CT)</option>
+                                <option value="MT">Mountain Time (MT)</option>
+                                <option value="PT">Pacific Time (PT)</option>
+                            </select>
+                            <small id="timezone-help" class="nvc-form-help">Used for transaction timestamps</small>
+                        </div>
+                    </div>
+
+                    <div class="nvc-form-group nvc-form-group-full">
+                        <label for="address" class="nvc-form-label nvc-wcag-high-contrast">Address</label>
+                        <input type="text" id="address" name="address" class="nvc-form-input nvc-wcag-focus" value="{{ user.address or '123 Main Street, New York, NY 10001' }}" aria-describedby="address-help">
+                        <small id="address-help" class="nvc-form-help">Your primary residential address</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Settings Dashboard Interactions
+
+    // Tab navigation functionality
+    const tabButtons = document.querySelectorAll('.nvc-tab-button');
+    const tabPanels = document.querySelectorAll('[role="tabpanel"]');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active state from all tabs
+            tabButtons.forEach(tab => {
+                tab.classList.remove('nvc-tab-active');
+                tab.setAttribute('aria-selected', 'false');
+            });
+
+            // Add active state to clicked tab
+            this.classList.add('nvc-tab-active');
+            this.setAttribute('aria-selected', 'true');
+
+            // Hide all panels
+            tabPanels.forEach(panel => {
+                panel.style.display = 'none';
+            });
+
+            // Show corresponding panel
+            const targetPanel = document.getElementById(this.getAttribute('aria-controls'));
+            if (targetPanel) {
+                targetPanel.style.display = 'block';
+            }
+        });
+    });
+
+    // Form validation and auto-save
+    const formInputs = document.querySelectorAll('.nvc-form-input, .nvc-form-select');
+    formInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Add visual feedback for changes
+            this.classList.add('nvc-form-changed');
+
+            // Auto-save after 2 seconds of inactivity
+            clearTimeout(this.saveTimeout);
+            this.saveTimeout = setTimeout(() => {
+                console.log('Auto-saving:', this.name, this.value);
+                this.classList.remove('nvc-form-changed');
+                this.classList.add('nvc-form-saved');
+                setTimeout(() => {
+                    this.classList.remove('nvc-form-saved');
+                }, 1000);
+            }, 2000);
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+
+    // Initialize first tab as visible
+    if (tabPanels.length > 0) {
+        tabPanels[0].style.display = 'block';
+        for (let i = 1; i < tabPanels.length; i++) {
+            tabPanels[i].style.display = 'none';
+        }
+    }
+});
+</script>
+{% endblock %}

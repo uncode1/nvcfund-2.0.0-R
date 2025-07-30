@@ -1,0 +1,332 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}NVCT Supply Management - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}NVCT Supply Management{% endblock %}
+{% block page_description %}Advanced supply control and monetary policy management for NVCT stablecoin{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-fire"></i>
+    Burn NVCT
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus-circle"></i>
+    Mint NVCT
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportSupplyData() {
+    const csvData = 'Date,Action,Amount,Total Supply,Collateral Ratio\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nvct_supply_management.csv';
+    a.click();
+}
+
+function mintNVCT() {
+    const amount = prompt('Enter amount to mint (NVCT):');
+    const recipient = prompt('Enter recipient address:');
+    const justification = prompt('Enter justification for minting:');
+
+    if (amount && recipient && justification && !isNaN(amount) && parseFloat(amount) > 0) {
+        if (confirm(`Are you sure you want to mint ${amount} NVCT to ${recipient}?`)) {
+            // Create form data to match the route expectations
+            const formData = new FormData();
+            formData.append('amount', amount);
+            formData.append('recipient', recipient);
+            formData.append('justification', justification);
+
+            fetch("{{ url_for('nvct_stablecoin.mint_nvct') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+                },
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    alert('NVCT minted successfully');
+                    location.reload();
+                } else {
+                    alert('Error minting NVCT - Check permissions');
+                }
+            }).catch(error => {
+                console.error('Minting error:', error);
+                alert('Error minting NVCT - Network error');
+            });
+        }
+    }
+}
+
+function burnNVCT() {
+    const amount = prompt('Enter amount to burn (NVCT):');
+    const justification = prompt('Enter justification for burning:');
+
+    if (amount && justification && !isNaN(amount) && parseFloat(amount) > 0) {
+        if (confirm(`Are you sure you want to burn ${amount} NVCT?`)) {
+            // Create form data to match the route expectations
+            const formData = new FormData();
+            formData.append('amount', amount);
+            formData.append('justification', justification);
+
+            fetch("{{ url_for('nvct_stablecoin.burn_nvct') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+                },
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    alert('NVCT burned successfully');
+                    location.reload();
+                } else {
+                    alert('Error burning NVCT - Check permissions');
+                }
+            }).catch(error => {
+                console.error('Burning error:', error);
+                alert('Error burning NVCT - Network error');
+            });
+        }
+    }
+}
+
+function viewAssetBacking() {
+    window.location.href = "{{ url_for('nvct_stablecoin.asset_backing') }}";
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const supplyCards = document.querySelectorAll('.card, .supply-card');
+    supplyCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Collateral') || cardTitle?.includes('Backing')) {
+                viewAssetBacking();
+            } else if (cardTitle?.includes('Analytics')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.nvct_analytics_dashboard') }}";
+            } else if (cardTitle?.includes('Governance')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.governance_dashboard') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header bg-gradient-primary text-white">
+                    <h2 class="nvc-card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>NVCT Supply Management
+                    </h2>
+                    <p class="nvc-card-text mb-0">Comprehensive supply control and token lifecycle management</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supply Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="nvc-card text-white bg-success">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title">Total Supply</h5>
+                    <h3>{{ '{:,}'.format(supply_data.supply_breakdown.circulating.amount|int) }}</h3>
+                    <p class="mb-0">{{ supply_data.supply_breakdown.circulating.percentage }} Circulating</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card text-white bg-info">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title">Daily Minting</h5>
+                    <h3>{{ '{:,}'.format(supply_data.minting_parameters.current_daily_mint|int) }}</h3>
+                    <p class="mb-0">{{ supply_data.minting_parameters.mint_utilization }} of daily limit</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card text-white bg-warning">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title">Daily Burning</h5>
+                    <h3>{{ '{:,}'.format(supply_data.burning_parameters.current_daily_burn|int) }}</h3>
+                    <p class="mb-0">{{ supply_data.burning_parameters.burn_utilization }} of daily limit</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supply Actions -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Mint NVCT Tokens
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('nvct_stablecoin.mint_nvct') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                        <div class="mb-3">
+                            <label for="mint_amount" class="nvc-form-label">Amount (NVCT)</label>
+                            <input type="number" class="nvc-form-input" id="mint_amount" name="amount" 
+                                   max="100000000000" step="1000000" required>
+                            <div class="form-text">Maximum daily limit: 100,000,000,000 NVCT</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="mint_recipient" class="nvc-form-label">Recipient Address</label>
+                            <input type="text" class="nvc-form-input" id="mint_recipient" name="recipient" 
+                                   placeholder="0x..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="mint_justification" class="nvc-form-label">Justification</label>
+                            <textarea class="nvc-form-input" id="mint_justification" name="justification" 
+                                      rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn nvc-btn nvc-btn-success">
+                            <i class="fas fa-plus-circle me-2"></i>Mint Tokens
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-fire me-2"></i>Burn NVCT Tokens
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('nvct_stablecoin.burn_nvct') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                        <div class="mb-3">
+                            <label for="burn_amount" class="nvc-form-label">Amount (NVCT)</label>
+                            <input type="number" class="nvc-form-input" id="burn_amount" name="amount" 
+                                   max="50000000000" step="1000000" required>
+                            <div class="form-text">Maximum daily limit: 50,000,000,000 NVCT</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="burn_justification" class="nvc-form-label">Justification</label>
+                            <textarea class="nvc-form-input" id="burn_justification" name="justification" 
+                                      rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn nvc-btn nvc-btn-warning">
+                            <i class="fas fa-fire me-2"></i>Burn Tokens
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Operations -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">Recent Minting Operations</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Purpose</th>
+                                    <th>Authorized By</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mint in minting_history %}
+                                <tr>
+                                    <td>{{ mint.timestamp[:10] }}</td>
+                                    <td>{{ '{:,}'.format(mint.amount|int) }}</td>
+                                    <td>{{ mint.purpose[:30] }}...</td>
+                                    <td>{{ mint.authorized_by }}</td>
+                                    <td><span class="badge bg-success">{{ mint.status }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">Recent Burning Operations</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Reason</th>
+                                    <th>Authorized By</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for burn in burn_history %}
+                                <tr>
+                                    <td>{{ burn.timestamp[:10] }}</td>
+                                    <td>{{ '{:,}'.format(burn.amount|int) }}</td>
+                                    <td>{{ burn.reason[:30] }}...</td>
+                                    <td>{{ burn.authorized_by }}</td>
+                                    <td><span class="badge bg-success">{{ burn.status }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #0a2447, #66ccff) !important;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875em;
+}
+
+.table-sm td, .table-sm th {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+</style>
+</div>
+{% endblock %}

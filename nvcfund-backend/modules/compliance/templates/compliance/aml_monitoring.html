@@ -1,0 +1,417 @@
+{% extends "unified_base.html" %}
+
+{% block title %}AML Monitoring - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Anti-Money Laundering Monitoring{% endblock %}
+{% block page_description %}Real-time AML monitoring, suspicious activity detection, and compliance management{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="btn btn-outline-primary">
+    <i class="fas fa-download"></i>
+    Export SAR Report
+</button>
+<button type="button" class="btn btn-secondary">
+    <i class="fas fa-plus"></i>
+    File SAR
+</button>
+<button type="button" class="btn btn-primary">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Alerts
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- AML Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Transactions Monitored</h6>
+                            <h3 class="mb-0">{{ aml_stats.monitored_transactions or '47,892' }}</h3>
+                            <small class="text-light">Today</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-search fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Active Alerts</h6>
+                            <h3 class="mb-0">{{ aml_stats.active_alerts or '23' }}</h3>
+                            <small class="text-light">Require investigation</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">SARs Filed</h6>
+                            <h3 class="mb-0">{{ aml_stats.sars_filed or '12' }}</h3>
+                            <small class="text-light">This month</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-file-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Risk Score</h6>
+                            <h3 class="mb-0">{{ aml_stats.risk_score or '2.3' }}/10</h3>
+                            <small class="text-light">Portfolio average</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-shield-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AML Alert Dashboard -->
+    <div class="row mb-4">
+        <!-- Active Alerts -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Active AML Alerts ({{ aml_stats.active_alerts or '23' }} alerts)
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                        <button type="button" class="btn btn-outline-danger">
+                            <i class="fas fa-file-alt"></i>
+                            Bulk SAR
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" class="form-check-input">
+                                    </th>
+                                    <th>Alert ID</th>
+                                    <th>Customer</th>
+                                    <th>Alert Type</th>
+                                    <th>Risk Level</th>
+                                    <th>Amount</th>
+                                    <th>Generated</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in aml_alerts or [
+                                    {'id': 'AML-001234', 'customer': 'John Doe', 'account': 'ACC-001234', 'type': 'Large Cash Transaction', 'risk': 'High', 'amount': '$15,000', 'generated': '2024-01-15 14:30', 'status': 'Under Review'},
+                                    {'id': 'AML-001235', 'customer': 'Jane Smith', 'account': 'ACC-001235', 'type': 'Unusual Pattern', 'risk': 'Medium', 'amount': '$8,500', 'generated': '2024-01-15 13:45', 'status': 'New'},
+                                    {'id': 'AML-001236', 'customer': 'Mike Johnson', 'account': 'ACC-001236', 'type': 'Rapid Movement', 'risk': 'High', 'amount': '$25,000', 'generated': '2024-01-15 12:20', 'status': 'Escalated'},
+                                    {'id': 'AML-001237', 'customer': 'Sarah Wilson', 'account': 'ACC-001237', 'type': 'Structuring', 'risk': 'Critical', 'amount': '$9,900', 'generated': '2024-01-15 11:15', 'status': 'SAR Filed'},
+                                    {'id': 'AML-001238', 'customer': 'David Brown', 'account': 'ACC-001238', 'type': 'Cross-Border', 'risk': 'Medium', 'amount': '$12,000', 'generated': '2024-01-15 10:30', 'status': 'Under Review'}
+                                ] %}
+                                <tr class="{{ 'table-danger' if alert.risk == 'Critical' else 'table-warning' if alert.risk == 'High' else '' }}">
+                                    <td>
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <strong>{{ alert.id }}</strong>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ alert.customer }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ alert.account }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if 'Cash' in alert.type else 'info' if 'Pattern' in alert.type else 'warning' if 'Movement' in alert.type else 'danger' if 'Structuring' in alert.type else 'secondary' }}">
+                                            {{ alert.type }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if alert.risk == 'Critical' else 'warning' if alert.risk == 'High' else 'info' if alert.risk == 'Medium' else 'success' }}">
+                                            {{ alert.risk }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ alert.amount }}</strong>
+                                    </td>
+                                    <td>{{ alert.generated }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'warning' if alert.status == 'New' else 'info' if alert.status == 'Under Review' else 'danger' if alert.status == 'Escalated' else 'success' }}">
+                                            {{ alert.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="Investigate">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-warning" title="Escalate">
+                                                <i class="fas fa-arrow-up"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger" title="File SAR">
+                                                <i class="fas fa-file-alt"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-success" title="Clear">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Statistics -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Alert Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Large Cash Transactions</span>
+                            <span class="text-primary">{{ alert_distribution.cash or '35%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" class="progress-bar-35"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Unusual Patterns</span>
+                            <span class="text-info">{{ alert_distribution.patterns or '28%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" class="progress-bar-28"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Rapid Movement</span>
+                            <span class="text-warning">{{ alert_distribution.movement or '22%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" class="progress-bar-22"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Structuring</span>
+                            <span class="text-danger">{{ alert_distribution.structuring or '15%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-danger" class="progress-bar-15"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent SARs -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Recent SARs Filed
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for sar in recent_sars or [
+                        {'id': 'SAR-2024-001', 'customer': 'Sarah Wilson', 'amount': '$9,900', 'filed': '2024-01-15', 'status': 'Submitted'},
+                        {'id': 'SAR-2024-002', 'customer': 'Unknown Entity', 'amount': '$50,000', 'filed': '2024-01-14', 'status': 'Acknowledged'},
+                        {'id': 'SAR-2024-003', 'customer': 'ABC Corp', 'amount': '$75,000', 'filed': '2024-01-13', 'status': 'Under Review'}
+                    ] %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 border rounded">
+                        <div>
+                            <h6 class="mb-1">{{ sar.id }}</h6>
+                            <p class="text-muted mb-1">{{ sar.customer }}</p>
+                            <small class="text-info">{{ sar.amount }} - {{ sar.filed }}</small>
+                        </div>
+                        <span class="badge bg-{{ 'success' if sar.status == 'Acknowledged' else 'warning' if sar.status == 'Submitted' else 'info' }}">
+                            {{ sar.status }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Monitoring Rules -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        AML Monitoring Rules
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for rule in monitoring_rules or [
+                            {'name': 'Large Cash Transactions', 'threshold': '$10,000', 'status': 'Active', 'alerts': '156', 'description': 'Monitor cash transactions above threshold'},
+                            {'name': 'Rapid Fund Movement', 'threshold': '5 transactions/hour', 'status': 'Active', 'alerts': '89', 'description': 'Detect rapid movement of funds'},
+                            {'name': 'Structuring Detection', 'threshold': '$9,500 in 24h', 'status': 'Active', 'alerts': '23', 'description': 'Identify potential structuring activities'},
+                            {'name': 'Cross-Border Transfers', 'threshold': '$5,000', 'status': 'Active', 'alerts': '67', 'description': 'Monitor international transfers'},
+                            {'name': 'High-Risk Countries', 'threshold': 'Any amount', 'status': 'Active', 'alerts': '34', 'description': 'Transactions to/from high-risk jurisdictions'},
+                            {'name': 'PEP Monitoring', 'threshold': '$1,000', 'status': 'Active', 'alerts': '12', 'description': 'Monitor Politically Exposed Persons'}
+                        ] %}
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="card border-{{ 'success' if rule.status == 'Active' else 'secondary' }}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title">{{ rule.name }}</h6>
+                                        <span class="badge bg-{{ 'success' if rule.status == 'Active' else 'secondary' }}">
+                                            {{ rule.status }}
+                                        </span>
+                                    </div>
+                                    <p class="text-muted small">{{ rule.description }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <small class="text-info">Threshold: {{ rule.threshold }}</small>
+                                            <br>
+                                            <small class="text-warning">{{ rule.alerts }} alerts this month</small>
+                                        </div>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="Edit Rule">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" title="View Alerts">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Risk Assessment -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        High-Risk Customer Monitoring
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Risk Level</th>
+                                    <th>Risk Factors</th>
+                                    <th>Last Review</th>
+                                    <th>Active Alerts</th>
+                                    <th>Total SARs</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in high_risk_customers or [
+                                    {'name': 'ABC Corporation', 'account': 'ACC-001234', 'risk': 'High', 'factors': ['PEP', 'High-Risk Country'], 'last_review': '2024-01-10', 'alerts': '3', 'sars': '1'},
+                                    {'name': 'John Doe', 'account': 'ACC-001235', 'risk': 'Medium', 'factors': ['Large Cash Transactions'], 'last_review': '2024-01-12', 'alerts': '2', 'sars': '0'},
+                                    {'name': 'XYZ Trading Ltd', 'account': 'ACC-001236', 'risk': 'Critical', 'factors': ['Shell Company', 'Rapid Movement'], 'last_review': '2024-01-08', 'alerts': '5', 'sars': '2'},
+                                    {'name': 'Maria Garcia', 'account': 'ACC-001237', 'risk': 'Medium', 'factors': ['Cross-Border'], 'last_review': '2024-01-14', 'alerts': '1', 'sars': '0'}
+                                ] %}
+                                <tr class="{{ 'table-danger' if customer.risk == 'Critical' else 'table-warning' if customer.risk == 'High' else '' }}">
+                                    <td>
+                                        <div>
+                                            <strong>{{ customer.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ customer.account }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if customer.risk == 'Critical' else 'warning' if customer.risk == 'High' else 'info' }}">
+                                            {{ customer.risk }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% for factor in customer.factors %}
+                                        <span class="badge bg-secondary me-1">{{ factor }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ customer.last_review }}</td>
+                                    <td>
+                                        <span class="badge bg-warning">{{ customer.alerts }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger">{{ customer.sars }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="View Profile">
+                                                <i class="fas fa-user"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info" title="Transaction History">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-warning" title="Risk Assessment">
+                                                <i class="fas fa-shield-alt"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

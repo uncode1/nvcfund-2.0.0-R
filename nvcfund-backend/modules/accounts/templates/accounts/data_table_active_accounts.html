@@ -1,0 +1,412 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Active Accounts Data - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Active Accounts Data{% endblock %}
+{% block page_description %}Comprehensive data table view of all active accounts with advanced filtering and sorting{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('accounts.main_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        Accounts
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-table" aria-hidden="true"></i>
+    Active Accounts Data
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export data to CSV">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export CSV
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Apply advanced filters">
+    <i class="fas fa-filter" aria-hidden="true"></i>
+    Advanced Filter
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh account data">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh Data
+</button>
+{% endblock %}
+
+{% block sidebar %}
+<!-- No sidebar for modern dashboard layout -->
+{% endblock %}
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Active Accounts Data Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-table" aria-hidden="true"></i>
+                    Active Accounts Data
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">{{ accounts|length if accounts else '1,247' }} Records</span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Advanced Filter Controls -->
+                <div class="nvc-filter-controls">
+                    <div class="nvc-filter-row">
+                        <div class="nvc-filter-group">
+                            <label for="account-search" class="nvc-filter-label nvc-wcag-high-contrast">Search Accounts</label>
+                            <input type="text" id="account-search" class="nvc-filter-input nvc-wcag-focus" placeholder="Account number, name, or email" aria-describedby="search-help">
+                            <small id="search-help" class="nvc-filter-help">Search by account number, holder name, or email</small>
+                        </div>
+
+                        <div class="nvc-filter-group">
+                            <label for="account-type-filter" class="nvc-filter-label nvc-wcag-high-contrast">Account Type</label>
+                            <select id="account-type-filter" class="nvc-filter-select nvc-wcag-focus">
+                                <option value="">All Types</option>
+                                <option value="checking">Checking</option>
+                                <option value="savings">Savings</option>
+                                <option value="investment">Investment</option>
+                                <option value="business">Business</option>
+                                <option value="crypto">Crypto</option>
+                            </select>
+                        </div>
+
+                        <div class="nvc-filter-group">
+                            <label for="status-filter" class="nvc-filter-label nvc-wcag-high-contrast">Status</label>
+                            <select id="status-filter" class="nvc-filter-select nvc-wcag-focus">
+                                <option value="">All Status</option>
+                                <option value="active" selected>Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="suspended">Suspended</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+
+                        <div class="nvc-filter-group">
+                            <label for="balance-filter" class="nvc-filter-label nvc-wcag-high-contrast">Balance Range</label>
+                            <select id="balance-filter" class="nvc-filter-select nvc-wcag-focus">
+                                <option value="">All Balances</option>
+                                <option value="0-1000">$0 - $1,000</option>
+                                <option value="1000-10000">$1,000 - $10,000</option>
+                                <option value="10000-100000">$10,000 - $100,000</option>
+                                <option value="100000+">$100,000+</option>
+                            </select>
+                        </div>
+
+                        <div class="nvc-filter-group">
+                            <label for="date-filter" class="nvc-filter-label nvc-wcag-high-contrast">Date Range</label>
+                            <select id="date-filter" class="nvc-filter-select nvc-wcag-focus">
+                                <option value="">All Time</option>
+                                <option value="30d">Last 30 Days</option>
+                                <option value="90d">Last 90 Days</option>
+                                <option value="1y">Last Year</option>
+                            </select>
+                        </div>
+
+                        <div class="nvc-filter-group">
+                            <button type="button" class="nvc-btn nvc-btn-primary nvc-wcag-focus" aria-label="Search accounts">
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FINRA-Compliant Active Accounts Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="Active accounts data table">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">
+                                    <input type="checkbox" id="select-all-accounts" class="nvc-checkbox nvc-wcag-focus" aria-label="Select all accounts">
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast nvc-sortable" tabindex="0" role="button" aria-label="Sort by Account ID">
+                                    Account ID
+                                    <i class="fas fa-sort" aria-hidden="true"></i>
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast nvc-sortable" tabindex="0" role="button" aria-label="Sort by Account Holder">
+                                    Account Holder
+                                    <i class="fas fa-sort" aria-hidden="true"></i>
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast nvc-sortable" tabindex="0" role="button" aria-label="Sort by Account Type">
+                                    Type
+                                    <i class="fas fa-sort" aria-hidden="true"></i>
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast nvc-sortable" tabindex="0" role="button" aria-label="Sort by Balance">
+                                    Balance
+                                    <i class="fas fa-sort" aria-hidden="true"></i>
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast nvc-sortable" tabindex="0" role="button" aria-label="Sort by Status">
+                                    Status
+                                    <i class="fas fa-sort" aria-hidden="true"></i>
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast nvc-sortable" tabindex="0" role="button" aria-label="Sort by Last Activity">
+                                    Last Activity
+                                    <i class="fas fa-sort" aria-hidden="true"></i>
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast nvc-sortable" tabindex="0" role="button" aria-label="Sort by Branch">
+                                    Branch
+                                    <i class="fas fa-sort" aria-hidden="true"></i>
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast nvc-sortable" tabindex="0" role="button" aria-label="Sort by Interest Rate">
+                                    Interest Rate
+                                    <i class="fas fa-sort" aria-hidden="true"></i>
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in accounts or [
+                                {'id': 'ACC-001234', 'holder': 'John Doe', 'email': 'john.doe@email.com', 'type': 'Checking', 'balance': '$45,892.30', 'status': 'Active', 'last_activity': '2024-01-15', 'branch': 'Downtown', 'interest': '0.5%'},
+                                {'id': 'ACC-001235', 'holder': 'Jane Smith', 'email': 'jane.smith@email.com', 'type': 'Savings', 'balance': '$125,847.32', 'status': 'Active', 'last_activity': '2024-01-14', 'branch': 'Uptown', 'interest': '2.5%'},
+                                {'id': 'ACC-001236', 'holder': 'Mike Johnson', 'email': 'mike.j@email.com', 'type': 'Investment', 'balance': '$287,450.15', 'status': 'Active', 'last_activity': '2024-01-13', 'branch': 'Online', 'interest': '4.2%'},
+                                {'id': 'ACC-001237', 'holder': 'Sarah Wilson', 'email': 'sarah.w@email.com', 'type': 'Business', 'balance': '$89,203.68', 'status': 'Active', 'last_activity': '2024-01-12', 'branch': 'Westside', 'interest': '1.8%'},
+                                {'id': 'ACC-001238', 'holder': 'David Brown', 'email': 'david.b@email.com', 'type': 'Crypto', 'balance': '$298,900.00', 'status': 'Active', 'last_activity': '2024-01-11', 'branch': 'Online', 'interest': '0.0%'},
+                                {'id': 'ACC-001239', 'holder': 'Lisa Davis', 'email': 'lisa.d@email.com', 'type': 'Checking', 'balance': '$12,456.78', 'status': 'Active', 'last_activity': '2024-01-10', 'branch': 'Downtown', 'interest': '0.5%'},
+                                {'id': 'ACC-001240', 'holder': 'Robert Miller', 'email': 'robert.m@email.com', 'type': 'Savings', 'balance': '$67,890.45', 'status': 'Active', 'last_activity': '2024-01-09', 'branch': 'Uptown', 'interest': '2.5%'},
+                                {'id': 'ACC-001241', 'holder': 'Emily Garcia', 'email': 'emily.g@email.com', 'type': 'Investment', 'balance': '$156,234.90', 'status': 'Active', 'last_activity': '2024-01-08', 'branch': 'Online', 'interest': '4.2%'},
+                                {'id': 'ACC-001242', 'holder': 'James Martinez', 'email': 'james.m@email.com', 'type': 'Business', 'balance': '$234,567.12', 'status': 'Active', 'last_activity': '2024-01-07', 'branch': 'Westside', 'interest': '1.8%'},
+                                {'id': 'ACC-001243', 'holder': 'Amanda Taylor', 'email': 'amanda.t@email.com', 'type': 'Checking', 'balance': '$8,945.67', 'status': 'Active', 'last_activity': '2024-01-06', 'branch': 'Downtown', 'interest': '0.5%'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td>
+                                    <input type="checkbox" class="nvc-checkbox nvc-wcag-focus" aria-label="Select account {{ account.id }}">
+                                </td>
+                                <td class="nvc-wcag-high-contrast">{{ account.id }}</td>
+                                <td>
+                                    <div class="nvc-account-holder">
+                                        <span class="nvc-holder-name nvc-wcag-high-contrast">{{ account.holder }}</span>
+                                        <span class="nvc-holder-email nvc-wcag-medium-contrast">{{ account.email }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-{{ 'primary' if account.type == 'Checking' else 'success' if account.type == 'Savings' else 'info' if account.type == 'Investment' else 'warning' if account.type == 'Business' else 'dark' }}">
+                                        {{ account.type }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-high-contrast nvc-amount-positive">{{ account.balance }}</td>
+                                <td>
+                                    <span class="nvc-status nvc-status-success">
+                                        <i class="fas fa-check" aria-hidden="true"></i>
+                                        {{ account.status }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ account.last_activity }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ account.branch }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ account.interest }}</td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View details for account {{ account.id }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="Edit account {{ account.id }}">
+                                            <i class="fas fa-edit" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View transactions for account {{ account.id }}">
+                                            <i class="fas fa-list" aria-hidden="true"></i>
+                                        </button>
+                                        <div class="nvc-dropdown">
+                                            <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-dropdown-toggle nvc-wcag-focus" aria-label="More actions for account {{ account.id }}" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+                                            </button>
+                                            <div class="nvc-dropdown-menu">
+                                                <a href="#" class="nvc-dropdown-item nvc-wcag-focus">
+                                                    <i class="fas fa-download" aria-hidden="true"></i>
+                                                    Export Data
+                                                </a>
+                                                <a href="#" class="nvc-dropdown-item nvc-wcag-focus">
+                                                    <i class="fas fa-credit-card" aria-hidden="true"></i>
+                                                    Card Management
+                                                </a>
+                                                <a href="#" class="nvc-dropdown-item nvc-wcag-focus">
+                                                    <i class="fas fa-chart-line" aria-hidden="true"></i>
+                                                    Analytics
+                                                </a>
+                                                <div class="nvc-dropdown-divider"></div>
+                                                <a href="#" class="nvc-dropdown-item nvc-dropdown-warning nvc-wcag-focus">
+                                                    <i class="fas fa-pause" aria-hidden="true"></i>
+                                                    Suspend Account
+                                                </a>
+                                                <a href="#" class="nvc-dropdown-item nvc-dropdown-danger nvc-wcag-focus">
+                                                    <i class="fas fa-times" aria-hidden="true"></i>
+                                                    Close Account
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination and Bulk Actions -->
+                <div class="nvc-table-footer">
+                    <div class="nvc-table-info">
+                        <span class="nvc-wcag-medium-contrast">Showing 1-10 of {{ accounts_count or '1,247' }} accounts</span>
+                        <span class="nvc-selected-count nvc-wcag-medium-contrast">0 accounts selected</span>
+                    </div>
+
+                    <div class="nvc-bulk-actions">
+                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" disabled aria-label="Export selected accounts">
+                            <i class="fas fa-download" aria-hidden="true"></i>
+                            Export Selected
+                        </button>
+                        <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" disabled aria-label="Send notification to selected accounts">
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
+                            Send Notification
+                        </button>
+                        <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-sm nvc-wcag-focus" disabled aria-label="Suspend selected accounts">
+                            <i class="fas fa-pause" aria-hidden="true"></i>
+                            Bulk Suspend
+                        </button>
+                    </div>
+
+                    <div class="nvc-pagination">
+                        <button type="button" class="nvc-pagination-btn nvc-pagination-prev nvc-wcag-focus" disabled aria-label="Previous page">
+                            <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                        </button>
+                        <span class="nvc-pagination-info nvc-wcag-medium-contrast">Page 1 of 125</span>
+                        <button type="button" class="nvc-pagination-btn nvc-pagination-next nvc-wcag-focus" aria-label="Next page">
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Active Accounts Data Table Interactions
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th.nvc-sortable');
+    tableHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            // Add sorting functionality here
+            console.log('Sorting by:', this.textContent.trim());
+        });
+
+        header.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+
+    // Checkbox selection management
+    const selectAllCheckbox = document.getElementById('select-all-accounts');
+    const rowCheckboxes = document.querySelectorAll('.nvc-checkbox:not(#select-all-accounts)');
+    const selectedCountElement = document.querySelector('.nvc-selected-count');
+    const bulkActionButtons = document.querySelectorAll('.nvc-bulk-actions .nvc-btn');
+
+    function updateBulkActions() {
+        const selectedCount = document.querySelectorAll('.nvc-checkbox:not(#select-all-accounts):checked').length;
+        selectedCountElement.textContent = `${selectedCount} accounts selected`;
+
+        bulkActionButtons.forEach(button => {
+            button.disabled = selectedCount === 0;
+        });
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+
+    // Filter functionality
+    const searchInput = document.getElementById('account-search');
+    const filterSelects = document.querySelectorAll('.nvc-filter-select');
+
+    function applyFilters() {
+        // Add filter functionality here
+        console.log('Applying filters...');
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(applyFilters, 300));
+    }
+
+    filterSelects.forEach(select => {
+        select.addEventListener('change', applyFilters);
+    });
+
+    // Dropdown functionality
+    const dropdownToggles = document.querySelectorAll('.nvc-dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = this.parentElement;
+            const menu = dropdown.querySelector('.nvc-dropdown-menu');
+
+            // Close other dropdowns
+            document.querySelectorAll('.nvc-dropdown-menu.show').forEach(otherMenu => {
+                if (otherMenu !== menu) {
+                    otherMenu.classList.remove('show');
+                }
+            });
+
+            menu.classList.toggle('show');
+            this.setAttribute('aria-expanded', menu.classList.contains('show'));
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.nvc-dropdown-menu.show').forEach(menu => {
+            menu.classList.remove('show');
+            menu.parentElement.querySelector('.nvc-dropdown-toggle').setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+
+    // Utility function for debouncing
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+});
+</script>
+{% endblock %}

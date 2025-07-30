@@ -1,0 +1,353 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Sovereign Debt Management{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a; color: #e2e8f0; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif; }
+        .card { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; }
+        .card-header { background: #1e293b; border-bottom: 1px solid #334155; }
+        .card-body { background: #1e293b; }
+        .bg-primary { background: #3b82f6 !important; }
+        .bg-success { background: #10b981 !important; }
+        .bg-info { background: #06b6d4 !important; }
+        .bg-warning { background: #f59e0b !important; }
+        .bg-danger { background: #ef4444 !important; }
+        .text-white { color: #ffffff !important; }
+        .text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
+        .text-light { color: #e2e8f0 !important; }
+        .text-primary { color: #3b82f6 !important; }
+        .text-success { color: #10b981 !important; }
+        .text-info { color: #06b6d4 !important; }
+        .text-warning { color: #f59e0b !important; }
+        .border-0 { border: 0 !important; }
+        .main-content { padding: 20px; }
+        .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+        .btn-primary:hover { background: #2563eb; border-color: #2563eb; }
+        .table-dark { background: #1e293b; color: #e2e8f0; }
+        .table-dark th { border-color: #374151; }
+        .table-dark td { border-color: #374151; }
+        .badge { font-size: 0.75rem; }
+        .h3 { font-size: 1.75rem; }
+        .me-2 { margin-right: 0.5rem; }
+        .me-1 { margin-right: 0.25rem; }
+        .mb-0 { margin-bottom: 0; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mb-3 { margin-bottom: 1rem; }
+        .rounded { border-radius: 0.375rem; }
+        .border { border: 1px solid #334155; }
+        .p-2 { padding: 0.5rem; }
+        .align-items-center { align-items: center; }
+        .justify-content-between { justify-content: space-between; }
+        .d-flex { display: flex; }
+        .flex-grow-1 { flex-grow: 1; }
+        .text-center { text-align: center; }
+        .fw-bold { font-weight: 700; }
+    
+{% endblock %}
+
+{% block content %}
+
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-white">
+            <i class="fas fa-chart-pie text-primary me-2"></i>
+            Sovereign Debt Management
+        </h1>
+        <div class="text-white-50">
+            <i class="fas fa-chart-line me-1"></i>
+            Credit Rating: {{ debt_data.debt_portfolio.total_debt.debt_to_gdp }%} Debt-to-GDP
+        </div>
+    </div>
+
+    <!-- Debt Portfolio Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-university me-2"></i>
+                        Total Debt Portfolio
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="text-center">
+                        <h2 class="text-primary">${{ "%.1f"|format(debt_data.debt_portfolio.total_debt.amount_trillions) }}T</h2>
+                        <p class="text-light mb-3">Total Outstanding Debt</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center p-2 border rounded">
+                                <small class="text-light">Debt-to-GDP</small>
+                                <div class="fw-bold text-warning">{{ "%.1f"|format(debt_data.debt_portfolio.total_debt.debt_to_gdp) }%}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-2 border rounded">
+                                <small class="text-light">Per Capita</small>
+                                <div class="fw-bold text-info">${{ "%.1f"|format(debt_data.debt_portfolio.total_debt.per_capita_thousands) }}K</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-home me-2"></i>
+                        Domestic Debt
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="text-center">
+                        <h2 class="text-success">${{ "%.1f"|format(debt_data.debt_portfolio.composition.domestic_debt.amount_trillions) }}T</h2>
+                        <p class="text-light mb-3">{{ "%.1f"|format(debt_data.debt_portfolio.composition.domestic_debt.percentage) }%} of Total</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="p-2 border rounded">
+                            <small class="text-light">Avg. Maturity</small>
+                            <div class="fw-bold">{{ "%.1f"|format(debt_data.debt_portfolio.composition.domestic_debt.avg_maturity) }} years</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-globe me-2"></i>
+                        Foreign Debt
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="text-center">
+                        <h2 class="text-info">${{ "%.1f"|format(debt_data.debt_portfolio.composition.foreign_debt.amount_trillions) }}T</h2>
+                        <p class="text-light mb-3">{{ "%.1f"|format(debt_data.debt_portfolio.composition.foreign_debt.percentage) }%} of Total</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="p-2 border rounded">
+                            <small class="text-light">Avg. Maturity</small>
+                            <div class="fw-bold">{{ "%.1f"|format(debt_data.debt_portfolio.composition.foreign_debt.avg_maturity) }} years</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debt Instruments -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-invoice me-2"></i>
+                        Treasury Bills & Notes
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <h6 class="text-light mb-2">Treasury Bills (Short-term)</h6>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-light">Outstanding</small>
+                                <div class="fw-bold">${{ "%.0f"|format(debt_data.debt_instruments.treasury_bills.outstanding_billions) }}B</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-light">3M Yield</small>
+                                <div class="fw-bold text-primary">{{ "%.2f"|format(debt_data.debt_instruments.treasury_bills.yield_3m) }%}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="text-light mb-2">Treasury Notes (Medium-term)</h6>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-light">Outstanding</small>
+                                <div class="fw-bold">${{ "%.1f"|format(debt_data.debt_instruments.treasury_notes.outstanding_trillions) }}T</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-light">5Y Yield</small>
+                                <div class="fw-bold text-success">{{ "%.2f"|format(debt_data.debt_instruments.treasury_notes.yield_5y) }%}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-certificate me-2"></i>
+                        Treasury Bonds
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <h6 class="text-light mb-2">Long-term Bonds</h6>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-light">Outstanding</small>
+                                <div class="fw-bold">${{ "%.1f"|format(debt_data.debt_instruments.treasury_bonds.outstanding_trillions) }}T</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-light">Avg. Maturity</small>
+                                <div class="fw-bold">{{ "%.1f"|format(debt_data.debt_instruments.treasury_bonds.avg_maturity_years) }} yrs</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="text-light mb-2">Current Yields</h6>
+                        <div class="row">
+                            <div class="col-4">
+                                <small class="text-light">10Y</small>
+                                <div class="fw-bold text-info">{{ "%.2f"|format(debt_data.debt_instruments.treasury_bonds.yield_10y) }%}</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-light">30Y</small>
+                                <div class="fw-bold text-warning">{{ "%.2f"|format(debt_data.debt_instruments.treasury_bonds.yield_30y) }%}</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-light">TIPS</small>
+                                <div class="fw-bold text-success">{{ "%.2f"|format(debt_data.debt_instruments.inflation_linked_bonds.real_yield_10y) }%}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Auctions -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Upcoming Debt Auctions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Instrument</th>
+                                    <th>Amount</th>
+                                    <th>Expected Yield</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for auction in debt_data.issuance_calendar.upcoming_auctions %}
+                                <tr>
+                                    <td>{{ auction.date }}</td>
+                                    <td>{{ auction.instrument }}</td>
+                                    <td class="fw-bold">${{ "%.1f"|format(auction.amount_billions) }}B</td>
+                                    <td class="text-primary">{{ "%.2f"|format(auction.expected_yield) }%}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Risk Metrics
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Duration:</span>
+                            <span class="fw-bold">{{ "%.1f"|format(debt_data.risk_metrics.duration) }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Convexity:</span>
+                            <span class="fw-bold">{{ "%.1f"|format(debt_data.risk_metrics.convexity) }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Refinancing Risk:</span>
+                            <span class="badge bg-warning">{{ debt_data.risk_metrics.refinancing_risk }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Interest Rate Sensitivity:</span>
+                            <span class="badge bg-info">{{ debt_data.risk_metrics.interest_rate_sensitivity }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">FX Exposure:</span>
+                            <span class="badge bg-success">{{ debt_data.risk_metrics.fx_exposure }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sustainability Indicators -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-leaf me-2"></i>
+                        Debt Sustainability Analysis
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-light mb-1">Debt Service Ratio</h6>
+                                <h5 class="text-primary">{{ "%.1f"|format(debt_data.sustainability_indicators.debt_service_ratio) }%}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-light mb-1">Primary Balance Target</h6>
+                                <h5 class="text-success">{{ "%.1f"|format(debt_data.sustainability_indicators.primary_balance_target) }%}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-light mb-1">Stabilizing Balance</h6>
+                                <h5 class="text-warning">{{ "%.1f"|format(debt_data.sustainability_indicators.debt_stabilizing_balance) }%}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-light mb-1">Long-term Outlook</h6>
+                                <h5 class="text-success">{{ debt_data.sustainability_indicators.long_term_sustainability }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

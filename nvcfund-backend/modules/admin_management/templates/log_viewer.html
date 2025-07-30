@@ -1,0 +1,647 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Log Viewer - NVC Banking Platform{% endblock %}
+
+{% block page_title %}System Log Viewer{% endblock %}
+{% block page_description %}Real-time system logs and monitoring{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        Administration
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-file-alt" aria-hidden="true"></i>
+    Log Viewer
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Refresh log data">
+    <i class="fas fa-sync" aria-hidden="true"></i>
+    Refresh
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Download log files">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Download
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Clear log entries">
+    <i class="fas fa-trash" aria-hidden="true"></i>
+    Clear Logs
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Log Viewer Overview -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-file-alt" aria-hidden="true"></i>
+                    System Log Overview
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-success">
+                        <i class="fas fa-circle" aria-hidden="true"></i>
+                        Live Monitoring
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Log Statistics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-list" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+234</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ log_stats.total_entries or '12,547' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Log Entries</p>
+                                <p class="nvc-metric-subtitle">Last 24 hours</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-danger">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-danger">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-negative">
+                                    <i class="fas fa-arrow-down" aria-hidden="true"></i>
+                                    <span>-12</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ log_stats.error_count or '23' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Error Entries</p>
+                                <p class="nvc-metric-subtitle">Requires attention</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-minus" aria-hidden="true"></i>
+                                    <span>Stable</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ log_stats.warning_count or '89' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Warning Entries</p>
+                                <p class="nvc-metric-subtitle">Monitor closely</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-database" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    <span>{{ log_stats.file_count or '15' }}</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ log_stats.file_size or '2.4' }}GB</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Log File Size</p>
+                                <p class="nvc-metric-subtitle">{{ log_stats.file_count or '15' }} files</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Filters and Controls Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-filter" aria-hidden="true"></i>
+                    Log Filters & Controls
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">
+                        <i class="fas fa-user" aria-hidden="true"></i>
+                        Role: {{ current_user.role.title() if current_user else 'Admin' }}
+                    </span>
+                    <span class="nvc-badge nvc-badge-success" id="accessCount">
+                        <i class="fas fa-tags" aria-hidden="true"></i>
+                        {{ accessible_categories|length if accessible_categories else '8' }} Categories
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-log-controls">
+                    <div class="nvc-controls-grid">
+                        <!-- Date and Category Selection -->
+                        <div class="nvc-control-panel">
+                            <div class="nvc-control-section">
+                                <h3 class="nvc-control-title nvc-wcag-high-contrast">
+                                    <i class="fas fa-calendar" aria-hidden="true"></i>
+                                    Date Selection
+                                </h3>
+                                <select class="nvc-form-select nvc-wcag-focus" id="dateSelect" aria-label="Select log date">
+                                    <option value="">Select Date...</option>
+                                    {% for date in available_dates or [
+                                        {'path': '2024-01-15', 'display_date': 'January 15, 2024'},
+                                        {'path': '2024-01-14', 'display_date': 'January 14, 2024'},
+                                        {'path': '2024-01-13', 'display_date': 'January 13, 2024'}
+                                    ] %}
+                                    <option value="{{ date.path }}" {% if loop.first %}selected{% endif %}>
+                                        {{ date.display_date }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="nvc-control-section">
+                                <h3 class="nvc-control-title nvc-wcag-high-contrast">
+                                    <i class="fas fa-tags" aria-hidden="true"></i>
+                                    Log Categories
+                                </h3>
+                                <div class="nvc-category-list" id="categoryList">
+                                    {% for category in accessible_categories or [
+                                        'security_reports', 'compliance', 'banking', 'admin', 'errors', 'audit', 'system', 'transactions'
+                                    ] %}
+                                    <div class="nvc-category-item">
+                                        <input type="checkbox" class="nvc-checkbox category-checkbox nvc-wcag-focus"
+                                               value="{{ category }}" id="cat_{{ category }}" checked>
+                                        <label for="cat_{{ category }}" class="nvc-category-label nvc-wcag-medium-contrast">
+                                            <span class="nvc-category-badge nvc-category-{{ category }}">
+                                                {{ category.replace('_', ' ').title() }}
+                                            </span>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Log Filters -->
+                        <div class="nvc-filter-panel">
+                            <div class="nvc-filter-grid">
+                                <div class="nvc-filter-group">
+                                    <label class="nvc-form-label nvc-wcag-high-contrast" for="levelFilter">Log Level</label>
+                                    <select class="nvc-form-select nvc-wcag-focus" id="levelFilter" aria-label="Filter by log level">
+                                        <option value="">All Levels</option>
+                                        <option value="DEBUG">Debug</option>
+                                        <option value="INFO">Info</option>
+                                        <option value="WARNING">Warning</option>
+                                        <option value="ERROR">Error</option>
+                                        <option value="CRITICAL">Critical</option>
+                                    </select>
+                                </div>
+
+                                <div class="nvc-filter-group">
+                                    <label class="nvc-form-label nvc-wcag-high-contrast" for="searchFilter">Search</label>
+                                    <input type="text" class="nvc-form-input nvc-wcag-focus" id="searchFilter"
+                                           placeholder="Search in logs..." aria-label="Search log entries">
+                                </div>
+
+                                <div class="nvc-filter-group">
+                                    <label class="nvc-form-label nvc-wcag-high-contrast" for="maxLinesFilter">Max Lines</label>
+                                    <select class="nvc-form-select nvc-wcag-focus" id="maxLinesFilter" aria-label="Maximum lines to display">
+                                        <option value="100">100</option>
+                                        <option value="500" selected>500</option>
+                                        <option value="1000">1000</option>
+                                        <option value="5000">5000</option>
+                                    </select>
+                                </div>
+
+                                <div class="nvc-filter-actions">
+                                    <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" id="filterBtn" aria-label="Apply log filters">
+                                        <i class="fas fa-search" aria-hidden="true"></i>
+                                        Filter
+                                    </button>
+                                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" id="exportBtn" aria-label="Export filtered logs">
+                                        <i class="fas fa-download" aria-hidden="true"></i>
+                                        Export
+                                    </button>
+                                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" id="clearBtn" aria-label="Clear all filters">
+                                        <i class="fas fa-times" aria-hidden="true"></i>
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Log Display Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-terminal" aria-hidden="true"></i>
+                    Log Content Viewer
+                </h2>
+                <div class="nvc-section-actions">
+                    <div class="nvc-log-status">
+                        <span class="nvc-status-indicator nvc-status-success">
+                            <i class="fas fa-circle" aria-hidden="true"></i>
+                            Real-time
+                        </span>
+                        <span class="nvc-log-info nvc-wcag-medium-contrast" id="paginationInfo">
+                            Ready to display logs
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Loading State -->
+                <div class="nvc-loading-state" id="loadingSpinner" style="display: none;">
+                    <div class="nvc-loading-spinner">
+                        <i class="fas fa-spinner fa-spin fa-2x" aria-hidden="true"></i>
+                    </div>
+                    <p class="nvc-loading-text nvc-wcag-medium-contrast">Loading logs...</p>
+                </div>
+
+                <!-- Log Content Display -->
+                <div class="nvc-log-viewer" id="logViewer">
+                    <div class="nvc-log-container">
+                        <div class="nvc-log-content" id="logContent">
+                            <div class="nvc-empty-state">
+                                <div class="nvc-empty-icon">
+                                    <i class="fas fa-file-alt fa-3x nvc-wcag-medium-contrast" aria-hidden="true"></i>
+                                </div>
+                                <h3 class="nvc-empty-title nvc-wcag-high-contrast">No Log Selected</h3>
+                                <p class="nvc-empty-description nvc-wcag-medium-contrast">
+                                    Select a date and configure filters to view log content
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Log Statistics Panel -->
+                <div class="nvc-log-stats" id="logStats" style="display: none;">
+                    <div class="nvc-stats-header">
+                        <h3 class="nvc-stats-title nvc-wcag-high-contrast">
+                            <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                            Log Statistics
+                        </h3>
+                    </div>
+                    <div class="nvc-stats-content" id="statsContent">
+                        <!-- Statistics will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- File List Panel -->
+                <div class="nvc-file-list-panel" id="fileListCard" style="display: none;">
+                    <div class="nvc-file-header">
+                        <h3 class="nvc-file-title nvc-wcag-high-contrast">
+                            <i class="fas fa-folder-open" aria-hidden="true"></i>
+                            Available Log Files
+                        </h3>
+                    </div>
+                    <div class="nvc-file-list" id="fileList">
+                        <!-- File list will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Log Viewer Dashboard Interactions
+    let currentFile = null;
+    let currentFilters = {};
+
+    // Initialize log viewer
+    initializeLogViewer();
+
+    function initializeLogViewer() {
+        // Event handlers
+        const dateSelect = document.getElementById('dateSelect');
+        const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+        const searchFilter = document.getElementById('searchFilter');
+        const filterBtn = document.getElementById('filterBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const clearBtn = document.getElementById('clearBtn');
+
+        if (dateSelect) {
+            dateSelect.addEventListener('change', loadDateLogs);
+        }
+
+        categoryCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateFileList);
+        });
+
+        if (searchFilter) {
+            searchFilter.addEventListener('input', debounce(function() {
+                if (currentFile) applyFilters();
+            }, 500));
+        }
+
+        if (filterBtn) {
+            filterBtn.addEventListener('click', applyFilters);
+        }
+
+        if (exportBtn) {
+            exportBtn.addEventListener('click', exportLogs);
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', clearFilters);
+        }
+
+        // Load initial data
+        loadDateLogs();
+    }
+
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    function loadDateLogs() {
+        const selectedDate = document.getElementById('dateSelect').value;
+        if (!selectedDate) {
+            hideElements(['logStats', 'fileListCard', 'logViewer']);
+            return;
+        }
+
+        // Simulate loading statistics
+        setTimeout(() => {
+            displayStats({
+                total_files: 15,
+                total_size_human: '2.4 GB',
+                categories: {
+                    'security_reports': { files: 3, size_human: '450 MB' },
+                    'compliance': { files: 2, size_human: '320 MB' },
+                    'banking': { files: 4, size_human: '680 MB' },
+                    'admin': { files: 2, size_human: '180 MB' },
+                    'errors': { files: 1, size_human: '45 MB' },
+                    'audit': { files: 3, size_human: '725 MB' }
+                }
+            });
+            showElement('logStats');
+        }, 500);
+
+        updateFileList();
+    }
+
+    function displayStats(stats) {
+        const statsContent = document.getElementById('statsContent');
+        if (!statsContent) return;
+
+        let html = `
+            <div class="nvc-stats-grid">
+                <div class="nvc-stat-item">
+                    <h4 class="nvc-stat-value nvc-wcag-high-contrast">${stats.total_files}</h4>
+                    <p class="nvc-stat-label nvc-wcag-medium-contrast">Total Files</p>
+                </div>
+                <div class="nvc-stat-item">
+                    <h4 class="nvc-stat-value nvc-wcag-high-contrast">${stats.total_size_human}</h4>
+                    <p class="nvc-stat-label nvc-wcag-medium-contrast">Total Size</p>
+                </div>
+            </div>
+            <div class="nvc-category-stats">
+        `;
+
+        for (const [category, info] of Object.entries(stats.categories)) {
+            html += `
+                <div class="nvc-category-stat">
+                    <span class="nvc-category-badge nvc-category-${category}">
+                        ${category.replace('_', ' ').toUpperCase()}
+                    </span>
+                    <span class="nvc-category-info nvc-wcag-medium-contrast">
+                        ${info.files} files (${info.size_human})
+                    </span>
+                </div>
+            `;
+        }
+
+        html += '</div>';
+        statsContent.innerHTML = html;
+    }
+
+    function updateFileList() {
+        const selectedDate = document.getElementById('dateSelect').value;
+        if (!selectedDate) return;
+
+        const selectedCategories = Array.from(document.querySelectorAll('.category-checkbox:checked'))
+            .map(cb => cb.value);
+
+        if (selectedCategories.length === 0) {
+            hideElement('fileListCard');
+            return;
+        }
+
+        // Simulate file list loading
+        setTimeout(() => {
+            const mockFiles = [
+                { name: 'security_reports_2024-01-15.log', size: 1024 * 450, modified: new Date().toISOString(), category: 'security_reports' },
+                { name: 'compliance_2024-01-15.log', size: 1024 * 320, modified: new Date().toISOString(), category: 'compliance' },
+                { name: 'banking_2024-01-15.log', size: 1024 * 680, modified: new Date().toISOString(), category: 'banking' },
+                { name: 'admin_2024-01-15.log', size: 1024 * 180, modified: new Date().toISOString(), category: 'admin' }
+            ];
+
+            displayFileList(mockFiles.filter(file => selectedCategories.includes(file.category)));
+            showElement('fileListCard');
+        }, 300);
+    }
+
+    function displayFileList(files) {
+        const fileList = document.getElementById('fileList');
+        if (!fileList) return;
+
+        if (files.length === 0) {
+            fileList.innerHTML = '<p class="nvc-wcag-medium-contrast">No log files found</p>';
+            return;
+        }
+
+        let html = '';
+        files.forEach(file => {
+            const sizeKB = (file.size / 1024).toFixed(1);
+            const modifiedDate = new Date(file.modified).toLocaleString();
+
+            html += `
+                <div class="nvc-file-item" data-file-path="${file.name}" onclick="loadLogFile('${file.name}')">
+                    <div class="nvc-file-info">
+                        <h4 class="nvc-file-name nvc-wcag-high-contrast">${file.name}</h4>
+                        <p class="nvc-file-details nvc-wcag-medium-contrast">
+                            ${sizeKB} KB • ${modifiedDate}
+                        </p>
+                    </div>
+                    <div class="nvc-file-actions">
+                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="Load log file">
+                            <i class="fas fa-eye" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        fileList.innerHTML = html;
+    }
+
+    function loadLogFile(filePath) {
+        currentFile = filePath;
+
+        // Update active file
+        document.querySelectorAll('.nvc-file-item').forEach(item => {
+            item.classList.remove('nvc-file-active');
+        });
+        document.querySelector(`[data-file-path="${filePath}"]`).classList.add('nvc-file-active');
+
+        // Show loading
+        showElement('loadingSpinner');
+        hideElement('logViewer');
+
+        applyFilters();
+    }
+
+    function applyFilters() {
+        if (!currentFile) return;
+
+        currentFilters = {
+            level: document.getElementById('levelFilter').value,
+            search: document.getElementById('searchFilter').value,
+            max_lines: document.getElementById('maxLinesFilter').value
+        };
+
+        // Simulate log content loading
+        setTimeout(() => {
+            const mockLogData = {
+                filtered_lines: 247,
+                total_lines: 1250,
+                file_info: { name: currentFile, category: 'security_reports' },
+                content: [
+                    { timestamp: '2024-01-15 10:30:15', level: 'INFO', message: 'User authentication successful for admin@nvcbank.com' },
+                    { timestamp: '2024-01-15 10:30:22', level: 'WARNING', message: 'Multiple login attempts detected from IP 192.168.1.100' },
+                    { timestamp: '2024-01-15 10:30:45', level: 'ERROR', message: 'Database connection timeout in transaction processing module' },
+                    { timestamp: '2024-01-15 10:31:02', level: 'INFO', message: 'Backup process completed successfully' },
+                    { timestamp: '2024-01-15 10:31:15', level: 'CRITICAL', message: 'Security breach attempt detected and blocked' }
+                ]
+            };
+
+            displayLogContent(mockLogData);
+            document.getElementById('exportBtn').disabled = false;
+            hideElement('loadingSpinner');
+            showElement('logViewer');
+        }, 1000);
+    }
+
+    function displayLogContent(data) {
+        // Update pagination info
+        const paginationInfo = document.getElementById('paginationInfo');
+        if (paginationInfo) {
+            paginationInfo.textContent = `Showing ${data.filtered_lines} of ${data.total_lines} lines from ${data.file_info.name}`;
+        }
+
+        const logContent = document.getElementById('logContent');
+        if (!logContent) return;
+
+        if (data.content.length === 0) {
+            logContent.innerHTML = `
+                <div class="nvc-empty-state">
+                    <div class="nvc-empty-icon">
+                        <i class="fas fa-search fa-3x nvc-wcag-medium-contrast" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="nvc-empty-title nvc-wcag-high-contrast">No Matching Entries</h3>
+                    <p class="nvc-empty-description nvc-wcag-medium-contrast">
+                        No log entries match your current filters
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '<div class="nvc-log-entries">';
+        data.content.forEach(line => {
+            html += `
+                <div class="nvc-log-line">
+                    <span class="nvc-log-timestamp nvc-wcag-medium-contrast">${line.timestamp}</span>
+                    <span class="nvc-log-level nvc-log-level-${line.level.toLowerCase()}">[${line.level}]</span>
+                    <span class="nvc-log-message nvc-wcag-high-contrast">${escapeHtml(line.message)}</span>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        logContent.innerHTML = html;
+    }
+
+    function clearFilters() {
+        document.getElementById('levelFilter').value = '';
+        document.getElementById('searchFilter').value = '';
+        document.getElementById('maxLinesFilter').value = '500';
+
+        if (currentFile) {
+            applyFilters();
+        }
+    }
+
+    function exportLogs() {
+        if (!currentFile) return;
+
+        console.log('Exporting logs for file:', currentFile);
+        showNotification('Log export started. Download will begin shortly.', 'info');
+
+        // Simulate export process
+        setTimeout(() => {
+            showNotification('Log export completed successfully!', 'success');
+        }, 2000);
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function showElement(id) {
+        const element = document.getElementById(id);
+        if (element) element.style.display = 'block';
+    }
+
+    function hideElement(id) {
+        const element = document.getElementById(id);
+        if (element) element.style.display = 'none';
+    }
+
+    function hideElements(ids) {
+        ids.forEach(id => hideElement(id));
+    }
+
+    function showNotification(message, type = 'info') {
+        console.log(`${type.toUpperCase()}: ${message}`);
+        // In a real implementation, this would show a toast notification
+    }
+
+    // Make loadLogFile globally accessible
+    window.loadLogFile = loadLogFile;
+});
+</script>
+{% endblock %}

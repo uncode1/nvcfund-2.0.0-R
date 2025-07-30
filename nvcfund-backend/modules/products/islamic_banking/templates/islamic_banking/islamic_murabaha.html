@@ -1,0 +1,333 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Murabaha Financing{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-white">Murabaha Financing Management</h2>
+                <div>
+                    <button type="button" class="btn nvc-btn nvc-btn-primary">New Murabaha Contract</button>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-light">Generate Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Murabaha Portfolio Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-handshake me-2"></i>
+                        Total Portfolio
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">$45.2M</h3>
+                <p class="text-light small mb-0">Active financing</p>
+                <div class="mt-2">
+                    <span class="badge bg-success">+12.3%</span>
+                    <small class="text-light ms-2">vs last quarter</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-percentage me-2"></i>
+                        Average Profit Rate
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">4.5%</h3>
+                <p class="text-light small mb-0">Annual profit rate</p>
+                <div class="mt-2">
+                    <span class="badge bg-info">Competitive</span>
+                    <small class="text-light ms-2">market rate</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-file-contract me-2"></i>
+                        Active Contracts
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">847</h3>
+                <p class="text-light small mb-0">Financing agreements</p>
+                <div class="mt-2">
+                    <span class="badge bg-warning">+47</span>
+                    <small class="text-light ms-2">new this month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        Collection Rate
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">98.7%</h3>
+                <p class="text-light small mb-0">On-time payments</p>
+                <div class="mt-2">
+                    <span class="badge bg-success">Excellent</span>
+                    <small class="text-light ms-2">performance</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Murabaha Contracts -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-list me-2"></i>
+                    Active Murabaha Contracts
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Asset Type</th>
+                                <th>Contract Value</th>
+                                <th>Profit Rate</th>
+                                <th>Term</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Al-Mansouri Trading</td>
+                                <td>Equipment</td>
+                                <td>$850K</td>
+                                <td>4.2%</td>
+                                <td>36 months</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary">Payment</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Tech Solutions LLC</td>
+                                <td>Office Equipment</td>
+                                <td>$420K</td>
+                                <td>4.8%</td>
+                                <td>24 months</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning">Review</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Green Energy Corp</td>
+                                <td>Solar Panels</td>
+                                <td>$1.2M</td>
+                                <td>3.9%</td>
+                                <td>60 months</td>
+                                <td><span class="badge bg-info">Processing</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success">Approve</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Healthcare Services</td>
+                                <td>Medical Equipment</td>
+                                <td>$680K</td>
+                                <td>4.5%</td>
+                                <td>48 months</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary">Payment</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Construction Ltd</td>
+                                <td>Heavy Machinery</td>
+                                <td>$2.1M</td>
+                                <td>5.1%</td>
+                                <td>72 months</td>
+                                <td><span class="badge bg-warning">Under Review</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info">Assess</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Asset Categories
+                </h5>
+                <canvas id="assetCategoryChart" height="200"></canvas>
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-success me-2"></i>Equipment</span>
+                        <span>35%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-info me-2"></i>Real Estate</span>
+                        <span>25%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-warning me-2"></i>Vehicles</span>
+                        <span>20%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-primary me-2"></i>Technology</span>
+                        <span>15%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light">
+                        <span><i class="fas fa-circle text-danger me-2"></i>Other</span>
+                        <span>5%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Schedule and Performance -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Monthly Performance Trend
+                </h5>
+                <canvas id="performanceChart" height="150"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Upcoming Payments
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Al-Mansouri Trading</td>
+                                <td>2025-07-15</td>
+                                <td>$28,500</td>
+                                <td><span class="badge bg-warning">Due Soon</span></td>
+                            </tr>
+                            <tr>
+                                <td>Tech Solutions LLC</td>
+                                <td>2025-07-20</td>
+                                <td>$21,750</td>
+                                <td><span class="badge bg-info">Upcoming</span></td>
+                            </tr>
+                            <tr>
+                                <td>Healthcare Services</td>
+                                <td>2025-07-25</td>
+                                <td>$18,900</td>
+                                <td><span class="badge bg-info">Upcoming</span></td>
+                            </tr>
+                            <tr>
+                                <td>Green Energy Corp</td>
+                                <td>2025-07-30</td>
+                                <td>$24,000</td>
+                                <td><span class="badge bg-secondary">Scheduled</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Asset Category Distribution Chart
+if (document.getElementById('assetCategoryChart')) {
+    const ctx = document.getElementById('assetCategoryChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Equipment', 'Real Estate', 'Vehicles', 'Technology', 'Other'],
+            datasets: [{
+                data: [35, 25, 20, 15, 5],
+                backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#007bff', '#dc3545'],
+                borderWidth: 2,
+                borderColor: '#1e293b'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+// Performance Trend Chart
+if (document.getElementById('performanceChart')) {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Portfolio Value ($M)',
+                data: [38.2, 40.1, 42.5, 43.8, 44.6, 45.2],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#e2e8f0' }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#e2e8f0' }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#e2e8f0' } }
+            }
+        }
+    });
+}
+</script>
+</div>
+{% endblock %}

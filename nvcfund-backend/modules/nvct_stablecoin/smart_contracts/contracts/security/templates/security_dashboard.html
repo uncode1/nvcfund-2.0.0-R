@@ -1,0 +1,638 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Security Center - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Security Center{% endblock %}
+{% block page_description %}Enterprise-grade security monitoring with MEV protection, circuit breakers, and upgradeable contracts{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-bar"></i>
+    Analytics
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-exclamation-triangle"></i>
+    Emergency
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .security-card {
+        background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--card-bg) 100%);
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .security-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .security-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--accent-rose);
+    }
+
+    .security-status {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+        border: 2px solid var(--accent-emerald);
+        border-radius: var(--border-radius);
+    }
+
+    .status-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--accent-emerald);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .status-icon.warning {
+        background: var(--accent-amber);
+    }
+
+    .status-icon.critical {
+        background: var(--accent-rose);
+    }
+
+    .security-feature {
+        background: var(--card-bg);
+        border: 1px solid var(--border-muted);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .security-feature:hover {
+        border-color: var(--accent-rose);
+        box-shadow: var(--shadow);
+    }
+
+    .feature-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .feature-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .feature-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .feature-status.active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .feature-status.inactive {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+    }
+
+    .feature-status.triggered {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .feature-description {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .feature-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: var(--tertiary-bg);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-muted);
+    }
+
+    .metric-item {
+        text-align: center;
+    }
+
+    .metric-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: block;
+    }
+
+    .metric-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .feature-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-security {
+        flex: 1;
+        padding: 0.875rem 1.5rem;
+        border-radius: var(--border-radius);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-security-primary {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border-color: var(--accent-rose);
+    }
+
+    .btn-security-primary:hover {
+        background: #dc2626;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-security-secondary {
+        background: var(--card-bg);
+        color: var(--text-secondary);
+        border-color: var(--border-color);
+    }
+
+    .btn-security-secondary:hover {
+        background: var(--accent-bg);
+        color: var(--text-primary);
+        border-color: var(--accent-rose);
+    }
+
+    .threat-alert {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+        border: 2px solid var(--accent-rose);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .alert-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .alert-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--accent-rose);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .upgrade-status {
+        background: var(--secondary-bg);
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .upgrade-timeline {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .timeline-step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+    }
+
+    .timeline-step::after {
+        content: '';
+        position: absolute;
+        top: 20px;
+        right: -50%;
+        width: 100%;
+        height: 2px;
+        background: var(--border-muted);
+    }
+
+    .timeline-step:last-child::after {
+        display: none;
+    }
+
+    .timeline-step.completed::after {
+        background: var(--accent-emerald);
+    }
+
+    .step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--border-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        color: white;
+    }
+
+    .step-icon.completed {
+        background: var(--accent-emerald);
+    }
+
+    .step-icon.current {
+        background: var(--accent-blue);
+    }
+
+    .step-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- Security Overview -->
+<div class="metric-grid">
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise rose">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">99.9%</div>
+        <div class="metric-label-enterprise">Security Score</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-check"></i>
+            <span>Excellent</span>
+        </div>
+    </div>
+
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise emerald">
+                <i class="fas fa-eye"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">0</div>
+        <div class="metric-label-enterprise">Active Threats</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-check"></i>
+            <span>All clear</span>
+        </div>
+    </div>
+
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise amber">
+                <i class="fas fa-clock"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">100%</div>
+        <div class="metric-label-enterprise">Uptime</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>30 days</span>
+        </div>
+    </div>
+
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise purple">
+                <i class="fas fa-sync-alt"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">v2.1.0</div>
+        <div class="metric-label-enterprise">Contract Version</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-check"></i>
+            <span>Latest</span>
+        </div>
+    </div>
+</div>
+
+<!-- Security Status -->
+<div class="security-status">
+    <div class="status-icon">
+        <i class="fas fa-shield-alt"></i>
+    </div>
+    <div>
+        <h3 class="text-primary-enterprise mb-1">Security Status: Secure</h3>
+        <p class="text-secondary-enterprise mb-0">All security systems operational. No threats detected. Last security audit: January 2024</p>
+    </div>
+</div>
+
+<!-- Security Features -->
+<div class="enterprise-nvc-card">
+    <div class="nvc-nvc-card-header-enterprise">
+        <h3 class="nvc-card-title-enterprise">Security Features</h3>
+        <div class="nvc-card-actions-enterprise">
+            <button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+                <i class="fas fa-cog"></i>
+                Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- MEV Protection -->
+    <div class="security-feature">
+        <div class="feature-header">
+            <h4 class="feature-title">MEV Protection</h4>
+            <span class="feature-status active">Active</span>
+        </div>
+        
+        <p class="feature-description">
+            Advanced MEV (Maximal Extractable Value) protection prevents front-running, sandwich attacks, 
+            and other forms of transaction manipulation through commit-reveal schemes and transaction ordering protection.
+        </p>
+        
+        <div class="feature-metrics">
+            <div class="metric-item">
+                <span class="metric-value">1,247</span>
+                <span class="metric-label">Protected Txs</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">23</span>
+                <span class="metric-label">Attacks Blocked</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">$45K</span>
+                <span class="metric-label">Value Protected</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">99.8%</span>
+                <span class="metric-label">Success Rate</span>
+            </div>
+        </div>
+        
+        <div class="feature-actions">
+            <button type="button" class="btn-security btn-security-secondary" data-action="custom-action">
+                <i class="fas fa-cog"></i>
+                Configure
+            </button>
+            <button type="button" class="btn-security btn-security-secondary" data-action="custom-action">
+                <i class="fas fa-chart-line"></i>
+                Analytics
+            </button>
+        </div>
+    </div>
+
+    <!-- Circuit Breaker -->
+    <div class="security-feature">
+        <div class="feature-header">
+            <h4 class="feature-title">Circuit Breaker</h4>
+            <span class="feature-status active">Active</span>
+        </div>
+        
+        <p class="feature-description">
+            Automated circuit breaker system that halts operations when anomalous activity is detected. 
+            Protects against flash crashes, oracle manipulation, and other systemic risks.
+        </p>
+        
+        <div class="feature-metrics">
+            <div class="metric-item">
+                <span class="metric-value">5%</span>
+                <span class="metric-label">Price Threshold</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">10M</span>
+                <span class="metric-label">Volume Threshold</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">0</span>
+                <span class="metric-label">Triggers Today</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">15min</span>
+                <span class="metric-label">Cooldown</span>
+            </div>
+        </div>
+        
+        <div class="feature-actions">
+            <button type="button" class="btn-security btn-security-primary" data-action="custom-action">
+                <i class="fas fa-play"></i>
+                Test System
+            </button>
+            <button type="button" class="btn-security btn-security-secondary" data-action="custom-action">
+                <i class="fas fa-history"></i>
+                History
+            </button>
+        </div>
+    </div>
+
+    <!-- Upgradeable Contracts -->
+    <div class="security-feature">
+        <div class="feature-header">
+            <h4 class="feature-title">Upgradeable Proxy System</h4>
+            <span class="feature-status active">Active</span>
+        </div>
+        
+        <p class="feature-description">
+            Secure upgradeable proxy pattern with timelock governance and multi-signature requirements. 
+            Enables protocol improvements while maintaining security and decentralization.
+        </p>
+        
+        <div class="feature-metrics">
+            <div class="metric-item">
+                <span class="metric-value">v2.1.0</span>
+                <span class="metric-label">Current Version</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">48h</span>
+                <span class="metric-label">Timelock</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">3/5</span>
+                <span class="metric-label">Multi-sig</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value">12</span>
+                <span class="metric-label">Total Upgrades</span>
+            </div>
+        </div>
+        
+        <div class="feature-actions">
+            <button type="button" class="btn-security btn-security-secondary" data-action="custom-action">
+                <i class="fas fa-history"></i>
+                History
+            </button>
+            <button type="button" class="btn-security btn-security-secondary" data-action="custom-action">
+                <i class="fas fa-clock"></i>
+                Pending
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Upgrade Status -->
+<div class="upgrade-status">
+    <h3 class="text-primary-enterprise mb-3">Next Upgrade: Security Enhancement v2.2.0</h3>
+    
+    <div class="upgrade-timeline">
+        <div class="timeline-step completed">
+            <div class="step-icon completed">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="step-label">Proposal</div>
+        </div>
+        <div class="timeline-step completed">
+            <div class="step-icon completed">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="step-label">Voting</div>
+        </div>
+        <div class="timeline-step current">
+            <div class="step-icon current">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="step-label">Timelock</div>
+        </div>
+        <div class="timeline-step">
+            <div class="step-icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <div class="step-label">Deployment</div>
+        </div>
+    </div>
+    
+    <p class="text-secondary-enterprise">
+        Upgrade scheduled for deployment in 36 hours. This upgrade includes enhanced MEV protection, 
+        improved circuit breaker logic, and additional security monitoring capabilities.
+    </p>
+</div>
+
+<!-- Security Alerts -->
+<div class="security-nvc-card">
+    <h3 class="text-primary-enterprise mb-3">Recent Security Events</h3>
+    
+    <div class="table-enterprise">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Event Type</th>
+                    <th>Severity</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2 hours ago</td>
+                    <td>MEV Protection</td>
+                    <td><span class="status-badge warning">Medium</span></td>
+                    <td>Sandwich attack attempt blocked</td>
+                    <td><span class="status-badge success">Resolved</span></td>
+                </tr>
+                <tr>
+                    <td>6 hours ago</td>
+                    <td>Circuit Breaker</td>
+                    <td><span class="status-badge info">Low</span></td>
+                    <td>Routine system test completed</td>
+                    <td><span class="status-badge success">Passed</span></td>
+                </tr>
+                <tr>
+                    <td>1 day ago</td>
+                    <td>Upgrade</td>
+                    <td><span class="status-badge info">Info</span></td>
+                    <td>Security patch v2.1.1 deployed</td>
+                    <td><span class="status-badge success">Complete</span></td>
+                </tr>
+                <tr>
+                    <td>3 days ago</td>
+                    <td>MEV Protection</td>
+                    <td><span class="status-badge warning">Medium</span></td>
+                    <td>Front-running attempt detected</td>
+                    <td><span class="status-badge success">Blocked</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects to security feature cards
+    const securityFeatures = document.querySelectorAll('.security-feature');
+    securityFeatures.forEach(feature => {
+        feature.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        feature.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Simulate real-time security monitoring
+    setInterval(function() {
+        // Update security metrics with slight variations
+        const metrics = document.querySelectorAll('.metric-value-enterprise');
+        metrics.forEach(metric => {
+            metric.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                metric.style.transform = 'scale(1)';
+            }, 200);
+        });
+    }, 45000); // Every 45 seconds
+});
+</script>
+{% endblock %}

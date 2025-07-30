@@ -1,0 +1,729 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Portfolio Management - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Portfolio Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-primary">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="h2 text-white mb-2">
+                                <i class="fas fa-chart-pie me-2"></i>Portfolio Management
+                            </h1>
+                            <p class="text-light mb-0">Advanced portfolio analysis and optimization tools</p>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('investments.main_dashboard') }}" class="btn btn-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Investments
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Summary -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-dollar-sign fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Total Value</h4>
+                    <h2 class="text-white">${{ "12.8M"|default("0") }}</h2>
+                    <small class="text-light">Portfolio Assets</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-trending-up fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">YTD Return</h4>
+                    <h2 class="text-white">{{ "+18.5%"|default("0%") }}</h2>
+                    <small class="text-light">Year to Date</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-balance-scale fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Risk Score</h4>
+                    <h2 class="text-white">{{ "6.8"|default("0") }}</h2>
+                    <small class="text-light">Moderate Risk</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-primary">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-cogs fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Active Strategies</h4>
+                    <h2 class="text-white">{{ "7"|default("0") }}</h2>
+                    <small class="text-light">Investment Strategies</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Allocation -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Asset Allocation</h5>
+                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-primary" data-action="custom-action">
+                        <i class="fas fa-balance-scale me-2"></i>Rebalance Portfolio
+                    </button>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Asset allocation chart would go here -->
+                            <canvas id="allocationChart" width="300" height="300"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset Class</th>
+                                            <th>Allocation</th>
+                                            <th>Value</th>
+                                            <th>Target</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Equities</span></td>
+                                            <td>65%</td>
+                                            <td>$8.32M</td>
+                                            <td>60-70%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-success">Bonds</span></td>
+                                            <td>25%</td>
+                                            <td>$3.20M</td>
+                                            <td>20-30%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning">Commodities</span></td>
+                                            <td>7%</td>
+                                            <td>$896K</td>
+                                            <td>5-10%</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info">Cash</span></td>
+                                            <td>3%</td>
+                                            <td>$384K</td>
+                                            <td>2-5%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-chart-line me-2"></i>Performance Metrics</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Sharpe Ratio</label>
+                        <div class="d-flex justify-content-between">
+                            <span>{{ "1.42"|default("0") }}</span>
+                            <span class="badge bg-success">Excellent</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Alpha</label>
+                        <div class="d-flex justify-content-between">
+                            <span>{{ "3.2%"|default("0%") }}</span>
+                            <span class="badge bg-success">Positive</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Beta</label>
+                        <div class="d-flex justify-content-between">
+                            <span>{{ "0.95"|default("0") }}</span>
+                            <span class="badge bg-info">Low Volatility</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Max Drawdown</label>
+                        <div class="d-flex justify-content-between">
+                            <span>{{ "-8.4%"|default("0%") }}</span>
+                            <span class="badge bg-warning">Moderate</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Correlation to S&P 500</label>
+                        <div class="d-flex justify-content-between">
+                            <span>{{ "0.78"|default("0") }}</span>
+                            <span class="badge bg-info">High</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Holdings Details -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-list me-2"></i>Portfolio Holdings</h5>
+                    <div>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary me-2">Export</button>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-success">Add Position</button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Security Name</th>
+                                    <th>Shares/Units</th>
+                                    <th>Price</th>
+                                    <th>Market Value</th>
+                                    <th>Day Change</th>
+                                    <th>Total Return</th>
+                                    <th>Weight</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>AAPL</strong></td>
+                                    <td>Apple Inc.</td>
+                                    <td>5,000</td>
+                                    <td>$192.50</td>
+                                    <td>$962,500</td>
+                                    <td><span class="text-success">+1.2%</span></td>
+                                    <td><span class="text-success">+23.4%</span></td>
+                                    <td>7.5%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-exchange-alt me-1"></i>Trade
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>MSFT</strong></td>
+                                    <td>Microsoft Corporation</td>
+                                    <td>2,800</td>
+                                    <td>$415.75</td>
+                                    <td>$1,164,100</td>
+                                    <td><span class="text-danger">-0.8%</span></td>
+                                    <td><span class="text-success">+18.9%</span></td>
+                                    <td>9.1%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-exchange-alt me-1"></i>Trade
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>GOOGL</strong></td>
+                                    <td>Alphabet Inc.</td>
+                                    <td>4,200</td>
+                                    <td>$145.80</td>
+                                    <td>$612,360</td>
+                                    <td><span class="text-success">+2.1%</span></td>
+                                    <td><span class="text-success">+15.7%</span></td>
+                                    <td>4.8%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-exchange-alt me-1"></i>Trade
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>SPY</strong></td>
+                                    <td>SPDR S&P 500 ETF</td>
+                                    <td>15,000</td>
+                                    <td>$485.20</td>
+                                    <td>$7,278,000</td>
+                                    <td><span class="text-success">+0.6%</span></td>
+                                    <td><span class="text-success">+21.3%</span></td>
+                                    <td>56.9%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-exchange-alt me-1"></i>Trade
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TLT</strong></td>
+                                    <td>iShares 20+ Year Treasury Bond ETF</td>
+                                    <td>35,000</td>
+                                    <td>$91.40</td>
+                                    <td>$3,199,000</td>
+                                    <td><span class="text-danger">-0.3%</span></td>
+                                    <td><span class="text-success">+12.1%</span></td>
+                                    <td>25.0%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-exchange-alt me-1"></i>Trade
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Analytics Tools -->
+    <div class="row mt-4">
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-calculator me-2"></i>Portfolio Tools</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-primary" data-action="custom-action">
+                            <i class="fas fa-chart-line me-2"></i>Risk Analysis
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-success" data-action="custom-action">
+                            <i class="fas fa-cogs me-2"></i>Optimization
+                        </button>
+                        <button type="button" class="btn btn-info" data-action="custom-action">
+                            <i class="fas fa-project-diagram me-2"></i>Scenario Modeling
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-warning" data-action="custom-action">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Stress Testing
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-secondary" data-action="custom-action">
+                            <i class="fas fa-history me-2"></i>Backtesting
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-bell me-2"></i>Portfolio Alerts & Recommendations</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="alert nvc-nvc-alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Rebalancing Required:</strong> Equity allocation is 5% above target range.
+                    </div>
+                    <div class="alert nvc-nvc-alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Opportunity:</strong> Technology sector showing strong momentum with 15% outperformance.
+                    </div>
+                    <div class="alert nvc-nvc-alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Performance:</strong> Portfolio has outperformed benchmark by 3.2% YTD.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Portfolio allocation chart
+document.addEventListener('DOMContentLoaded', function() {
+    var ctx = document.getElementById('allocationChart');
+    if (ctx) {
+        ctx = ctx.getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Equities', 'Bonds', 'Commodities', 'Cash'],
+                datasets: [{
+                    data: [65, 25, 7, 3],
+                    backgroundColor: [
+                        '#0d6efd',
+                        '#198754',
+                        '#ffc107',
+                        '#17a2b8'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+    
+    // Portfolio Management Tools Functions
+    window.performRiskAnalysis = function() {
+        showNotification('Performing comprehensive risk analysis...', 'info');
+        setTimeout(() => {
+            showModal('Risk Analysis Results', `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Portfolio Risk Metrics</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Beta</span><strong>1.15</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Sharpe Ratio</span><strong>1.42</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Volatility</span><strong>18.5%</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>VaR (95%)</span><strong class="text-danger">-2.3%</strong>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Risk Recommendations</h6>
+                        <div class="alert nvc-nvc-alert-warning">
+                            <small><strong>High Volatility:</strong> Consider adding defensive assets.</small>
+                        </div>
+                        <div class="alert nvc-nvc-alert-info">
+                            <small><strong>Concentration Risk:</strong> Equity allocation above threshold.</small>
+                        </div>
+                    </div>
+                </div>
+            `);
+            showNotification('Risk analysis completed successfully!', 'success');
+        }, 2000);
+    };
+    
+    window.optimizePortfolio = function() {
+        showNotification('Running portfolio optimization algorithms...', 'info');
+        setTimeout(() => {
+            showModal('Portfolio Optimization Results', `
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Optimization Recommendations</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr><th>Asset</th><th>Current</th><th>Optimal</th><th>Change</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Equities</td><td>45%</td><td>40%</td><td class="text-danger">-5%</td></tr>
+                                    <tr><td>Bonds</td><td>30%</td><td>35%</td><td class="text-success">+5%</td></tr>
+                                    <tr><td>Alternatives</td><td>15%</td><td>15%</td><td class="text-light">0%</td></tr>
+                                    <tr><td>Cash</td><td>10%</td><td>10%</td><td class="text-light">0%</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm mt-2" data-action="custom-action">Apply Optimization</button>
+                    </div>
+                </div>
+            `);
+            showNotification('Portfolio optimization completed!', 'success');
+        }, 3000);
+    };
+    
+    window.runScenarioModeling = function() {
+        showNotification('Running scenario analysis models...', 'info');
+        setTimeout(() => {
+            showModal('Scenario Modeling Results', `
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr><th>Scenario</th><th>Probability</th><th>Portfolio Return</th><th>Impact</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-success">
+                                <td><strong>Bull Market</strong></td><td>25%</td>
+                                <td class="text-success">+24.5%</td>
+                                <td><span class="badge bg-success">Positive</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Base Case</strong></td><td>50%</td>
+                                <td class="text-primary">+12.3%</td>
+                                <td><span class="badge bg-primary">Neutral</span></td>
+                            </tr>
+                            <tr class="table-warning">
+                                <td><strong>Bear Market</strong></td><td>20%</td>
+                                <td class="text-danger">-15.8%</td>
+                                <td><span class="badge bg-danger">Negative</span></td>
+                            </tr>
+                            <tr class="table-danger">
+                                <td><strong>Black Swan</strong></td><td>5%</td>
+                                <td class="text-danger">-35.2%</td>
+                                <td><span class="badge bg-dark">Severe</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `);
+            showNotification('Scenario modeling analysis completed!', 'success');
+        }, 2500);
+    };
+    
+    window.performStressTesting = function() {
+        showNotification('Performing portfolio stress testing...', 'info');
+        setTimeout(() => {
+            showModal('Stress Testing Results', `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Historical Stress Events</h6>
+                        <div class="list-group">
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>2008 Financial Crisis</strong>
+                                    <span class="text-danger">-28.4%</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>COVID-19 Pandemic</strong>
+                                    <span class="text-danger">-18.7%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Key Findings</h6>
+                        <div class="alert nvc-nvc-alert-warning">
+                            <ul class="mb-0">
+                                <li>Portfolio shows resilience in moderate stress</li>
+                                <li>High correlation during extreme events</li>
+                                <li>Consider increasing defensive allocation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `);
+            showNotification('Stress testing completed successfully!', 'success');
+        }, 3500);
+    };
+    
+    window.runBacktesting = function() {
+        showNotification('Running historical backtesting analysis...', 'info');
+        setTimeout(() => {
+            showModal('Backtesting Results', `
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <h6>5-Year Historical Performance</h6>
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <h4 class="text-success">+87.3%</h4>
+                                <small class="text-light">Total Return</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-primary">13.4%</h4>
+                                <small class="text-light">Annualized Return</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-info">1.28</h4>
+                                <small class="text-light">Sharpe Ratio</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-warning">-15.8%</h4>
+                                <small class="text-light">Max Drawdown</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+            showNotification('Backtesting analysis completed!', 'success');
+        }, 4000);
+    };
+    
+    window.rebalancePortfolio = function() {
+        showNotification('Initiating portfolio rebalancing...', 'info');
+        setTimeout(() => {
+            showModal('Portfolio Rebalancing', `
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <div class="alert nvc-nvc-alert-info">
+                            <strong>Rebalancing Required:</strong> Current allocations deviate from target.
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6>Proposed Trades</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr><th>Asset</th><th>Action</th><th>Amount</th><th>Value</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>AAPL</td><td class="text-danger">Sell</td><td>500 shares</td><td>$96,250</td></tr>
+                                    <tr><td>TLT</td><td class="text-success">Buy</td><td>1,000 shares</td><td>$91,400</td></tr>
+                                    <tr><td>VTI</td><td class="text-success">Buy</td><td>25 shares</td><td>$4,850</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm" data-action="custom-action">Execute Rebalancing</button>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Summary</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Total Trades</span><strong>3</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Trading Costs</span><strong>$45.00</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            `);
+        }, 1500);
+    };
+    
+    window.executeRebalancing = function() {
+        showNotification('Executing portfolio rebalancing trades...', 'warning');
+        setTimeout(() => {
+            showNotification('Portfolio rebalancing completed successfully!', 'success');
+            closeModal();
+        }, 3000);
+    };
+    
+    window.applyOptimization = function() {
+        showNotification('Applying optimization recommendations...', 'info');
+        setTimeout(() => {
+            showNotification('Portfolio optimization applied successfully!', 'success');
+            closeModal();
+        }, 2000);
+    };
+    
+    // Helper functions
+    function showNotification(message, type = 'info') {
+        const alertClass = type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 
+                          type === 'danger' ? 'alert-danger' : 'alert-info';
+        
+        const notification = document.createElement('div');
+        notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            if (notification.parentNode) notification.parentNode.removeChild(notification);
+        }, 5000);
+    }
+    
+    function showModal(title, content) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade show d-block';
+        modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${title}</h5>
+                        <button type="button" class="btn-close" data-action="custom-action"></button>
+                    </div>
+                    <div class="modal-body">${content}</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn nvc-btn nvc-btn-secondary" data-action="custom-action">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.id = 'portfolioModal';
+    }
+    
+    window.closeModal = function() {
+        const modal = document.getElementById('portfolioModal');
+        if (modal) modal.parentNode.removeChild(modal);
+    };
+    
+    window.openTradeModal = function(symbol, name, price) {
+        showModal(`Trade ${symbol}`, `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Security Information</h6>
+                    <div class="nvc-card bg-light">
+                        <div class="nvc-nvc-card-body">
+                            <h5>${symbol}</h5>
+                            <p class="mb-1">${name}</p>
+                            <h4 class="text-primary">$${price}</h4>
+                            <small class="text-light">Current Price</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Trade Order</h6>
+                    <form id="tradeForm">
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Order Type</label>
+                            <select class="nvc-form-select" id="orderType">
+                                <option value="market">Market Order</option>
+                                <option value="limit">Limit Order</option>
+                                <option value="stop">Stop Order</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Action</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="action" id="buyAction" value="buy" checked>
+                                <label class="btn nvc-btn nvc-btn-outline-success" for="buyAction">Buy</label>
+                                <input type="radio" class="btn-check" name="action" id="sellAction" value="sell">
+                                <label class="btn nvc-btn nvc-btn-outline-danger" for="sellAction">Sell</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Quantity</label>
+                            <input type="number" class="nvc-form-input" id="quantity" placeholder="Number of shares" min="1">
+                        </div>
+                        <div class="mb-3" id="limitPriceGroup" class="d-none">
+                            <label class="nvc-form-label">Limit Price</label>
+                            <input type="number" class="nvc-form-input" id="limitPrice" placeholder="$0.00" step="0.01">
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Estimated Value</label>
+                            <input type="text" class="nvc-form-input" id="estimatedValue" readonly>
+                        </div>
+                        <button type="submit" class="btn nvc-btn nvc-btn-primary w-100">Place Order</button>
+                    </form>
+                </div>
+            </div>
+            <script>
+                document.getElementById('orderType').addEventListener('change', function() {
+                    const limitGroup = document.getElementById('limitPriceGroup');
+                    limitGroup.style.display = this.value === 'limit' ? 'block' : 'none';
+                });
+                
+                document.getElementById('quantity').addEventListener('input', function() {
+                    const qty = parseFloat(this.value) || 0;
+                    const estimated = qty * ${price};
+                    document.getElementById('estimatedValue').value = '$' + estimated.toLocaleString('en-US', {minimumFractionDigits: 2});
+                });
+                
+                document.getElementById('tradeForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const action = document.querySelector('input[name="action"]:checked').value;
+                    const qty = document.getElementById('quantity').value;
+                    showNotification(\`\${action.toUpperCase()} order for \${qty} shares of ${symbol} submitted successfully!\`, 'success');
+                    closeModal();
+                });
+            <\/script>
+        `);
+    };
+});
+</script>
+</div>
+{% endblock %}

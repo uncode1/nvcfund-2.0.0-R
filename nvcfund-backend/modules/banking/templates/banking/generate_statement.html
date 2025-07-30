@@ -1,0 +1,286 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Smart Statement Generator - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Statement Generator{% endblock %}
+{% block page_description %}Generate comprehensive statements for traditional and digital asset accounts{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Download Template
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-calendar-alt"></i>
+    Schedule Auto-Generate
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-file-pdf"></i>
+    Generate Statement
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Modern Statement Generator -->
+<div class="row g-4">
+    <!-- Statement Configuration -->
+    <div class="col-xl-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-cog text-primary me-2"></i>
+                    Statement Configuration
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <form id="statementForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="nvc-form-label">
+                                <i class="fas fa-university text-primary me-1"></i>
+                                Account Selection
+                            </label>
+                            <select class="nvc-form-select" id="accountSelect" multiple>
+                                <optgroup label="Traditional Accounts">
+                                    <option value="checking_1234">🏦 Checking - ****1234</option>
+                                    <option value="savings_5678">💰 Savings - ****5678</option>
+                                    <option value="business_9012">🏢 Business - ****9012</option>
+                                </optgroup>
+                                <optgroup label="Digital Wallets">
+                                    <option value="btc_wallet">₿ Bitcoin Wallet</option>
+                                    <option value="eth_wallet">⟠ Ethereum Wallet</option>
+                                    <option value="nvct_wallet">🪙 NVCT Wallet</option>
+                                    <option value="usdc_wallet">💎 USDC Wallet</option>
+                                </optgroup>
+                            </select>
+                            <small class="text-muted">Hold Ctrl/Cmd to select multiple accounts</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="nvc-form-label">
+                                <i class="fas fa-calendar text-success me-1"></i>
+                                Statement Period
+                            </label>
+                            <select class="nvc-form-select" id="periodSelect">
+                                <option value="current_month">Current Month</option>
+                                <option value="last_month">Last Month</option>
+                                <option value="last_3_months">Last 3 Months</option>
+                                <option value="last_6_months">Last 6 Months</option>
+                                <option value="last_year">Last Year</option>
+                                <option value="custom">Custom Date Range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="customDateRange" class="d-none">
+                            <label class="nvc-form-label">From Date</label>
+                            <input type="date" class="nvc-form-input" id="fromDate">
+                        </div>
+                        <div class="col-md-6" id="customDateRangeTo" class="d-none">
+                            <label class="nvc-form-label">To Date</label>
+                            <input type="date" class="nvc-form-input" id="toDate">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statement Options -->
+    <div class="col-xl-4">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-sliders-h text-info me-2"></i>
+                    Statement Options
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="statement-options">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="includeTransactions" checked>
+                        <label class="form-check-label" for="includeTransactions">
+                            <i class="fas fa-exchange-alt text-primary me-1"></i>
+                            Include Transaction Details
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="includeCrypto" checked>
+                        <label class="form-check-label" for="includeCrypto">
+                            <i class="fab fa-bitcoin text-warning me-1"></i>
+                            Include Crypto Transactions
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="includeCharts">
+                        <label class="form-check-label" for="includeCharts">
+                            <i class="fas fa-chart-pie text-success me-1"></i>
+                            Include Visual Charts
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="includeTaxInfo">
+                        <label class="form-check-label" for="includeTaxInfo">
+                            <i class="fas fa-calculator text-info me-1"></i>
+                            Include Tax Information
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="digitalSignature" checked>
+                        <label class="form-check-label" for="digitalSignature">
+                            <i class="fas fa-signature text-danger me-1"></i>
+                            Digital Signature
+                        </label>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="export-formats">
+                    <label class="nvc-form-label">
+                        <i class="fas fa-file-export text-secondary me-1"></i>
+                        Export Format
+                    </label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="exportFormat" id="formatPDF" value="pdf" checked>
+                        <label class="btn nvc-btn nvc-btn-outline-primary" for="formatPDF">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </label>
+                        <input type="radio" class="btn-check" name="exportFormat" id="formatExcel" value="excel">
+                        <label class="btn nvc-btn nvc-btn-outline-success" for="formatExcel">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </label>
+                        <input type="radio" class="btn-check" name="exportFormat" id="formatCSV" value="csv">
+                        <label class="btn nvc-btn nvc-btn-outline-info" for="formatCSV">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h3 class="nvc-card-title">Statement Generation</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('banking.generate_statement') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="account_id" class="nvc-form-label">Select Account</label>
+                                <select class="nvc-form-select" id="account_id" name="account_id" required>
+                                    <option value="">Choose an account...</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.id }}">
+                                        {{ account.account_number }} - {{ account.account_type }} 
+                                        ({{ account.currency }} {{ "%.2f"|format(account.balance) }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="period" class="nvc-form-label">Statement Period</label>
+                                <select class="nvc-form-select" id="period" name="period" required>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                    <option value="yearly">Yearly</option>
+                                    <option value="custom">Custom Date Range</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3" id="custom-date-range" class="d-none">
+                            <div class="col-md-6">
+                                <label for="start_date" class="nvc-form-label">Start Date</label>
+                                <input type="date" class="nvc-form-input" id="start_date" name="start_date">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="end_date" class="nvc-form-label">End Date</label>
+                                <input type="date" class="nvc-form-input" id="end_date" name="end_date">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="format" class="nvc-form-label">Statement Format</label>
+                                <select class="nvc-form-select" id="format" name="format">
+                                    <option value="pdf">PDF Document</option>
+                                    <option value="csv">CSV File</option>
+                                    <option value="excel">Excel Spreadsheet</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="delivery_method" class="nvc-form-label">Delivery Method</label>
+                                <select class="nvc-form-select" id="delivery_method" name="delivery_method">
+                                    <option value="download">Download Now</option>
+                                    <option value="email">Email to Registered Address</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="include_transactions" name="include_transactions" checked>
+                                    <label class="form-check-label" for="include_transactions">
+                                        Include transaction details
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="include_charts" name="include_charts">
+                                    <label class="form-check-label" for="include_charts">
+                                        Include spending analysis charts
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="include_summary" name="include_summary" checked>
+                                    <label class="form-check-label" for="include_summary">
+                                        Include account summary
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn nvc-btn nvc-btn-primary">
+                                    <i class="fas fa-file-alt me-2"></i>Generate Statement
+                                </button>
+                                <a href="{{ url_for('banking.statements') }}" class="btn nvc-btn nvc-btn-secondary ms-2">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Statements
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const periodSelect = document.getElementById('period');
+    const customDateRange = document.getElementById('custom-date-range');
+    
+    periodSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+            customDateRange.style.display = 'block';
+            document.getElementById('start_date').required = true;
+            document.getElementById('end_date').required = true;
+        } else {
+            customDateRange.style.display = 'none';
+            document.getElementById('start_date').required = false;
+            document.getElementById('end_date').required = false;
+        }
+    });
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

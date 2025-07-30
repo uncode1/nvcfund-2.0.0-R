@@ -1,0 +1,317 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Account Settings - NVC Banking Platform{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a; color: #e2e8f0; }
+        .card { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; }
+        .dashboard-stat-card { background: #1e293b; border: 1px solid #334155; }
+        .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+        .text-light { color: #e2e8f0 !important; }
+        .form-control, .form-select { background: #334155; border: 1px solid #475569; color: #e2e8f0; }
+        .form-control:focus, .form-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .form-check-input { background: #334155; border: 1px solid #475569; }
+        .form-check-input:checked { background: #3b82f6; border-color: #3b82f6; }
+        .settings-section { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 8px; }
+        .btn-success { background: #10b981; border-color: #10b981; }
+        .btn-outline-secondary { border-color: #6b7280; color: #6b7280; }
+        .btn-outline-secondary:hover { background: #6b7280; border-color: #6b7280; }
+        .btn-danger { background: #ef4444; border-color: #ef4444; }
+        .btn-outline-danger { border-color: #ef4444; color: #ef4444; }
+        .btn-outline-danger:hover { background: #ef4444; border-color: #ef4444; }
+        .modal-content { background: #1e293b; border: 1px solid #334155; }
+        .modal-header { border-bottom: 1px solid #334155; }
+        .modal-footer { border-top: 1px solid #334155; }
+        .btn-close { background: none; border: none; font-size: 1.5rem; color: #e2e8f0; }
+    
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>Account Settings
+                    </h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <!-- Notification Preferences -->
+                        <div class="col-md-6 mb-4">
+                            <div class="settings-section">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-bell me-2"></i>Notification Preferences
+                                </h5>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="email_notifications" 
+                                           {% if settings.notification_preferences.email_notifications %}checked{% endif %}>
+                                    <label class="form-check-label" for="email_notifications">
+                                        Email Notifications
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="sms_notifications"
+                                           {% if settings.notification_preferences.sms_notifications %}checked{% endif %}>
+                                    <label class="form-check-label" for="sms_notifications">
+                                        SMS Notifications
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="push_notifications"
+                                           {% if settings.notification_preferences.push_notifications %}checked{% endif %}>
+                                    <label class="form-check-label" for="push_notifications">
+                                        Push Notifications
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="marketing_emails"
+                                           {% if settings.notification_preferences.marketing_emails %}checked{% endif %}>
+                                    <label class="form-check-label" for="marketing_emails">
+                                        Marketing Emails
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Privacy Settings -->
+                        <div class="col-md-6 mb-4">
+                            <div class="settings-section">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-shield-alt me-2"></i>Privacy Settings
+                                </h5>
+                                
+                                <div class="mb-3">
+                                    <label for="profile_visibility" class="nvc-form-label">Profile Visibility</label>
+                                    <select class="nvc-form-select" id="profile_visibility">
+                                        <option value="public" {% if settings.privacy_settings.profile_visibility == 'public' %}selected{% endif %}>Public</option>
+                                        <option value="private" {% if settings.privacy_settings.profile_visibility == 'private' %}selected{% endif %}>Private</option>
+                                        <option value="contacts" {% if settings.privacy_settings.profile_visibility == 'contacts' %}selected{% endif %}>Contacts Only</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="data_sharing"
+                                           {% if settings.privacy_settings.data_sharing %}checked{% endif %}>
+                                    <label class="form-check-label" for="data_sharing">
+                                        Allow Data Sharing for Analytics
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="analytics_tracking"
+                                           {% if settings.privacy_settings.analytics_tracking %}checked{% endif %}>
+                                    <label class="form-check-label" for="analytics_tracking">
+                                        Enable Analytics Tracking
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Account Preferences -->
+                        <div class="col-md-6 mb-4">
+                            <div class="settings-section">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-user-cog me-2"></i>Account Preferences
+                                </h5>
+                                
+                                <div class="mb-3">
+                                    <label for="language" class="nvc-form-label">Language</label>
+                                    <select class="nvc-form-select" id="language">
+                                        <option value="en" {% if settings.account_preferences.language == 'en' %}selected{% endif %}>English</option>
+                                        <option value="es" {% if settings.account_preferences.language == 'es' %}selected{% endif %}>Español</option>
+                                        <option value="fr" {% if settings.account_preferences.language == 'fr' %}selected{% endif %}>Français</option>
+                                        <option value="de" {% if settings.account_preferences.language == 'de' %}selected{% endif %}>Deutsch</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="timezone" class="nvc-form-label">Timezone</label>
+                                    <select class="nvc-form-select" id="timezone">
+                                        <option value="UTC" {% if settings.account_preferences.timezone == 'UTC' %}selected{% endif %}>UTC</option>
+                                        <option value="America/New_York" {% if settings.account_preferences.timezone == 'America/New_York' %}selected{% endif %}>Eastern Time</option>
+                                        <option value="America/Chicago" {% if settings.account_preferences.timezone == 'America/Chicago' %}selected{% endif %}>Central Time</option>
+                                        <option value="America/Denver" {% if settings.account_preferences.timezone == 'America/Denver' %}selected{% endif %}>Mountain Time</option>
+                                        <option value="America/Los_Angeles" {% if settings.account_preferences.timezone == 'America/Los_Angeles' %}selected{% endif %}>Pacific Time</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="currency" class="nvc-form-label">Default Currency</label>
+                                    <select class="nvc-form-select" id="currency">
+                                        <option value="USD" {% if settings.account_preferences.currency == 'USD' %}selected{% endif %}>USD - US Dollar</option>
+                                        <option value="EUR" {% if settings.account_preferences.currency == 'EUR' %}selected{% endif %}>EUR - Euro</option>
+                                        <option value="GBP" {% if settings.account_preferences.currency == 'GBP' %}selected{% endif %}>GBP - British Pound</option>
+                                        <option value="CAD" {% if settings.account_preferences.currency == 'CAD' %}selected{% endif %}>CAD - Canadian Dollar</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="date_format" class="nvc-form-label">Date Format</label>
+                                    <select class="nvc-form-select" id="date_format">
+                                        <option value="MM/DD/YYYY" {% if settings.account_preferences.date_format == 'MM/DD/YYYY' %}selected{% endif %}>MM/DD/YYYY</option>
+                                        <option value="DD/MM/YYYY" {% if settings.account_preferences.date_format == 'DD/MM/YYYY' %}selected{% endif %}>DD/MM/YYYY</option>
+                                        <option value="YYYY-MM-DD" {% if settings.account_preferences.date_format == 'YYYY-MM-DD' %}selected{% endif %}>YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="col-md-6 mb-4">
+                            <div class="settings-section">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-tools me-2"></i>Quick Actions
+                                </h5>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn nvc-btn nvc-btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save All Settings
+                                    </button>
+                                    
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-secondary">
+                                        <i class="fas fa-undo me-2"></i>Reset to Defaults
+                                    </button>
+                                    
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-info">
+                                        <i class="fas fa-download me-2"></i>Export Settings
+                                    </button>
+                                    
+                                    <a href="{{ url_for('dashboard.security') }}" class="btn nvc-btn nvc-btn-outline-warning">
+                                        <i class="fas fa-shield-alt me-2"></i>Security Settings
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Banking-Specific Settings -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="settings-section">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-university me-2"></i>Banking Preferences
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="transaction_alerts" checked>
+                                            <label class="form-check-label" for="transaction_alerts">
+                                                Transaction Alerts
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="monthly_statements" checked>
+                                            <label class="form-check-label" for="monthly_statements">
+                                                Monthly Statements
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="security_notifications" checked>
+                                            <label class="form-check-label" for="security_notifications">
+                                                Security Notifications
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Settings management JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Save settings functionality
+    const saveButton = document.querySelector('button:contains("Save All Settings")');
+    if (saveButton) {
+        saveButton.addEventListener('click', function() {
+            // Collect all form data
+            const settings = {
+                notifications: {
+                    email: document.getElementById('email_notifications').checked,
+                    sms: document.getElementById('sms_notifications').checked,
+                    push: document.getElementById('push_notifications').checked,
+                    marketing: document.getElementById('marketing_emails').checked
+                },
+                privacy: {
+                    profile_visibility: document.getElementById('profile_visibility').value,
+                    data_sharing: document.getElementById('data_sharing').checked,
+                    analytics: document.getElementById('analytics_tracking').checked
+                },
+                preferences: {
+                    language: document.getElementById('language').value,
+                    timezone: document.getElementById('timezone').value,
+                    currency: document.getElementById('currency').value,
+                    date_format: document.getElementById('date_format').value
+                }
+            };
+            
+            // Show save confirmation
+            alert('Settings saved successfully!');
+            console.log('Settings to save:', settings);
+        });
+    }
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+// Settings management JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Save settings functionality
+    const saveButton = document.querySelector('button:contains("Save All Settings")');
+    if (saveButton) {
+        saveButton.addEventListener('click', function() {
+            // Collect all form data
+            const settings = {
+                notifications: {
+                    email: document.getElementById('email_notifications').checked,
+                    sms: document.getElementById('sms_notifications').checked,
+                    push: document.getElementById('push_notifications').checked,
+                    marketing: document.getElementById('marketing_emails').checked
+                },
+                privacy: {
+                    profile_visibility: document.getElementById('profile_visibility').value,
+                    data_sharing: document.getElementById('data_sharing').checked,
+                    analytics: document.getElementById('analytics_tracking').checked
+                },
+                preferences: {
+                    language: document.getElementById('language').value,
+                    timezone: document.getElementById('timezone').value,
+                    currency: document.getElementById('currency').value,
+                    date_format: document.getElementById('date_format').value
+                }
+            };
+            
+            // Show save confirmation
+            alert('Settings saved successfully!');
+            console.log('Settings to save:', settings);
+        });
+    }
+});
+
+{% endblock %}

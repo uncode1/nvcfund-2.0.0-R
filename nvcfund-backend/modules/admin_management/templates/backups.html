@@ -1,0 +1,658 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Data Protection & Backups - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Data Protection Center{% endblock %}
+{% block page_description %}Enterprise-grade backup and disaster recovery for banking and crypto assets{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-clock"></i>
+    Schedule Backup
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-database"></i>
+    Create Backup
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-shield-alt"></i>
+    Emergency Backup
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <!-- Data Protection Overview Section -->
+    <div class="nvc-content-section" id="overview">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-shield-alt"></i> Data Protection Center
+            </h3>
+            <div class="nvc-content-section-actions">
+                <span class="nvc-badge nvc-badge-success">
+                    <i class="fas fa-check-circle"></i> All systems protected
+                </span>
+            </div>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="nvc-card nvc-card-elevated">
+                <div class="nvc-card-body">
+                    <p class="nvc-text-muted mb-0">Enterprise-grade backup and disaster recovery for banking and crypto assets</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Status Section -->
+    <div class="nvc-content-section" id="backup-status">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-chart-bar"></i> Backup Status Overview
+            </h3>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-success">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">2 hours ago</div>
+                                    <div class="nvc-metric-label">Last Backup</div>
+                                    <div class="nvc-metric-status nvc-status-success">Successful</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-info">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                            <div class="backup-info">
+                                <h6>Total Backups</h6>
+                                <span class="backup-count">247</span>
+                                <small class="text-info">Active</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="backup-status-nvc-card bg-warning">
+                            <div class="backup-icon">
+                                <i class="fas fa-hdd"></i>
+                            </div>
+                            <div class="backup-info">
+                                <h6>Storage Used</h6>
+                                <span class="backup-size">2.4 TB</span>
+                                <small class="text-warning">78% capacity</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="backup-status-nvc-card bg-primary">
+                            <div class="backup-icon">
+                                <i class="fas fa-sync"></i>
+                            </div>
+                            <div class="backup-info">
+                                <h6>Next Backup</h6>
+                                <span class="backup-next">In 4 hours</span>
+                                <small class="text-primary">Scheduled</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Categories -->
+    <div class="col-xl-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-layer-group text-primary me-2"></i>
+                    Backup Categories
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="backup-categories">
+                    <!-- Core Banking Data -->
+                    <div class="backup-category">
+                        <div class="category-header">
+                            <div class="category-icon bg-primary">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="category-info">
+                                <h6>Core Banking Database</h6>
+                                <small class="text-muted">Customer accounts, transactions, balances</small>
+                            </div>
+                            <div class="category-status">
+                                <span class="badge bg-success">Protected</span>
+                                <small class="text-muted">Last: 2h ago</small>
+                            </div>
+                        </div>
+                        <div class="category-actions">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                <i class="fas fa-download"></i> Backup Now
+                            </button>
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                                <i class="fas fa-upload"></i> Restore
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Cryptocurrency Data -->
+                    <div class="backup-category">
+                        <div class="category-header">
+                            <div class="category-icon bg-warning">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="category-info">
+                                <h6>Cryptocurrency Wallets</h6>
+                                <small class="text-muted">Digital assets, private keys, transactions</small>
+                            </div>
+                            <div class="category-status">
+                                <span class="badge bg-success">Protected</span>
+                                <small class="text-muted">Last: 1h ago</small>
+                            </div>
+                        </div>
+                        <div class="category-actions">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">
+                                <i class="fas fa-download"></i> Backup Now
+                            </button>
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                                <i class="fas fa-upload"></i> Restore
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- User Management -->
+                    <div class="backup-category">
+                        <div class="category-header">
+                            <div class="category-icon bg-info">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="category-info">
+                                <h6>User Management</h6>
+                                <small class="text-muted">User profiles, permissions, authentication</small>
+                            </div>
+                            <div class="category-status">
+                                <span class="badge bg-success">Protected</span>
+                                <small class="text-muted">Last: 3h ago</small>
+                            </div>
+                        </div>
+                        <div class="category-actions">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                <i class="fas fa-download"></i> Backup Now
+                            </button>
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                                <i class="fas fa-upload"></i> Restore
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Compliance & Audit -->
+                    <div class="backup-category">
+                        <div class="category-header">
+                            <div class="category-icon bg-success">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            <div class="category-info">
+                                <h6>Compliance & Audit Logs</h6>
+                                <small class="text-muted">Regulatory reports, audit trails, compliance data</small>
+                            </div>
+                            <div class="category-status">
+                                <span class="badge bg-success">Protected</span>
+                                <small class="text-muted">Last: 1h ago</small>
+                            </div>
+                        </div>
+                        <div class="category-actions">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                <i class="fas fa-download"></i> Backup Now
+                            </button>
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                                <i class="fas fa-upload"></i> Restore
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Schedule -->
+    <div class="col-xl-4">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                    Backup Schedule
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="schedule-list">
+                    <div class="schedule-item">
+                        <div class="schedule-time">
+                            <i class="fas fa-clock text-primary"></i>
+                            <span>Daily 02:00 AM</span>
+                        </div>
+                        <div class="schedule-type">
+                            <strong>Full System Backup</strong>
+                            <small class="text-muted d-block">All databases and files</small>
+                        </div>
+                        <div class="schedule-status">
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div class="schedule-time">
+                            <i class="fas fa-clock text-warning"></i>
+                            <span>Every 4 hours</span>
+                        </div>
+                        <div class="schedule-type">
+                            <strong>Incremental Backup</strong>
+                            <small class="text-muted d-block">Changed data only</small>
+                        </div>
+                        <div class="schedule-status">
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div class="schedule-time">
+                            <i class="fas fa-clock text-info"></i>
+                            <span>Real-time</span>
+                        </div>
+                        <div class="schedule-type">
+                            <strong>Transaction Log Backup</strong>
+                            <small class="text-muted d-block">Continuous protection</small>
+                        </div>
+                        <div class="schedule-status">
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="button" class="btn nvc-btn nvc-btn-primary w-100" data-action="custom-action">
+                        <i class="fas fa-cog"></i>
+                        Configure Schedule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Backups Table -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-history text-primary me-2"></i>
+                    Recent Backups
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Backup ID</th>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Size</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>BKP-2024-001</code></td>
+                                <td><span class="badge bg-primary">Full</span></td>
+                                <td>Core Banking</td>
+                                <td>1.2 GB</td>
+                                <td>4m 32s</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                                <td>2 hours ago</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>BKP-2024-002</code></td>
+                                <td><span class="badge bg-warning">Incremental</span></td>
+                                <td>Cryptocurrency</td>
+                                <td>256 MB</td>
+                                <td>1m 15s</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                                <td>1 hour ago</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>BKP-2024-003</code></td>
+                                <td><span class="badge bg-info">Transaction Log</span></td>
+                                <td>Compliance</td>
+                                <td>89 MB</td>
+                                <td>32s</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                                <td>30 minutes ago</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>BKP-2024-004</code></td>
+                                <td><span class="badge bg-secondary">Differential</span></td>
+                                <td>User Management</td>
+                                <td>45 MB</td>
+                                <td>18s</td>
+                                <td><span class="badge bg-warning">In Progress</span></td>
+                                <td>Just now</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" disabled>
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block extra_css %}
+<style>
+    .backup-status-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(96, 165, 250, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .backup-status-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(96, 165, 250, 0.15);
+    }
+
+    .backup-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .backup-info h6 {
+        margin: 0;
+        font-weight: 600;
+        color: #e2e8f0;
+    }
+
+    .backup-time, .backup-count, .backup-size, .backup-next {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        display: block;
+    }
+
+    .backup-category {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(96, 165, 250, 0.1);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .category-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .category-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .category-info h6 {
+        margin: 0;
+        color: #e2e8f0;
+        font-weight: 600;
+    }
+
+    .category-status {
+        margin-left: auto;
+        text-align: right;
+    }
+
+    .category-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .schedule-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .schedule-time {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 120px;
+    }
+
+    .schedule-type {
+        flex: 1;
+    }
+
+    .schedule-type strong {
+        color: #e2e8f0;
+    }
+</style>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Modern Backup Management JavaScript
+
+function createBackup() {
+    showNotification('Creating full system backup...', 'info');
+
+    // Simulate backup creation
+    setTimeout(() => {
+        showNotification('System backup created successfully!', 'success');
+        updateBackupStatus();
+    }, 3000);
+}
+
+function scheduleBackup() {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title">Schedule Backup</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Backup Type</label>
+                            <select class="nvc-form-select bg-dark text-light">
+                                <option>Full System Backup</option>
+                                <option>Incremental Backup</option>
+                                <option>Differential Backup</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Schedule</label>
+                            <select class="nvc-form-select bg-dark text-light">
+                                <option>Daily</option>
+                                <option>Weekly</option>
+                                <option>Monthly</option>
+                                <option>Custom</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Time</label>
+                            <input type="time" class="nvc-form-input bg-dark text-light" value="02:00">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn nvc-btn nvc-btn-primary" data-action="custom-action">Save Schedule</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    const modalInstance = new bootstrap.Modal(modal);
+    modalInstance.show();
+}
+
+function emergencyBackup() {
+    if (confirm('Create emergency backup? This will backup all critical data immediately.')) {
+        showNotification('Emergency backup initiated...', 'warning');
+
+        setTimeout(() => {
+            showNotification('Emergency backup completed successfully!', 'success');
+        }, 5000);
+    }
+}
+
+function backupCategory(category) {
+    showNotification(`Creating ${category} backup...`, 'info');
+
+    setTimeout(() => {
+        showNotification(`${category} backup completed!`, 'success');
+    }, 2000);
+}
+
+function restoreCategory(category) {
+    if (confirm(`Restore ${category} data from backup? This will overwrite current data.`)) {
+        showNotification(`Restoring ${category} data...`, 'warning');
+
+        setTimeout(() => {
+            showNotification(`${category} data restored successfully!`, 'success');
+        }, 3000);
+    }
+}
+
+function downloadBackup(backupId) {
+    showNotification(`Downloading backup ${backupId}...`, 'info');
+
+    // Simulate download
+    setTimeout(() => {
+        showNotification(`Backup ${backupId} download started!`, 'success');
+    }, 1000);
+}
+
+function restoreBackup(backupId) {
+    if (confirm(`Restore from backup ${backupId}? This action cannot be undone.`)) {
+        showNotification(`Restoring from backup ${backupId}...`, 'warning');
+
+        setTimeout(() => {
+            showNotification(`System restored from backup ${backupId}!`, 'success');
+        }, 4000);
+    }
+}
+
+function configureSchedule() {
+    scheduleBackup();
+}
+
+function saveSchedule() {
+    showNotification('Backup schedule saved successfully!', 'success');
+
+    // Close modal
+    const modal = document.querySelector('.modal.show');
+    if (modal) {
+        bootstrap.Modal.getInstance(modal).hide();
+    }
+}
+
+function updateBackupStatus() {
+    // Update backup status indicators
+    const statusCards = document.querySelectorAll('.backup-status-card');
+    statusCards.forEach(card => {
+        card.style.animation = 'pulse 0.5s ease-in-out';
+    });
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'warning' ? 'warning' : 'info'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Initialize backup monitoring
+document.addEventListener('DOMContentLoaded', function() {
+    // Simulate real-time backup status updates
+    setInterval(updateBackupStatus, 30000); // Update every 30 seconds
+});
+</script>
+{% endblock %}

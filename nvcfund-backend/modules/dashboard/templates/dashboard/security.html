@@ -1,0 +1,256 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Security Settings - NVC Banking Platform{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a; color: #e2e8f0; }
+        .card { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; }
+        .dashboard-stat-card { background: #1e293b; border: 1px solid #334155; }
+        .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+        .text-light { color: #e2e8f0 !important; }
+        .form-control, .form-select { background: #334155; border: 1px solid #475569; color: #e2e8f0; }
+        .form-control:focus, .form-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .form-check-input { background: #334155; border: 1px solid #475569; }
+        .form-check-input:checked { background: #3b82f6; border-color: #3b82f6; }
+        .badge { font-size: 0.75rem; }
+        .bg-success { background-color: #10b981 !important; }
+        .bg-warning { background-color: #f59e0b !important; }
+        .btn-outline-success { border-color: #10b981; color: #10b981; }
+        .btn-outline-success:hover { background: #10b981; border-color: #10b981; }
+        .btn-outline-warning { border-color: #f59e0b; color: #f59e0b; }
+        .btn-outline-warning:hover { background: #f59e0b; border-color: #f59e0b; }
+        .btn-outline-danger { border-color: #ef4444; color: #ef4444; }
+        .btn-outline-danger:hover { background: #ef4444; border-color: #ef4444; }
+    
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <!-- Security Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-1">Security Settings</h3>
+                        <p class="text-light mb-0">Manage your account security and authentication settings</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-{{ 'success' if security.password_strength == 'Strong' else 'warning' }} fs-6">
+                            Password: {{ security.password_strength }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Status -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="mb-3">Multi-Factor Authentication</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-1">Two-Factor Authentication</h6>
+                        <p class="text-light small mb-0">{% if security.mfa_enabled %}Enabled and active{% else %}Not enabled{% endif %}</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="mfaToggle" {% if security.mfa_enabled %}checked{% endif %}>
+                    </div>
+                </div>
+                <div class="d-grid">
+                    <button type="button" class="btn btn-{{ 'outline-success' if security.mfa_enabled else 'primary' }}" id="mfa-setup">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        {% if security.mfa_enabled %}Manage MFA{% else %}Setup MFA{% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="mb-3">Session Management</h5>
+                <div class="mb-3">
+                    <h6 class="text-light mb-1">Last Login</h6>
+                    <p class="mb-0">{{ security.last_login }}</p>
+                </div>
+                <div class="mb-3">
+                    <h6 class="text-light mb-1">Session Timeout</h6>
+                    <p class="mb-0">{{ security.session_timeout }}</p>
+                </div>
+                <div class="d-grid">
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-warning" id="logout-all">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout All Devices
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Alerts -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="mb-3">Security Alerts</h5>
+                {% for alert in security.security_alerts %}
+                <div class="alert alert-{{ nvc-alert.type }} d-flex align-items-center" role="alert">
+                    <i class="fas fa-{% if alert.type == 'info' %}info-circle{% elif nvc-alert.type == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
+                    {{ alert.message }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Management -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="mb-3">Password Management</h5>
+                <form id="password-form">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="currentPassword" class="nvc-form-label">Current Password</label>
+                            <input type="password" class="nvc-form-input" id="currentPassword" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="newPassword" class="nvc-form-label">New Password</label>
+                            <input type="password" class="nvc-form-input" id="newPassword" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="confirmPassword" class="nvc-form-label">Confirm Password</label>
+                            <input type="password" class="nvc-form-input" id="confirmPassword" required>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn nvc-btn nvc-btn-primary">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary" id="generate-password">
+                            <i class="fas fa-random me-2"></i>Generate Strong Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="mb-3">Recent Login History</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>IP Address</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for login in security.login_history %}
+                            <tr>
+                                <td>{{ login.date }}</td>
+                                <td>{{ login.time }}</td>
+                                <td>{{ login.ip }}</td>
+                                <td>{{ login.location }}</td>
+                                <td><span class="badge bg-success">Successful</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('mfa-setup').addEventListener('click', function() {
+    // Add MFA setup logic
+    alert('MFA setup will be available in the next version.');
+});
+
+document.getElementById('logout-all').addEventListener('click', function() {
+    if (confirm('Are you sure you want to logout all devices? You will need to login again.')) {
+        // Add logout all devices logic
+        alert('All devices have been logged out.');
+    }
+});
+
+document.getElementById('password-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        alert('Passwords do not match.');
+        return;
+    }
+    
+    // Add password change logic
+    alert('Password changed successfully!');
+});
+
+document.getElementById('generate-password').addEventListener('click', function() {
+    // Generate a strong password
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 16; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('newPassword').value = password;
+    document.getElementById('confirmPassword').value = password;
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+document.getElementById('mfa-setup').addEventListener('click', function() {
+    // Add MFA setup logic
+    alert('MFA setup will be available in the next version.');
+});
+
+document.getElementById('logout-all').addEventListener('click', function() {
+    if (confirm('Are you sure you want to logout all devices? You will need to login again.')) {
+        // Add logout all devices logic
+        alert('All devices have been logged out.');
+    }
+});
+
+document.getElementById('password-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        alert('Passwords do not match.');
+        return;
+    }
+    
+    // Add password change logic
+    alert('Password changed successfully!');
+});
+
+document.getElementById('generate-password').addEventListener('click', function() {
+    // Generate a strong password
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 16; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('newPassword').value = password;
+    document.getElementById('confirmPassword').value = password;
+});
+
+{% endblock %}

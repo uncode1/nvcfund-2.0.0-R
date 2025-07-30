@@ -1,0 +1,499 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Message Center - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            background-color: #0a2447;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .main-content {
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid #66ccff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.3);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 100%);
+            border-bottom: 1px solid #66ccff;
+            color: #66ccff;
+            font-weight: bold;
+        }
+        .message-item {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .message-item:hover {
+            background: rgba(30, 60, 114, 0.5);
+            transform: translateY(-2px);
+        }
+        .message-unread {
+            border-left: 4px solid #66ccff;
+            background: rgba(102, 204, 255, 0.1);
+        }
+        .message-priority-high {
+            border-left: 4px solid #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+        .message-priority-medium {
+            border-left: 4px solid #ffc107;
+            background: rgba(255, 193, 7, 0.1);
+        }
+        .message-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        .icon-security { background: rgba(220, 53, 69, 0.3); color: #dc3545; }
+        .icon-transaction { background: rgba(40, 167, 69, 0.3); color: #28a745; }
+        .icon-system { background: rgba(23, 162, 184, 0.3); color: #17a2b8; }
+        .icon-marketing { background: rgba(102, 204, 255, 0.3); color: #66ccff; }
+        .icon-support { background: rgba(255, 193, 7, 0.3); color: #ffc107; }
+        .filter-controls {
+            background: rgba(30, 60, 114, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .form-control, .form-select {
+            background: #1e3c72;
+            border: 1px solid #66ccff;
+            color: #ffffff;
+        }
+        .form-control:focus, .form-select:focus {
+            background: #1e3c72;
+            border-color: #66ccff;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            border: none;
+            color: #0a2447;
+            font-weight: bold;
+        }
+        .btn-outline-primary {
+            border-color: #66ccff;
+            color: #66ccff;
+        }
+        .btn-outline-primary:hover {
+            background: #66ccff;
+            color: #0a2447;
+        }
+        .notification-summary {
+            background: rgba(30, 60, 114, 0.2);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+        .priority-high {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+        .priority-medium {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+        .priority-low {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+            border: 1px solid #6c757d;
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1><i class="fas fa-envelope"></i> Message Center</h1>
+                            <p class="mb-0">Manage your banking communications and notifications</p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn nvc-btn nvc-btn-primary me-2">
+                                <i class="fas fa-plus"></i> Compose Message
+                            </button>
+                            <span class="badge bg-info">12 Unread</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="filter-controls">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">Message Type</label>
+                        <select class="nvc-form-select" id="messageType">
+                            <option value="all">All Messages</option>
+                            <option value="security">Security Alerts</option>
+                            <option value="transaction">Transaction Updates</option>
+                            <option value="system">System Notifications</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="support">Support</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">Status</label>
+                        <select class="nvc-form-select" id="messageStatus">
+                            <option value="all">All Status</option>
+                            <option value="unread">Unread</option>
+                            <option value="read">Read</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">Priority</label>
+                        <select class="nvc-form-select" id="messagePriority">
+                            <option value="all">All Priorities</option>
+                            <option value="high">High Priority</option>
+                            <option value="medium">Medium Priority</option>
+                            <option value="low">Low Priority</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">&nbsp;</label>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary w-100" data-action="custom-action">
+                            <i class="fas fa-filter"></i> Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Message List -->
+                <div class="col-md-8">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5><i class="fas fa-inbox"></i> Inbox (24 messages)</h5>
+                                <div>
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm me-2">
+                                        <i class="fas fa-check"></i> Mark All Read
+                                    </button>
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                                        <i class="fas fa-archive"></i> Archive Selected
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <!-- High Priority Security Alert -->
+                            <div class="message-item message-unread message-priority-high" data-action="custom-action">
+                                <div class="d-flex align-items-start">
+                                    <div class="message-icon icon-security me-3">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>Security Alert: Unusual Login Activity</strong>
+                                                <span class="priority-badge priority-high ms-2">HIGH</span>
+                                            </div>
+                                            <small class="text-light">2 minutes ago</small>
+                                        </div>
+                                        <div class="text-light mt-1">
+                                            We detected a login attempt from an unusual location (IP: 89.34.156.78, Location: Eastern Europe).
+                                            If this wasn't you, please secure your account immediately.
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-light">From: Security Team | ID: SEC-2025-001</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Transaction Confirmation -->
+                            <div class="message-item message-unread" data-action="custom-action">
+                                <div class="d-flex align-items-start">
+                                    <div class="message-icon icon-transaction me-3">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>Transaction Confirmation</strong>
+                                                <span class="priority-badge priority-medium ms-2">MEDIUM</span>
+                                            </div>
+                                            <small class="text-light">15 minutes ago</small>
+                                        </div>
+                                        <div class="text-light mt-1">
+                                            Your transfer of $2,500.00 from Checking (****1234) to Savings (****5678) has been completed successfully.
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-light">Transaction ID: TXN-789456123 | Reference: TRANS-001</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- System Maintenance -->
+                            <div class="message-item" data-action="custom-action">
+                                <div class="d-flex align-items-start">
+                                    <div class="message-icon icon-system me-3">
+                                        <i class="fas fa-tools"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>Scheduled System Maintenance</strong>
+                                                <span class="priority-badge priority-low ms-2">LOW</span>
+                                            </div>
+                                            <small class="text-light">2 hours ago</small>
+                                        </div>
+                                        <div class="text-light mt-1">
+                                            We will be performing scheduled maintenance on Sunday, July 7th from 2:00 AM to 4:00 AM EST.
+                                            Banking services may be temporarily unavailable during this time.
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-light">From: System Operations | Category: Maintenance</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Application Update -->
+                            <div class="message-item message-unread" data-action="custom-action">
+                                <div class="d-flex align-items-start">
+                                    <div class="message-icon icon-transaction me-3">
+                                        <i class="fas fa-credit-nvc-card"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>Credit Card Application Approved</strong>
+                                                <span class="priority-badge priority-medium ms-2">MEDIUM</span>
+                                            </div>
+                                            <small class="text-light">1 day ago</small>
+                                        </div>
+                                        <div class="text-light mt-1">
+                                            Congratulations! Your Premium Visa Credit Card application has been approved.
+                                            Your new card will arrive within 7-10 business days.
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-light">Application ID: APP-CC-456789 | Credit Limit: $15,000</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Support Response -->
+                            <div class="message-item" data-action="custom-action">
+                                <div class="d-flex align-items-start">
+                                    <div class="message-icon icon-support me-3">
+                                        <i class="fas fa-headset"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>Support Ticket Response</strong>
+                                                <span class="priority-badge priority-medium ms-2">MEDIUM</span>
+                                            </div>
+                                            <small class="text-light">2 days ago</small>
+                                        </div>
+                                        <div class="text-light mt-1">
+                                            Thank you for contacting us regarding your account statement. We have resolved your inquiry
+                                            and sent the detailed statement to your registered email address.
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-light">Ticket ID: SUP-123456 | Agent: Sarah Johnson</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Marketing Offer -->
+                            <div class="message-item" data-action="custom-action">
+                                <div class="d-flex align-items-start">
+                                    <div class="message-icon icon-marketing me-3">
+                                        <i class="fas fa-gift"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>Exclusive Investment Opportunity</strong>
+                                                <span class="priority-badge priority-low ms-2">LOW</span>
+                                            </div>
+                                            <small class="text-light">3 days ago</small>
+                                        </div>
+                                        <div class="text-light mt-1">
+                                            As a valued Premium customer, you're invited to explore our new high-yield investment products
+                                            with rates up to 4.5% APY. Limited time offer.
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-light">Campaign: Premium-Invest-2025 | Expires: July 31, 2025</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Load More Button -->
+                            <div class="text-center mt-3">
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary">
+                                    <i class="fas fa-chevron-down"></i> Load More Messages
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Actions & Quick Stats -->
+                <div class="col-md-4">
+                    <div class="nvc-card mb-3">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-chart-pie"></i> Message Summary</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="notification-summary">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="fas fa-envelope text-info"></i> Total Messages</span>
+                                    <strong>24</strong>
+                                </div>
+                            </div>
+                            <div class="notification-summary">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="fas fa-envelope-open text-success"></i> Unread</span>
+                                    <strong>12</strong>
+                                </div>
+                            </div>
+                            <div class="notification-summary">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="fas fa-shield-alt text-danger"></i> Security Alerts</span>
+                                    <strong>3</strong>
+                                </div>
+                            </div>
+                            <div class="notification-summary">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="fas fa-exchange-alt text-warning"></i> Transactions</span>
+                                    <strong>8</strong>
+                                </div>
+                            </div>
+                            <div class="notification-summary">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="fas fa-headset text-primary"></i> Support</span>
+                                    <strong>2</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-cog"></i> Message Settings</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                <label class="form-check-label" for="emailNotifications">
+                                    Email Notifications
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="smsAlerts" checked>
+                                <label class="form-check-label" for="smsAlerts">
+                                    SMS Security Alerts
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="pushNotifications">
+                                <label class="form-check-label" for="pushNotifications">
+                                    Browser Notifications
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="marketingMessages">
+                                <label class="form-check-label" for="marketingMessages">
+                                    Marketing Messages
+                                </label>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                                    <i class="fas fa-download"></i> Export Messages
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                                    <i class="fas fa-archive"></i> Archive All Read
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                                    <i class="fas fa-cog"></i> Notification Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function selectMessage(element) {
+            // Remove selection from all messages
+            document.querySelectorAll('.message-item').forEach(item => {
+                item.style.backgroundColor = '';
+            });
+            
+            // Highlight selected message
+            element.style.backgroundColor = 'rgba(102, 204, 255, 0.2)';
+            
+            // Mark as read if unread
+            if (element.classList.contains('message-unread')) {
+                element.classList.remove('message-unread');
+                // Simulate marking as read
+                console.log('Message marked as read');
+            }
+        }
+
+        function applyFilters() {
+            const messageType = document.getElementById('messageType').value;
+            const messageStatus = document.getElementById('messageStatus').value;
+            const messagePriority = document.getElementById('messagePriority').value;
+            
+            console.log('Applying filters:', { messageType, messageStatus, messagePriority });
+            // In a real implementation, this would filter the messages
+            alert('Filters applied successfully!');
+        }
+
+        // Auto-refresh message count every 30 seconds
+        setInterval(function() {
+            console.log('Checking for new messages...');
+        }, 30000);
+    </script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

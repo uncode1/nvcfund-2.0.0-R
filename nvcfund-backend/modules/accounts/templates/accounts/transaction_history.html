@@ -1,0 +1,450 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Transaction History - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Transaction History{% endblock %}
+{% block page_description %}Comprehensive transaction monitoring and analysis{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('accounts.main_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        Accounts
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-history" aria-hidden="true"></i>
+    Transaction History
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export transaction data">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Transactions
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Apply advanced filters">
+    <i class="fas fa-filter" aria-hidden="true"></i>
+    Advanced Filter
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh transaction data">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh Data
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Transaction Overview Metrics -->
+        <div class="nvc-dashboard-grid">
+            <div class="nvc-metrics-row">
+                <div class="nvc-metric-card nvc-metric-success">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-success">
+                            <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+15.2%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ transaction_stats.today_count or '8,947' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Today's Transactions</p>
+                        <p class="nvc-metric-subtitle">${{ transaction_stats.today_volume or '2.4M' }} volume</p>
+                    </div>
+                </div>
+                <div class="nvc-metric-card nvc-metric-primary">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-primary">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+12.5%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">${{ transaction_stats.monthly_volume or '89.2M' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Monthly Volume</p>
+                        <p class="nvc-metric-subtitle">+{{ transaction_stats.growth or '12.5' }}% from last month</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-warning">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-warning">
+                            <i class="fas fa-clock" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-neutral">
+                            <i class="fas fa-minus" aria-hidden="true"></i>
+                            <span>Pending</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ transaction_stats.pending or '127' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Pending Transactions</p>
+                        <p class="nvc-metric-subtitle">Awaiting approval</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-danger">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-danger">
+                            <i class="fas fa-times-circle" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-negative">
+                            <i class="fas fa-arrow-down" aria-hidden="true"></i>
+                            <span>{{ transaction_stats.failure_rate or '0.26' }}%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ transaction_stats.failed or '23' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Failed Transactions</p>
+                        <p class="nvc-metric-subtitle">{{ transaction_stats.failure_rate or '0.26' }}% failure rate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Analytics Summary -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                    Transaction Analytics
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="View detailed analytics">
+                        <i class="fas fa-expand" aria-hidden="true"></i>
+                        View Details
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-analytics-grid">
+                    <div class="nvc-analytics-card">
+                        <div class="nvc-analytics-header">
+                            <h3 class="nvc-analytics-title nvc-wcag-high-contrast">Transaction Types</h3>
+                            <div class="nvc-analytics-icon">
+                                <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="nvc-analytics-content">
+                            <div class="nvc-transaction-types">
+                                <div class="nvc-type-item">
+                                    <div class="nvc-type-header">
+                                        <span class="nvc-type-name nvc-wcag-medium-contrast">Transfers</span>
+                                        <span class="nvc-type-percentage nvc-wcag-high-contrast">{{ transaction_types.transfers or '45%' }}</span>
+                                    </div>
+                                    <div class="nvc-progress-container">
+                                        <div class="nvc-progress-bar nvc-progress-primary nvc-progress-45" aria-label="Transfers: 45%"></div>
+                                    </div>
+                                </div>
+                                <div class="nvc-type-item">
+                                    <div class="nvc-type-header">
+                                        <span class="nvc-type-name nvc-wcag-medium-contrast">Deposits</span>
+                                        <span class="nvc-type-percentage nvc-wcag-high-contrast">{{ transaction_types.deposits or '28%' }}</span>
+                                    </div>
+                                    <div class="nvc-progress-container">
+                                        <div class="nvc-progress-bar nvc-progress-success nvc-progress-28" aria-label="Deposits: 28%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-type-item">
+                                    <div class="nvc-type-header">
+                                        <span class="nvc-type-name nvc-wcag-medium-contrast">Withdrawals</span>
+                                        <span class="nvc-type-percentage nvc-wcag-high-contrast">{{ transaction_types.withdrawals or '18%' }}</span>
+                                    </div>
+                                    <div class="nvc-progress-container">
+                                        <div class="nvc-progress-bar nvc-progress-warning nvc-progress-18" aria-label="Withdrawals: 18%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-type-item">
+                                    <div class="nvc-type-header">
+                                        <span class="nvc-type-name nvc-wcag-medium-contrast">Payments</span>
+                                        <span class="nvc-type-percentage nvc-wcag-high-contrast">{{ transaction_types.payments or '9%' }}</span>
+                                    </div>
+                                    <div class="nvc-progress-container">
+                                        <div class="nvc-progress-bar nvc-progress-info nvc-progress-9" aria-label="Payments: 9%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Transaction History Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-table" aria-hidden="true"></i>
+                    Transaction History
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Filter transactions">
+                        <i class="fas fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Export transactions">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Transaction Filter Controls -->
+                <div class="nvc-filter-controls">
+                    <div class="nvc-filter-row">
+                        <div class="nvc-filter-group">
+                            <label for="date-range" class="nvc-filter-label nvc-wcag-high-contrast">Date Range</label>
+                            <select id="date-range" class="nvc-filter-select nvc-wcag-focus">
+                                <option value="today">Today</option>
+                                <option value="week" selected>This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+
+                        <div class="nvc-filter-group">
+                            <label for="transaction-type" class="nvc-filter-label nvc-wcag-high-contrast">Transaction Type</label>
+                            <select id="transaction-type" class="nvc-filter-select nvc-wcag-focus">
+                                <option value="">All Types</option>
+                                <option value="transfer">Transfer</option>
+                                <option value="deposit">Deposit</option>
+                                <option value="withdrawal">Withdrawal</option>
+                                <option value="payment">Payment</option>
+                            </select>
+                        </div>
+
+                        <div class="nvc-filter-group">
+                            <label for="transaction-status" class="nvc-filter-label nvc-wcag-high-contrast">Status</label>
+                            <select id="transaction-status" class="nvc-filter-select nvc-wcag-focus">
+                                <option value="">All Status</option>
+                                <option value="completed">Completed</option>
+                                <option value="pending">Pending</option>
+                                <option value="failed">Failed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+
+                        <div class="nvc-filter-group">
+                            <label for="account-search" class="nvc-filter-label nvc-wcag-high-contrast">Account</label>
+                            <input type="text" id="account-search" class="nvc-filter-input nvc-wcag-focus" placeholder="Account number" aria-describedby="account-search-help">
+                            <small id="account-search-help" class="nvc-filter-help">Search by account number</small>
+                        </div>
+
+                        <div class="nvc-filter-group">
+                            <button type="button" class="nvc-btn nvc-btn-primary nvc-wcag-focus" aria-label="Search transactions">
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FINRA-Compliant Transaction Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="Transaction history">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">
+                                    <input type="checkbox" id="select-all-transactions" class="nvc-checkbox nvc-wcag-focus" aria-label="Select all transactions">
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Transaction ID</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Date/Time</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Type</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">From Account</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">To Account</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Amount</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions or [
+                                {'id': 'TXN-001234567', 'datetime': '2024-01-15 14:30:25', 'type': 'Transfer', 'from_account': 'ACC-001234', 'to_account': 'ACC-005678', 'amount': '$2,500.00', 'status': 'Completed'},
+                                {'id': 'TXN-001234568', 'datetime': '2024-01-15 14:28:18', 'type': 'Deposit', 'from_account': 'External', 'to_account': 'ACC-001235', 'amount': '$1,200.00', 'status': 'Completed'},
+                                {'id': 'TXN-001234569', 'datetime': '2024-01-15 14:25:45', 'type': 'Withdrawal', 'from_account': 'ACC-001236', 'to_account': 'ATM-Downtown', 'amount': '$500.00', 'status': 'Completed'},
+                                {'id': 'TXN-001234570', 'datetime': '2024-01-15 14:22:32', 'type': 'Payment', 'from_account': 'ACC-001237', 'to_account': 'Merchant-123', 'amount': '$89.99', 'status': 'Completed'},
+                                {'id': 'TXN-001234571', 'datetime': '2024-01-15 14:20:15', 'type': 'Transfer', 'from_account': 'ACC-001238', 'to_account': 'ACC-009876', 'amount': '$15,000.00', 'status': 'Pending'},
+                                {'id': 'TXN-001234572', 'datetime': '2024-01-15 14:18:08', 'type': 'Deposit', 'from_account': 'Wire-Transfer', 'to_account': 'ACC-001239', 'amount': '$50,000.00', 'status': 'Completed'},
+                                {'id': 'TXN-001234573', 'datetime': '2024-01-15 14:15:55', 'type': 'Withdrawal', 'from_account': 'ACC-001240', 'to_account': 'Branch-Teller', 'amount': '$3,000.00', 'status': 'Failed'},
+                                {'id': 'TXN-001234574', 'datetime': '2024-01-15 14:12:42', 'type': 'Transfer', 'from_account': 'ACC-001241', 'to_account': 'ACC-004321', 'amount': '$750.00', 'status': 'Completed'},
+                                {'id': 'TXN-001234575', 'datetime': '2024-01-15 14:10:30', 'type': 'Payment', 'from_account': 'ACC-001242', 'to_account': 'Utility-Company', 'amount': '$234.56', 'status': 'Completed'},
+                                {'id': 'TXN-001234576', 'datetime': '2024-01-15 14:08:17', 'type': 'Deposit', 'from_account': 'Check-Deposit', 'to_account': 'ACC-001243', 'amount': '$4,567.89', 'status': 'Pending'}
+                            ] %}
+                            <tr class="nvc-finra-row nvc-row-{{ 'warning' if transaction.status == 'Pending' else 'danger' if transaction.status == 'Failed' else 'default' }}">
+                                <td>
+                                    <input type="checkbox" class="nvc-checkbox nvc-wcag-focus" aria-label="Select transaction {{ transaction.id }}">
+                                </td>
+                                <td class="nvc-wcag-high-contrast">{{ transaction.id }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ transaction.datetime }}</td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-{{ 'primary' if transaction.type == 'Transfer' else 'success' if transaction.type == 'Deposit' else 'warning' if transaction.type == 'Withdrawal' else 'info' }}">
+                                        <i class="fas fa-{{ 'exchange-alt' if transaction.type == 'Transfer' else 'arrow-down' if transaction.type == 'Deposit' else 'arrow-up' if transaction.type == 'Withdrawal' else 'credit-card' }}" aria-hidden="true"></i>
+                                        {{ transaction.type }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ transaction.from_account }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ transaction.to_account }}</td>
+                                <td class="nvc-wcag-high-contrast nvc-amount-{{ 'positive' if transaction.type == 'Deposit' else 'negative' if transaction.type == 'Withdrawal' else 'neutral' }}">
+                                    {{ transaction.amount }}
+                                </td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'success' if transaction.status == 'Completed' else 'warning' if transaction.status == 'Pending' else 'danger' if transaction.status == 'Failed' else 'secondary' }}">
+                                        <i class="fas fa-{{ 'check' if transaction.status == 'Completed' else 'clock' if transaction.status == 'Pending' else 'times' if transaction.status == 'Failed' else 'ban' }}" aria-hidden="true"></i>
+                                        {{ transaction.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View details for transaction {{ transaction.id }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View receipt for transaction {{ transaction.id }}">
+                                            <i class="fas fa-receipt" aria-hidden="true"></i>
+                                        </button>
+                                        {% if transaction.status == 'Pending' %}
+                                        <button type="button" class="nvc-btn nvc-btn-success nvc-btn-xs nvc-wcag-focus" aria-label="Approve transaction {{ transaction.id }}">
+                                            <i class="fas fa-check" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-xs nvc-wcag-focus" aria-label="Reject transaction {{ transaction.id }}">
+                                            <i class="fas fa-times" aria-hidden="true"></i>
+                                        </button>
+                                        {% elif transaction.status == 'Failed' %}
+                                        <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-xs nvc-wcag-focus" aria-label="Retry transaction {{ transaction.id }}">
+                                            <i class="fas fa-redo" aria-hidden="true"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination and Bulk Actions -->
+                <div class="nvc-table-footer">
+                    <div class="nvc-table-info">
+                        <span class="nvc-wcag-medium-contrast">Showing 1-10 of {{ transaction_stats.today_count or '8,947' }} transactions</span>
+                        <span class="nvc-selected-count nvc-wcag-medium-contrast">0 transactions selected</span>
+                    </div>
+
+                    <div class="nvc-bulk-actions">
+                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" disabled aria-label="Export selected transactions">
+                            <i class="fas fa-download" aria-hidden="true"></i>
+                            Export Selected
+                        </button>
+                        <button type="button" class="nvc-btn nvc-btn-success nvc-btn-sm nvc-wcag-focus" disabled aria-label="Approve selected transactions">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                            Bulk Approve
+                        </button>
+                        <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-sm nvc-wcag-focus" disabled aria-label="Reject selected transactions">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                            Bulk Reject
+                        </button>
+                        <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-sm nvc-wcag-focus" disabled aria-label="Retry selected transactions">
+                            <i class="fas fa-redo" aria-hidden="true"></i>
+                            Bulk Retry
+                        </button>
+                    </div>
+
+                    <div class="nvc-pagination">
+                        <button type="button" class="nvc-pagination-btn nvc-pagination-prev nvc-wcag-focus" disabled aria-label="Previous page">
+                            <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                        </button>
+                        <span class="nvc-pagination-info nvc-wcag-medium-contrast">Page 1 of 895</span>
+                        <button type="button" class="nvc-pagination-btn nvc-pagination-next nvc-wcag-focus" aria-label="Next page">
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Transaction History Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            // Add sorting functionality here
+            console.log('Sorting by:', this.textContent);
+        });
+    });
+
+    // Checkbox selection management
+    const selectAllCheckbox = document.getElementById('select-all-transactions');
+    const rowCheckboxes = document.querySelectorAll('.nvc-checkbox:not(#select-all-transactions)');
+    const selectedCountElement = document.querySelector('.nvc-selected-count');
+    const bulkActionButtons = document.querySelectorAll('.nvc-bulk-actions .nvc-btn');
+
+    function updateBulkActions() {
+        const selectedCount = document.querySelectorAll('.nvc-checkbox:not(#select-all-transactions):checked').length;
+        selectedCountElement.textContent = `${selectedCount} transactions selected`;
+
+        bulkActionButtons.forEach(button => {
+            button.disabled = selectedCount === 0;
+        });
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

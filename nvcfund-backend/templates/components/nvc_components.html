@@ -1,0 +1,874 @@
+<!-- ===================================================================
+     NVC Banking Platform - Unified Component Library
+     Reusable, consistent UI components for the banking platform
+     =================================================================== -->
+
+<!-- ===================================================================
+     DASHBOARD METRICS CARD
+     =================================================================== -->
+{% macro metric_card(title, value, icon, change=None, change_type="positive", color="primary") %}
+<div class="nvc-metric-card nvc-metric-{{ color }}">
+    <div class="nvc-metric-header">
+        <div class="nvc-metric-icon">
+            <i class="{{ icon }}"></i>
+        </div>
+        {% if change %}
+        <div class="nvc-metric-change nvc-change-{{ change_type }}">
+            <i class="fas fa-{{ 'arrow-up' if change_type == 'positive' else 'arrow-down' }}"></i>
+            {{ change }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="nvc-metric-content">
+        <div class="nvc-metric-value">{{ value }}</div>
+        <div class="nvc-metric-title">{{ title }}</div>
+    </div>
+    <div class="nvc-metric-indicator"></div>
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     ACTION CARD
+     =================================================================== -->
+{% macro action_card(title, description, icon, url, color="primary") %}
+<a href="{{ url }}" class="nvc-action-card nvc-action-{{ color }}">
+    <div class="nvc-action-icon">
+        <i class="{{ icon }}"></i>
+    </div>
+    <div class="nvc-action-content">
+        <h6 class="nvc-action-title">{{ title }}</h6>
+        <p class="nvc-action-description">{{ description }}</p>
+    </div>
+    <div class="nvc-action-arrow">
+        <i class="fas fa-chevron-right"></i>
+    </div>
+</a>
+{% endmacro %}
+
+<!-- ===================================================================
+     ACCOUNT SUMMARY CARD
+     =================================================================== -->
+{% macro account_card(account_type, account_number, balance, icon, status="active") %}
+<div class="nvc-account-card nvc-account-{{ status }}">
+    <div class="nvc-account-header">
+        <div class="nvc-account-icon">
+            <i class="{{ icon }}"></i>
+        </div>
+        <div class="nvc-account-status">
+            <span class="nvc-status-badge nvc-status-{{ status }}">{{ status.title() }}</span>
+        </div>
+    </div>
+    <div class="nvc-account-content">
+        <h5 class="nvc-account-type">{{ account_type }}</h5>
+        <p class="nvc-account-number">{{ account_number }}</p>
+        <div class="nvc-account-balance">{{ balance }}</div>
+    </div>
+    <div class="nvc-account-actions">
+        <button type="button" class="nvc-btn nvc-btn-sm nvc-btn-outline">
+            <i class="fas fa-eye"></i>
+            View
+        </button>
+        <button type="button" class="nvc-btn nvc-btn-sm nvc-btn-primary">
+            <i class="fas fa-exchange-alt"></i>
+            Transfer
+        </button>
+    </div>
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     TRANSACTION ROW
+     =================================================================== -->
+{% macro transaction_row(date, description, amount, type, status="completed") %}
+<div class="nvc-transaction-row nvc-transaction-{{ status }}">
+    <div class="nvc-transaction-icon">
+        <i class="fas fa-{{ 'arrow-up' if type == 'credit' else 'arrow-down' }} nvc-transaction-{{ type }}"></i>
+    </div>
+    <div class="nvc-transaction-details">
+        <div class="nvc-transaction-description">{{ description }}</div>
+        <div class="nvc-transaction-date">{{ date }}</div>
+    </div>
+    <div class="nvc-transaction-amount nvc-amount-{{ type }}">
+        {{ '+' if type == 'credit' else '-' }}{{ amount }}
+    </div>
+    <div class="nvc-transaction-status">
+        <span class="nvc-status-badge nvc-status-{{ status }}">{{ status.title() }}</span>
+    </div>
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     FORM INPUT GROUP
+     =================================================================== -->
+{% macro form_input(label, name, type="text", placeholder="", icon=None, required=False, value="") %}
+<div class="nvc-form-group">
+    <label for="{{ name }}" class="nvc-form-label">
+        {% if icon %}<i class="{{ icon }}"></i>{% endif %}
+        {{ label }}
+        {% if required %}<span class="nvc-required">*</span>{% endif %}
+    </label>
+    <div class="nvc-input-wrapper">
+        {% if icon %}
+        <div class="nvc-input-icon">
+            <i class="{{ icon }}"></i>
+        </div>
+        {% endif %}
+        <input type="{{ type }}" 
+               id="{{ name }}" 
+               name="{{ name }}" 
+               class="nvc-form-input{% if icon %} nvc-input-with-icon{% endif %}"
+               placeholder="{{ placeholder }}"
+               value="{{ value }}"
+               {% if required %}required{% endif %}>
+    </div>
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     FORM SELECT
+     =================================================================== -->
+{% macro form_select(label, name, options, icon=None, required=False, selected="") %}
+<div class="nvc-form-group">
+    <label for="{{ name }}" class="nvc-form-label">
+        {% if icon %}<i class="{{ icon }}"></i>{% endif %}
+        {{ label }}
+        {% if required %}<span class="nvc-required">*</span>{% endif %}
+    </label>
+    <div class="nvc-select-wrapper">
+        {% if icon %}
+        <div class="nvc-input-icon">
+            <i class="{{ icon }}"></i>
+        </div>
+        {% endif %}
+        <select id="{{ name }}" 
+                name="{{ name }}" 
+                class="nvc-form-select{% if icon %} nvc-select-with-icon{% endif %}"
+                {% if required %}required{% endif %}>
+            {% for value, text in options %}
+            <option value="{{ value }}" {% if value == selected %}selected{% endif %}>{{ text }}</option>
+            {% endfor %}
+        </select>
+        <div class="nvc-select-arrow">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     NOTIFICATION BANNER
+     =================================================================== -->
+{% macro notification_banner(message, type="info", dismissible=True, icon=None) %}
+<div class="nvc-notification nvc-notification-{{ type }}">
+    <div class="nvc-notification-icon">
+        <i class="{{ icon or 'fas fa-info-circle' }}"></i>
+    </div>
+    <div class="nvc-notification-content">
+        {{ message }}
+    </div>
+    {% if dismissible %}
+    <button type="button" class="nvc-notification-close" data-action="dismiss-notification">
+        <i class="fas fa-times"></i>
+    </button>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     PROGRESS BAR
+     =================================================================== -->
+{% macro progress_bar(percentage, label="", color="primary", show_percentage=True) %}
+<div class="nvc-progress-container">
+    {% if label %}
+    <div class="nvc-progress-label">
+        <span>{{ label }}</span>
+        {% if show_percentage %}
+        <span class="nvc-progress-percentage">{{ percentage }}%</span>
+        {% endif %}
+    </div>
+    {% endif %}
+    <div class="nvc-progress-bar">
+        <div class="nvc-progress-fill nvc-progress-{{ color }}" style="width: {{ percentage }}%"></div>
+    </div>
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     STATS GRID
+     =================================================================== -->
+{% macro stats_grid(stats) %}
+<div class="nvc-stats-grid">
+    {% for stat in stats %}
+    <div class="nvc-stat-item">
+        <div class="nvc-stat-icon nvc-stat-{{ stat.color or 'primary' }}">
+            <i class="{{ stat.icon }}"></i>
+        </div>
+        <div class="nvc-stat-content">
+            <div class="nvc-stat-value">{{ stat.value }}</div>
+            <div class="nvc-stat-label">{{ stat.label }}</div>
+            {% if stat.change %}
+            <div class="nvc-stat-change nvc-change-{{ stat.change_type or 'positive' }}">
+                <i class="fas fa-{{ 'arrow-up' if stat.change_type == 'positive' else 'arrow-down' }}"></i>
+                {{ stat.change }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     LOADING SPINNER
+     =================================================================== -->
+{% macro loading_spinner(size="md", text="Loading...") %}
+<div class="nvc-loading nvc-loading-{{ size }}">
+    <div class="nvc-spinner">
+        <div class="nvc-spinner-ring"></div>
+        <div class="nvc-spinner-ring"></div>
+        <div class="nvc-spinner-ring"></div>
+    </div>
+    {% if text %}
+    <div class="nvc-loading-text">{{ text }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     EMPTY STATE
+     =================================================================== -->
+{% macro empty_state(title, description, icon="fas fa-inbox", action_text=None, action_url=None) %}
+<div class="nvc-empty-state">
+    <div class="nvc-empty-icon">
+        <i class="{{ icon }}"></i>
+    </div>
+    <h3 class="nvc-empty-title">{{ title }}</h3>
+    <p class="nvc-empty-description">{{ description }}</p>
+    {% if action_text and action_url %}
+    <a href="{{ action_url }}" class="nvc-btn nvc-btn-primary">
+        {{ action_text }}
+    </a>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- ===================================================================
+     COMPONENT STYLES
+     =================================================================== -->
+<style>
+/* Metric Cards */
+.nvc-metric-card {
+    background: var(--nvc-bg-secondary);
+    border: 1px solid var(--nvc-border-primary);
+    border-radius: var(--nvc-radius-lg);
+    padding: var(--nvc-space-lg);
+    position: relative;
+    overflow: hidden;
+    transition: var(--nvc-transition-normal);
+}
+
+.nvc-metric-card:hover {
+    border-color: var(--nvc-border-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--nvc-shadow-md);
+}
+
+.nvc-metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--nvc-space-md);
+}
+
+.nvc-metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--nvc-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--nvc-font-size-xl);
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--nvc-accent);
+}
+
+.nvc-metric-change {
+    display: flex;
+    align-items: center;
+    gap: var(--nvc-space-xs);
+    font-size: var(--nvc-font-size-sm);
+    font-weight: 600;
+    padding: var(--nvc-space-xs) var(--nvc-space-sm);
+    border-radius: var(--nvc-radius-sm);
+}
+
+.nvc-change-positive {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--nvc-success);
+}
+
+.nvc-change-negative {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--nvc-danger);
+}
+
+.nvc-metric-value {
+    font-size: var(--nvc-font-size-3xl);
+    font-weight: 700;
+    color: var(--nvc-text-primary);
+    margin-bottom: var(--nvc-space-xs);
+}
+
+.nvc-metric-title {
+    font-size: var(--nvc-font-size-sm);
+    color: var(--nvc-text-muted);
+    font-weight: 500;
+}
+
+.nvc-metric-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--nvc-accent) 0%, var(--nvc-primary) 100%);
+    animation: pulse 2s infinite;
+}
+
+/* Action Cards */
+.nvc-action-card {
+    display: flex;
+    align-items: center;
+    gap: var(--nvc-space-md);
+    padding: var(--nvc-space-lg);
+    background: var(--nvc-bg-secondary);
+    border: 1px solid var(--nvc-border-primary);
+    border-radius: var(--nvc-radius-lg);
+    text-decoration: none;
+    color: var(--nvc-text-primary);
+    transition: var(--nvc-transition-normal);
+}
+
+.nvc-action-card:hover {
+    border-color: var(--nvc-border-accent);
+    background: var(--nvc-bg-tertiary);
+    transform: translateY(-1px);
+    color: var(--nvc-text-primary);
+}
+
+.nvc-action-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--nvc-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--nvc-accent);
+    font-size: var(--nvc-font-size-lg);
+}
+
+.nvc-action-content {
+    flex: 1;
+}
+
+.nvc-action-title {
+    font-size: var(--nvc-font-size-base);
+    font-weight: 600;
+    margin-bottom: var(--nvc-space-xs);
+    color: var(--nvc-text-primary);
+}
+
+.nvc-action-description {
+    font-size: var(--nvc-font-size-sm);
+    color: var(--nvc-text-muted);
+    margin: 0;
+}
+
+.nvc-action-arrow {
+    color: var(--nvc-text-muted);
+    transition: var(--nvc-transition-fast);
+}
+
+.nvc-action-card:hover .nvc-action-arrow {
+    color: var(--nvc-accent);
+    transform: translateX(2px);
+}
+
+/* Account Cards */
+.nvc-account-card {
+    background: var(--nvc-bg-secondary);
+    border: 1px solid var(--nvc-border-primary);
+    border-radius: var(--nvc-radius-lg);
+    padding: var(--nvc-space-lg);
+    transition: var(--nvc-transition-normal);
+}
+
+.nvc-account-card:hover {
+    border-color: var(--nvc-border-accent);
+    box-shadow: var(--nvc-shadow-md);
+}
+
+.nvc-account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--nvc-space-md);
+}
+
+.nvc-account-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--nvc-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--nvc-accent);
+    font-size: var(--nvc-font-size-lg);
+}
+
+.nvc-status-badge {
+    padding: var(--nvc-space-xs) var(--nvc-space-sm);
+    border-radius: var(--nvc-radius-sm);
+    font-size: var(--nvc-font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.nvc-status-active {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--nvc-success);
+}
+
+.nvc-status-pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--nvc-warning);
+}
+
+.nvc-status-inactive {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--nvc-danger);
+}
+
+.nvc-account-type {
+    font-size: var(--nvc-font-size-lg);
+    font-weight: 600;
+    color: var(--nvc-text-primary);
+    margin-bottom: var(--nvc-space-xs);
+}
+
+.nvc-account-number {
+    font-size: var(--nvc-font-size-sm);
+    color: var(--nvc-text-muted);
+    margin-bottom: var(--nvc-space-md);
+}
+
+.nvc-account-balance {
+    font-size: var(--nvc-font-size-2xl);
+    font-weight: 700;
+    color: var(--nvc-text-primary);
+    margin-bottom: var(--nvc-space-lg);
+}
+
+.nvc-account-actions {
+    display: flex;
+    gap: var(--nvc-space-sm);
+}
+
+/* Transaction Rows */
+.nvc-transaction-row {
+    display: flex;
+    align-items: center;
+    gap: var(--nvc-space-md);
+    padding: var(--nvc-space-md);
+    border-bottom: 1px solid var(--nvc-border-primary);
+    transition: var(--nvc-transition-fast);
+}
+
+.nvc-transaction-row:hover {
+    background: var(--nvc-bg-tertiary);
+}
+
+.nvc-transaction-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--nvc-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--nvc-font-size-sm);
+}
+
+.nvc-transaction-credit {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--nvc-success);
+}
+
+.nvc-transaction-debit {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--nvc-danger);
+}
+
+.nvc-transaction-details {
+    flex: 1;
+}
+
+.nvc-transaction-description {
+    font-size: var(--nvc-font-size-base);
+    font-weight: 500;
+    color: var(--nvc-text-primary);
+    margin-bottom: var(--nvc-space-xs);
+}
+
+.nvc-transaction-date {
+    font-size: var(--nvc-font-size-sm);
+    color: var(--nvc-text-muted);
+}
+
+.nvc-transaction-amount {
+    font-size: var(--nvc-font-size-lg);
+    font-weight: 600;
+}
+
+.nvc-amount-credit {
+    color: var(--nvc-success);
+}
+
+.nvc-amount-debit {
+    color: var(--nvc-danger);
+}
+
+/* Form Elements */
+.nvc-form-group {
+    margin-bottom: var(--nvc-space-lg);
+}
+
+.nvc-form-label {
+    display: flex;
+    align-items: center;
+    gap: var(--nvc-space-sm);
+    font-size: var(--nvc-font-size-sm);
+    font-weight: 600;
+    color: var(--nvc-text-primary);
+    margin-bottom: var(--nvc-space-sm);
+}
+
+.nvc-required {
+    color: var(--nvc-danger);
+}
+
+.nvc-input-wrapper,
+.nvc-select-wrapper {
+    position: relative;
+}
+
+.nvc-form-input,
+.nvc-form-select {
+    width: 100%;
+    padding: var(--nvc-space-md);
+    background: var(--nvc-bg-tertiary);
+    border: 1px solid var(--nvc-border-primary);
+    border-radius: var(--nvc-radius-md);
+    color: var(--nvc-text-primary);
+    font-size: var(--nvc-font-size-base);
+    transition: var(--nvc-transition-normal);
+}
+
+.nvc-input-with-icon,
+.nvc-select-with-icon {
+    padding-left: 2.5rem;
+}
+
+.nvc-form-input:focus,
+.nvc-form-select:focus {
+    outline: none;
+    border-color: var(--nvc-accent);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.nvc-input-icon {
+    position: absolute;
+    left: var(--nvc-space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--nvc-text-muted);
+    pointer-events: none;
+}
+
+.nvc-select-arrow {
+    position: absolute;
+    right: var(--nvc-space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--nvc-text-muted);
+    pointer-events: none;
+}
+
+/* Notifications */
+.nvc-notification {
+    display: flex;
+    align-items: center;
+    gap: var(--nvc-space-md);
+    padding: var(--nvc-space-md);
+    border-radius: var(--nvc-radius-md);
+    margin-bottom: var(--nvc-space-md);
+}
+
+.nvc-notification-info {
+    background: rgba(6, 182, 212, 0.1);
+    border: 1px solid var(--nvc-info);
+    color: var(--nvc-info);
+}
+
+.nvc-notification-success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--nvc-success);
+    color: var(--nvc-success);
+}
+
+.nvc-notification-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid var(--nvc-warning);
+    color: var(--nvc-warning);
+}
+
+.nvc-notification-danger {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--nvc-danger);
+    color: var(--nvc-danger);
+}
+
+.nvc-notification-content {
+    flex: 1;
+    font-size: var(--nvc-font-size-sm);
+    font-weight: 500;
+}
+
+.nvc-notification-close {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: var(--nvc-space-xs);
+    border-radius: var(--nvc-radius-sm);
+    transition: var(--nvc-transition-fast);
+}
+
+.nvc-notification-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Progress Bars */
+.nvc-progress-container {
+    margin-bottom: var(--nvc-space-md);
+}
+
+.nvc-progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--nvc-space-sm);
+    font-size: var(--nvc-font-size-sm);
+    font-weight: 500;
+    color: var(--nvc-text-primary);
+}
+
+.nvc-progress-bar {
+    height: 8px;
+    background: var(--nvc-bg-tertiary);
+    border-radius: var(--nvc-radius-sm);
+    overflow: hidden;
+}
+
+.nvc-progress-fill {
+    height: 100%;
+    border-radius: var(--nvc-radius-sm);
+    transition: width 0.5s ease;
+}
+
+.nvc-progress-primary {
+    background: linear-gradient(90deg, var(--nvc-primary) 0%, var(--nvc-accent) 100%);
+}
+
+.nvc-progress-success {
+    background: var(--nvc-success);
+}
+
+.nvc-progress-warning {
+    background: var(--nvc-warning);
+}
+
+.nvc-progress-danger {
+    background: var(--nvc-danger);
+}
+
+/* Stats Grid */
+.nvc-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--nvc-space-lg);
+    margin-bottom: var(--nvc-space-xl);
+}
+
+.nvc-stat-item {
+    display: flex;
+    align-items: center;
+    gap: var(--nvc-space-md);
+    padding: var(--nvc-space-lg);
+    background: var(--nvc-bg-secondary);
+    border: 1px solid var(--nvc-border-primary);
+    border-radius: var(--nvc-radius-lg);
+    transition: var(--nvc-transition-normal);
+}
+
+.nvc-stat-item:hover {
+    border-color: var(--nvc-border-accent);
+    transform: translateY(-1px);
+}
+
+.nvc-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--nvc-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--nvc-font-size-xl);
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--nvc-accent);
+}
+
+.nvc-stat-content {
+    flex: 1;
+}
+
+.nvc-stat-value {
+    font-size: var(--nvc-font-size-2xl);
+    font-weight: 700;
+    color: var(--nvc-text-primary);
+    margin-bottom: var(--nvc-space-xs);
+}
+
+.nvc-stat-label {
+    font-size: var(--nvc-font-size-sm);
+    color: var(--nvc-text-muted);
+    margin-bottom: var(--nvc-space-xs);
+}
+
+.nvc-stat-change {
+    display: flex;
+    align-items: center;
+    gap: var(--nvc-space-xs);
+    font-size: var(--nvc-font-size-xs);
+    font-weight: 600;
+}
+
+/* Loading Spinner */
+.nvc-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--nvc-space-md);
+    padding: var(--nvc-space-xl);
+}
+
+.nvc-spinner {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+.nvc-loading-lg .nvc-spinner {
+    width: 60px;
+    height: 60px;
+}
+
+.nvc-loading-sm .nvc-spinner {
+    width: 24px;
+    height: 24px;
+}
+
+.nvc-spinner-ring {
+    position: absolute;
+    border: 3px solid transparent;
+    border-top: 3px solid var(--nvc-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.nvc-spinner-ring:nth-child(1) {
+    width: 100%;
+    height: 100%;
+}
+
+.nvc-spinner-ring:nth-child(2) {
+    width: 80%;
+    height: 80%;
+    top: 10%;
+    left: 10%;
+    animation-delay: -0.1s;
+}
+
+.nvc-spinner-ring:nth-child(3) {
+    width: 60%;
+    height: 60%;
+    top: 20%;
+    left: 20%;
+    animation-delay: -0.2s;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.nvc-loading-text {
+    font-size: var(--nvc-font-size-sm);
+    color: var(--nvc-text-muted);
+    font-weight: 500;
+}
+
+/* Empty State */
+.nvc-empty-state {
+    text-align: center;
+    padding: var(--nvc-space-3xl);
+    color: var(--nvc-text-muted);
+}
+
+.nvc-empty-icon {
+    font-size: 4rem;
+    margin-bottom: var(--nvc-space-lg);
+    opacity: 0.5;
+}
+
+.nvc-empty-title {
+    font-size: var(--nvc-font-size-xl);
+    font-weight: 600;
+    color: var(--nvc-text-secondary);
+    margin-bottom: var(--nvc-space-md);
+}
+
+.nvc-empty-description {
+    font-size: var(--nvc-font-size-base);
+    margin-bottom: var(--nvc-space-xl);
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.nvc-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+</style>

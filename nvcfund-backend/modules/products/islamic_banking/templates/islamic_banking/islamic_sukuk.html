@@ -1,0 +1,319 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Sukuk Management{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-white">Sukuk Management</h2>
+                <div>
+                    <button type="button" class="btn nvc-btn nvc-btn-primary">Issue New Sukuk</button>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-light">Market Analysis</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sukuk Portfolio Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-certificate me-2"></i>
+                        Total Sukuk Portfolio
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">$67.4M</h3>
+                <p class="text-light small mb-0">Market value</p>
+                <div class="mt-2">
+                    <span class="badge bg-success">+15.7%</span>
+                    <small class="text-light ms-2">vs last quarter</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Average Return
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">4.8%</h3>
+                <p class="text-light small mb-0">Annual yield</p>
+                <div class="mt-2">
+                    <span class="badge bg-info">+0.3%</span>
+                    <small class="text-light ms-2">vs benchmark</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-coins me-2"></i>
+                        Active Issues
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">47</h3>
+                <p class="text-light small mb-0">Sukuk instruments</p>
+                <div class="mt-2">
+                    <span class="badge bg-warning">+8</span>
+                    <small class="text-light ms-2">new this quarter</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Investors
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">1,847</h3>
+                <p class="text-light small mb-0">Active investors</p>
+                <div class="mt-2">
+                    <span class="badge bg-success">+12.3%</span>
+                    <small class="text-light ms-2">vs last quarter</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sukuk Types and Performance -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Active Sukuk Issues
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sukuk Name</th>
+                                <th>Type</th>
+                                <th>Value</th>
+                                <th>Yield</th>
+                                <th>Maturity</th>
+                                <th>Rating</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>NVC Infrastructure Sukuk</td>
+                                <td>Ijara</td>
+                                <td>$15.2M</td>
+                                <td>4.2%</td>
+                                <td>2027-12-31</td>
+                                <td>AAA</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>Real Estate Sukuk Fund</td>
+                                <td>Musharaka</td>
+                                <td>$12.8M</td>
+                                <td>5.1%</td>
+                                <td>2026-06-15</td>
+                                <td>AA+</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>Trade Finance Sukuk</td>
+                                <td>Murabaha</td>
+                                <td>$8.7M</td>
+                                <td>3.8%</td>
+                                <td>2025-09-30</td>
+                                <td>AA</td>
+                                <td><span class="badge bg-warning">Maturing</span></td>
+                            </tr>
+                            <tr>
+                                <td>Green Energy Sukuk</td>
+                                <td>Wakala</td>
+                                <td>$18.5M</td>
+                                <td>4.9%</td>
+                                <td>2028-03-15</td>
+                                <td>AAA</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>Healthcare Sukuk</td>
+                                <td>Istisna</td>
+                                <td>$11.2M</td>
+                                <td>4.5%</td>
+                                <td>2027-08-20</td>
+                                <td>AA+</td>
+                                <td><span class="badge bg-info">Issuing</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Sukuk Distribution by Type
+                </h5>
+                <canvas id="sukukTypeChart" height="200"></canvas>
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-success me-2"></i>Ijara</span>
+                        <span>35%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-info me-2"></i>Musharaka</span>
+                        <span>25%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-warning me-2"></i>Murabaha</span>
+                        <span>20%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-primary me-2"></i>Wakala</span>
+                        <span>15%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light">
+                        <span><i class="fas fa-circle text-danger me-2"></i>Istisna</span>
+                        <span>5%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Performance and Upcoming Maturities -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Sukuk Performance Trend
+                </h5>
+                <canvas id="sukukPerformanceChart" height="150"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Upcoming Maturities
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sukuk</th>
+                                <th>Maturity Date</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Trade Finance Sukuk</td>
+                                <td>2025-09-30</td>
+                                <td>$8.7M</td>
+                                <td><span class="badge bg-warning">3 months</span></td>
+                            </tr>
+                            <tr>
+                                <td>SME Development Sukuk</td>
+                                <td>2025-11-15</td>
+                                <td>$5.2M</td>
+                                <td><span class="badge bg-info">5 months</span></td>
+                            </tr>
+                            <tr>
+                                <td>Infrastructure Bond</td>
+                                <td>2026-02-28</td>
+                                <td>$12.8M</td>
+                                <td><span class="badge bg-primary">8 months</span></td>
+                            </tr>
+                            <tr>
+                                <td>Commodity Sukuk</td>
+                                <td>2026-06-15</td>
+                                <td>$7.5M</td>
+                                <td><span class="badge bg-secondary">12 months</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Sukuk Type Distribution Chart
+if (document.getElementById('sukukTypeChart')) {
+    const ctx = document.getElementById('sukukTypeChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Ijara', 'Musharaka', 'Murabaha', 'Wakala', 'Istisna'],
+            datasets: [{
+                data: [35, 25, 20, 15, 5],
+                backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#007bff', '#dc3545'],
+                borderWidth: 2,
+                borderColor: '#1e293b'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+// Sukuk Performance Chart
+if (document.getElementById('sukukPerformanceChart')) {
+    const ctx = document.getElementById('sukukPerformanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Portfolio Value',
+                data: [58.2, 61.3, 64.7, 66.1, 67.0, 67.4],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#e2e8f0' }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#e2e8f0' }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#e2e8f0' } }
+            }
+        }
+    });
+}
+</script>
+</div>
+{% endblock %}

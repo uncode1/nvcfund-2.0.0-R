@@ -1,0 +1,447 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Investment Portfolio - NVC Banking{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header">
+                <h1 class="page-title">Investment Portfolio</h1>
+                <div class="page-subtitle">Track your investments and portfolio performance</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Summary -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="nvc-card-title mb-1">Total Value</h6>
+                            <h3 class="mb-0">${{ "%.2f"|format(portfolio.total_value) }}</h3>
+                        </div>
+                        <div class="ms-2">
+                            <i class="fas fa-chart-line fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="nvc-card-title mb-1">Daily Change</h6>
+                            <h3 class="mb-0 {% if portfolio.daily_change >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if portfolio.daily_change >= 0 %}+{% endif %}{{"%.2f"|format(portfolio.daily_change)}}%
+                            </h3>
+                        </div>
+                        <div class="ms-2">
+                            <i class="fas fa-{% if portfolio.daily_change >= 0 %}arrow-up{% else %}arrow-down{% endif %} fa-2x {% if portfolio.daily_change >= 0 %}text-success{% else %}text-danger{% endif %}"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="nvc-card-title mb-1">Holdings</h6>
+                            <h3 class="mb-0">{{ portfolio.holdings|length }}</h3>
+                        </div>
+                        <div class="ms-2">
+                            <i class="fas fa-coins fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="nvc-card-title mb-1">Performance</h6>
+                            <h3 class="mb-0 text-info">+{{ "%.1f"|format(portfolio.daily_change_percent) }}%</h3>
+                        </div>
+                        <div class="ms-2">
+                            <i class="fas fa-trophy fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Allocation Chart -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-3">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h3 class="nvc-card-title">Portfolio Allocation</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="portfolioChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-3">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h3 class="nvc-card-title">Performance Chart</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h3 class="nvc-card-title">Holdings</h3>
+                    <div class="nvc-card-options">
+                        <a href="#" class="btn nvc-btn nvc-btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Add Investment
+                        </a>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                    <th>Change</th>
+                                    <th>Allocation</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for holding in portfolio.holdings %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ holding.symbol }}</strong>
+                                    </td>
+                                    <td>{{ holding.name }}</td>
+                                    <td>${{ "%.2f"|format(holding.value) }}</td>
+                                    <td class="{% if holding.change >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {% if holding.change >= 0 %}+{% endif %}{{ "%.1f"|format(holding.change) }}%
+                                    </td>
+                                    <td>
+                                        <div class="progress" class="nvc-h-8">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ holding.allocation }}%;" 
+                                                 aria-valuenow="{{ holding.allocation }}" 
+                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <small>{{ holding.allocation }}%</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" title="View Details" data-action="custom-action">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" title="Buy More" data-action="custom-action">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger" title="Sell" data-action="custom-action">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h3 class="nvc-card-title">Quick Actions</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary w-100" data-action="custom-action">
+                                <i class="fas fa-chart-area me-2"></i>Analyze Portfolio
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-success w-100" data-action="custom-action">
+                                <i class="fas fa-download me-2"></i>Export Report
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-info w-100" data-action="custom-action">
+                                <i class="fas fa-balance-scale me-2"></i>Rebalance
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('investments.main_dashboard') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Portfolio Allocation Chart
+    const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
+    const portfolioData = {
+        labels: [{% for holding in portfolio.holdings %}'{{ holding.symbol }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for holding in portfolio.holdings %}{{ holding.allocation }}{% if not loop.last %},{% endif %}{% endfor %}],
+            backgroundColor: [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+            ]
+        }]
+    };
+    
+    new Chart(portfolioCtx, {
+        type: 'doughnut',
+        data: portfolioData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Performance Chart
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    const performanceData = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Portfolio Value',
+            data: [100000, 105000, 102000, 115000, 120000, {{ portfolio.total_value }}],
+            borderColor: '#36A2EB',
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            fill: true
+        }]
+    };
+    
+    new Chart(performanceCtx, {
+        type: 'line',
+        data: performanceData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+// Quick Action Functions
+function analyzePortfolio() {
+    // Show analysis modal or redirect to analysis page
+    const analysisData = {
+        diversification: 'Moderately Diversified',
+        riskLevel: 'Medium',
+        recommendations: [
+            'Consider increasing crypto allocation to 15%',
+            'Reduce Apple exposure below 25%',
+            'Add emerging market exposure'
+        ]
+    };
+    
+    const message = `Portfolio Analysis:\n\n` +
+                   `• Diversification: ${analysisData.diversification}\n` +
+                   `• Risk Level: ${analysisData.riskLevel}\n\n` +
+                   `Recommendations:\n${analysisData.recommendations.map(r => '• ' + r).join('\n')}`;
+    
+    alert(message);
+}
+
+function exportReport() {
+    // Simulate PDF/Excel export
+    const portfolioData = {
+        totalValue: {{ portfolio.total_value }},
+        dailyChange: {{ portfolio.daily_change }},
+        holdings: [
+            {% for holding in portfolio.holdings %}
+            {
+                symbol: '{{ holding.symbol }}',
+                name: '{{ holding.name }}',
+                value: {{ holding.value }},
+                change: {{ holding.change }},
+                allocation: {{ holding.allocation }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    };
+    
+    // Create CSV content
+    let csvContent = "Symbol,Name,Value,Change%,Allocation%\n";
+    portfolioData.holdings.forEach(holding => {
+        csvContent += `${holding.symbol},"${holding.name}",${holding.value},${holding.change},${holding.allocation}\n`;
+    });
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'portfolio_report.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    alert('Portfolio report downloaded successfully!');
+}
+
+function rebalancePortfolio() {
+    // Show rebalancing recommendations
+    const rebalanceData = {
+        target: 'Conservative Growth',
+        recommendations: [
+            'Sell $5,000 Apple (reduce to 16%)',
+            'Buy $3,000 Bonds (add 2.4%)', 
+            'Buy $2,000 International ETF (add 1.6%)'
+        ],
+        expectedReturn: '8.2%',
+        riskReduction: '12%'
+    };
+    
+    const message = `Portfolio Rebalancing:\n\n` +
+                   `Target: ${rebalanceData.target}\n` +
+                   `Expected Return: ${rebalanceData.expectedReturn}\n` +
+                   `Risk Reduction: ${rebalanceData.riskReduction}\n\n` +
+                   `Recommended Actions:\n${rebalanceData.recommendations.map(r => '• ' + r).join('\n')}\n\n` +
+                   `Would you like to proceed with rebalancing?`;
+    
+    if (confirm(message)) {
+        alert('Rebalancing request submitted for review.');
+    }
+}
+
+// Holdings Table Functions
+function viewHolding(symbol) {
+    const holdingData = {
+        'AAPL': {
+            name: 'Apple Inc.',
+            price: '$175.23',
+            change: '+2.3%',
+            volume: '45,232,100',
+            marketCap: '$2.85T',
+            pe: '28.5',
+            dividend: '0.48%'
+        },
+        'GOOGL': {
+            name: 'Alphabet Inc.',
+            price: '$142.87',
+            change: '+1.8%',
+            volume: '25,847,200',
+            marketCap: '$1.78T',
+            pe: '25.2',
+            dividend: '0.00%'
+        },
+        'MSFT': {
+            name: 'Microsoft Corporation',
+            price: '$384.52',
+            change: '+0.9%',
+            volume: '18,563,400',
+            marketCap: '$2.89T',
+            pe: '32.1',
+            dividend: '0.68%'
+        },
+        'TSLA': {
+            name: 'Tesla Inc.',
+            price: '$248.73',
+            change: '-1.2%',
+            volume: '67,234,800',
+            marketCap: '$792B',
+            pe: '58.7',
+            dividend: '0.00%'
+        },
+        'BTC': {
+            name: 'Bitcoin',
+            price: '$42,385.67',
+            change: '+3.4%',
+            volume: '$18.2B',
+            marketCap: '$830B',
+            pe: 'N/A',
+            dividend: '0.00%'
+        }
+    };
+    
+    const holding = holdingData[symbol] || {
+        name: 'Unknown Asset',
+        price: 'N/A',
+        change: 'N/A',
+        volume: 'N/A',
+        marketCap: 'N/A',
+        pe: 'N/A',
+        dividend: 'N/A'
+    };
+    
+    const message = `${holding.name} (${symbol})\n\n` +
+                   `Current Price: ${holding.price}\n` +
+                   `Daily Change: ${holding.change}\n` +
+                   `Volume: ${holding.volume}\n` +
+                   `Market Cap: ${holding.marketCap}\n` +
+                   `P/E Ratio: ${holding.pe}\n` +
+                   `Dividend Yield: ${holding.dividend}`;
+    
+    alert(message);
+}
+
+function buyHolding(symbol) {
+    const amount = prompt(`How much would you like to invest in ${symbol}?`, '$1,000');
+    if (amount && amount.trim()) {
+        alert(`Buy order for ${amount} worth of ${symbol} has been submitted for review.`);
+    }
+}
+
+function sellHolding(symbol) {
+    const amount = prompt(`How much ${symbol} would you like to sell?\n\nOptions:\n- Dollar amount (e.g., $5,000)\n- Percentage (e.g., 25%)\n- Shares (e.g., 100 shares)`, '$1,000');
+    if (amount && amount.trim()) {
+        if (confirm(`Are you sure you want to sell ${amount} worth of ${symbol}?`)) {
+            alert(`Sell order for ${amount} worth of ${symbol} has been submitted for review.`);
+        }
+    }
+}
+</script>
+</div>
+{% endblock %}

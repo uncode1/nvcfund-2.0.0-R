@@ -1,0 +1,335 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Digital Card Portfolio - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Digital Card Portfolio{% endblock %}
+{% block page_description %}Manage your traditional banking cards and innovative crypto payment solutions{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-credit-nvc-card"></i>
+    Order Physical Card
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Create Virtual Card
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Modern Card Portfolio -->
+<div class="row g-4">
+    <!-- Card Overview Stats -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="nvc-card-stat-item bg-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-credit-nvc-card"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Active Cards</h6>
+                                <h3>{{ active_cards_count or '8' }}</h3>
+                                <small>Physical & Virtual</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="nvc-card-stat-item bg-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Monthly Spend</h6>
+                                <h3>${{ "%.2f"|format(monthly_spend) if monthly_spend else '12,456.78' }}</h3>
+                                <small>+15% vs last month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="nvc-card-stat-item bg-warning">
+                            <div class="stat-icon">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Crypto Cards</h6>
+                                <h3>{{ crypto_cards_count or '3' }}</h3>
+                                <small>Digital assets</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="nvc-card-stat-item bg-info">
+                            <div class="stat-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Security Score</h6>
+                                <h3>{{ security_score or '98' }}%</h3>
+                                <small>Excellent</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Categories -->
+    <div class="col-xl-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-layer-group text-primary me-2"></i>
+                    Your Cards
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <!-- Card Tabs -->
+                <ul class="nav nav-pills mb-4" id="cardTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="traditional-tab" data-bs-toggle="pill"
+                                data-bs-target="#traditional" type="button" role="tab">
+                            <i class="fas fa-university me-1"></i>
+                            Traditional Cards
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="crypto-tab" data-bs-toggle="pill"
+                                data-bs-target="#crypto" type="button" role="tab">
+                            <i class="fab fa-bitcoin me-1"></i>
+                            Crypto Cards
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="virtual-tab" data-bs-toggle="pill"
+                                data-bs-target="#virtual" type="button" role="tab">
+                            <i class="fas fa-mobile-alt me-1"></i>
+                            Virtual Cards
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Card Content -->
+                <div class="tab-content" id="cardTabsContent">
+                    <!-- Traditional Cards -->
+                    <div class="tab-pane fade show active" id="traditional" role="tabpanel">
+                        <div class="row g-3">
+                            <!-- Debit Card -->
+                            <div class="col-md-6">
+                                <div class="card-item traditional-nvc-card">
+                                    <div class="nvc-card-visual">
+                                        <div class="nvc-card-chip"></div>
+                                        <div class="nvc-card-number">**** **** **** 1234</div>
+                                        <div class="nvc-card-holder">JOHN DOE</div>
+                                        <div class="nvc-card-expiry">12/26</div>
+                                        <div class="nvc-card-brand">
+                                            <i class="fab fa-cc-visa"></i>
+                                        </div>
+                                    </div>
+                                    <div class="nvc-card-details">
+                                        <h6>Premium Debit Card</h6>
+                                        <p class="text-muted small">Checking Account</p>
+                                        <div class="nvc-card-actions">
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                                <i class="fas fa-cog"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Credit Card -->
+                            <div class="col-md-6">
+                                <div class="card-item traditional-nvc-card">
+                                    <div class="card-visual credit-nvc-card">
+                                        <div class="nvc-card-chip"></div>
+                                        <div class="nvc-card-number">**** **** **** 5678</div>
+                                        <div class="nvc-card-holder">JOHN DOE</div>
+                                        <div class="nvc-card-expiry">08/27</div>
+                                        <div class="nvc-card-brand">
+                                            <i class="fab fa-cc-masternvc-card"></i>
+                                        </div>
+                                    </div>
+                                    <div class="nvc-card-details">
+                                        <h6>Platinum Credit Card</h6>
+                                        <p class="text-muted small">$5,000 / $25,000 limit</p>
+                                        <div class="nvc-card-actions">
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                                <i class="fas fa-cog"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                            </h3>
+                            <small class="text-light">Manage your payment cards and applications</small>
+                        </div>
+                        <a href="{{ url_for('banking.apply_card') }}" class="btn nvc-btn nvc-btn-success">
+                            <i class="fas fa-plus me-2"></i>Apply for New Card
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Cards -->
+    <div class="row">
+        {% if cards %}
+            {% for card in cards %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card bg-dark border-{{ 'success' if nvc-card.status == 'Active' else 'warning' }}">
+                    <div class="nvc-nvc-card-header bg-gradient text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{{ card.network }} {{ card.card_type }}</h5>
+                            <span class="badge bg-{{ 'success' if nvc-card.status == 'Active' else 'warning' }}">
+                                {{ card.status }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <div class="mb-3">
+                            <h4 class="text-info">{{ card.card_number }}</h4>
+                            <small class="text-light">Card Number</small>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-light">Expires</small><br>
+                                <span class="text-light">{{ card.expiry_date }}</span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-light">Linked Account</small><br>
+                                <span class="text-light">{{ card.linked_account }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-light">Daily Limit</small><br>
+                                <span class="text-success">${{ "%.2f"|format(card.daily_limit) }}</span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-light">Monthly Limit</small><br>
+                                <span class="text-warning">${{ "%.2f"|format(card.monthly_limit) }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                                <i class="fas fa-cog"></i> Settings
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                                <i class="fas fa-lock"></i> Block
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                                <i class="fas fa-history"></i> History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="nvc-card bg-dark border-info">
+                    <div class="nvc-nvc-card-body text-center py-5">
+                        <i class="fas fa-credit-nvc-card fa-4x text-light mb-4"></i>
+                        <h4 class="text-light mb-3">No Cards Found</h4>
+                        <p class="text-light mb-4">You don't have any payment cards yet. Apply for your first card to start making secure payments.</p>
+                        <a href="{{ url_for('banking.apply_card') }}" class="btn nvc-btn nvc-btn-success btn-lg">
+                            <i class="fas fa-plus me-2"></i>Apply for Your First Card
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Card Types Available -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Available Card Types
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="nvc-card bg-gradient border-primary">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <i class="fas fa-credit-nvc-card fa-2x text-primary mb-3"></i>
+                                    <h6 class="text-light">Debit Card</h6>
+                                    <p class="text-light small">Direct access to your account funds</p>
+                                    <ul class="text-light small text-start">
+                                        <li>No interest charges</li>
+                                        <li>Daily spending limits</li>
+                                        <li>ATM access worldwide</li>
+                                        <li>Contactless payments</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="nvc-card bg-gradient border-success">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <i class="fas fa-credit-nvc-card fa-2x text-success mb-3"></i>
+                                    <h6 class="text-light">Credit Card</h6>
+                                    <p class="text-light small">Build credit with flexible payments</p>
+                                    <ul class="text-light small text-start">
+                                        <li>Credit limit up to $50,000</li>
+                                        <li>Rewards program</li>
+                                        <li>Purchase protection</li>
+                                        <li>Balance transfer options</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="nvc-card bg-gradient border-warning">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <i class="fas fa-credit-nvc-card fa-2x text-warning mb-3"></i>
+                                    <h6 class="text-light">Prepaid Card</h6>
+                                    <p class="text-light small">Load funds and spend responsibly</p>
+                                    <ul class="text-light small text-start">
+                                        <li>No credit check required</li>
+                                        <li>Reload anytime</li>
+                                        <li>Spending controls</li>
+                                        <li>Gift card options</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

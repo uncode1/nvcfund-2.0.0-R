@@ -1,0 +1,388 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Islamic Treasury Operations{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-white">Islamic Treasury Operations</h2>
+                <div>
+                    <button type="button" class="btn nvc-btn nvc-btn-primary">New Treasury Operation</button>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-light">Risk Assessment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Treasury Overview Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-university me-2"></i>
+                        Total Assets Under Management
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">$125.8M</h3>
+                <p class="text-light small mb-0">Islamic treasury assets</p>
+                <div class="mt-2">
+                    <span class="badge bg-success">+18.7%</span>
+                    <small class="text-light ms-2">vs last quarter</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        Daily Trading Volume
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">$8.7M</h3>
+                <p class="text-light small mb-0">Sharia-compliant trades</p>
+                <div class="mt-2">
+                    <span class="badge bg-info">+12.4%</span>
+                    <small class="text-light ms-2">vs yesterday</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-percentage me-2"></i>
+                        Average Return
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">7.8%</h3>
+                <p class="text-light small mb-0">Annual yield</p>
+                <div class="mt-2">
+                    <span class="badge bg-warning">+1.3%</span>
+                    <small class="text-light ms-2">vs conventional</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Risk Score
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">2.4</h3>
+                <p class="text-light small mb-0">Low risk profile</p>
+                <div class="mt-2">
+                    <span class="badge bg-success">Excellent</span>
+                    <small class="text-light ms-2">risk management</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Treasury Instruments and Liquidity Management -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-coins me-2"></i>
+                    Islamic Treasury Instruments
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Instrument</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Maturity</th>
+                                <th>Yield</th>
+                                <th>Risk Rating</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Government Sukuk</td>
+                                <td>Ijara</td>
+                                <td>$35.2M</td>
+                                <td>2027-12-15</td>
+                                <td>4.2%</td>
+                                <td>AAA</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>Corporate Sukuk</td>
+                                <td>Murabaha</td>
+                                <td>$22.8M</td>
+                                <td>2026-06-30</td>
+                                <td>5.8%</td>
+                                <td>AA+</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>Commodity Murabaha</td>
+                                <td>Murabaha</td>
+                                <td>$18.7M</td>
+                                <td>2025-09-15</td>
+                                <td>3.9%</td>
+                                <td>AA</td>
+                                <td><span class="badge bg-warning">Maturing</span></td>
+                            </tr>
+                            <tr>
+                                <td>Wakala Investment</td>
+                                <td>Wakala</td>
+                                <td>$28.4M</td>
+                                <td>2028-03-20</td>
+                                <td>6.7%</td>
+                                <td>AA+</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>Salam Agreement</td>
+                                <td>Salam</td>
+                                <td>$12.5M</td>
+                                <td>2025-12-31</td>
+                                <td>4.5%</td>
+                                <td>A+</td>
+                                <td><span class="badge bg-info">Pending</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Asset Allocation
+                </h5>
+                <canvas id="assetAllocationChart" height="200"></canvas>
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-success me-2"></i>Government Sukuk</span>
+                        <span>28%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-info me-2"></i>Corporate Sukuk</span>
+                        <span>18%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-warning me-2"></i>Wakala</span>
+                        <span>23%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-primary me-2"></i>Murabaha</span>
+                        <span>21%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light">
+                        <span><i class="fas fa-circle text-danger me-2"></i>Salam</span>
+                        <span>10%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liquidity Management and Market Analysis -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-tint me-2"></i>
+                    Liquidity Management
+                </h5>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span>Cash & Cash Equivalents</span>
+                        <span>$15.8M</span>
+                    </div>
+                    <div class="progress mb-2" class="nvc-h-10">
+                        <div class="progress-bar bg-success" class="progress-bar-25"></div>
+                    </div>
+                    <small class="text-light">25% of total portfolio</small>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span>Short-term Sukuk (< 1 year)</span>
+                        <span>$28.7M</span>
+                    </div>
+                    <div class="progress mb-2" class="nvc-h-10">
+                        <div class="progress-bar bg-info" class="progress-bar-45"></div>
+                    </div>
+                    <small class="text-light">45% highly liquid assets</small>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span>Medium-term Assets (1-3 years)</span>
+                        <span>$35.4M</span>
+                    </div>
+                    <div class="progress mb-2" class="nvc-h-10">
+                        <div class="progress-bar bg-warning" class="progress-bar-20"></div>
+                    </div>
+                    <small class="text-light">20% medium liquidity</small>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span>Long-term Assets (> 3 years)</span>
+                        <span>$12.8M</span>
+                    </div>
+                    <div class="progress mb-2" class="nvc-h-10">
+                        <div class="progress-bar bg-primary" class="progress-bar-10"></div>
+                    </div>
+                    <small class="text-light">10% long-term investments</small>
+                </div>
+                
+                <div class="mt-4 p-3" class="rounded">
+                    <h6 class="text-info mb-2">Liquidity Coverage Ratio</h6>
+                    <h4 class="text-info mb-0">142.8%</h4>
+                    <small class="text-light">Above regulatory requirement</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Treasury Performance Trend
+                </h5>
+                <canvas id="treasuryPerformanceChart" height="200"></canvas>
+                
+                <div class="mt-4">
+                    <h6 class="text-white mb-3">Recent Treasury Operations</h6>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Operation</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-07-08</td>
+                                    <td>Sukuk Purchase</td>
+                                    <td>$5.2M</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-07</td>
+                                    <td>Murabaha Maturity</td>
+                                    <td>$3.8M</td>
+                                    <td><span class="badge bg-info">Settled</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-05</td>
+                                    <td>Wakala Investment</td>
+                                    <td>$7.5M</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-03</td>
+                                    <td>Commodity Salam</td>
+                                    <td>$2.1M</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Asset Allocation Chart
+if (document.getElementById('assetAllocationChart')) {
+    const ctx = document.getElementById('assetAllocationChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Government Sukuk', 'Corporate Sukuk', 'Wakala', 'Murabaha', 'Salam'],
+            datasets: [{
+                data: [28, 18, 23, 21, 10],
+                backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#007bff', '#dc3545'],
+                borderWidth: 2,
+                borderColor: '#1e293b'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+// Treasury Performance Chart
+if (document.getElementById('treasuryPerformanceChart')) {
+    const ctx = document.getElementById('treasuryPerformanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Portfolio Value ($M)',
+                data: [108.2, 112.5, 118.9, 121.4, 123.7, 125.8],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'Monthly Return (%)',
+                data: [0.8, 1.2, 1.8, 0.9, 1.1, 1.3],
+                borderColor: '#17a2b8',
+                backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                fill: false,
+                tension: 0.4,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#e2e8f0' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: '#e2e8f0' }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#e2e8f0' }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#e2e8f0' } }
+            }
+        }
+    });
+}
+</script>
+</div>
+{% endblock %}

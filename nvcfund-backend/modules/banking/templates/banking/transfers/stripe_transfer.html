@@ -1,0 +1,377 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Stripe Transfer - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Stripe Transfer{% endblock %}
+{% block page_description %}Fast and secure payments powered by Stripe's infrastructure{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-history"></i>
+    Stripe History
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-cog"></i>
+    Configure Stripe
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fab fa-stripe"></i>
+    Send via Stripe
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.stripe-gradient {
+    background: linear-gradient(135deg, #635bff 0%, #4f46e5 100%);
+}
+
+.stripe-card {
+    border: 2px solid #635bff;
+    background: rgba(99, 91, 255, 0.1);
+}
+
+.stripe-badge {
+    background: linear-gradient(135deg, #635bff 0%, #4f46e5 100%);
+    color: white;
+}
+
+.stripe-button {
+    background: linear-gradient(135deg, #635bff 0%, #4f46e5 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.stripe-button:hover {
+    background: linear-gradient(135deg, #5a52e8 0%, #4338ca 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99, 91, 255, 0.3);
+}
+
+.stripe-icon {
+    color: #635bff;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Stripe Transfer Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card stripe-nvc-card">
+                <div class="nvc-nvc-card-body text-center py-4">
+                    <div class="stripe-logo d-inline-flex align-items-center justify-content-center mb-3 nvc-bg-spaced-bordered-2a4fa0" 
+                         >
+                        <img src="{{ url_for('static', filename='images/logos/stripe-logo.png') }}" 
+                             alt="Stripe Logo" 
+                             class="nvc-style-ce791c">
+                    </div>
+                    <h2 class="mb-2" style="color: #635bff; font-weight: 600;">{{ channel_config.title }}</h2>
+                    <p class="text-light mb-3">{{ channel_config.description }}</p>
+                    <div class="row justify-content-center">
+                        {% for feature in channel_config.features %}
+                        <div class="col-auto">
+                            <span class="badge stripe-badge me-2 mb-2">{{ feature }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Form -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header stripe-gradient text-white">
+                    <h5 class="mb-0"><i class="fab fa-stripe me-2"></i>Stripe Transfer Details</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('banking.process_send_transfer') }}">
+                        <input type="hidden" name="transfer_channel" value="stripe_transfer">
+                        
+                        <!-- Recipient Details -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="recipient_email" class="nvc-form-label">
+                                    <i class="fab fa-stripe stripe-icon me-2"></i>Recipient Email
+                                </label>
+                                <input type="email" class="nvc-form-input" id="recipient_email" name="recipient_email" 
+                                       placeholder="recipient@company.com" required>
+                                <div class="form-text">Recipient must have a Stripe account</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="from_account" class="nvc-form-label">From Account</label>
+                                <select class="nvc-form-select" name="from_account" required>
+                                    <option value="">Select source account</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.account_number }}">
+                                        {{ account.account_type.title() }} - ****{{ account.account_number[-4:] }} 
+                                        (${{ "%.2f"|format(account.balance) }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Business Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="business_name" class="nvc-form-label">Business/Company Name</label>
+                                <input type="text" class="nvc-form-input" id="business_name" name="business_name" 
+                                       placeholder="Acme Corporation">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="country" class="nvc-form-label">Recipient Country</label>
+                                <select class="nvc-form-select" name="country" required>
+                                    <option value="">Select country</option>
+                                    <option value="US">🇺🇸 United States</option>
+                                    <option value="CA">🇨🇦 Canada</option>
+                                    <option value="GB">🇬🇧 United Kingdom</option>
+                                    <option value="EU">🇪🇺 European Union</option>
+                                    <option value="AU">🇦🇺 Australia</option>
+                                    <option value="SG">🇸🇬 Singapore</option>
+                                    <option value="JP">🇯🇵 Japan</option>
+                                    <option value="HK">🇭🇰 Hong Kong</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Amount and Currency -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="amount" class="nvc-form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" id="amount" name="amount" 
+                                           min="{{ channel_config.limits.min }}" 
+                                           max="{{ channel_config.limits.max }}" 
+                                           step="0.01" placeholder="0.00" required>
+                                </div>
+                                <div class="form-text">
+                                    Limits: ${{ channel_config.limits.min }} - ${{ "{:,}".format(channel_config.limits.max) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="currency" class="nvc-form-label">Currency</label>
+                                <select class="nvc-form-select" name="currency" required>
+                                    <option value="USD" selected>USD - US Dollar</option>
+                                    <option value="EUR">EUR - Euro</option>
+                                    <option value="GBP">GBP - British Pound</option>
+                                    <option value="CAD">CAD - Canadian Dollar</option>
+                                    <option value="AUD">AUD - Australian Dollar</option>
+                                    <option value="JPY">JPY - Japanese Yen</option>
+                                    <option value="SGD">SGD - Singapore Dollar</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Transfer Type -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="transfer_type" class="nvc-form-label">Transfer Type</label>
+                                <select class="nvc-form-select" name="transfer_type" required>
+                                    <option value="express">Express (Same day)</option>
+                                    <option value="standard" selected>Standard (2-7 business days)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="payment_method" class="nvc-form-label">Payment Method</label>
+                                <select class="nvc-form-select" name="payment_method" required>
+                                    <option value="bank_transfer">Bank Transfer</option>
+                                    <option value="card">Debit Card</option>
+                                    <option value="ach">ACH</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Invoice/Reference -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="invoice_number" class="nvc-form-label">Invoice/Reference Number</label>
+                                <input type="text" class="nvc-form-input" id="invoice_number" name="invoice_number" 
+                                       placeholder="INV-2024-001">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="category" class="nvc-form-label">Payment Category</label>
+                                <select class="nvc-form-select" name="category">
+                                    <option value="business">Business Payment</option>
+                                    <option value="services">Professional Services</option>
+                                    <option value="goods">Goods/Products</option>
+                                    <option value="subscription">Subscription</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="nvc-form-label">Payment Description</label>
+                            <textarea class="nvc-form-input" id="description" name="description" rows="3" 
+                                      placeholder="What is this payment for?"></textarea>
+                        </div>
+
+                        <!-- Fee Information -->
+                        <div class="alert nvc-nvc-alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Stripe Transfer Information</h6>
+                            <ul class="mb-0">
+                                <li><strong>Fee:</strong> {{ channel_config.fee }}% + $0.30 per transaction</li>
+                                <li><strong>Processing Time:</strong> {{ channel_config.processing_time }}</li>
+                                <li><strong>Business Grade:</strong> PCI DSS Level 1 certified</li>
+                                <li><strong>Support:</strong> 24/7 global customer support</li>
+                            </ul>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Transfers
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn stripe-button w-100">
+                                    <i class="fab fa-stripe me-2"></i>Send via Stripe
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stripe Benefits -->
+    <div class="row mt-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <h6 class="nvc-card-title"><i class="fab fa-stripe stripe-icon me-2"></i>Why Choose Stripe?</h6>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-shield-alt stripe-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Enterprise Security</h6>
+                            <p class="text-light small">PCI DSS Level 1 certified</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-globe stripe-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Global Reach</h6>
+                            <p class="text-light small">190+ countries and territories</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-chart-line stripe-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Business Tools</h6>
+                            <p class="text-light small">Advanced analytics and reporting</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stripe Connect Modal -->
+<div class="modal fade" id="stripeConnectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header stripe-gradient text-white">
+                <h5 class="modal-title"><i class="fab fa-stripe me-2"></i>Stripe Connect</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fab fa-stripe stripe-icon" class="nvc-fs-3rem"></i>
+                <h5 class="mt-3">Connecting to Stripe...</h5>
+                <p class="text-light">Establishing secure connection</p>
+                <div class="spinner-border stripe-icon" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const amountInput = document.getElementById('amount');
+    const transferTypeSelect = document.querySelector('select[name="transfer_type"]');
+    
+    // Calculate fees based on transfer type
+    function updateFees() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const transferType = transferTypeSelect.value;
+        
+        let feeRate = {{ channel_config.fee }}/100;
+        let fixedFee = 0.30;
+        
+        if (transferType === 'express') {
+            feeRate += 0.005; // Additional 0.5% for express
+            fixedFee += 2.00; // Additional $2 for express
+        }
+        
+        const totalFee = (amount * feeRate) + fixedFee;
+        const netAmount = amount - totalFee;
+        
+        let feeDisplay = document.getElementById('fee-display');
+        if (!feeDisplay) {
+            feeDisplay = document.createElement('div');
+            feeDisplay.id = 'fee-display';
+            feeDisplay.className = 'form-text';
+            amountInput.parentElement.appendChild(feeDisplay);
+        }
+        
+        if (amount > 0) {
+            feeDisplay.innerHTML = `
+                Fee: $${totalFee.toFixed(2)} | 
+                Recipient gets: $${netAmount.toFixed(2)}
+                ${transferType === 'express' ? ' (Express delivery)' : ''}
+            `;
+        } else {
+            feeDisplay.innerHTML = '';
+        }
+    }
+    
+    amountInput.addEventListener('input', updateFees);
+    transferTypeSelect.addEventListener('change', updateFees);
+    
+    // Validate business email domain
+    const emailInput = document.getElementById('recipient_email');
+    emailInput.addEventListener('blur', function() {
+        const email = this.value;
+        const businessDomains = ['gmail.com', 'yahoo.com', 'hotmail.com'];
+        const domain = email.split('@')[1];
+        
+        if (businessDomains.includes(domain)) {
+            this.setCustomValidity('Please use a business email address');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Show Stripe Connect modal
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const modal = new bootstrap.Modal(document.getElementById('stripeConnectModal'));
+        modal.show();
+        
+        setTimeout(() => {
+            modal.hide();
+            this.submit();
+        }, 2500);
+    });
+});
+</script>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Additional Stripe-specific JavaScript can go here
+</script>
+{% endblock %}

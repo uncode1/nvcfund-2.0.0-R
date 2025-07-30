@@ -1,0 +1,509 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Blockchain Analytics Dashboard - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">Blockchain Analytics Dashboard</h2>
+                    <p class="text-light mb-0">Real-time Ethereum and Polygon token analytics and blockchain insights</p>
+                </div>
+                <div class="text-end">
+                    <small class="text-light">Last updated: <span id="lastUpdated">{{ timestamp }}</span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network API Status -->
+    <div class="row mb-4">
+        <!-- Etherscan Status -->
+        <div class="col-md-6">
+            <div class="nvc-card border-primary">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fab fa-ethereum me-2"></i>Ethereum Network (Etherscan)</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                {% if etherscan_health.status == 'healthy' %}
+                                <span class="badge bg-success me-2">HEALTHY</span>
+                                <i class="fas fa-check-circle text-success"></i>
+                                {% else %}
+                                <span class="badge bg-danger me-2">UNHEALTHY</span>
+                                <i class="fas fa-exclamation-circle text-danger"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-light">API Key Status</small>
+                            <div>
+                                {% if etherscan_health.api_key_configured %}
+                                <span class="badge bg-success">Configured</span>
+                                {% else %}
+                                <span class="badge bg-warning">Missing</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-light">Rate Limit</small>
+                            <div>{{ etherscan_health.rate_limit or "5 req/sec" }}</div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <small class="text-light">Status Message</small>
+                            <div>{{ etherscan_health.message }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Polygonscan Status -->
+        <div class="col-md-6">
+            <div class="nvc-card border-info">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-cube me-2"></i>Polygon Network (Polygonscan)</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                {% if polygonscan_health.status == 'healthy' %}
+                                <span class="badge bg-success me-2">HEALTHY</span>
+                                <i class="fas fa-check-circle text-success"></i>
+                                {% else %}
+                                <span class="badge bg-danger me-2">UNHEALTHY</span>
+                                <i class="fas fa-exclamation-circle text-danger"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-light">API Key Status</small>
+                            <div>
+                                {% if polygonscan_health.api_key_configured %}
+                                <span class="badge bg-success">Configured</span>
+                                {% else %}
+                                <span class="badge bg-warning">Missing</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-light">Rate Limit</small>
+                            <div>{{ polygonscan_health.rate_limit or "5 req/sec" }}</div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <small class="text-light">Status Message</small>
+                            <div>{{ polygonscan_health.message }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Token Analysis</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="tokenAnalysisForm" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="contractAddress" class="nvc-form-label">Token Contract Address</label>
+                            <input type="text" 
+                                   class="nvc-form-input" 
+                                   id="contractAddress" 
+                                   placeholder="0x..." 
+                                   pattern="^0x[a-fA-F0-9]{40}$"
+                                   title="Enter a valid contract address">
+                            <div class="form-text">Enter an ERC-20 or Polygon token contract address</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="networkSelect" class="nvc-form-label">Network</label>
+                            <select class="nvc-form-select" id="networkSelect">
+                                <option value="ethereum">Ethereum Mainnet</option>
+                                <option value="polygon">Polygon Network</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn nvc-btn nvc-btn-primary me-2">
+                                <i class="fas fa-search me-1"></i>Analyze
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                                <i class="fas fa-star me-1"></i>Popular
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Tokens -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0"><i class="fas fa-coins me-2"></i>Popular ERC-20 Tokens</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div id="popularTokensContainer">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading popular tokens...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token Analysis Results -->
+    <div class="row" id="analysisResults" class="d-none">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Token Analysis Results</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div id="tokenAnalysisContent">
+                        <!-- Dynamic content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Updates -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="nvc-card border-info">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-broadcast-tower me-2"></i>Live Blockchain Data</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="h4 text-primary mb-1" id="totalAnalyzed">0</div>
+                            <small class="text-light">Tokens Analyzed Today</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="h4 text-success mb-1" id="activeConnections">
+                                {% if health_status.status == 'healthy' %}1{% else %}0{% endif %}
+                            </div>
+                            <small class="text-light">API Connections</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="h4 text-warning mb-1" id="lastRequest">-</div>
+                            <small class="text-light">Last Request</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Blockchain Analytics Dashboard JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize dashboard
+    initializeDashboard();
+    loadPopularTokens();
+    
+    // Set up form submission
+    document.getElementById('tokenAnalysisForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        analyzeToken();
+    });
+    
+    // Auto-refresh every 30 seconds
+    setInterval(updateLiveData, 30000);
+});
+
+function initializeDashboard() {
+    console.log('Blockchain Analytics Dashboard initialized');
+    updateLastUpdated();
+}
+
+function updateLastUpdated() {
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+}
+
+function loadPopularTokens() {
+    fetch('/blockchain-analytics/api/popular-tokens')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                renderPopularTokens(data.data.popular_tokens);
+            } else {
+                showError('Failed to load popular tokens');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading popular tokens:', error);
+            showError('Unable to load popular tokens');
+        });
+}
+
+function renderPopularTokens(tokens) {
+    const container = document.getElementById('popularTokensContainer');
+    
+    if (!tokens || tokens.length === 0) {
+        container.innerHTML = '<p class="text-light">No popular tokens available</p>';
+        return;
+    }
+    
+    const html = tokens.map(token => `
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 token-nvc-card" data-action="custom-action">
+                <div class="nvc-nvc-card-body text-center">
+                    <h6 class="nvc-card-title">${token.name}</h6>
+                    <p class="nvc-card-text">
+                        <span class="badge bg-primary">${token.symbol}</span>
+                    </p>
+                    <small class="text-light">${token.contract_address.substring(0, 10)}...</small>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = `<div class="row">${html}</div>`;
+}
+
+function selectToken(contractAddress) {
+    document.getElementById('contractAddress').value = contractAddress;
+    analyzeToken();
+}
+
+function analyzeToken() {
+    const contractAddress = document.getElementById('contractAddress').value.trim();
+    
+    if (!contractAddress) {
+        showError('Please enter a contract address');
+        return;
+    }
+    
+    if (!/^0x[a-fA-F0-9]{40}$/.test(contractAddress)) {
+        showError('Please enter a valid Ethereum contract address');
+        return;
+    }
+    
+    // Show loading state
+    document.getElementById('analysisResults').style.display = 'block';
+    document.getElementById('tokenAnalysisContent').innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Analyzing...</span>
+            </div>
+            <p class="mt-2">Analyzing token data...</p>
+        </div>
+    `;
+    
+    // Fetch token analytics
+    fetch(`/blockchain-analytics/token/${contractAddress}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                renderTokenAnalysis(data.data);
+                updateAnalyticsCounter();
+                updateLastRequest();
+            } else {
+                showError(data.error || 'Token analysis failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error analyzing token:', error);
+            showError('Token analysis unavailable');
+        });
+}
+
+function renderTokenAnalysis(analysisData) {
+    const tokenInfo = analysisData.token_info;
+    const activity = analysisData.activity_metrics;
+    const transfers = analysisData.recent_transfers || [];
+    const holders = analysisData.top_holders || [];
+    
+    const html = `
+        <div class="row">
+            <!-- Token Information -->
+            <div class="col-md-6 mb-3">
+                <div class="nvc-card h-100">
+                    <div class="nvc-nvc-card-header">
+                        <h6 class="mb-0">Token Information</h6>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <table class="table table-sm">
+                            <tr><td><strong>Name:</strong></td><td>${tokenInfo.name}</td></tr>
+                            <tr><td><strong>Symbol:</strong></td><td><span class="badge bg-primary">${tokenInfo.symbol}</span></td></tr>
+                            <tr><td><strong>Decimals:</strong></td><td>${tokenInfo.decimals}</td></tr>
+                            <tr><td><strong>Total Supply:</strong></td><td>${formatNumber(tokenInfo.total_supply)}</td></tr>
+                            <tr><td><strong>Contract:</strong></td><td><code>${tokenInfo.contract_address}</code></td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Activity Metrics -->
+            <div class="col-md-6 mb-3">
+                <div class="nvc-card h-100">
+                    <div class="nvc-nvc-card-header">
+                        <h6 class="mb-0">Recent Activity</h6>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="h4 text-primary">${activity.recent_transfers}</div>
+                                <small class="text-light">Recent Transfers</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="h4 text-success">${activity.unique_addresses}</div>
+                                <small class="text-light">Unique Addresses</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="h4 text-warning">${activity.holders_count}</div>
+                                <small class="text-light">Top Holders</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Transfers -->
+            <div class="col-md-6 mb-3">
+                <div class="nvc-card h-100">
+                    <div class="nvc-nvc-card-header">
+                        <h6 class="mb-0">Recent Transfers</h6>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        ${transfers.length > 0 ? renderTransfers(transfers) : '<p class="text-light">No recent transfers available</p>'}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Top Holders -->
+            <div class="col-md-6 mb-3">
+                <div class="nvc-card h-100">
+                    <div class="nvc-nvc-card-header">
+                        <h6 class="mb-0">Top Holders</h6>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        ${holders.length > 0 ? renderHolders(holders) : '<p class="text-light">Holder data requires API Pro subscription</p>'}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('tokenAnalysisContent').innerHTML = html;
+}
+
+function renderTransfers(transfers) {
+    return `
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${transfers.slice(0, 5).map(tx => `
+                        <tr>
+                            <td><code>${tx.from ? tx.from.substring(0, 8) + '...' : 'N/A'}</code></td>
+                            <td><code>${tx.to ? tx.to.substring(0, 8) + '...' : 'N/A'}</code></td>
+                            <td>${formatNumber(tx.value || '0')}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function renderHolders(holders) {
+    return `
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Address</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${holders.slice(0, 5).map(holder => `
+                        <tr>
+                            <td>${holder.rank}</td>
+                            <td><code>${holder.address.substring(0, 8)}...</code></td>
+                            <td>${holder.percentage.toFixed(2)%}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function updateAnalyticsCounter() {
+    const current = parseInt(document.getElementById('totalAnalyzed').textContent) || 0;
+    document.getElementById('totalAnalyzed').textContent = current + 1;
+}
+
+function updateLastRequest() {
+    document.getElementById('lastRequest').textContent = new Date().toLocaleTimeString();
+}
+
+function updateLiveData() {
+    updateLastUpdated();
+    // Additional live data updates can be added here
+}
+
+function formatNumber(num) {
+    if (!num) return '0';
+    return parseInt(num).toLocaleString();
+}
+
+function showError(message) {
+    document.getElementById('tokenAnalysisContent').innerHTML = `
+        <div class="alert nvc-nvc-alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>${message}
+        </div>
+    `;
+}
+
+// CSS for token cards
+const style = document.createElement('style');
+style.textContent = `
+    .token-card {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .token-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+`;
+document.head.appendChild(style);
+</script>
+</div>
+{% endblock %}

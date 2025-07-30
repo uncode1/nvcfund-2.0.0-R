@@ -1,0 +1,22 @@
+2025-07-18T12:21:01.498891 - Banking dashboard error: Encountered unknown tag 'endblock'. You probably made a nesting mistake. Jinja is expecting this tag, but currently looking for 'elif' or 'else' or 'endif'. The innermost block that needs to be closed is 'if'.: 1
+---
+2025-07-18T18:03:16.716184 - Account details error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-18T18:03:46.864018 - CARDS_MANAGEMENT_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-18T18:03:50.021618 - CARDS_MANAGEMENT_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-18T18:03:52.318100 - TRANSFERS_MANAGEMENT_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-18T18:03:57.161925 - TRANSACTIONS_ANALYSIS_ERROR: banking/transaction_history.html
+Details: {'user_id': 1}
+---
+2025-07-18T18:04:27.242652 - Payments page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-18T18:04:33.411341 - Statements page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-18T18:04:36.877839 - Transaction history error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---

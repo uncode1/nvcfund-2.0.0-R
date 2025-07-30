@@ -1,0 +1,727 @@
+{% extends "public/public_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Chat Session - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid my-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Chat Header -->
+            <div class="nvc-card mb-3">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="agent-avatar me-3">
+                                {% if session.agent.agent_type.value == 'general_banking' %}
+                                    <i class="fas fa-university fa-2x text-primary"></i>
+                                {% elif session.agent.agent_type.value == 'treasury' %}
+                                    <i class="fas fa-coins fa-2x text-warning"></i>
+                                {% elif session.agent.agent_type.value == 'compliance' %}
+                                    <i class="fas fa-shield-alt fa-2x text-success"></i>
+                                {% elif session.agent.agent_type.value == 'account_services' %}
+                                    <i class="fas fa-user-circle fa-2x text-info"></i>
+                                {% elif session.agent.agent_type.value == 'technical_support' %}
+                                    <i class="fas fa-cogs fa-2x text-secondary"></i>
+                                {% elif session.agent.agent_type.value == 'islamic_banking' %}
+                                    <i class="fas fa-mosque fa-2x text-primary"></i>
+                                {% elif session.agent.agent_type.value == 'investments' %}
+                                    <i class="fas fa-chart-line fa-2x text-success"></i>
+                                {% else %}
+                                    <i class="fas fa-user-tie fa-2x text-primary"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h5 class="mb-1">{{ session.agent.name }}</h5>
+                                <p class="mb-0 text-light">{{ session.agent.agent_type.value.replace('_', ' ').title() }} Specialist</p>
+                                <small class="text-success">
+                                    <i class="fas fa-circle"></i> Online
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <div class="me-3 text-center">
+                                <div class="text-light small">Session ID</div>
+                                <div class="fw-bold small">{{ session.session_id[:8] }}</div>
+                            </div>
+                            
+                            <div class="dropdown">
+                                <button class="btn nvc-btn nvc-btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-cog"></i> Options
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/contact" id="transferSession">
+                                        <i class="fas fa-exchange-alt"></i> Transfer to Another Agent
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="/contact" id="downloadTranscript">
+                                        <i class="fas fa-download"></i> Download Transcript
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="/contact" id="endSession">
+                                        <i class="fas fa-sign-out-alt"></i> End Session
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="row">
+                <div class="col-lg-9">
+                    <!-- Chat Messages -->
+                    <div class="nvc-card chat-container">
+                        <div class="nvc-nvc-card-body p-0">
+                            <div id="chatMessages" class="chat-messages">
+                                {% for message in messages %}
+                                <div class="message {% if message.message_type.value == 'user' %}user-message{% elif message.message_type.value == 'agent' %}agent-message{% else %}system-message{% endif %}">
+                                    <div class="message-content">
+                                        <div class="message-header">
+                                            {% if message.message_type.value == 'user' %}
+                                                <strong>You</strong>
+                                            {% elif message.message_type.value == 'agent' %}
+                                                <strong>{{ session.agent.name }}</strong>
+                                            {% else %}
+                                                <strong>System</strong>
+                                            {% endif %}
+                                            <span class="message-time">{{ message.sent_at.strftime('%H:%M') }}</span>
+                                        </div>
+                                        <div class="message-text">{{ message.message_text }}</div>
+                                        {% if message.confidence_score %}
+                                        <div class="message-metadata">
+                                            <small class="text-light">
+                                                Confidence: {{ (message.confidence_score * 100)|round }%}
+                                                {% if message.response_time %}
+                                                | Response time: {{ "%.1f"|format(message.response_time) }}s
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Typing Indicator -->
+                            <div id="typingIndicator" class="typing-indicator" class="d-none">
+                                <div class="message agent-message">
+                                    <div class="message-content">
+                                        <div class="typing-dots">
+                                            <span>{{ session.agent.name }} is typing</span>
+                                            <div class="dots">
+                                                <span></span>
+                                                <span></span>
+                                                <span></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Message Input -->
+                        {% if session.status.value == 'active' %}
+                        <div class="nvc-nvc-card-footer">
+                            <form id="messageForm" class="d-flex">
+                                <input type="hidden" id="sessionId" value="{{ session.session_id }}">
+                                <div class="input-group">
+                                    <textarea id="messageInput" class="nvc-form-input" placeholder="Type your message..." 
+                                            rows="1" style="resize: none; max-height: 120px;"></textarea>
+                                    <button type="submit" class="btn nvc-btn nvc-btn-primary" id="sendButton">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="mt-2">
+                                <small class="text-light">
+                                    <i class="fas fa-info-circle"></i>
+                                    Press Enter to send, Shift+Enter for new line
+                                </small>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="nvc-nvc-card-footer text-center">
+                            <div class="alert nvc-nvc-alert-info mb-0">
+                                <i class="fas fa-info-circle"></i>
+                                This chat session has ended. 
+                                <a href="/chat/" class="btn btn-sm nvc-btn nvc-btn-primary ms-2">Start New Chat</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Chat Sidebar -->
+                <div class="col-lg-3">
+                    <!-- Session Info -->
+                    <div class="nvc-card mb-3">
+                        <div class="nvc-nvc-card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle"></i>
+                                Session Information
+                            </h6>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="mb-2">
+                                <strong>Started:</strong><br>
+                                <small>{{ session.started_at.strftime('%B %d, %Y at %H:%M') }}</small>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <strong>Status:</strong><br>
+                                <span class="badge {% if session.status.value == 'active' %}bg-success{% elif session.status.value == 'ended' %}bg-secondary{% else %}bg-warning{% endif %}">
+                                    {{ session.status.value.title() }}
+                                </span>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <strong>Messages:</strong><br>
+                                <small>{{ session.message_count }} messages</small>
+                            </div>
+                            
+                            {% if session.topic_category %}
+                            <div class="mb-2">
+                                <strong>Category:</strong><br>
+                                <small>{{ session.topic_category.replace('_', ' ').title() }}</small>
+                            </div>
+                            {% endif %}
+                            
+                            {% if session.transfer_count > 0 %}
+                            <div class="mb-2">
+                                <strong>Transfers:</strong><br>
+                                <small>{{ session.transfer_count }} time(s)</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Agent Information -->
+                    <div class="nvc-card mb-3">
+                        <div class="nvc-nvc-card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-user-tie"></i>
+                                Agent Details
+                            </h6>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="text-center mb-3">
+                                <div class="agent-avatar-large mb-2">
+                                    {% if session.agent.agent_type.value == 'general_banking' %}
+                                        <i class="fas fa-university fa-3x text-primary"></i>
+                                    {% elif session.agent.agent_type.value == 'treasury' %}
+                                        <i class="fas fa-coins fa-3x text-warning"></i>
+                                    {% elif session.agent.agent_type.value == 'compliance' %}
+                                        <i class="fas fa-shield-alt fa-3x text-success"></i>
+                                    {% elif session.agent.agent_type.value == 'account_services' %}
+                                        <i class="fas fa-user-circle fa-3x text-info"></i>
+                                    {% elif session.agent.agent_type.value == 'technical_support' %}
+                                        <i class="fas fa-cogs fa-3x text-secondary"></i>
+                                    {% elif session.agent.agent_type.value == 'islamic_banking' %}
+                                        <i class="fas fa-mosque fa-3x text-primary"></i>
+                                    {% elif session.agent.agent_type.value == 'investments' %}
+                                        <i class="fas fa-chart-line fa-3x text-success"></i>
+                                    {% else %}
+                                        <i class="fas fa-user-tie fa-3x text-primary"></i>
+                                    {% endif %}
+                                </div>
+                                <h6>{{ session.agent.name }}</h6>
+                            </div>
+                            
+                            <p class="small text-light">{{ session.agent.description }}</p>
+                            
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="text-light small">Avg Response</div>
+                                    <div class="fw-bold">{{ "%.1f"|format(session.agent.response_time_avg) }}s</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-light small">Rating</div>
+                                    <div class="fw-bold">
+                                        {{ "%.1f"|format(session.agent.satisfaction_rating) }}/5
+                                        <i class="fas fa-star text-warning"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-bolt"></i>
+                                Quick Actions
+                            </h6>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">
+                                    <i class="fas fa-wallet"></i> Check Balance
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">
+                                    <i class="fas fa-exchange-alt"></i> Transfer Help
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">
+                                    <i class="fas fa-dollar-sign"></i> Fee Information
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">
+                                    <i class="fas fa-cog"></i> Technical Issue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transfer Session Modal -->
+<div class="modal fade" id="transferModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transfer to Another Agent</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="nvc-form-label">Select Agent Type:</label>
+                    <select class="nvc-form-select" id="transferAgentType">
+                        <option value="general_banking">General Banking</option>
+                        <option value="treasury">Treasury Operations</option>
+                        <option value="compliance">Compliance & KYC</option>
+                        <option value="account_services">Account Services</option>
+                        <option value="technical_support">Technical Support</option>
+                        <option value="islamic_banking">Islamic Banking</option>
+                        <option value="investments">Investments</option>
+                        <option value="business_banking">Business Banking</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="nvc-form-label">Reason for Transfer:</label>
+                    <textarea class="nvc-form-input" id="transferReason" rows="3" 
+                            placeholder="Why are you transferring this session?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn nvc-btn nvc-btn-primary" id="confirmTransfer">Transfer Session</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- End Session Modal -->
+<div class="modal fade" id="endSessionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">End Chat Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>How would you rate your experience with {{ session.agent.name }}?</p>
+                
+                <div class="mb-3 text-center">
+                    <div class="rating-stars" id="ratingStars">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="nvc-form-label">Additional Feedback (Optional):</label>
+                    <textarea class="nvc-form-input" id="sessionFeedback" rows="3" 
+                            placeholder="Tell us about your experience..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn nvc-btn nvc-btn-primary" id="confirmEndSession">End Session</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-container {
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background: #f8f9fa;
+}
+
+.message {
+    margin-bottom: 1rem;
+}
+
+.user-message {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.user-message .message-content {
+    background: #0d6efd;
+    color: white;
+    border-radius: 18px 18px 4px 18px;
+    padding: 0.75rem 1rem;
+    max-width: 70%;
+}
+
+.agent-message .message-content {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 18px 18px 18px 4px;
+    padding: 0.75rem 1rem;
+    max-width: 70%;
+}
+
+.system-message .message-content {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    font-style: italic;
+}
+
+.message-header {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.message-time {
+    opacity: 0.7;
+    float: right;
+}
+
+.message-text {
+    line-height: 1.4;
+}
+
+.message-metadata {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.agent-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(13, 110, 253, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.agent-avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(13, 110, 253, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.typing-indicator .typing-dots {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dots {
+    display: flex;
+    gap: 3px;
+}
+
+.dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6c757d;
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.dots span:nth-child(1) { animation-delay: 0s; }
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+}
+
+.rating-stars i {
+    font-size: 2rem;
+    color: #dee2e6;
+    cursor: pointer;
+    margin: 0 0.25rem;
+    transition: color 0.2s;
+}
+
+.rating-stars i:hover,
+.rating-stars i.active {
+    color: #ffc107;
+}
+
+#messageInput {
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+#messageInput:focus {
+    border: 1px solid #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+</style>
+
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+<script>
+let socket;
+let selectedRating = 0;
+
+$(document).ready(function() {
+    // Initialize WebSocket connection
+    initializeWebSocket();
+    
+    // Auto-resize textarea
+    $('#messageInput').on('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+    
+    // Handle Enter key
+    $('#messageInput').keydown(function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            $('#messageForm').submit();
+        }
+    });
+    
+    // Message form submission
+    $('#messageForm').submit(function(e) {
+        e.preventDefault();
+        sendMessage();
+    });
+    
+    // Rating stars
+    $('.rating-stars i').click(function() {
+        selectedRating = $(this).data('rating');
+        $('.rating-stars i').removeClass('active');
+        for (let i = 1; i <= selectedRating; i++) {
+            $(`.rating-stars i[data-rating="${i}"]`).addClass('active');
+        }
+    });
+    
+    // Transfer session
+    $('#transferSession').click(function() {
+        $('#transferModal').modal('show');
+    });
+    
+    $('#confirmTransfer').click(function() {
+        transferSession();
+    });
+    
+    // End session
+    $('#endSession').click(function() {
+        $('#endSessionModal').modal('show');
+    });
+    
+    $('#confirmEndSession').click(function() {
+        endSession();
+    });
+    
+    // Download transcript
+    $('#downloadTranscript').click(function() {
+        downloadTranscript();
+    });
+    
+    // Scroll to bottom on page load
+    scrollToBottom();
+});
+
+function initializeWebSocket() {
+    socket = io();
+    
+    socket.on('connect', function() {
+        socket.emit('join_chat', {session_id: $('#sessionId').val()});
+    });
+    
+    socket.on('new_message', function(data) {
+        addMessageToChat(data, 'user');
+    });
+    
+    socket.on('agent_response', function(data) {
+        hideTypingIndicator();
+        addMessageToChat(data, 'agent');
+    });
+    
+    socket.on('user_typing', function(data) {
+        if (data.typing) {
+            showTypingIndicator();
+        } else {
+            hideTypingIndicator();
+        }
+    });
+}
+
+function sendMessage() {
+    const messageText = $('#messageInput').val().trim();
+    if (!messageText) return;
+    
+    const sessionId = $('#sessionId').val();
+    
+    // Show message immediately
+    addMessageToChat({
+        message: messageText,
+        username: 'You',
+        timestamp: new Date().toISOString()
+    }, 'user');
+    
+    // Clear input
+    $('#messageInput').val('').css('height', 'auto');
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Send via WebSocket
+    socket.emit('message', {
+        session_id: sessionId,
+        message: messageText
+    });
+}
+
+function addMessageToChat(data, type) {
+    const messagesContainer = $('#chatMessages');
+    const messageClass = type === 'user' ? 'user-message' : 'agent-message';
+    const time = new Date(data.timestamp).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    let messageHtml = `
+        <div class="message ${messageClass}">
+            <div class="message-content">
+                <div class="message-header">
+                    <strong>${data.username || data.agent_name || 'Agent'}</strong>
+                    <span class="message-time">${time}</span>
+                </div>
+                <div class="message-text">${data.message}</div>
+    `;
+    
+    if (data.confidence && type === 'agent') {
+        messageHtml += `
+                <div class="message-metadata">
+                    <small class="text-light">
+                        Confidence: ${Math.round(data.confidence * 100)%}
+                    </small>
+                </div>
+        `;
+    }
+    
+    messageHtml += `
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.append(messageHtml);
+    scrollToBottom();
+}
+
+function showTypingIndicator() {
+    $('#typingIndicator').show();
+    scrollToBottom();
+}
+
+function hideTypingIndicator() {
+    $('#typingIndicator').hide();
+}
+
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function insertQuickMessage(message) {
+    $('#messageInput').val(message).focus();
+}
+
+function transferSession() {
+    const sessionId = $('#sessionId').val();
+    const newAgentType = $('#transferAgentType').val();
+    const transferReason = $('#transferReason').val();
+    
+    $.ajax({
+        url: '/chat/api/transfer-session',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            session_id: sessionId,
+            new_agent_type: newAgentType,
+            transfer_reason: transferReason
+        }),
+        success: function(response) {
+            if (response.status === 'success') {
+                $('#transferModal').modal('hide');
+                location.reload();
+            } else {
+                alert('Failed to transfer session: ' + response.message);
+            }
+        },
+        error: function() {
+            alert('Failed to transfer session. Please try again.');
+        }
+    });
+}
+
+function endSession() {
+    const sessionId = $('#sessionId').val();
+    const feedback = $('#sessionFeedback').val();
+    
+    $.ajax({
+        url: '/chat/api/end-session',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            session_id: sessionId,
+            satisfaction_rating: selectedRating,
+            feedback: feedback
+        }),
+        success: function(response) {
+            if (response.status === 'success') {
+                $('#endSessionModal').modal('hide');
+                window.location.href = '/chat/';
+            } else {
+                alert('Failed to end session: ' + response.message);
+            }
+        },
+        error: function() {
+            alert('Failed to end session. Please try again.');
+        }
+    });
+}
+
+function downloadTranscript() {
+    const sessionId = $('#sessionId').val();
+    window.open(`/chat/api/transcript/${sessionId}`, '_blank');
+}
+</script>
+</div>
+{% endblock %}

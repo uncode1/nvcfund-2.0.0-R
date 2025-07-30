@@ -1,0 +1,1368 @@
+{% extends "public/public_base.html" %}
+
+{% block title %}NVC Banking Platform - Advanced Digital Banking & Blockchain Finance{% endblock %}
+
+{% block meta_description %}Experience the future of banking with NVC Banking Platform. Secure, fast, and globally accessible digital banking with blockchain technology, cryptocurrency support, and world-class security.{% endblock %}
+
+{% block meta_keywords %}NVC Banking, digital banking, blockchain banking, cryptocurrency, secure banking, global banking, NVCT stablecoin, financial services{% endblock %}
+
+{% from "components/live_crypto_prices.html" import live_crypto_prices %}
+
+{% block extra_css %}
+<style>
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .nvc-innovation-title,
+    .nvc-feature-title,
+    .nvc-service-title {
+        font-size: 1.25rem;
+        text-align: center !important;
+    }
+
+    .nvc-hero-actions,
+    .nvc-cta-actions {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .nvc-hero-content {
+        text-align: center !important;
+        padding: 0 1rem;
+    }
+
+    /* Mobile Icon Adjustments */
+    .nvc-feature-icon,
+    .nvc-innovation-icon,
+    .nvc-service-icon,
+    .nvc-stat-icon {
+        width: 60px !important;
+        height: 60px !important;
+        margin: 0 auto 1rem auto !important;
+    }
+
+    .nvc-feature-icon i,
+    .nvc-innovation-icon i,
+    .nvc-service-icon i,
+    .nvc-stat-icon i {
+        font-size: 1.5rem !important;
+    }
+
+    /* Mobile Text Centering */
+    .nvc-hero-title,
+    .nvc-hero-subtitle,
+    .nvc-section-title,
+    .nvc-section-subtitle,
+    .nvc-feature-title,
+    .nvc-innovation-title,
+    .nvc-service-title,
+    .nvc-cta-title,
+    .nvc-cta-subtitle {
+        text-align: center !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    /* Mobile Button Spacing */
+    .nvc-btn {
+        margin: 0.25rem !important;
+        text-align: center !important;
+    }
+
+    .nvc-btn i {
+        margin-right: 0.5rem !important;
+    }
+
+    /* Mobile Card Padding */
+    .nvc-feature-card,
+    .nvc-innovation-card,
+    .nvc-service-card,
+    .nvc-stat-card {
+        padding: 1.5rem 1rem !important;
+        text-align: center !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* Mobile Service Links */
+    .nvc-service-link {
+        text-align: center !important;
+        display: block !important;
+        margin-top: 1rem !important;
+    }
+}
+
+/* Extra Small Devices */
+@media (max-width: 576px) {
+    .nvc-hero-actions,
+    .nvc-cta-actions {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+    }
+
+    .nvc-btn {
+        width: 100% !important;
+        max-width: 280px !important;
+        text-align: center !important;
+        justify-content: center !important;
+    }
+
+    .nvc-feature-card,
+    .nvc-innovation-card,
+    .nvc-service-card {
+        padding: 1.25rem 0.75rem !important;
+    }
+
+    .nvc-hero-title {
+        font-size: 2rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .nvc-section-title {
+        font-size: 1.75rem !important;
+    }
+
+    .nvc-feature-title,
+    .nvc-innovation-title,
+    .nvc-service-title {
+        font-size: 1.125rem !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="nvc-hero-section py-5">
+    <div class="nvc-hero-background"></div>
+    <div class="container">
+        <div class="row align-items-center nvc-hero-row">
+            <div class="col-lg-6">
+                <div class="nvc-hero-content text-center">
+                    <h1 class="nvc-title-xl nvc-text-primary nvc-text-center">
+                        Next-Generation Digital Banking Platform
+                    </h1>
+                    <p class="nvc-subtitle-lg nvc-text-center">
+                        Experience the future of banking with our advanced blockchain-powered platform.
+                        Secure, fast, and globally accessible financial services.
+                    </p>
+                    <div class="nvc-hero-actions d-flex justify-content-center align-items-center gap-3 flex-wrap">
+                        <a href="{{ url_for('auth.register') }}" class="nvc-btn nvc-btn-primary nvc-btn-lg">
+                            <i class="fas fa-rocket me-2"></i>
+                            Get Started
+                        </a>
+                        <a href="{{ url_for('public.services') }}" class="nvc-btn nvc-btn-outline-light nvc-btn-lg">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="nvc-hero-stats">
+                    <div class="row g-4">
+                        <div class="col-6">
+                            <div class="nvc-stat-card text-center" data-stat="active-users">
+                                <div class="nvc-stat-icon d-flex justify-content-center align-items-center">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="nvc-stat-content text-center">
+                                    <h3 class="nvc-stat-number text-center">2M+</h3>
+                                    <p class="nvc-stat-label text-center">Active Users</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="nvc-stat-card text-center" data-stat="assets-under-management">
+                                <div class="nvc-stat-icon d-flex justify-content-center align-items-center">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="nvc-stat-content text-center">
+                                    <h3 class="nvc-stat-number text-center">$50B+</h3>
+                                    <p class="nvc-stat-label text-center">Assets Under Management</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="nvc-stat-card text-center" data-stat="countries-served">
+                                <div class="nvc-stat-icon d-flex justify-content-center align-items-center">
+                                    <i class="fas fa-globe"></i>
+                                </div>
+                                <div class="nvc-stat-content text-center">
+                                    <h3 class="nvc-stat-number text-center">150+</h3>
+                                    <p class="nvc-stat-label text-center">Countries Served</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="nvc-stat-card text-center" data-stat="security-rating">
+                                <div class="nvc-stat-icon d-flex justify-content-center align-items-center">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="nvc-stat-content text-center">
+                                    <h3 class="nvc-stat-number text-center">99.9%</h3>
+                                    <p class="nvc-stat-label text-center">Security Rating</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="nvc-features-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="nvc-title-md nvc-text-primary nvc-text-center">Why Choose NVC Banking?</h2>
+                <p class="nvc-subtitle-md nvc-text-center">Advanced features designed for the modern financial world</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-success">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Bank-Grade Security</h4>
+                    <p class="nvc-feature-description">
+                        Military-grade encryption and multi-layer security protocols protect your assets 24/7.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-warning">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Lightning Fast</h4>
+                    <p class="nvc-feature-description">
+                        Process transactions in seconds with our advanced blockchain infrastructure.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-blue">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Global Access</h4>
+                    <p class="nvc-feature-description">
+                        Access your accounts and make transactions from anywhere in the world.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-emerald">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Multi-Currency</h4>
+                    <p class="nvc-feature-description">
+                        Support for traditional currencies and cryptocurrencies in one platform.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-purple">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Smart Analytics</h4>
+                    <p class="nvc-feature-description">
+                        AI-powered insights help you make better financial decisions.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-pink">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">24/7 Support</h4>
+                    <p class="nvc-feature-description">
+                        Round-the-clock customer support from our expert team.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Banking Innovation Section -->
+<section class="nvc-innovation-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="nvc-title-md nvc-text-primary nvc-text-center">Banking Innovation</h2>
+                <p class="nvc-subtitle-md nvc-text-center">
+                    Comprehensive financial services powered by blockchain technology
+                </p>
+                <div class="nvc-section-divider"></div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-success">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Bank-Grade Security</h4>
+                    <p class="nvc-feature-description">
+                        Advanced encryption, multi-factor authentication, and real-time threat detection protect your assets.
+                    </p>
+                    <div class="nvc-innovation-highlight text-center mt-3">
+                        <span class="nvc-highlight-badge">99.9% Secure</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-emerald">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">NVCT Stablecoin</h4>
+                    <p class="nvc-feature-description">
+                        $30 trillion supply backed by $56.7T in documented assets with 189% over-collateralization.
+                    </p>
+                    <div class="nvc-innovation-highlight text-center mt-3">
+                        <span class="nvc-highlight-badge">189% Backed</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-blue">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Multi-Blockchain</h4>
+                    <p class="nvc-feature-description">
+                        Integrated support for Ethereum, Polygon, BSC, and other major blockchain networks.
+                    </p>
+                    <div class="nvc-innovation-highlight text-center mt-3">
+                        <span class="nvc-highlight-badge">5+ Networks</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-purple">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Real-Time Analytics</h4>
+                    <p class="nvc-feature-description">
+                        Comprehensive dashboard with live market data, portfolio tracking, and performance metrics.
+                    </p>
+                    <div class="nvc-innovation-highlight text-center mt-3">
+                        <span class="nvc-highlight-badge">Live Data</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-orange">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Global Payments</h4>
+                    <p class="nvc-feature-description">
+                        Instant cross-border transfers with competitive rates and transparent fee structures.
+                    </p>
+                    <div class="nvc-innovation-highlight text-center mt-3">
+                        <span class="nvc-highlight-badge">Instant</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-pink">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">AI-Powered Trading</h4>
+                    <p class="nvc-feature-description">
+                        Advanced algorithmic trading with risk management and automated portfolio optimization.
+                    </p>
+                    <div class="nvc-innovation-highlight text-center mt-3">
+                        <span class="nvc-highlight-badge">AI Powered</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Crypto Prices Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="text-center mb-4">
+                    <h3 class="text-white mb-2">Live Market Data</h3>
+                    <p class="text-light">Real-time cryptocurrency prices powered by Binance API</p>
+                </div>
+            </div>
+            <div class="col-lg-8 mx-auto">
+                {{ live_crypto_prices(show_header=false, compact_mode=false) }}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="nvc-services-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="nvc-title-md nvc-text-primary nvc-text-center">Complete Banking Ecosystem</h2>
+                <p class="nvc-subtitle-md nvc-text-center">Comprehensive financial services for individuals, businesses, and institutions</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="nvc-service-card text-center">
+                    <div class="nvc-service-icon d-flex justify-content-center align-items-center mx-auto">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <h5 class="nvc-service-title text-center">Digital Banking</h5>
+                    <p class="nvc-service-description text-center">Full-service accounts, cards, and payment solutions</p>
+                    <a href="{{ url_for('public.services') }}" class="nvc-service-link text-center d-block">
+                        Learn More <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="nvc-service-card text-center">
+                    <div class="nvc-service-icon d-flex justify-content-center align-items-center mx-auto">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h5 class="nvc-service-title text-center">Investment Management</h5>
+                    <p class="nvc-service-description text-center">Portfolio management and trading services</p>
+                    <a href="{{ url_for('public.services') }}" class="nvc-service-link text-center d-block">
+                        Learn More <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="nvc-service-card text-center">
+                    <div class="nvc-service-icon d-flex justify-content-center align-items-center mx-auto">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h5 class="nvc-service-title text-center">Corporate Banking</h5>
+                    <p class="nvc-service-description text-center">Business accounts and institutional services</p>
+                    <a href="{{ url_for('public.services') }}" class="nvc-service-link text-center d-block">
+                        Learn More <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="nvc-service-card text-center">
+                    <div class="nvc-service-icon d-flex justify-content-center align-items-center mx-auto">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <h5 class="nvc-service-title text-center">Cryptocurrency</h5>
+                    <p class="nvc-service-description text-center">Digital asset trading and management</p>
+                    <a href="{{ url_for('public.services') }}" class="nvc-service-link text-center d-block">
+                        Learn More <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Security & Compliance Section -->
+<section class="nvc-security-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="nvc-title-md nvc-text-primary nvc-text-center">Security & Compliance</h2>
+                <p class="nvc-subtitle-md nvc-text-center">
+                    Industry-leading security standards and regulatory compliance
+                </p>
+                <div class="nvc-section-divider"></div>
+            </div>
+        </div>
+
+        <!-- Security Features Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-success">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Bank-Grade Security</h4>
+                    <p class="nvc-feature-description">Military-grade encryption and multi-layer security protocols</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-blue">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">FINRA Compliant</h4>
+                    <p class="nvc-feature-description">Full regulatory compliance with financial industry standards</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-warning">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">Data Protection</h4>
+                    <p class="nvc-feature-description">Advanced encryption and secure data storage protocols</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="nvc-feature-card-base">
+                    <div class="nvc-feature-icon-base nvc-icon-purple">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h4 class="nvc-feature-title">24/7 Monitoring</h4>
+                    <p class="nvc-feature-description">Continuous security monitoring and threat detection</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance Information -->
+        <div class="row">
+            <div class="col-12">
+                <div class="nvc-compliance-info-container">
+                    <div class="text-center mb-4">
+                        <h4 class="nvc-title-sm nvc-text-primary">Regulatory Compliance</h4>
+                        <p>
+                            NVC Banking Platform operates under strict regulatory oversight and maintains full compliance with all applicable financial regulations including FINRA, SEC, and international banking standards.
+                        </p>
+                    </div>
+
+                    <div class="nvc-compliance-features">
+                        <div class="nvc-compliance-feature">
+                            <div class="nvc-compliance-feature-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <h5>Licensed & Regulated</h5>
+                            <p>Fully licensed financial institution with regulatory oversight</p>
+                        </div>
+                        <div class="nvc-compliance-feature">
+                            <div class="nvc-compliance-feature-icon">
+                                <i class="fas fa-shield-check"></i>
+                            </div>
+                            <h5>Secure & Audited</h5>
+                            <p>Regular security audits and compliance monitoring</p>
+                        </div>
+                        <div class="nvc-compliance-feature">
+                            <div class="nvc-compliance-feature-icon">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            <h5>Transparent Operations</h5>
+                            <p>Clear policies and transparent business practices</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="nvc-cta-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <div class="nvc-cta-content text-center">
+                    <h2 class="nvc-cta-title text-center">Ready to Transform Your Banking Experience?</h2>
+                    <p class="nvc-cta-subtitle text-center">
+                        Join millions of users who trust NVC Banking Platform for their financial needs.
+                        Get started today and experience the future of digital banking.
+                    </p>
+                    <div class="nvc-cta-actions d-flex justify-content-center align-items-center gap-3 flex-wrap">
+                        <a href="{{ url_for('auth.register') }}" class="nvc-btn nvc-btn-primary nvc-btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>
+                            Create Account
+                        </a>
+                        <a href="{{ url_for('public.contact') }}" class="nvc-btn nvc-btn-outline nvc-btn-lg">
+                            <i class="fas fa-phone me-2"></i>
+                            Contact Sales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live Data Stream for Index Page - DISABLED to prevent content flashing
+// This class was causing content to flash and disappear during API calls and WebSocket connections
+class LiveDataStream {
+    constructor() {
+        // DISABLED: All live data functionality disabled to prevent flashing
+        console.log('📡 LiveDataStream disabled to prevent content flashing');
+
+        // Static content will be displayed without dynamic updates
+        // Users can refresh the page to get updated data
+        return;
+
+        // Original configuration (commented out)
+        /*
+        this.apiEndpoint = '/api/v1/public/live-market-data';
+        this.websocketUrl = 'ws://localhost:8765';
+        this.refreshInterval = 30000; // 30 seconds
+        this.retryDelay = 5000; // 5 seconds on error
+        this.maxRetries = 3;
+        this.currentRetries = 0;
+        this.isActive = true;
+        this.useWebSocket = true;
+        this.websocket = null;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 5;
+
+        this.init();
+        */
+    }
+
+    init() {
+        // DISABLED: All initialization disabled to prevent content flashing
+        console.log('🚀 Live Data Stream initialization disabled');
+        return;
+
+        /*
+        console.log('🚀 Initializing Live Data Stream...');
+
+        // Try WebSocket first, fallback to HTTP polling
+        if (this.useWebSocket && typeof WebSocket !== 'undefined') {
+            this.initWebSocket();
+        } else {
+            console.log('📡 WebSocket not available, using HTTP polling');
+            this.useWebSocket = false;
+            this.updateData();
+            this.startPolling();
+        }
+
+        this.setupVisibilityHandler();
+        */
+    }
+
+    initWebSocket() {
+        try {
+            console.log('🔌 Connecting to WebSocket...');
+            this.websocket = new WebSocket(this.websocketUrl);
+
+            this.websocket.onopen = () => {
+                console.log('✅ WebSocket connected');
+                this.reconnectAttempts = 0;
+                this.currentRetries = 0;
+
+                // Send ping to keep connection alive
+                this.sendWebSocketMessage({ type: 'ping' });
+            };
+
+            this.websocket.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+
+                    if (message.type === 'initial_data' || message.type === 'live_update') {
+                        this.updateUI(message.data);
+                        console.log('📊 WebSocket data received');
+                    } else if (message.type === 'pong') {
+                        console.log('🏓 WebSocket pong received');
+                    }
+                } catch (error) {
+                    console.error('❌ Error parsing WebSocket message:', error);
+                }
+            };
+
+            this.websocket.onclose = () => {
+                console.log('🔌 WebSocket disconnected');
+                this.handleWebSocketDisconnect();
+            };
+
+            this.websocket.onerror = (error) => {
+                console.error('❌ WebSocket error:', error);
+                this.handleWebSocketError();
+            };
+
+        } catch (error) {
+            console.error('❌ Error initializing WebSocket:', error);
+            this.fallbackToHTTP();
+        }
+    }
+
+    sendWebSocketMessage(message) {
+        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            this.websocket.send(JSON.stringify(message));
+        }
+    }
+
+    handleWebSocketDisconnect() {
+        if (this.isActive && this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            console.log(`🔄 Attempting WebSocket reconnection ${this.reconnectAttempts}/${this.maxReconnectAttempts}...`);
+
+            setTimeout(() => {
+                this.initWebSocket();
+            }, this.retryDelay * this.reconnectAttempts);
+        } else {
+            console.log('🔄 Max WebSocket reconnection attempts reached, falling back to HTTP');
+            this.fallbackToHTTP();
+        }
+    }
+
+    handleWebSocketError() {
+        console.log('🔄 WebSocket error, falling back to HTTP');
+        this.fallbackToHTTP();
+    }
+
+    fallbackToHTTP() {
+        this.useWebSocket = false;
+        if (this.websocket) {
+            this.websocket.close();
+            this.websocket = null;
+        }
+        console.log('📡 Switching to HTTP polling mode');
+        this.updateData();
+        this.startPolling();
+    }
+
+    async updateData() {
+        if (!this.isActive) return;
+
+        try {
+            console.log('📡 Fetching live market data...');
+            const response = await fetch(this.apiEndpoint);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                this.updateUI(data.data);
+                this.currentRetries = 0;
+                console.log('✅ Live data updated successfully');
+            } else {
+                throw new Error(data.message || 'API returned error status');
+            }
+
+        } catch (error) {
+            console.error('❌ Error fetching live data:', error);
+            this.handleError();
+        }
+    }
+
+    updateUI(data) {
+        // Update platform statistics in hero section
+        if (data.platform_stats) {
+            this.updateStatCard('active-users', data.platform_stats.active_users);
+            this.updateStatCard('assets-under-management', data.platform_stats.assets_under_management);
+            this.updateStatCard('countries-served', data.platform_stats.countries_served);
+            this.updateStatCard('security-rating', data.platform_stats.security_rating);
+        }
+
+        // Add live crypto prices table if crypto data is available
+        if (data.crypto_prices) {
+            this.updateCryptoTable(data.crypto_prices);
+        }
+
+        // Update last updated timestamp
+        this.updateTimestamp(data.timestamp);
+    }
+
+    updateStatCard(cardId, statData) {
+        const numberElement = document.querySelector(`[data-stat="${cardId}"] .nvc-stat-number`);
+        if (numberElement && statData) {
+            // Update content immediately without animation to prevent flashing
+            numberElement.textContent = statData.formatted;
+
+            // Add trend indicator immediately
+            if (statData.trend) {
+                numberElement.classList.remove('trend-up', 'trend-down', 'trend-stable');
+                numberElement.classList.add(`trend-${statData.trend}`);
+            }
+        }
+    }
+
+    updateCryptoTable(cryptoData) {
+        let tableContainer = document.getElementById('crypto-table-container');
+
+        if (!tableContainer) {
+            // Create crypto table if it doesn't exist
+            tableContainer = this.createCryptoTable();
+        }
+
+        const tableBody = tableContainer.querySelector('.crypto-table tbody');
+        if (tableBody) {
+            let tableHTML = '';
+
+            // Convert to array and sort by market cap/volume (using price as proxy)
+            const cryptoArray = Object.values(cryptoData)
+                .sort((a, b) => parseFloat(b.price) - parseFloat(a.price))
+                .slice(0, 10); // Top 10 coins
+
+            cryptoArray.forEach((crypto, index) => {
+                const trendClass = parseFloat(crypto.price_change_percent) >= 0 ? 'positive' : 'negative';
+                const trendIcon = parseFloat(crypto.price_change_percent) >= 0 ? '▲' : '▼';
+
+                tableHTML += `
+                    <tr class="crypto-row">
+                        <td class="rank-cell">${index + 1}</td>
+                        <td class="symbol-cell">
+                            <div class="crypto-info">
+                                <span class="crypto-symbol">${crypto.symbol.replace('USDT', '')}</span>
+                                <span class="crypto-name">${this.getCryptoName(crypto.symbol)}</span>
+                            </div>
+                        </td>
+                        <td class="price-cell">${crypto.formatted_price}</td>
+                        <td class="change-cell ${trendClass}">
+                            <span class="change-icon">${trendIcon}</span>
+                            ${crypto.formatted_change}
+                        </td>
+                        <td class="high-cell">$${parseFloat(crypto.high_24h).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="low-cell">$${parseFloat(crypto.low_24h).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="volume-cell">$${this.formatVolume(crypto.volume)}</td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = tableHTML;
+        }
+    }
+
+    createCryptoTable() {
+        const tableHTML = `
+            <div id="crypto-table-container" class="crypto-table-container">
+                <div class="crypto-table-header">
+                    <h3><i class="fas fa-chart-line"></i> Top 10 Cryptocurrencies</h3>
+                    <span class="live-indicator">🟢 LIVE</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="crypto-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>24h Change</th>
+                                <th>24h High</th>
+                                <th>24h Low</th>
+                                <th>Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        // Insert after hero section
+        const heroSection = document.querySelector('.nvc-hero-section');
+        if (heroSection) {
+            heroSection.insertAdjacentHTML('afterend', tableHTML);
+        }
+
+        return document.getElementById('crypto-table-container');
+    }
+
+    getCryptoName(symbol) {
+        const cryptoNames = {
+            'BTCUSDT': 'Bitcoin',
+            'ETHUSDT': 'Ethereum',
+            'BNBUSDT': 'BNB',
+            'ADAUSDT': 'Cardano',
+            'SOLUSDT': 'Solana',
+            'XRPUSDT': 'XRP',
+            'DOGEUSDT': 'Dogecoin',
+            'DOTUSDT': 'Polkadot',
+            'AVAXUSDT': 'Avalanche',
+            'MATICUSDT': 'Polygon'
+        };
+        return cryptoNames[symbol] || symbol.replace('USDT', '');
+    }
+
+    formatVolume(volume) {
+        const vol = parseFloat(volume);
+        if (vol >= 1e9) {
+            return (vol / 1e9).toFixed(2) + 'B';
+        } else if (vol >= 1e6) {
+            return (vol / 1e6).toFixed(2) + 'M';
+        } else if (vol >= 1e3) {
+            return (vol / 1e3).toFixed(2) + 'K';
+        }
+        return vol.toFixed(2);
+    }
+
+    updateTimestamp(timestamp) {
+        let timestampElement = document.getElementById('live-data-timestamp');
+
+        if (!timestampElement) {
+            // Create timestamp element
+            const timestampHTML = `
+                <div id="live-data-timestamp" class="live-data-timestamp">
+                    <i class="fas fa-clock"></i>
+                    <span>Last updated: <span class="timestamp-value">--</span></span>
+                    <span class="live-indicator">🟢 LIVE</span>
+                </div>
+            `;
+
+            const heroSection = document.querySelector('.nvc-hero-section');
+            if (heroSection) {
+                heroSection.insertAdjacentHTML('beforeend', timestampHTML);
+                timestampElement = document.getElementById('live-data-timestamp');
+            }
+        }
+
+        if (timestampElement) {
+            const timestampValue = timestampElement.querySelector('.timestamp-value');
+            if (timestampValue) {
+                const date = new Date(timestamp);
+                timestampValue.textContent = date.toLocaleTimeString();
+            }
+        }
+    }
+
+    handleError() {
+        this.currentRetries++;
+
+        if (this.currentRetries <= this.maxRetries) {
+            console.log(`🔄 Retrying in ${this.retryDelay/1000} seconds... (${this.currentRetries}/${this.maxRetries})`);
+            setTimeout(() => this.updateData(), this.retryDelay);
+        } else {
+            console.log('❌ Max retries reached. Stopping live updates.');
+            this.showOfflineIndicator();
+        }
+    }
+
+    showOfflineIndicator() {
+        const liveIndicator = document.querySelector('.live-indicator');
+        if (liveIndicator) {
+            liveIndicator.textContent = '🔴 OFFLINE';
+            liveIndicator.style.color = '#ef4444';
+        }
+    }
+
+    startPolling() {
+        // Only start polling if not using WebSocket
+        if (!this.useWebSocket) {
+            this.pollingInterval = setInterval(() => {
+                if (this.isActive) {
+                    this.updateData();
+                }
+            }, this.refreshInterval);
+        }
+    }
+
+    setupVisibilityHandler() {
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.isActive = false;
+                console.log('⏸️ Page hidden - pausing live updates');
+            } else {
+                this.isActive = true;
+                console.log('▶️ Page visible - resuming live updates');
+                this.updateData(); // Immediate update when page becomes visible
+            }
+        });
+    }
+
+    destroy() {
+        this.isActive = false;
+
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+        }
+
+        if (this.websocket) {
+            this.websocket.close();
+            this.websocket = null;
+        }
+
+        console.log('🛑 Live Data Stream destroyed');
+    }
+}
+
+// Initialize live data stream when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Add data attributes to stat cards for easier targeting
+    const statCards = document.querySelectorAll('.nvc-stat-card');
+    statCards.forEach((card, index) => {
+        const labels = ['active-users', 'assets-under-management', 'countries-served', 'security-rating'];
+        if (labels[index]) {
+            card.setAttribute('data-stat', labels[index]);
+        }
+    });
+
+    // Defer crypto data loading to improve page load performance
+    setTimeout(() => {
+        window.liveDataStream = new LiveDataStream();
+    }, 1000); // Start after 1 second to let page render first
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (window.liveDataStream) {
+        window.liveDataStream.destroy();
+    }
+});
+</script>
+
+<style>
+/* Icon Spacing and Alignment Fixes */
+.fas, .far, .fab {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.me-1 { margin-right: 0.25rem !important; }
+.me-2 { margin-right: 0.5rem !important; }
+.ms-1 { margin-left: 0.25rem !important; }
+.ms-2 { margin-left: 0.5rem !important; }
+
+/* Button Icon Spacing */
+.nvc-btn i {
+    margin-right: 0.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.nvc-btn:last-child i {
+    margin-right: 0.5rem !important;
+}
+
+/* Card Icon Centering */
+.nvc-feature-icon,
+.nvc-innovation-icon,
+.nvc-service-icon,
+.nvc-stat-icon {
+    width: 80px !important;
+    height: 80px !important;
+    border-radius: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 1.5rem auto !important;
+    flex-shrink: 0 !important;
+}
+
+.nvc-feature-icon i,
+.nvc-innovation-icon i,
+.nvc-service-icon i,
+.nvc-stat-icon i {
+    font-size: 2rem !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+}
+
+/* Text Alignment Enforcement */
+.text-center,
+.nvc-feature-title,
+.nvc-innovation-title,
+.nvc-service-title,
+.nvc-cta-title,
+.nvc-section-title {
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.nvc-feature-description,
+.nvc-innovation-description,
+.nvc-service-description,
+.nvc-cta-subtitle,
+.nvc-section-subtitle {
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Flexbox Centering for Cards */
+.nvc-feature-card,
+.nvc-innovation-card,
+.nvc-service-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    text-align: center !important;
+    padding: 2rem !important;
+    height: 100% !important;
+}
+
+/* Action Button Centering */
+.nvc-hero-actions,
+.nvc-cta-actions {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    flex-wrap: wrap !important;
+    margin-top: 2rem !important;
+}
+
+/* Service Link Centering */
+.nvc-service-link {
+    text-align: center !important;
+    display: block !important;
+    margin-top: auto !important;
+    padding-top: 1rem !important;
+}
+
+/* Live Data Stream Styles */
+.nvc-stat-number.updating {
+    opacity: 0.7;
+    transform: scale(0.95);
+    transition: all 0.2s ease;
+}
+
+.nvc-stat-number.trend-up {
+    color: #10b981 !important;
+}
+
+.nvc-stat-number.trend-down {
+    color: #ef4444 !important;
+}
+
+.nvc-stat-number.trend-stable {
+    color: #6b7280 !important;
+}
+
+/* Crypto Table Styles */
+.crypto-table-container {
+    background: linear-gradient(135deg, #1f2937, #374151);
+    border-radius: 16px;
+    margin: 40px auto;
+    max-width: 1200px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.crypto-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid rgba(96, 165, 250, 0.3);
+}
+
+.crypto-table-header h3 {
+    color: #60a5fa;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.crypto-table-header .live-indicator {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.crypto-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+}
+
+.crypto-table thead th {
+    background: rgba(96, 165, 250, 0.1);
+    color: #e5e7eb;
+    font-weight: 600;
+    padding: 16px 12px;
+    text-align: left;
+    border-bottom: 2px solid rgba(96, 165, 250, 0.3);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.crypto-table tbody tr {
+    border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+    transition: all 0.3s ease;
+}
+
+.crypto-table tbody tr:hover {
+    background: rgba(96, 165, 250, 0.05);
+    transform: translateY(-1px);
+}
+
+.crypto-table tbody td {
+    padding: 16px 12px;
+    color: #f3f4f6;
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+.rank-cell {
+    font-weight: 700;
+    color: #9ca3af;
+    width: 60px;
+}
+
+.crypto-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.crypto-symbol {
+    font-weight: 700;
+    color: #f3f4f6;
+    font-size: 1rem;
+}
+
+.crypto-name {
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+.price-cell {
+    font-weight: 700;
+    color: #60a5fa;
+    font-size: 1.1rem;
+}
+
+.change-cell {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.change-cell.positive {
+    color: #22c55e;
+}
+
+.change-cell.negative {
+    color: #ef4444;
+}
+
+.change-icon {
+    font-size: 0.8rem;
+}
+
+.high-cell, .low-cell {
+    color: #d1d5db;
+    font-weight: 500;
+}
+
+.volume-cell {
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .crypto-table-container {
+        margin: 20px 16px;
+        padding: 16px;
+    }
+
+    .crypto-table-header h3 {
+        font-size: 1.25rem;
+    }
+
+    .crypto-table thead th,
+    .crypto-table tbody td {
+        padding: 12px 8px;
+        font-size: 0.85rem;
+    }
+
+    .crypto-table thead th:nth-child(5),
+    .crypto-table thead th:nth-child(6),
+    .crypto-table tbody td:nth-child(5),
+    .crypto-table tbody td:nth-child(6) {
+        display: none; /* Hide 24h High/Low on mobile */
+    }
+
+    .crypto-symbol {
+        font-size: 0.9rem;
+    }
+
+    .crypto-name {
+        font-size: 0.75rem;
+    }
+
+    .price-cell {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .crypto-table thead th:nth-child(7),
+    .crypto-table tbody td:nth-child(7) {
+        display: none; /* Hide volume on very small screens */
+    }
+}
+
+
+/* Live Data Timestamp */
+.live-data-timestamp {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #d1d5db;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.live-indicator {
+    color: #10b981;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ticker-wrapper {
+        padding: 0 15px;
+    }
+
+    .ticker-label {
+        font-size: 0.8rem;
+        margin-right: 15px;
+    }
+
+    .ticker-content {
+        gap: 20px;
+    }
+
+    .ticker-item {
+        font-size: 0.8rem;
+        gap: 6px;
+    }
+
+    .live-data-timestamp {
+        bottom: 10px;
+        right: 10px;
+        font-size: 0.7rem;
+        padding: 6px 10px;
+    }
+}
+</style>
+{% endblock %}

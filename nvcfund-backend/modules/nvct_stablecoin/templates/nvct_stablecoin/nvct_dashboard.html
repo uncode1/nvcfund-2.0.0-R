@@ -1,0 +1,579 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}NVCT Dashboard - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}NVCT Dashboard{% endblock %}
+{% block page_description %}Real-time NVCT stablecoin management and monitoring{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-cogs"></i>
+    Manage NVCT
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus-circle"></i>
+    Mint NVCT
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportNVCTData() {
+    const csvData = 'Date,Supply,Transactions,Volume,Price\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nvct_dashboard.csv';
+    a.click();
+}
+
+function manageNVCT() {
+    window.location.href = "{{ url_for('nvct_stablecoin.supply_management') }}";
+}
+
+function mintNVCT() {
+    window.location.href = "{{ url_for('nvct_stablecoin.mint_nvct') }}";
+}
+
+function burnNVCT() {
+    window.location.href = "{{ url_for('nvct_stablecoin.burn_nvct') }}";
+}
+
+function viewAssetBacking() {
+    window.location.href = "{{ url_for('nvct_stablecoin.asset_backing') }}";
+}
+
+function manageNetworks() {
+    window.location.href = "{{ url_for('nvct_stablecoin.network_management') }}";
+}
+
+function crossChainBridge() {
+    window.location.href = "{{ url_for('nvct_stablecoin.cross_chain_bridge') }}";
+}
+
+function viewGovernance() {
+    window.location.href = "{{ url_for('nvct_stablecoin.governance_dashboard') }}";
+}
+
+function viewAnalytics() {
+    window.location.href = "{{ url_for('nvct_stablecoin.nvct_analytics_dashboard') }}";
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const dashboardCards = document.querySelectorAll('.card');
+    dashboardCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Supply')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.supply_management') }}";
+            } else if (cardTitle?.includes('Analytics')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.nvct_analytics_dashboard') }}";
+            } else if (cardTitle?.includes('Governance')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.governance_dashboard') }}";
+            } else if (cardTitle?.includes('Asset') || cardTitle?.includes('Backing')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.asset_backing') }}";
+            } else if (cardTitle?.includes('Network') || cardTitle?.includes('Chain')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.network_management') }}";
+            } else if (cardTitle?.includes('Bridge')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.cross_chain_bridge') }}";
+            } else if (cardTitle?.includes('Market Cap') || cardTitle?.includes('Price')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.nvct_analytics_dashboard') }}";
+            } else if (cardTitle?.includes('Mint') || cardTitle?.includes('Burn')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.supply_management') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- NVCT Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-warning">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="h2 text-white mb-2">
+                                <i class="fab fa-bitcoin me-2"></i>NVCT Stablecoin
+                            </h1>
+                            <p class="text-light mb-0">NVC Treasury Coin - Fully collateralized USD stablecoin</p>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-light btn-sm">
+                                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                    <i class="fas fa-chart-line me-1"></i>Analytics
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NVCT Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-primary">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-coins fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Total Supply</h4>
+                    <h2 class="text-white">{{ "500.0M"|default("0") }}</h2>
+                    <small class="text-light">NVCT Tokens</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-dollar-sign fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">USD Reserves</h4>
+                    <h2 class="text-white">${{ "500.2M"|default("0") }}</h2>
+                    <small class="text-light">100.04% Collateralized</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-users fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Holders</h4>
+                    <h2 class="text-white">{{ "15,847"|default("0") }}</h2>
+                    <small class="text-light">Unique Addresses</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-exchange-alt fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">24h Volume</h4>
+                    <h2 class="text-white">${{ "12.4M"|default("0") }}</h2>
+                    <small class="text-light">Daily Trading</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price Stability & Reserve Management -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between">
+                    <h5><i class="fas fa-chart-line me-2"></i>Price Stability & Reserve Ratio</h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary active">24H</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">7D</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">30D</button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h5 class="text-success">Current Price</h5>
+                                <h3>$1.0002</h3>
+                                <small class="text-light">Target: $1.0000</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h5 class="text-info">Reserve Ratio</h5>
+                                <h3>100.04%</h3>
+                                <small class="text-light">Over-collateralized</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h5 class="text-primary">Stability Score</h5>
+                                <h3>99.98%</h3>
+                                <small class="text-light">Excellent</small>
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="stabilityChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mint/Burn Operations -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-cogs me-2"></i>Mint/Burn Operations</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-4">
+                        <h6>Mint NVCT Tokens</h6>
+                        <form id="mintForm">
+                            <div class="mb-3">
+                                <label class="nvc-form-label">USD Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" id="mintAmount" placeholder="100000">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Recipient Address</label>
+                                <input type="text" class="nvc-form-input" id="mintAddress" placeholder="0x...">
+                            </div>
+                            <button type="submit" class="btn nvc-btn nvc-btn-success w-100">Mint Tokens</button>
+                        </form>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-4">
+                        <h6>Burn NVCT Tokens</h6>
+                        <form id="burnForm">
+                            <div class="mb-3">
+                                <label class="nvc-form-label">NVCT Amount</label>
+                                <div class="input-group">
+                                    <input type="number" class="nvc-form-input" id="burnAmount" placeholder="100000">
+                                    <span class="input-group-text">NVCT</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Holder Address</label>
+                                <input type="text" class="nvc-form-input" id="burnAddress" placeholder="0x...">
+                            </div>
+                            <button type="submit" class="btn nvc-btn nvc-btn-danger w-100">Burn Tokens</button>
+                        </form>
+                    </div>
+
+                    <!-- Daily Stats -->
+                    <div class="bg-light p-3 rounded">
+                        <h6>Today's Operations</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Minted:</span>
+                            <span class="text-success">+{{ "2.4M"|default("0") }} NVCT</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Burned:</span>
+                            <span class="text-danger">-{{ "1.8M"|default("0") }} NVCT</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Net Change:</span>
+                            <span class="text-success">+{{ "0.6M"|default("0") }} NVCT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reserve Assets & Transaction History -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-vault me-2"></i>Reserve Assets</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Asset Type</th>
+                                    <th>Amount</th>
+                                    <th>% of Reserves</th>
+                                    <th>Yield</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Cash & Cash Equivalents</strong></td>
+                                    <td>${{ "350.1M"|default("0") }}</td>
+                                    <td>70.0%</td>
+                                    <td>4.75%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>US Treasury Bills</strong></td>
+                                    <td>${{ "100.0M"|default("0") }}</td>
+                                    <td>20.0%</td>
+                                    <td>5.25%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Money Market Funds</strong></td>
+                                    <td>${{ "40.0M"|default("0") }}</td>
+                                    <td>8.0%</td>
+                                    <td>4.85%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Bank Deposits</strong></td>
+                                    <td>${{ "10.1M"|default("0") }}</td>
+                                    <td>2.0%</td>
+                                    <td>4.50%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" class="progress-bar-70" title="Cash 70%"></div>
+                            <div class="progress-bar bg-success" class="progress-bar-20" title="T-Bills 20%"></div>
+                            <div class="progress-bar bg-info" class="progress-bar-8" title="MMF 8%"></div>
+                            <div class="progress-bar bg-warning" class="progress-bar-2" title="Deposits 2%"></div>
+                        </div>
+                        <small class="text-light">Reserve Asset Allocation</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-history me-2"></i>Recent Transactions</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Address</th>
+                                    <th>Tx Hash</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ "14:32"|default("--:--") }}</td>
+                                    <td><span class="badge bg-success">Mint</span></td>
+                                    <td>100,000 NVCT</td>
+                                    <td><code>0x1234...5678</code></td>
+                                    <td><code>0xabcd...efgh</code></td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "14:15"|default("--:--") }}</td>
+                                    <td><span class="badge bg-primary">Transfer</span></td>
+                                    <td>50,000 NVCT</td>
+                                    <td><code>0x5678...9012</code></td>
+                                    <td><code>0xefgh...ijkl</code></td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "13:58"|default("--:--") }}</td>
+                                    <td><span class="badge bg-danger">Burn</span></td>
+                                    <td>25,000 NVCT</td>
+                                    <td><code>0x9012...3456</code></td>
+                                    <td><code>0xijkl...mnop</code></td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "13:45"|default("--:--") }}</td>
+                                    <td><span class="badge bg-success">Mint</span></td>
+                                    <td>200,000 NVCT</td>
+                                    <td><code>0x3456...7890</code></td>
+                                    <td><code>0xmnop...qrst</code></td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "13:30"|default("--:--") }}</td>
+                                    <td><span class="badge bg-primary">Transfer</span></td>
+                                    <td>75,000 NVCT</td>
+                                    <td><code>0x7890...1234</code></td>
+                                    <td><code>0xqrst...uvwx</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance & Attestations -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-certificate me-2"></i>Compliance & Attestations</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Regulatory Compliance</h6>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>FinCEN Registration</span>
+                                    <span class="badge bg-success">Compliant</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>State Money Transmitter</span>
+                                    <span class="badge bg-success">Licensed</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>AML/KYC Program</span>
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Reserve Audit</span>
+                                    <span class="badge bg-success">Monthly</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Third-Party Attestations</h6>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span><strong>Grant Thornton LLP</strong></span>
+                                        <span class="badge bg-success">Verified</span>
+                                    </div>
+                                    <small class="text-light">Reserve Attestation - {{ "June 30, 2025"|default("TBD") }}</small>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span><strong>Circle Trust Company</strong></span>
+                                        <span class="badge bg-info">Custodial</span>
+                                    </div>
+                                    <small class="text-light">Reserve Custody Services</small>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span><strong>Chainanalysis</strong></span>
+                                        <span class="badge bg-primary">Monitoring</span>
+                                    </div>
+                                    <small class="text-light">Blockchain Compliance Monitoring</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Smart Contract Information -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fab fa-ethereum me-2"></i>Smart Contract</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Contract Address</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control nvc-form-input-sm" value="0x1234567890abcdef..." readonly>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-secondary btn-sm">Copy</button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Network</label>
+                        <span class="badge bg-primary">Ethereum Mainnet</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Token Standard</label>
+                        <span class="badge bg-success">ERC-20</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Decimals</label>
+                        <span>18</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Upgradeable</label>
+                        <span class="badge bg-warning">No (Immutable)</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Paused</label>
+                        <span class="badge bg-success">No</span>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">View on Etherscan</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary btn-sm">Download ABI</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Stability Chart
+    const stabilityCtx = document.getElementById('stabilityChart').getContext('2d');
+    new Chart(stabilityCtx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+            datasets: [{
+                label: 'NVCT Price ($)',
+                data: [1.0001, 1.0002, 0.9999, 1.0001, 1.0002, 1.0000, 1.0002],
+                borderColor: '#ffc107',
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y'
+            }, {
+                label: 'Reserve Ratio (%)',
+                data: [100.02, 100.03, 100.01, 100.04, 100.04, 100.03, 100.04],
+                borderColor: '#198754',
+                backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    min: 0.999,
+                    max: 1.001,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toFixed(4);
+                        }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    min: 99.9,
+                    max: 100.1,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(2) + '%';
+                        }
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            }
+        }
+    });
+
+    // Form handlers
+    document.getElementById('mintForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Mint operation initiated. Tokens will be minted after USD deposit confirmation.');
+    });
+
+    document.getElementById('burnForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Burn operation initiated. USD will be released after token burn confirmation.');
+    });
+});
+</script>
+</div>
+{% endblock %}

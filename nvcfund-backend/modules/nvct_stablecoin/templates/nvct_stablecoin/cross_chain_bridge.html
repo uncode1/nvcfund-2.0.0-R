@@ -1,0 +1,332 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Cross-Chain Bridge - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Cross-Chain Bridge{% endblock %}
+{% block page_description %}Seamless NVCT transfers across multiple blockchain networks{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-history"></i>
+    Bridge History
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-exchange-alt"></i>
+    Bridge NVCT
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportBridgeData() {
+    const csvData = 'Date,From Network,To Network,Amount,Status,Fee\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cross_chain_bridge.csv';
+    a.click();
+}
+
+function viewBridgeHistory() {
+    window.location.href = "{{ url_for('nvct_stablecoin.bridge_history') }}";
+}
+
+function initiateBridge() {
+    const fromNetwork = prompt('From network (ethereum, bsc, polygon, fantom):');
+    const toNetwork = prompt('To network (ethereum, bsc, polygon, fantom):');
+    const amount = prompt('Amount to bridge (NVCT):');
+    const recipient = prompt('Recipient address:');
+    
+    if (fromNetwork && toNetwork && amount && recipient && fromNetwork !== toNetwork) {
+        if (confirm(`Bridge ${amount} NVCT from ${fromNetwork} to ${toNetwork}?`)) {
+            const formData = new FormData();
+            formData.append('from_network', fromNetwork);
+            formData.append('to_network', toNetwork);
+            formData.append('amount', amount);
+            formData.append('recipient', recipient);
+            
+            fetch('/nvct/bridge/initiate', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+                },
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    alert('Bridge transaction initiated');
+                    location.reload();
+                } else {
+                    alert('Error initiating bridge transaction');
+                }
+            });
+        }
+    } else {
+        alert('Please provide valid bridge parameters');
+    }
+}
+
+function trackBridge(txHash) {
+    window.open(`/nvct/bridge/track/${txHash}`, '_blank');
+}
+
+function cancelBridge(bridgeId) {
+    if (confirm('Cancel this bridge transaction?')) {
+        fetch(`/nvct/bridge/cancel/${bridgeId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert('Bridge transaction cancelled');
+                location.reload();
+            } else {
+                alert('Error cancelling bridge transaction');
+            }
+        });
+    }
+}
+
+function viewNetworkFees(network) {
+    window.location.href = `/nvct/bridge/fees/${network}`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const bridgeCards = document.querySelectorAll('.card, .bridge-card');
+    bridgeCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Total Bridged')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.bridge_analytics') }}";
+            } else if (cardTitle?.includes('Active Bridges')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.active_bridges') }}";
+            } else if (cardTitle?.includes('Bridge Volume')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.bridge_volume') }}";
+            } else if (cardTitle?.includes('Average Fee')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.bridge_fees') }}";
+            }
+        });
+    });
+    
+    // Auto-refresh bridge status every 30 seconds
+    setInterval(function() {
+        fetch('/nvct/bridge/status')
+            .then(response => response.json())
+            .then(data => {
+                updateBridgeStatus(data);
+            })
+            .catch(error => console.error('Error fetching bridge status:', error));
+    }, 30000);
+});
+
+function updateBridgeStatus(data) {
+    // Update bridge status indicators
+    const statusElements = document.querySelectorAll('.bridge-status');
+    statusElements.forEach(element => {
+        const bridgeId = element.dataset.bridgeId;
+        if (data.bridges && data.bridges[bridgeId]) {
+            element.textContent = data.bridges[bridgeId].status;
+            element.className = `bridge-status badge bg-${getStatusColor(data.bridges[bridgeId].status)}`;
+        }
+    });
+}
+
+function getStatusColor(status) {
+    switch(status.toLowerCase()) {
+        case 'completed': return 'success';
+        case 'pending': return 'warning';
+        case 'failed': return 'danger';
+        case 'processing': return 'info';
+        default: return 'secondary';
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="row g-4">
+    <!-- Bridge Overview Cards -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card bridge-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exchange-alt text-primary fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Total Bridged</h6>
+                        <h4 class="mb-0 text-primary">$847M</h4>
+                        <small class="text-success">+12.5% this week</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card bridge-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clock text-warning fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Active Bridges</h6>
+                        <h4 class="mb-0 text-warning">23</h4>
+                        <small class="text-muted">In progress</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card bridge-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-chart-line text-success fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">24h Bridge Volume</h6>
+                        <h4 class="mb-0 text-success">$45.2M</h4>
+                        <small class="text-success">+8.3% from yesterday</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card bridge-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-dollar-sign text-info fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Average Fee</h6>
+                        <h4 class="mb-0 text-info">$2.50</h4>
+                        <small class="text-muted">Per transaction</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <!-- Bridge Interface -->
+    <div class="col-lg-6">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <h5 class="nvc-card-title mb-0">Bridge NVCT</h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <form id="bridgeForm">
+                    <div class="mb-3">
+                        <label for="fromNetwork" class="nvc-form-label">From Network</label>
+                        <select class="nvc-form-select" id="fromNetwork" required>
+                            <option value="">Select source network</option>
+                            <option value="ethereum">Ethereum</option>
+                            <option value="bsc">Binance Smart Chain</option>
+                            <option value="polygon">Polygon</option>
+                            <option value="fantom">Fantom</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="toNetwork" class="nvc-form-label">To Network</label>
+                        <select class="nvc-form-select" id="toNetwork" required>
+                            <option value="">Select destination network</option>
+                            <option value="ethereum">Ethereum</option>
+                            <option value="bsc">Binance Smart Chain</option>
+                            <option value="polygon">Polygon</option>
+                            <option value="fantom">Fantom</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="amount" class="nvc-form-label">Amount (NVCT)</label>
+                        <input type="number" class="nvc-form-input" id="amount" step="0.000001" min="0.000001" required>
+                        <div class="form-text">Minimum: 0.000001 NVCT</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="recipient" class="nvc-form-label">Recipient Address</label>
+                        <input type="text" class="nvc-form-input" id="recipient" placeholder="0x..." required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Bridge Fee:</span>
+                            <span id="bridgeFee">$2.50</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Estimated Time:</span>
+                            <span id="estimatedTime">5-10 minutes</span>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn nvc-btn nvc-btn-primary w-100" data-action="custom-action">
+                        <i class="fas fa-exchange-alt me-2"></i>Bridge NVCT
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Bridge Transactions -->
+    <div class="col-lg-6">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <h5 class="nvc-card-title mb-0">Recent Bridge Transactions</h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>From → To</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>ETH → BSC</td>
+                                <td>1,000 NVCT</td>
+                                <td><span class="bridge-status badge bg-success" data-bridge-id="1">Completed</span></td>
+                                <td><button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Track</button></td>
+                            </tr>
+                            <tr>
+                                <td>BSC → Polygon</td>
+                                <td>5,500 NVCT</td>
+                                <td><span class="bridge-status badge bg-warning" data-bridge-id="2">Processing</span></td>
+                                <td><button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger" data-action="custom-action">Cancel</button></td>
+                            </tr>
+                            <tr>
+                                <td>Polygon → ETH</td>
+                                <td>750 NVCT</td>
+                                <td><span class="bridge-status badge bg-info" data-bridge-id="3">Pending</span></td>
+                                <td><button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Track</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,379 @@
+{% extends "unified_base.html" %}
+
+{% block title %}{% block title %}NVC Trading Platform{% endblock %}{% endblock %}
+
+{% block extra_css %}
+
+        :root {
+            --primary-color: #0a2447;
+            --secondary-color: #66ccff;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2d2d2d;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--primary-color) 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: var(--primary-color) !important;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--secondary-color) !important;
+        }
+
+        .nav-link {
+            color: #ffffff !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--secondary-color) !important;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--secondary-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.1);
+        }
+
+        .card-header {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            color: #ffffff;
+            font-weight: bold;
+            border-radius: 12px 12px 0 0 !important;
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            background: #4db8ff;
+            border-color: #4db8ff;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .form-control, .form-select {
+            background: #3a3a3a;
+            border: 1px solid var(--secondary-color);
+            color: #ffffff;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: #3a3a3a;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+            color: #ffffff;
+        }
+
+        .table-dark {
+            --bs-table-bg: var(--card-bg);
+            --bs-table-border-color: var(--secondary-color);
+        }
+
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.2);
+            border-color: var(--success-color);
+            color: #ffffff;
+        }
+
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.2);
+            border-color: var(--danger-color);
+            color: #ffffff;
+        }
+
+        .trading-widget {
+            background: var(--card-bg);
+            border: 1px solid var(--secondary-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .price-up {
+            color: var(--success-color);
+        }
+
+        .price-down {
+            color: var(--danger-color);
+        }
+
+        .market-data-table th {
+            background: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .sidebar {
+            background: var(--card-bg);
+            border-right: 2px solid var(--secondary-color);
+            height: calc(100vh - 76px);
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            color: #ffffff;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin: 0.25rem;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: var(--primary-color);
+            color: var(--secondary-color);
+        }
+
+        .order-form {
+            background: var(--card-bg);
+            border: 1px solid var(--secondary-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .portfolio-summary {
+            background: linear-gradient(135deg, var(--primary-color), #1a3a5c);
+            color: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: rgba(102, 204, 255, 0.1);
+            border: 1px solid var(--secondary-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('trading.trading_dashboard') }}">
+                <i class="fas fa-chart-line me-2"></i>NVC Trading Platform
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('trading.trading_dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="/contact" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-exchange-alt me-1"></i>Trading
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{{ url_for('trading.securities_trading') }}">
+                                <i class="fas fa-chart-bar me-1"></i>Securities
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('trading.forex_trading') }}">
+                                <i class="fas fa-dollar-sign me-1"></i>Forex
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('trading.commodities_trading') }}">
+                                <i class="fas fa-cube me-1"></i>Commodities
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('trading.derivatives_trading') }}">
+                                <i class="fas fa-cogs me-1"></i>Derivatives
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('trading.portfolio_management') }}">
+                            <i class="fas fa-briefcase me-1"></i>Portfolio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('trading.risk_management') }}">
+                            <i class="fas fa-shield-alt me-1"></i>Risk
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('trading.order_management') }}">
+                            <i class="fas fa-list me-1"></i>Orders
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="/contact" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>{{ current_user.username if current_user.is_authenticated else 'User' }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard_home') }}">
+                                <i class="fas fa-home me-1"></i>Main Dashboard
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                                <i class="fas fa-sign-out-alt me-1"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-3">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} nvc-alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'info-circle' }} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}
+<div class="nvc-page-content">
+    
+</div>
+{% endblock %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Trading Platform JS -->
+    <script>
+        // Real-time price updates
+        function updateMarketData() {
+            fetch('/trading/api/market-data/AAPL')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.current) {
+                        const priceElement = document.getElementById('aapl-price');
+                        if (priceElement) {
+                            priceElement.textContent = '$' + data.current.current_price.toFixed(2);
+                            priceElement.className = data.current.price_change >= 0 ? 'price-up' : 'price-down';
+                        }
+                    }
+                })
+                .catch(error => console.log('Market data update failed:', error));
+        }
+
+        // Portfolio value update
+        function updatePortfolioSummary() {
+            fetch('/trading/api/portfolio/summary')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.account_summary) {
+                        const totalValueElement = document.getElementById('total-portfolio-value');
+                        if (totalValueElement) {
+                            totalValueElement.textContent = '$' + data.account_summary.total_value.toLocaleString();
+                        }
+                        
+                        const dayChangeElement = document.getElementById('day-change');
+                        if (dayChangeElement && data.performance) {
+                            const change = data.performance.day_change;
+                            dayChangeElement.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                            dayChangeElement.className = change >= 0 ? 'price-up' : 'price-down';
+                        }
+                    }
+                })
+                .catch(error => console.log('Portfolio update failed:', error));
+        }
+
+        // Order form validation
+        function validateOrderForm(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return true;
+
+            const symbol = form.querySelector('input[name="symbol"]');
+            const quantity = form.querySelector('input[name="quantity"]');
+            const orderType = form.querySelector('select[name="order_type"]');
+
+            if (symbol && !symbol.value.trim()) {
+                alert('Please enter a symbol');
+                symbol.focus();
+                return false;
+            }
+
+            if (quantity && (isNaN(quantity.value) || parseFloat(quantity.value) <= 0)) {
+                alert('Please enter a valid quantity');
+                quantity.focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        // Initialize real-time updates
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update market data every 5 seconds
+            updateMarketData();
+            setInterval(updateMarketData, 5000);
+
+            // Update portfolio every 30 seconds
+            updatePortfolioSummary();
+            setInterval(updatePortfolioSummary, 30000);
+
+            // Add form validation to order forms
+            const orderForms = document.querySelectorAll('.order-form form');
+            orderForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    if (!validateOrderForm(form.id)) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

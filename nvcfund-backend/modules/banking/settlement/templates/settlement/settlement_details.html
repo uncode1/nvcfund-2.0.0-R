@@ -1,0 +1,313 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Settlement Details {{ settlement.id }} - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h2><i class="fas fa-file-invoice-dollar text-primary"></i> Settlement Details: {{ settlement.id }}</h2>
+                    <div class="d-flex gap-2">
+                        <a href="/settlement/dashboard" class="btn nvc-btn nvc-btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm" data-action="custom-action">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm" data-action="custom-action">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settlement Status Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-left-primary shadow h-100 py-2">
+                <div class="nvc-nvc-card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Settlement Amount</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ settlement.amount }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-left-{% if settlement.status == 'completed' %}success{% elif settlement.status == 'processing' %}warning{% else %}danger{% endif %} shadow h-100 py-2">
+                <div class="nvc-nvc-card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-{% if settlement.status == 'completed' %}success{% elif settlement.status == 'processing' %}warning{% else %}danger{% endif %} text-uppercase mb-1">Status</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ settlement.status|title }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-{% if settlement.status == 'completed' %}check-circle{% elif settlement.status == 'processing' %}clock{% else %}exclamation-triangle{% endif %} fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-left-info shadow h-100 py-2">
+                <div class="nvc-nvc-card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Progress</div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ settlement.progress }}%</div>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-sm mr-2">
+                                        <div class="progress-bar bg-info" style="width: {{ settlement.progress }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-left-warning shadow h-100 py-2">
+                <div class="nvc-nvc-card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Network</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ settlement.network }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-network-wired fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settlement Details -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Settlement Information</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Settlement ID:</strong></td>
+                                    <td>{{ settlement.id }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Reference:</strong></td>
+                                    <td>{{ settlement.reference }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Type:</strong></td>
+                                    <td>{{ settlement.type }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Network:</strong></td>
+                                    <td>{{ settlement.network }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fees:</strong></td>
+                                    <td>${{ settlement.fees }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>From Bank:</strong></td>
+                                    <td>{{ settlement.bank_from }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>To Bank:</strong></td>
+                                    <td>{{ settlement.bank_to }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Initiated:</strong></td>
+                                    <td>{{ settlement.initiated }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Completed:</strong></td>
+                                    <td>{{ settlement.completed or 'In Progress' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Amount:</strong></td>
+                                    <td><strong class="text-success">${{ settlement.amount }}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        {% if settlement.status == 'processing' %}
+                        <button type="button" class="btn nvc-btn nvc-btn-warning" data-action="custom-action">
+                            <i class="fas fa-stop"></i> Cancel Settlement
+                        </button>
+                        <button type="button" class="btn btn-info" data-action="custom-action">
+                            <i class="fas fa-arrow-up"></i> Prioritize
+                        </button>
+                        {% endif %}
+                        <button type="button" class="btn nvc-btn nvc-btn-primary" data-action="custom-action">
+                            <i class="fas fa-copy"></i> Duplicate Settlement
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-secondary" data-action="custom-action">
+                            <i class="fas fa-history"></i> View History
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-success" data-action="custom-action">
+                            <i class="fas fa-download"></i> Export Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Steps -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Verification Steps</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="timeline">
+                        {% for step in settlement.verification_steps %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                {% if step.status == 'completed' %}
+                                    <i class="fas fa-check-circle text-success"></i>
+                                {% elif step.status == 'pending' %}
+                                    <i class="fas fa-clock text-warning"></i>
+                                {% else %}
+                                    <i class="fas fa-circle text-light"></i>
+                                {% endif %}
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">{{ step.step }}</h6>
+                                <p class="text-light mb-0">
+                                    Status: 
+                                    {% if step.status == 'completed' %}
+                                        <span class="badge badge-success">{{ step.status|title }}</span>
+                                    {% elif step.status == 'pending' %}
+                                        <span class="badge badge-warning">{{ step.status|title }}</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">{{ step.status|title }}</span>
+                                    {% endif %}
+                                    {% if step.time %}
+                                        | Time: {{ step.time }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -35px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 3px solid #3b82f6;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+</style>
+
+<script>
+function refreshStatus() {
+    window.location.reload();
+}
+
+function exportSettlement() {
+    alert('Exporting settlement details for {{ settlement.id }}...');
+}
+
+function cancelSettlement() {
+    if (confirm('Are you sure you want to cancel this settlement? This action cannot be undone.')) {
+        alert('Settlement {{ settlement.id }} has been cancelled.');
+    }
+}
+
+function prioritizeSettlement() {
+    alert('Settlement {{ settlement.id }} has been moved to high priority queue.');
+}
+
+function duplicateSettlement() {
+    alert('Creating duplicate settlement based on {{ settlement.id }}...');
+}
+
+function viewHistory() {
+    alert('Viewing settlement history for {{ settlement.id }}...');
+}
+</script>
+</div>
+{% endblock %}

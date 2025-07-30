@@ -1,0 +1,668 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Investments Dashboard - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a !important; color: #e2e8f0 !important; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif !important; margin: 0; padding: 20px; }
+        .dashboard-stat-card { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 8px !important; padding: 1.5rem; margin-bottom: 1rem; }
+        .card { background: #1e293b !important; border: 1px solid #334155 !important; color: #e2e8f0 !important; }
+        .btn-primary { background: #3b82f6 !important; border-color: #3b82f6 !important; }
+        .table-dark { background: #1e293b !important; }
+        .table-dark td, .table-dark th { border-color: #334155 !important; color: #e2e8f0 !important; }
+    
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0">
+                                <i class="fas fa-tachometer-alt me-2"></i>Investment Services
+                            </h3>
+                            <small class="text-light">Enterprise banking operations dashboard</small>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{{ url_for('investments.overview') }}" class="btn nvc-btn nvc-btn-outline-info">
+                                <i class="fas fa-chart-bar me-2"></i>Overview
+                            </a>
+                            <a href="{{ url_for('investments.settings') }}" class="btn nvc-btn nvc-btn-outline-warning">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics - Now Clickable for Drill-Down -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <a href="{{ url_for('investments.portfolio_analysis') }}" class="text-decoration-none">
+                <div class="card bg-dark border-success dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5 class="text-light">Operations</h5>
+                        <h3 class="text-success">1,200</h3>
+                        <small class="text-light">Successful</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Portfolio Analysis</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('investments.performance_metrics') }}" class="text-decoration-none">
+                <div class="card bg-dark border-warning dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                        <h5 class="text-light">Pending</h5>
+                        <h3 class="text-warning">25</h3>
+                        <small class="text-light">In Progress</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Performance Metrics</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('investments.investment_analysis') }}" class="text-decoration-none">
+                <div class="card bg-dark border-info dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fas fa-dollar-sign fa-3x text-info mb-3"></i>
+                        <h5 class="text-light">Volume</h5>
+                        <h3 class="text-info">$2.5M</h3>
+                        <small class="text-light">Monthly</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Investment Analysis</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('investments.risk_assessment') }}" class="text-decoration-none">
+                <div class="card bg-dark border-danger dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fas fa-shield-alt fa-3x text-danger mb-3"></i>
+                        <h5 class="text-light">Security</h5>
+                        <h3 class="text-success">100%</h3>
+                        <small class="text-light">Compliant</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Risk Assessment</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Level 2: Investment Type Breakdown -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-layer-group me-2"></i>Investment Portfolio Allocation</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row g-3">
+                        <div class="col-xl-2 col-md-4">
+                            <div class="investment-type-nvc-card" data-investment-type="mutual_funds" >
+                                <div class="investment-icon bg-primary">
+                                    <i class="fas fa-chart-pie"></i>
+                                </div>
+                                <div class="investment-content">
+                                    <h4>${{ "850K"|default("0") }}</h4>
+                                    <p>Mutual Funds</p>
+                                    <small class="text-success">34% of portfolio</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <div class="investment-type-nvc-card" data-investment-type="etfs" >
+                                <div class="investment-icon bg-success">
+                                    <i class="fas fa-chart-area"></i>
+                                </div>
+                                <div class="investment-content">
+                                    <h4>${{ "620K"|default("0") }}</h4>
+                                    <p>ETFs</p>
+                                    <small class="text-info">25% of portfolio</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <div class="investment-type-nvc-card" data-investment-type="bonds" >
+                                <div class="investment-icon bg-warning">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <div class="investment-content">
+                                    <h4>${{ "500K"|default("0") }}</h4>
+                                    <p>Government Bonds</p>
+                                    <small class="text-warning">20% of portfolio</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <div class="investment-type-nvc-card" data-investment-type="reits" >
+                                <div class="investment-icon bg-info">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="investment-content">
+                                    <h4>${{ "300K"|default("0") }}</h4>
+                                    <p>REITs</p>
+                                    <small class="text-primary">12% of portfolio</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <div class="investment-type-nvc-card" data-investment-type="commodities" >
+                                <div class="investment-icon bg-secondary">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="investment-content">
+                                    <h4>${{ "150K"|default("0") }}</h4>
+                                    <p>Commodities</p>
+                                    <small class="text-secondary">6% of portfolio</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <div class="investment-type-nvc-card" data-investment-type="alternatives" >
+                                <div class="investment-icon bg-danger">
+                                    <i class="fas fa-gem"></i>
+                                </div>
+                                <div class="investment-content">
+                                    <h4>${{ "75K"|default("0") }}</h4>
+                                    <p>Alternatives</p>
+                                    <small class="text-danger">3% of portfolio</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level 3: Investment Holdings Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-list me-2"></i>Investment Holdings</h5>
+                    <div class="header-actions">
+                        <select id="investment-type-filter" class="form-select nvc-form-select-sm">
+                            <option value="">All Investment Types</option>
+                            <option value="mutual_funds">Mutual Funds</option>
+                            <option value="etfs">ETFs</option>
+                            <option value="bonds">Government Bonds</option>
+                            <option value="reits">REITs</option>
+                            <option value="commodities">Commodities</option>
+                            <option value="alternatives">Alternatives</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Investment</th>
+                                    <th>Type</th>
+                                    <th>Units</th>
+                                    <th>Current Value</th>
+                                    <th>P&L</th>
+                                    <th>Yield</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="investment-holdings-table">
+                                <tr class="investment-holding-row" data-investment-id="INV-001" data-investment-type="mutual_funds" data-symbol="VTSAX" >
+                                    <td><strong>Vanguard Total Stock Market</strong></td>
+                                    <td><span class="badge bg-primary">Mutual Fund</span></td>
+                                    <td>2,500</td>
+                                    <td class="text-success">$285,000</td>
+                                    <td class="text-success">+$35,000</td>
+                                    <td class="text-info">2.8%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Rebalance</button>
+                                    </td>
+                                </tr>
+                                <tr class="investment-holding-row" data-investment-id="INV-002" data-investment-type="etfs" data-symbol="SPY" >
+                                    <td><strong>SPDR S&P 500 ETF</strong></td>
+                                    <td><span class="badge bg-success">ETF</span></td>
+                                    <td>1,200</td>
+                                    <td class="text-success">$580,000</td>
+                                    <td class="text-success">+$78,000</td>
+                                    <td class="text-info">1.5%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Rebalance</button>
+                                    </td>
+                                </tr>
+                                <tr class="investment-holding-row" data-investment-id="INV-003" data-investment-type="bonds" data-symbol="TLT" >
+                                    <td><strong>20+ Year Treasury Bond</strong></td>
+                                    <td><span class="badge bg-warning">Government Bond</span></td>
+                                    <td>5,000</td>
+                                    <td class="text-warning">$475,000</td>
+                                    <td class="text-danger">-$25,000</td>
+                                    <td class="text-success">4.2%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Rebalance</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Action</th>
+                                    <th>Status</th>
+                                    <th>User</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span id="current-time">{{ current_time.strftime('%H:%M:%S') if current_time else '' }}</span></td>
+                                    <td>Investment Services Operation</td>
+                                    <td><span class="badge bg-success">Success</span></td>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Multi-Level Investment Dashboard Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 2: Investment Type Cards
+    const investmentTypeCards = document.querySelectorAll('.investment-type-card');
+    investmentTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const investmentType = this.getAttribute('data-investment-type');
+            handleInvestmentTypeDrilldown(investmentType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: Investment Holding Rows
+    const holdingRows = document.querySelectorAll('.investment-holding-row');
+    holdingRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const investmentId = this.getAttribute('data-investment-id');
+            viewInvestmentDetails(investmentId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Investment type filter
+    const investmentTypeFilter = document.getElementById('investment-type-filter');
+    if (investmentTypeFilter) {
+        investmentTypeFilter.addEventListener('change', function() {
+            filterInvestmentsByType(this.value);
+        });
+    }
+});
+
+// Level 2: Investment Type Drilldown
+function handleInvestmentTypeDrilldown(investmentType) {
+    // Filter the investment holdings table by type
+    filterInvestmentsByType(investmentType);
+
+    // Update the filter dropdown
+    const investmentTypeFilter = document.getElementById('investment-type-filter');
+    if (investmentTypeFilter) {
+        investmentTypeFilter.value = investmentType;
+    }
+
+    // Scroll to holdings table
+    document.querySelector('#investment-holdings-table').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter investments by type
+function filterInvestmentsByType(investmentType) {
+    const rows = document.querySelectorAll('.investment-holding-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowType = row.getAttribute('data-investment-type');
+        if (!investmentType || rowType === investmentType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updateInvestmentCounts(investmentType, visibleCount);
+}
+
+// Update investment counts
+function updateInvestmentCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.investment-holding-row').length;
+    const header = document.querySelector('.card-header h5');
+    if (header) {
+        if (!activeFilter) {
+            header.innerHTML = `<i class="fas fa-list me-2"></i>Investment Holdings (${totalRows} investments)`;
+        } else {
+            const filterName = activeFilter.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            header.innerHTML = `<i class="fas fa-list me-2"></i>${filterName} Holdings (${visibleCount} investments)`;
+        }
+    }
+}
+
+// Level 4: View individual investment details (Level 4 → Level 5 drilldown)
+function viewInvestmentDetails(investmentId) {
+    // Navigate to detailed investment view with comprehensive analysis
+    const detailsUrl = "{{ url_for('investments.investment_details', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = detailsUrl + '?view=comprehensive&include=performance,risk,allocation';
+}
+
+// Level 5: Specialized investment functions
+function rebalanceInvestment(investmentId) {
+    if (confirm('Are you sure you want to rebalance this investment? This will adjust your portfolio allocation.')) {
+        // Navigate to rebalancing interface
+        const rebalanceUrl = "{{ url_for('investments.rebalance', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+        window.location.href = rebalanceUrl + '?action=rebalance&confirm=true';
+    }
+}
+
+function analyzeInvestmentPerformance(investmentId) {
+    // Navigate to investment performance analysis
+    const performanceUrl = "{{ url_for('investments.performance_analysis', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = performanceUrl + '?view=detailed&period=all&benchmarks=true';
+}
+
+function viewInvestmentHistory(investmentId) {
+    // Navigate to investment history
+    const historyUrl = "{{ url_for('investments.investment_history', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = historyUrl + '?view=detailed&transactions=true';
+}
+
+function setInvestmentAlerts(investmentId) {
+    // Navigate to investment alerts setup
+    const alertsUrl = "{{ url_for('investments.investment_alerts', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = alertsUrl + '?setup=true&thresholds=custom';
+}
+
+function viewRiskAnalysis(investmentId) {
+    // Navigate to investment risk analysis
+    const riskUrl = "{{ url_for('investments.risk_analysis', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = riskUrl + '?view=comprehensive&stress_test=true';
+}
+
+function generateInvestmentReport(investmentId) {
+    // Navigate to investment report generation
+    const reportUrl = "{{ url_for('investments.investment_report', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = reportUrl + '?format=comprehensive&export=pdf&period=ytd';
+}
+
+function sellInvestment(investmentId) {
+    if (confirm('Are you sure you want to sell this investment? This action cannot be undone.')) {
+        // Secure investment sale
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/investments/sell_investment';
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        form.appendChild(csrfToken);
+
+        const investmentIdInput = document.createElement('input');
+        investmentIdInput.type = 'hidden';
+        investmentIdInput.name = 'investment_id';
+        investmentIdInput.value = investmentId;
+        form.appendChild(investmentIdInput);
+
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'sell';
+        form.appendChild(action);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+// Multi-Level Investment Dashboard Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 2: Investment Type Cards
+    const investmentTypeCards = document.querySelectorAll('.investment-type-card');
+    investmentTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const investmentType = this.getAttribute('data-investment-type');
+            handleInvestmentTypeDrilldown(investmentType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: Investment Holding Rows
+    const holdingRows = document.querySelectorAll('.investment-holding-row');
+    holdingRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const investmentId = this.getAttribute('data-investment-id');
+            viewInvestmentDetails(investmentId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Investment type filter
+    const investmentTypeFilter = document.getElementById('investment-type-filter');
+    if (investmentTypeFilter) {
+        investmentTypeFilter.addEventListener('change', function() {
+            filterInvestmentsByType(this.value);
+        });
+    }
+});
+
+// Level 2: Investment Type Drilldown
+function handleInvestmentTypeDrilldown(investmentType) {
+    // Filter the investment holdings table by type
+    filterInvestmentsByType(investmentType);
+
+    // Update the filter dropdown
+    const investmentTypeFilter = document.getElementById('investment-type-filter');
+    if (investmentTypeFilter) {
+        investmentTypeFilter.value = investmentType;
+    }
+
+    // Scroll to holdings table
+    document.querySelector('#investment-holdings-table').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter investments by type
+function filterInvestmentsByType(investmentType) {
+    const rows = document.querySelectorAll('.investment-holding-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowType = row.getAttribute('data-investment-type');
+        if (!investmentType || rowType === investmentType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updateInvestmentCounts(investmentType, visibleCount);
+}
+
+// Update investment counts
+function updateInvestmentCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.investment-holding-row').length;
+    const header = document.querySelector('.card-header h5');
+    if (header) {
+        if (!activeFilter) {
+            header.innerHTML = `<i class="fas fa-list me-2"></i>Investment Holdings (${totalRows} investments)`;
+        } else {
+            const filterName = activeFilter.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            header.innerHTML = `<i class="fas fa-list me-2"></i>${filterName} Holdings (${visibleCount} investments)`;
+        }
+    }
+}
+
+// Level 4: View individual investment details (Level 4 → Level 5 drilldown)
+function viewInvestmentDetails(investmentId) {
+    // Navigate to detailed investment view with comprehensive analysis
+    const detailsUrl = "{{ url_for('investments.investment_details', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = detailsUrl + '?view=comprehensive&include=performance,risk,allocation';
+}
+
+// Level 5: Specialized investment functions
+function rebalanceInvestment(investmentId) {
+    if (confirm('Are you sure you want to rebalance this investment? This will adjust your portfolio allocation.')) {
+        // Navigate to rebalancing interface
+        const rebalanceUrl = "{{ url_for('investments.rebalance', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+        window.location.href = rebalanceUrl + '?action=rebalance&confirm=true';
+    }
+}
+
+function analyzeInvestmentPerformance(investmentId) {
+    // Navigate to investment performance analysis
+    const performanceUrl = "{{ url_for('investments.performance_analysis', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = performanceUrl + '?view=detailed&period=all&benchmarks=true';
+}
+
+function viewInvestmentHistory(investmentId) {
+    // Navigate to investment history
+    const historyUrl = "{{ url_for('investments.investment_history', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = historyUrl + '?view=detailed&transactions=true';
+}
+
+function setInvestmentAlerts(investmentId) {
+    // Navigate to investment alerts setup
+    const alertsUrl = "{{ url_for('investments.investment_alerts', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = alertsUrl + '?setup=true&thresholds=custom';
+}
+
+function viewRiskAnalysis(investmentId) {
+    // Navigate to investment risk analysis
+    const riskUrl = "{{ url_for('investments.risk_analysis', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = riskUrl + '?view=comprehensive&stress_test=true';
+}
+
+function generateInvestmentReport(investmentId) {
+    // Navigate to investment report generation
+    const reportUrl = "{{ url_for('investments.investment_report', investment_id='INVESTMENT_ID') }}".replace('INVESTMENT_ID', encodeURIComponent(investmentId));
+    window.location.href = reportUrl + '?format=comprehensive&export=pdf&period=ytd';
+}
+
+function sellInvestment(investmentId) {
+    if (confirm('Are you sure you want to sell this investment? This action cannot be undone.')) {
+        // Secure investment sale
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/investments/sell_investment';
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        form.appendChild(csrfToken);
+
+        const investmentIdInput = document.createElement('input');
+        investmentIdInput.type = 'hidden';
+        investmentIdInput.name = 'investment_id';
+        investmentIdInput.value = investmentId;
+        form.appendChild(investmentIdInput);
+
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'sell';
+        form.appendChild(action);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}
+
+{% endblock %}

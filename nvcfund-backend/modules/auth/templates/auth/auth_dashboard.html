@@ -1,0 +1,637 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Authentication Dashboard - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Authentication Dashboard{% endblock %}
+{% block page_description %}Comprehensive authentication management and security overview{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('main.dashboard') if url_for else '#' }}" class="nvc-wcag-focus">
+        <i class="fas fa-home" aria-hidden="true"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+    Authentication
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export authentication report">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Configure authentication settings">
+    <i class="fas fa-cog" aria-hidden="true"></i>
+    Auth Settings
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh authentication data">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh Data
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Authentication Overview Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                    Authentication Overview
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-success">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        System Secure
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Authentication Metrics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-users" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+5%</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ auth_stats.active_sessions or '1,247' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Active Sessions</p>
+                                <p class="nvc-metric-subtitle">Currently logged in</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+{{ auth_stats.login_growth or '12.5' }}%</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ auth_stats.daily_logins or '3,892' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Daily Logins</p>
+                                <p class="nvc-metric-subtitle">From yesterday</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-negative">
+                                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                    <span>{{ auth_stats.blocked_ips or '12' }} IPs</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ auth_stats.failed_attempts or '89' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Failed Attempts</p>
+                                <p class="nvc-metric-subtitle">IPs blocked</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-mobile-alt" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    <span>{{ auth_stats.tfa_users or '1,112' }} users</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ auth_stats.tfa_enabled or '89.2' }}%</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">2FA Enabled</p>
+                                <p class="nvc-metric-subtitle">Security coverage</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication Analytics Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-area" aria-hidden="true"></i>
+                    Authentication Analytics
+                </h2>
+                <div class="nvc-section-actions">
+                    <select class="nvc-chart-select nvc-wcag-focus" aria-label="Select time range">
+                        <option value="7d" selected>Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-analytics-dashboard">
+                    <div class="nvc-analytics-grid">
+                        <!-- Login Activity Chart -->
+                        <div class="nvc-chart-container">
+                            <div class="nvc-chart-header">
+                                <h3 class="nvc-chart-title nvc-wcag-high-contrast">Login Activity Trends</h3>
+                            </div>
+                            <div class="nvc-chart-content">
+                                <canvas id="loginActivityChart" aria-label="Login activity trends chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Authentication Methods Chart -->
+                        <div class="nvc-chart-container">
+                            <div class="nvc-chart-header">
+                                <h3 class="nvc-chart-title nvc-wcag-high-contrast">Authentication Methods</h3>
+                            </div>
+                            <div class="nvc-chart-content">
+                                <canvas id="authMethodsChart" aria-label="Authentication methods distribution chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Metrics and Recent Activity Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                    Security Metrics & Activity
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="View detailed security report">
+                        <i class="fas fa-file-alt" aria-hidden="true"></i>
+                        Detailed Report
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-security-dashboard">
+                    <div class="nvc-security-grid">
+                        <!-- Security Metrics Panel -->
+                        <div class="nvc-security-metrics">
+                            <div class="nvc-metrics-header">
+                                <h3 class="nvc-metrics-title nvc-wcag-high-contrast">
+                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                    Security Metrics
+                                </h3>
+                            </div>
+                            <div class="nvc-metrics-content">
+                                <div class="nvc-security-metric">
+                                    <div class="nvc-metric-info">
+                                        <span class="nvc-metric-label nvc-wcag-medium-contrast">Password Strength Score</span>
+                                        <span class="nvc-metric-value nvc-wcag-high-contrast">{{ security_metrics.password_strength or '87%' }}</span>
+                                    </div>
+                                    <div class="nvc-metric-progress">
+                                        <div class="nvc-progress-bar">
+                                            <div class="nvc-progress-fill nvc-progress-success" style="width: {{ security_metrics.password_strength or '87' }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-security-metric">
+                                    <div class="nvc-metric-info">
+                                        <span class="nvc-metric-label nvc-wcag-medium-contrast">Account Security Score</span>
+                                        <span class="nvc-metric-value nvc-wcag-high-contrast">{{ security_metrics.account_security or '92%' }}</span>
+                                    </div>
+                                    <div class="nvc-metric-progress">
+                                        <div class="nvc-progress-bar">
+                                            <div class="nvc-progress-fill nvc-progress-info" style="width: {{ security_metrics.account_security or '92' }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-security-metric">
+                                    <div class="nvc-metric-info">
+                                        <span class="nvc-metric-label nvc-wcag-medium-contrast">Session Security</span>
+                                        <span class="nvc-metric-value nvc-wcag-high-contrast">{{ security_metrics.session_security or '78%' }}</span>
+                                    </div>
+                                    <div class="nvc-metric-progress">
+                                        <div class="nvc-progress-bar">
+                                            <div class="nvc-progress-fill nvc-progress-warning" style="width: {{ security_metrics.session_security or '78' }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-security-metric">
+                                    <div class="nvc-metric-info">
+                                        <span class="nvc-metric-label nvc-wcag-medium-contrast">Compliance Score</span>
+                                        <span class="nvc-metric-value nvc-wcag-high-contrast">{{ security_metrics.compliance or '95%' }}</span>
+                                    </div>
+                                    <div class="nvc-metric-progress">
+                                        <div class="nvc-progress-bar">
+                                            <div class="nvc-progress-fill nvc-progress-primary" style="width: {{ security_metrics.compliance or '95' }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FINRA-Compliant Authentication Events Table -->
+                        <div class="nvc-events-panel">
+                            <div class="nvc-events-header">
+                                <h3 class="nvc-events-title nvc-wcag-high-contrast">
+                                    <i class="fas fa-history" aria-hidden="true"></i>
+                                    Recent Authentication Events
+                                </h3>
+                                <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export authentication events">
+                                    <i class="fas fa-download" aria-hidden="true"></i>
+                                    Export
+                                </button>
+                            </div>
+                            <div class="nvc-events-content">
+                                <div class="nvc-finra-table-container">
+                                    <table class="nvc-finra-table" role="table" aria-label="Authentication events log">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" class="nvc-wcag-high-contrast">Timestamp</th>
+                                                <th scope="col" class="nvc-wcag-high-contrast">User</th>
+                                                <th scope="col" class="nvc-wcag-high-contrast">Event Type</th>
+                                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                                <th scope="col" class="nvc-wcag-high-contrast">IP Address</th>
+                                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for event in recent_events or [
+                                                {'time': '14:30', 'user': 'john.doe@nvcbank.com', 'event': 'Login', 'status': 'Success', 'ip': '192.168.1.100'},
+                                                {'time': '14:28', 'user': 'jane.smith@nvcbank.com', 'event': '2FA Verify', 'status': 'Success', 'ip': '192.168.1.101'},
+                                                {'time': '14:25', 'user': 'unknown@email.com', 'event': 'Login', 'status': 'Failed', 'ip': '203.0.113.1'},
+                                                {'time': '14:22', 'user': 'mike.j@nvcbank.com', 'event': 'Password Reset', 'status': 'Success', 'ip': '192.168.1.102'},
+                                                {'time': '14:20', 'user': 'sarah.w@email.com', 'event': 'Logout', 'status': 'Success', 'ip': '192.168.1.103'},
+                                                {'time': '14:18', 'user': 'hacker@evil.com', 'event': 'Brute Force', 'status': 'Blocked', 'ip': '203.0.113.2'},
+                                                {'time': '14:15', 'user': 'david.b@email.com', 'event': 'Login', 'status': 'Success', 'ip': '192.168.1.104'}
+                                            ] %}
+                                            <tr class="nvc-finra-row">
+                                                <td class="nvc-wcag-medium-contrast">{{ event.time }}</td>
+                                                <td>
+                                                    <div class="nvc-user-info">
+                                                        <h4 class="nvc-user-email nvc-wcag-high-contrast">{{ event.user }}</h4>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="nvc-event-type nvc-event-{{ event.event.lower().replace(' ', '-') }}">
+                                                        <i class="fas fa-{{ 'sign-in-alt' if event.event == 'Login' else 'mobile-alt' if event.event == '2FA Verify' else 'key' if event.event == 'Password Reset' else 'sign-out-alt' if event.event == 'Logout' else 'ban' }}" aria-hidden="true"></i>
+                                                        {{ event.event }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="nvc-status nvc-status-{{ 'success' if event.status == 'Success' else 'danger' if event.status == 'Failed' or event.status == 'Blocked' else 'info' }}">
+                                                        <i class="fas fa-{{ 'check-circle' if event.status == 'Success' else 'times-circle' if event.status == 'Failed' or event.status == 'Blocked' else 'info-circle' }}" aria-hidden="true"></i>
+                                                        {{ event.status }}
+                                                    </span>
+                                                </td>
+                                                <td class="nvc-wcag-medium-contrast">{{ event.ip }}</td>
+                                                <td>
+                                                    <div class="nvc-action-buttons">
+                                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View event details">
+                                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                                        </button>
+                                                        <button type="button" class="nvc-btn nvc-btn-info nvc-btn-xs nvc-wcag-focus" aria-label="View user profile">
+                                                            <i class="fas fa-user" aria-hidden="true"></i>
+                                                        </button>
+                                                        {% if event.status == 'Failed' or event.status == 'Blocked' %}
+                                                        <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-xs nvc-wcag-focus" aria-label="Block IP address">
+                                                            <i class="fas fa-ban" aria-hidden="true"></i>
+                                                        </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication Settings and Security Alerts Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-quaternary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-cog" aria-hidden="true"></i>
+                    Settings & Security Alerts
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-warning">
+                        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                        4 Alerts
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-settings-alerts-dashboard">
+                    <div class="nvc-settings-alerts-grid">
+                        <!-- Quick Settings Panel -->
+                        <div class="nvc-settings-panel">
+                            <div class="nvc-settings-header">
+                                <h3 class="nvc-settings-title nvc-wcag-high-contrast">
+                                    <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                                    Quick Settings
+                                </h3>
+                            </div>
+                            <div class="nvc-settings-content">
+                                <div class="nvc-settings-form">
+                                    <div class="nvc-setting-item">
+                                        <div class="nvc-switch-group">
+                                            <input type="checkbox" id="require-2fa" class="nvc-switch nvc-wcag-focus" checked>
+                                            <label for="require-2fa" class="nvc-switch-label nvc-wcag-high-contrast">Require 2FA for New Users</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-setting-item">
+                                        <div class="nvc-switch-group">
+                                            <input type="checkbox" id="biometric-login" class="nvc-switch nvc-wcag-focus" checked>
+                                            <label for="biometric-login" class="nvc-switch-label nvc-wcag-high-contrast">Enable Biometric Login</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-setting-item">
+                                        <div class="nvc-switch-group">
+                                            <input type="checkbox" id="social-login" class="nvc-switch nvc-wcag-focus">
+                                            <label for="social-login" class="nvc-switch-label nvc-wcag-high-contrast">Allow Social Login</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-setting-item">
+                                        <div class="nvc-switch-group">
+                                            <input type="checkbox" id="rate-limiting" class="nvc-switch nvc-wcag-focus" checked>
+                                            <label for="rate-limiting" class="nvc-switch-label nvc-wcag-high-contrast">Enable Rate Limiting</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-setting-actions">
+                                        <button type="button" class="nvc-btn nvc-btn-primary nvc-wcag-focus" aria-label="Save authentication settings">
+                                            <i class="fas fa-save" aria-hidden="true"></i>
+                                            Save Settings
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Alerts Panel -->
+                        <div class="nvc-alerts-panel">
+                            <div class="nvc-alerts-header">
+                                <h3 class="nvc-alerts-title nvc-wcag-high-contrast">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                    Security Alerts
+                                </h3>
+                            </div>
+                            <div class="nvc-alerts-content">
+                                {% for alert in security_alerts or [
+                                    {'type': 'danger', 'title': 'Suspicious Activity Detected', 'message': 'Multiple failed login attempts from IP 203.0.113.1', 'time': '5 min ago'},
+                                    {'type': 'warning', 'title': 'Password Policy Violation', 'message': '23 users have weak passwords that need updating', 'time': '1 hour ago'},
+                                    {'type': 'info', 'title': '2FA Enrollment Low', 'message': '137 users still need to enable two-factor authentication', 'time': '2 hours ago'},
+                                    {'type': 'success', 'title': 'Security Scan Complete', 'message': 'Daily security scan completed successfully - no issues found', 'time': '3 hours ago'}
+                                ] %}
+                                <div class="nvc-alert-item nvc-alert-{{ alert.type }}">
+                                    <div class="nvc-alert-icon">
+                                        <i class="fas fa-{{ 'exclamation-triangle' if alert.type == 'danger' or alert.type == 'warning' else 'info-circle' if alert.type == 'info' else 'check-circle' }}" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="nvc-alert-content">
+                                        <h4 class="nvc-alert-title nvc-wcag-high-contrast">{{ alert.title }}</h4>
+                                        <p class="nvc-alert-message nvc-wcag-medium-contrast">{{ alert.message }}</p>
+                                        <span class="nvc-alert-time nvc-wcag-medium-contrast">{{ alert.time }}</span>
+                                    </div>
+                                    <div class="nvc-alert-actions">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="Dismiss alert: {{ alert.title }}">
+                                            <i class="fas fa-times" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Authentication Dashboard Interactions
+
+    // Initialize authentication charts
+    initializeAuthCharts();
+
+    function initializeAuthCharts() {
+        // Login Activity Chart
+        const loginActivityCtx = document.getElementById('loginActivityChart');
+        if (loginActivityCtx) {
+            new Chart(loginActivityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Successful Logins',
+                        data: [1200, 1350, 1100, 1400, 1250, 800, 600],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Failed Attempts',
+                        data: [45, 52, 38, 67, 41, 28, 15],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Authentication Methods Chart
+        const authMethodsCtx = document.getElementById('authMethodsChart');
+        if (authMethodsCtx) {
+            new Chart(authMethodsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Password + 2FA', 'Biometric', 'Social Login', 'Password Only'],
+                    datasets: [{
+                        data: [65, 20, 10, 5],
+                        backgroundColor: [
+                            '#10b981',
+                            '#3b82f6',
+                            '#f59e0b',
+                            '#ef4444'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Settings switches
+    const switches = document.querySelectorAll('.nvc-switch');
+    switches.forEach(switchElement => {
+        switchElement.addEventListener('change', function() {
+            console.log(`Setting changed: ${this.id} = ${this.checked}`);
+
+            // Show visual feedback
+            const label = document.querySelector(`label[for="${this.id}"]`);
+            if (label) {
+                if (this.checked) {
+                    label.style.fontWeight = 'bold';
+                    label.style.color = '#059669';
+                } else {
+                    label.style.fontWeight = 'normal';
+                    label.style.color = '';
+                }
+            }
+        });
+    });
+
+    // Alert dismissal functionality
+    const alertDismissButtons = document.querySelectorAll('.nvc-alert-actions .nvc-btn');
+    alertDismissButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const alertItem = this.closest('.nvc-alert-item');
+            if (alertItem) {
+                alertItem.style.opacity = '0';
+                alertItem.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    alertItem.remove();
+                }, 300);
+            }
+        });
+    });
+
+    // Action buttons
+    const actionButtons = document.querySelectorAll('.nvc-action-buttons .nvc-btn');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.getAttribute('aria-label');
+            console.log(`Executing action: ${action}`);
+        });
+    });
+
+    // Page action buttons
+    const refreshButton = document.querySelector('[aria-label="Refresh authentication data"]');
+    const exportButton = document.querySelector('[aria-label="Export authentication report"]');
+    const settingsButton = document.querySelector('[aria-label="Configure authentication settings"]');
+
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            console.log('Refreshing authentication data...');
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Refreshing...';
+            this.disabled = true;
+
+            // Simulate refresh operation
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                console.log('Authentication data refreshed');
+            }, 2000);
+        });
+    }
+
+    if (exportButton) {
+        exportButton.addEventListener('click', function() {
+            console.log('Exporting authentication report...');
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Exporting...';
+            this.disabled = true;
+
+            // Simulate export operation
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                console.log('Authentication report exported');
+            }, 1500);
+        });
+    }
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

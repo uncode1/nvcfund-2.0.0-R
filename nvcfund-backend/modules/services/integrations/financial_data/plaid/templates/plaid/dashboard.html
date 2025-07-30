@@ -1,0 +1,191 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}{{ page_title }} - NVC Banking{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-light mb-1">{{ page_title }}</h2>
+            <p class="text-light mb-0">Plaid Financial Data Provider Integration</p>
+        </div>
+        <div>
+            <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm me-2">
+                <i class="fas fa-sync-alt me-1"></i>
+                Refresh
+            </button>
+            <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">
+                <i class="fas fa-cog me-1"></i>
+                Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- Plaid Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="ms-3">
+                        <div class="stat-value text-success">{{ status }}</div>
+                        <div class="stat-label">Connection Status</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-primary">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="ms-3">
+                        <div class="stat-value">{{ connected_institutions }}</div>
+                        <div class="stat-label">Connected Institutions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-info">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="ms-3">
+                        <div class="stat-value">{{ api_calls_today }}</div>
+                        <div class="stat-label">API Calls Today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-warning">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="ms-3">
+                        <div class="stat-value">{{ success_rate }}%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plaid Services -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header bg-transparent border-0 pb-0">
+                    <h5 class="text-light mb-0">
+                        <i class="fas fa-university me-2"></i>
+                        Plaid Financial Services
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item bg-transparent border-0 px-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Account Verification</strong>
+                                </div>
+                                <div class="list-group-item bg-transparent border-0 px-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Transaction Data</strong>
+                                </div>
+                                <div class="list-group-item bg-transparent border-0 px-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Identity Verification</strong>
+                                </div>
+                                <div class="list-group-item bg-transparent border-0 px-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Income Verification</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item bg-transparent border-0 px-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Asset Reports</strong>
+                                </div>
+                                <div class="list-group-item bg-transparent border-0 px-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Payment Initiation</strong>
+                                </div>
+                                <div class="list-group-item bg-transparent border-0 px-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Investments Data</strong>
+                                </div>
+                                <div class="list-group-item bg-transparent border-0 px-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Liabilities Data</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <small class="text-light">
+                            <i class="fas fa-globe me-1"></i>
+                            Coverage: {{ data_coverage }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header bg-transparent border-0 pb-0">
+                    <h5 class="text-light mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        Plaid Tools
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                            <i class="fas fa-link me-2"></i>
+                            Link Account
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary btn-sm">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            View Dashboard
+                        </button>
+                        <div class="dropdown">
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm dropdown-toggle w-100" data-bs-toggle="dropdown">
+                                <i class="fas fa-cog me-2"></i>
+                                API Settings
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Environment</a></li>
+                                <li><a class="dropdown-item" href="#">Webhooks</a></li>
+                                <li><a class="dropdown-item" href="#">Rate Limits</a></li>
+                            </ul>
+                        </div>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                            <i class="fas fa-key me-2"></i>
+                            Manage Keys
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,536 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Wire Transfer - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a !important; color: #e2e8f0 !important; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif !important; margin: 0; padding: 20px; }
+        .dashboard-stat-card { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 8px !important; padding: 1.5rem; margin-bottom: 1rem; }
+        .card { background: #1e293b !important; border: 1px solid #334155 !important; color: #e2e8f0 !important; }
+        .btn-primary { background: #3b82f6 !important; border-color: #3b82f6 !important; }
+        .table-dark { background: #1e293b !important; }
+        .table-dark td, .table-dark th { border-color: #334155 !important; color: #e2e8f0 !important; }
+    
+{% endblock %}
+
+{% block content %}
+
+
+
+<style>
+.wire-gradient {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+}
+
+.wire-card {
+    border: 2px solid #dc2626;
+    background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+}
+
+.wire-badge {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    color: white;
+}
+
+.wire-button {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.wire-button:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+}
+
+.wire-icon {
+    color: #dc2626;
+}
+</style>
+
+<div class="container-fluid">
+    <!-- Wire Transfer Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card wire-nvc-card">
+                <div class="nvc-nvc-card-body text-center py-4">
+                    <div class="wire-logo d-inline-flex align-items-center justify-content-center mb-3" 
+                         class="nvc-h-60">
+                        <img src="{{ url_for('static', filename='images/logos/wire-transfer-logo.svg') }}" 
+                             alt="Wire Transfer Logo" 
+                             class="nvc-style-ce791c"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="nvc-style-ef27e2">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-bolt nvc-colored-2effc2" ></i>
+                            </div>
+                            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 700; font-size: 18px; color: #dc2626;">
+                                SWIFT Wire
+                            </div>
+                        </div>
+                    </div>
+                    <h2 class="mb-2" style="color: #dc2626; font-weight: 600;">{{ channel_config.title }}</h2>
+                    <p class="text-light mb-3">{{ channel_config.description }}</p>
+                    <div class="row justify-content-center">
+                        {% for feature in channel_config.features %}
+                        <div class="col-auto">
+                            <span class="badge wire-badge me-2 mb-2">{{ feature }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Form -->
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header wire-gradient text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Wire Transfer Details</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('banking.process_send_transfer') }}">
+                        <input type="hidden" name="transfer_channel" value="wire_transfer">
+                        
+                        <!-- Sender Information -->
+                        <h6 class="wire-icon mb-3"><i class="fas fa-user me-2"></i>Sender Information</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="sender_name" class="nvc-form-label">Sender Full Name</label>
+                                <input type="text" class="nvc-form-input" id="sender_name" name="sender_name" 
+                                       placeholder="John Doe" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="from_account" class="nvc-form-label">From Account</label>
+                                <select class="nvc-form-select" name="from_account" required>
+                                    <option value="">Select source account</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.account_number }}">
+                                        {{ account.account_type.title() }} - ****{{ account.account_number[-4:] }} 
+                                        (${{ "%.2f"|format(account.balance) }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Recipient Information -->
+                        <h6 class="wire-icon mb-3"><i class="fas fa-user-friends me-2"></i>Recipient Information</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="recipient_name" class="nvc-form-label">Recipient Full Name</label>
+                                <input type="text" class="nvc-form-input" id="recipient_name" name="recipient_name" 
+                                       placeholder="Jane Smith" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="recipient_address" class="nvc-form-label">Recipient Address</label>
+                                <input type="text" class="nvc-form-input" id="recipient_address" name="recipient_address" 
+                                       placeholder="123 Main St, City, Country" required>
+                            </div>
+                        </div>
+
+                        <!-- Bank Information -->
+                        <h6 class="wire-icon mb-3"><i class="fas fa-university me-2"></i>Recipient Bank Information</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="bank_name" class="nvc-form-label">Bank Name</label>
+                                <input type="text" class="nvc-form-input" id="bank_name" name="bank_name" 
+                                       placeholder="Chase Bank" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="bank_address" class="nvc-form-label">Bank Address</label>
+                                <input type="text" class="nvc-form-input" id="bank_address" name="bank_address" 
+                                       placeholder="Bank branch address" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="swift_code" class="nvc-form-label">SWIFT/BIC Code</label>
+                                <input type="text" class="nvc-form-input" id="swift_code" name="swift_code" 
+                                       placeholder="CHASUS33" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="account_number" class="nvc-form-label">Account Number</label>
+                                <input type="text" class="nvc-form-input" id="account_number" name="account_number" 
+                                       placeholder="1234567890" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="routing_number" class="nvc-form-label">Routing Number (US)</label>
+                                <input type="text" class="nvc-form-input" id="routing_number" name="routing_number" 
+                                       placeholder="021000021">
+                            </div>
+                        </div>
+
+                        <!-- Transfer Details -->
+                        <h6 class="wire-icon mb-3"><i class="fas fa-money-bill-wave me-2"></i>Transfer Details</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="amount" class="nvc-form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" id="amount" name="amount" 
+                                           min="{{ channel_config.limits.min }}" 
+                                           max="{{ channel_config.limits.max }}" 
+                                           step="0.01" placeholder="0.00" required>
+                                </div>
+                                <div class="form-text">
+                                    Min: ${{ channel_config.limits.min }} - Max: ${{ "{:,}".format(channel_config.limits.max) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="currency" class="nvc-form-label">Currency</label>
+                                <select class="nvc-form-select" name="currency" required>
+                                    <option value="USD" selected>USD - US Dollar</option>
+                                    <option value="EUR">EUR - Euro</option>
+                                    <option value="GBP">GBP - British Pound</option>
+                                    <option value="CAD">CAD - Canadian Dollar</option>
+                                    <option value="AUD">AUD - Australian Dollar</option>
+                                    <option value="JPY">JPY - Japanese Yen</option>
+                                    <option value="CHF">CHF - Swiss Franc</option>
+                                    <option value="CNY">CNY - Chinese Yuan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="transfer_type" class="nvc-form-label">Transfer Type</label>
+                                <select class="nvc-form-select" name="transfer_type" required>
+                                    <option value="standard">Standard ($25)</option>
+                                    <option value="urgent">Urgent ($35)</option>
+                                    <option value="same_day">Same Day ($50)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Purpose and Instructions -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="purpose" class="nvc-form-label">Purpose of Transfer</label>
+                                <select class="nvc-form-select" name="purpose" required>
+                                    <option value="">Select purpose</option>
+                                    <option value="business">Business Payment</option>
+                                    <option value="personal">Personal Transfer</option>
+                                    <option value="investment">Investment</option>
+                                    <option value="education">Education Expenses</option>
+                                    <option value="medical">Medical Expenses</option>
+                                    <option value="real_estate">Real Estate</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="urgency" class="nvc-form-label">Urgency Level</label>
+                                <select class="nvc-form-select" name="urgency">
+                                    <option value="normal">Normal</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Special Instructions -->
+                        <div class="mb-3">
+                            <label for="special_instructions" class="nvc-form-label">Special Instructions (Optional)</label>
+                            <textarea class="nvc-form-input" id="special_instructions" name="special_instructions" rows="3" 
+                                      placeholder="Any special handling instructions for the receiving bank"></textarea>
+                        </div>
+
+                        <!-- Message to Recipient -->
+                        <div class="mb-3">
+                            <label for="message" class="nvc-form-label">Message to Recipient (Optional)</label>
+                            <textarea class="nvc-form-input" id="message" name="message" rows="2" 
+                                      placeholder="Payment for invoice #123" maxlength="140"></textarea>
+                            <div class="form-text">Maximum 140 characters</div>
+                        </div>
+
+                        <!-- Fee Information -->
+                        <div class="alert nvc-nvc-alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Wire Transfer Information</h6>
+                            <ul class="mb-0">
+                                <li><strong>Fee:</strong> ${{ channel_config.fee }} + correspondent bank fees</li>
+                                <li><strong>Processing Time:</strong> {{ channel_config.processing_time }}</li>
+                                <li><strong>Cut-off Time:</strong> 3:00 PM EST for same-day processing</li>
+                                <li><strong>International:</strong> Additional correspondent fees may apply</li>
+                                <li><strong>Irrevocable:</strong> Wire transfers cannot be cancelled once sent</li>
+                            </ul>
+                        </div>
+
+                        <!-- Compliance Notice -->
+                        <div class="alert nvc-nvc-alert-info">
+                            <h6><i class="fas fa-shield-alt me-2"></i>Compliance Notice</h6>
+                            <p class="mb-0">
+                                Wire transfers over $3,000 require additional verification. 
+                                International transfers are subject to OFAC screening and may be delayed for compliance review.
+                                Please ensure all information is accurate as wire transfers are typically irreversible.
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Transfers
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn wire-button w-100">
+                                    <i class="fas fa-bolt me-2"></i>Initiate Wire Transfer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wire Transfer Security -->
+    <div class="row mt-4">
+        <div class="col-lg-10 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <h6 class="nvc-card-title"><i class="fas fa-lock wire-icon me-2"></i>Wire Transfer Security</h6>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-user-shield wire-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Identity Verification</h6>
+                            <p class="text-light small">Multi-layer authentication required</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-eye wire-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Real-time Monitoring</h6>
+                            <p class="text-light small">24/7 fraud detection system</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-certificate wire-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Compliance</h6>
+                            <p class="text-light small">AML/KYC compliant transfers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('amount');
+    const transferTypeSelect = document.querySelector('select[name="transfer_type"]');
+    const swiftInput = document.getElementById('swift_code');
+    const messageInput = document.getElementById('message');
+    
+    // Calculate total fees based on transfer type
+    function updateFees() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const transferType = transferTypeSelect.value;
+        
+        let baseFee = {{ channel_config.fee }};
+        if (transferType === 'urgent') baseFee = 35;
+        else if (transferType === 'same_day') baseFee = 50;
+        
+        let feeDisplay = document.getElementById('fee-display');
+        if (!feeDisplay) {
+            feeDisplay = document.createElement('div');
+            feeDisplay.id = 'fee-display';
+            feeDisplay.className = 'form-text';
+            amountInput.parentElement.appendChild(feeDisplay);
+        }
+        
+        if (amount > 0) {
+            const total = amount + baseFee;
+            feeDisplay.innerHTML = `
+                Wire fee: $${baseFee} | Total debit: $${total.toFixed(2)}
+                <br><small>Correspondent bank fees may apply</small>
+            `;
+        } else {
+            feeDisplay.innerHTML = '';
+        }
+    }
+    
+    // Validate SWIFT code format
+    swiftInput.addEventListener('blur', function() {
+        const swift = this.value.toUpperCase();
+        const swiftRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
+        
+        if (swift && !swiftRegex.test(swift)) {
+            this.setCustomValidity('Invalid SWIFT code format (e.g., CHASUS33)');
+        } else {
+            this.setCustomValidity('');
+        }
+        
+        this.value = swift; // Convert to uppercase
+    });
+    
+    // Character counter for message
+    messageInput.addEventListener('input', function() {
+        const remaining = 140 - this.value.length;
+        let counter = document.getElementById('char-counter');
+        
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.id = 'char-counter';
+            counter.className = 'form-text';
+            this.parentElement.appendChild(counter);
+        }
+        
+        counter.textContent = `${remaining} characters remaining`;
+        counter.style.color = remaining < 10 ? '#dc2626' : '#6b7280';
+    });
+    
+    // High amount warning
+    amountInput.addEventListener('input', function() {
+        const amount = parseFloat(this.value) || 0;
+        
+        let warning = document.getElementById('amount-warning');
+        if (amount > 10000) {
+            if (!warning) {
+                warning = document.createElement('div');
+                warning.id = 'amount-warning';
+                warning.className = 'alert alert-warning mt-2';
+                this.parentElement.parentElement.appendChild(warning);
+            }
+            warning.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>High Value Transfer:</strong> Transfers over $10,000 require additional documentation and may take longer to process.
+            `;
+        } else if (warning) {
+            warning.remove();
+        }
+        
+        updateFees();
+    });
+    
+    transferTypeSelect.addEventListener('change', updateFees);
+    
+    // Auto-format account number
+    const accountInput = document.getElementById('account_number');
+    accountInput.addEventListener('input', function() {
+        // Remove non-numeric characters
+        this.value = this.value.replace(/\D/g, '');
+    });
+    
+    // Auto-format routing number
+    const routingInput = document.getElementById('routing_number');
+    if (routingInput) {
+        routingInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').substring(0, 9);
+        });
+    }
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('amount');
+    const transferTypeSelect = document.querySelector('select[name="transfer_type"]');
+    const swiftInput = document.getElementById('swift_code');
+    const messageInput = document.getElementById('message');
+    
+    // Calculate total fees based on transfer type
+    function updateFees() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const transferType = transferTypeSelect.value;
+        
+        let baseFee = {{ channel_config.fee }};
+        if (transferType === 'urgent') baseFee = 35;
+        else if (transferType === 'same_day') baseFee = 50;
+        
+        let feeDisplay = document.getElementById('fee-display');
+        if (!feeDisplay) {
+            feeDisplay = document.createElement('div');
+            feeDisplay.id = 'fee-display';
+            feeDisplay.className = 'form-text';
+            amountInput.parentElement.appendChild(feeDisplay);
+        }
+        
+        if (amount > 0) {
+            const total = amount + baseFee;
+            feeDisplay.innerHTML = `
+                Wire fee: $${baseFee} | Total debit: $${total.toFixed(2)}
+                <br><small>Correspondent bank fees may apply</small>
+            `;
+        } else {
+            feeDisplay.innerHTML = '';
+        }
+    }
+    
+    // Validate SWIFT code format
+    swiftInput.addEventListener('blur', function() {
+        const swift = this.value.toUpperCase();
+        const swiftRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
+        
+        if (swift && !swiftRegex.test(swift)) {
+            this.setCustomValidity('Invalid SWIFT code format (e.g., CHASUS33)');
+        } else {
+            this.setCustomValidity('');
+        }
+        
+        this.value = swift; // Convert to uppercase
+    });
+    
+    // Character counter for message
+    messageInput.addEventListener('input', function() {
+        const remaining = 140 - this.value.length;
+        let counter = document.getElementById('char-counter');
+        
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.id = 'char-counter';
+            counter.className = 'form-text';
+            this.parentElement.appendChild(counter);
+        }
+        
+        counter.textContent = `${remaining} characters remaining`;
+        counter.style.color = remaining < 10 ? '#dc2626' : '#6b7280';
+    });
+    
+    // High amount warning
+    amountInput.addEventListener('input', function() {
+        const amount = parseFloat(this.value) || 0;
+        
+        let warning = document.getElementById('amount-warning');
+        if (amount > 10000) {
+            if (!warning) {
+                warning = document.createElement('div');
+                warning.id = 'amount-warning';
+                warning.className = 'alert alert-warning mt-2';
+                this.parentElement.parentElement.appendChild(warning);
+            }
+            warning.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>High Value Transfer:</strong> Transfers over $10,000 require additional documentation and may take longer to process.
+            `;
+        } else if (warning) {
+            warning.remove();
+        }
+        
+        updateFees();
+    });
+    
+    transferTypeSelect.addEventListener('change', updateFees);
+    
+    // Auto-format account number
+    const accountInput = document.getElementById('account_number');
+    accountInput.addEventListener('input', function() {
+        // Remove non-numeric characters
+        this.value = this.value.replace(/\D/g, '');
+    });
+    
+    // Auto-format routing number
+    const routingInput = document.getElementById('routing_number');
+    if (routingInput) {
+        routingInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').substring(0, 9);
+        });
+    }
+});
+
+{% endblock %}

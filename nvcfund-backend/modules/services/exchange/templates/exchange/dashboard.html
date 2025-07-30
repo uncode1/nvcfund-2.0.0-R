@@ -1,0 +1,319 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Exchange Operations - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Exchange Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        Exchange Operations Center
+                    </h3>
+                    <p class="mb-0 text-light">Internal & External Asset Exchange Platform</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exchange Type Selection Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="nvc-card bg-dark border-primary h-100">
+                <div class="nvc-nvc-card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-university text-primary" class="nvc-fs-3rem"></i>
+                    </div>
+                    <h4 class="text-white">Internal Exchange</h4>
+                    <p class="text-light">Exchange between NVC platform assets with preferential rates</p>
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <small class="text-light">Available Pairs</small>
+                            <div class="h5 text-info">{{ internal_rates|length }}</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-light">Status</small>
+                            <div class="h5 text-success">Active</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('exchange.internal_exchange') }}" class="btn nvc-btn nvc-btn-primary btn-lg w-100">
+                        <i class="fas fa-arrow-right me-2"></i>Start Internal Exchange
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="nvc-card bg-dark border-warning h-100">
+                <div class="nvc-nvc-card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-globe text-warning" class="nvc-fs-3rem"></i>
+                    </div>
+                    <h4 class="text-white">External Exchange</h4>
+                    <p class="text-light">Connect to Binance for global cryptocurrency trading</p>
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <small class="text-light">Connection</small>
+                            {% if binance_connected %}
+                                <div class="h5 text-success">Connected</div>
+                            {% else %}
+                                <div class="h5 text-danger">Disconnected</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-6">
+                            <small class="text-light">Markets</small>
+                            <div class="h5 text-info">{{ external_rates|length }}</div>
+                        </div>
+                    </div>
+                    {% if binance_connected %}
+                        <a href="{{ url_for('exchange.external_exchange') }}" class="btn nvc-btn nvc-btn-warning btn-lg w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Start External Exchange
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('binance_integration.connect') }}" class="btn nvc-btn nvc-btn-outline-warning btn-lg w-100">
+                            <i class="fas fa-link me-2"></i>Connect Binance Account
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Balance Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Fiat Accounts</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if fiat_accounts %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Account</th>
+                                        <th>Currency</th>
+                                        <th class="text-end">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for account in fiat_accounts %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ account.account_type|title }}</strong><br>
+                                            <small class="text-light">{{ account.account_number[-4:] }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">{{ account.currency }}</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong class="text-success">{{ "{:,.2f}".format(account.balance) }}</strong>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-light">No active fiat accounts found.</p>
+                        <a href="{{ url_for('banking.create_account') }}" class="btn nvc-btn nvc-btn-success">Create Account</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-coins me-2"></i>Digital Assets</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if digital_accounts %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th>Network</th>
+                                        <th class="text-end">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for account in digital_accounts %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ account.token_type.name }}</strong><br>
+                                            <small class="text-light">{{ account.address[:6] }}...{{ account.address[-4:] }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ account.blockchain_network.name }}</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong class="text-info">{{ "{:,.6f}".format(account.balance) }}</strong>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-light">No digital asset accounts found.</p>
+                        <a href="{{ url_for('banking.create_digital_account') }}" class="btn btn-info">Create Digital Wallet</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Exchange Activity -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-history me-2"></i>Recent Exchange Activity
+                    </h5>
+                    <a href="{{ url_for('exchange.exchange_history') }}" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                        View All History
+                    </a>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if recent_exchanges and recent_exchanges.transactions %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th class="text-end">Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for exchange in recent_exchanges.transactions %}
+                                    <tr>
+                                        <td>{{ exchange.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge {% if exchange.exchange_type.name == 'INTERNAL_EXCHANGE' %}bg-primary{% else %}bg-warning{% endif %}">
+                                                {{ exchange.exchange_type.name|replace('_', ' ')|title }}
+                                            </span>
+                                        </td>
+                                        <td>{{ exchange.from_currency }}</td>
+                                        <td>{{ exchange.to_currency }}</td>
+                                        <td class="text-end">{{ "{:,.6f}".format(exchange.from_amount) }}</td>
+                                        <td>
+                                            <span class="badge {% if exchange.status.name == 'COMPLETED' %}bg-success{% elif exchange.status.name == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ exchange.status.name|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-line text-light" class="nvc-fs-3rem"></i>
+                            <p class="text-light mt-3">No exchange transactions yet</p>
+                            <p class="text-light">Start your first exchange to see activity here</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liquidity Pool Status -->
+    {% if liquidity_status %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-swimming-pool me-2"></i>Liquidity Pool Status</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        {% for pool in liquidity_status %}
+                        <div class="col-lg-4 mb-3">
+                            <div class="nvc-card bg-secondary">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <h6 class="text-white">{{ pool.base_currency }}/{{ pool.quote_currency }}</h6>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-light">Total Liquidity</small>
+                                            <div class="h6 text-success">${{ "{:,.2f}".format(pool.total_liquidity) }}</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-light">Utilization</small>
+                                            <div class="h6 text-info">{{ "{:.1f}".format(pool.utilization_rate * 100) }%}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-light">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ url_for('exchange.current_rates') }}" class="btn nvc-btn nvc-btn-outline-info w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-chart-line mb-2" class="nvc-fs-2rem"></i>
+                                <span>View Current Rates</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ url_for('exchange.exchange_history') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-history mb-2" class="nvc-fs-2rem"></i>
+                                <span>Exchange History</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-success w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-paper-plane mb-2" class="nvc-fs-2rem"></i>
+                                <span>Send Transfer</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ url_for('dashboard.dashboard_home') }}" class="btn nvc-btn nvc-btn-outline-light w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-tachometer-alt mb-2" class="nvc-fs-2rem"></i>
+                                <span>Main Dashboard</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #0a2447 0%, #1e5799 100%) !important;
+}
+</style>
+</div>
+{% endblock %}

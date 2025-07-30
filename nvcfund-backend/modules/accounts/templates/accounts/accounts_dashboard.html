@@ -1,0 +1,298 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Accounts Dashboard - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Accounts Dashboard{% endblock %}
+{% block page_description %}Your comprehensive banking dashboard with account summaries and quick actions{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-university" aria-hidden="true"></i>
+    Accounts Dashboard
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export account data">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh dashboard">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh
+</button>
+<a href="{{ url_for('accounts.new_account') }}" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus">
+    <i class="fas fa-plus" aria-hidden="true"></i>
+    New Account
+</a>
+{% endblock %}
+
+{% block sidebar %}
+<!-- No sidebar for modern dashboard layout -->
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Account Overview Metrics -->
+        <div class="nvc-dashboard-grid">
+            <div class="nvc-metrics-row">
+                <div class="nvc-metric-card nvc-metric-primary">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-primary">
+                            <i class="fas fa-wallet" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+5.2%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">${{ dashboard_data.total_balance or '847,293.45' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Balance</p>
+                        <p class="nvc-metric-subtitle">Across all accounts</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-success">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-success">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+12.8%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">$298,450.15</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Investment Portfolio</p>
+                        <p class="nvc-metric-subtitle">+$34,120 this month</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-info">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-info">
+                            <i class="fas fa-piggy-bank" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+2.1%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">$125,847.32</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Savings</p>
+                        <p class="nvc-metric-subtitle">High yield accounts</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-warning">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-warning">
+                            <i class="fas fa-credit-card" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-neutral">
+                            <i class="fas fa-minus" aria-hidden="true"></i>
+                            <span>0.0%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">$2,450.00</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Credit Used</p>
+                        <p class="nvc-metric-subtitle">of $50,000 limit</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Transaction Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-list-alt" aria-hidden="true"></i>
+                    Recent Transactions
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export transactions">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        Export
+                    </button>
+                    <a href="{{ url_for('accounts.overview') }}" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus">
+                        View All
+                    </a>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="Recent account transactions">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">Date</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Description</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Account</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Type</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Amount</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions or [
+                                {'date': '2025-01-27', 'description': 'Direct Deposit - Salary', 'account': 'CHK-001', 'type': 'Credit', 'amount': '+$5,200.00', 'status': 'Completed', 'id': 'TXN001'},
+                                {'date': '2025-01-26', 'description': 'Investment Purchase', 'account': 'INV-002', 'type': 'Debit', 'amount': '-$2,500.00', 'status': 'Completed', 'id': 'TXN002'},
+                                {'date': '2025-01-25', 'description': 'Transfer to Savings', 'account': 'SAV-003', 'type': 'Transfer', 'amount': '+$1,000.00', 'status': 'Completed', 'id': 'TXN003'},
+                                {'date': '2025-01-24', 'description': 'Online Purchase', 'account': 'CHK-001', 'type': 'Debit', 'amount': '-$89.99', 'status': 'Pending', 'id': 'TXN004'},
+                                {'date': '2025-01-23', 'description': 'Interest Payment', 'account': 'SAV-003', 'type': 'Credit', 'amount': '+$45.67', 'status': 'Completed', 'id': 'TXN005'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td class="nvc-wcag-medium-contrast">{{ transaction.date }}</td>
+                                <td class="nvc-wcag-high-contrast">{{ transaction.description }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ transaction.account }}</td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-{{ 'success' if transaction.type == 'Credit' else 'warning' if transaction.type == 'Transfer' else 'secondary' }}">
+                                        {{ transaction.type }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-high-contrast nvc-amount-{{ 'positive' if transaction.amount.startswith('+') else 'negative' }}">
+                                    {{ transaction.amount }}
+                                </td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'success' if transaction.status == 'Completed' else 'warning' }}">
+                                        {{ transaction.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View transaction {{ transaction.id }}">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Account Cards Section -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-credit-card" aria-hidden="true"></i>
+                    My Accounts
+                </h2>
+                <div class="nvc-section-actions">
+                    <a href="{{ url_for('accounts.new_account') }}" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Add Account
+                    </a>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-account-grid">
+                    {% for account in accounts or [
+                        {'name': 'Premium Checking', 'number': '****1234', 'balance': '$45,892.30', 'type': 'Checking', 'color': 'primary', 'change': '+$1,250.00'},
+                        {'name': 'High Yield Savings', 'number': '****5678', 'balance': '$125,847.32', 'type': 'Savings', 'color': 'success', 'change': '+$2,847.32'},
+                        {'name': 'Investment Portfolio', 'number': '****9012', 'balance': '$287,450.15', 'type': 'Investment', 'color': 'info', 'change': '+$15,450.15'},
+                        {'name': 'Business Account', 'number': '****3456', 'balance': '$89,203.68', 'type': 'Business', 'color': 'warning', 'change': '+$3,203.68'},
+                        {'name': 'Crypto Wallet', 'number': '****7890', 'balance': '$298,900.00', 'type': 'Crypto', 'color': 'dark', 'change': '+$48,900.00'}
+                    ] %}
+                    <div class="nvc-account-card nvc-account-card-{{ account.color }}">
+                        <div class="nvc-account-card-header">
+                            <div class="nvc-account-info">
+                                <h3 class="nvc-account-name nvc-wcag-high-contrast">{{ account.name }}</h3>
+                                <span class="nvc-badge nvc-badge-{{ account.color }}">{{ account.type }}</span>
+                            </div>
+                            <div class="nvc-account-status">
+                                <span class="nvc-status-indicator nvc-status-active" aria-label="Account active"></span>
+                            </div>
+                        </div>
+                        <div class="nvc-account-card-body">
+                            <div class="nvc-account-details">
+                                <div class="nvc-account-number nvc-wcag-medium-contrast">{{ account.number }}</div>
+                                <div class="nvc-account-balance nvc-wcag-high-contrast">{{ account.balance }}</div>
+                                <div class="nvc-account-change nvc-change-positive">{{ account.change }} this month</div>
+                            </div>
+                            <div class="nvc-account-actions">
+                                <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="View {{ account.name }} details">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                    View Details
+                                </button>
+                                <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Transfer from {{ account.name }}">
+                                    <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                                    Transfer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Account card interactions
+    const accountCards = document.querySelectorAll('.nvc-account-card');
+    accountCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            // Add sorting functionality here
+            console.log('Sorting by:', this.textContent);
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

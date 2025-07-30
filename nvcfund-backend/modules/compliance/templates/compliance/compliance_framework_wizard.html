@@ -1,0 +1,809 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Compliance Framework Wizard - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Compliance Framework Wizard{% endblock %}
+{% block page_description %}Step-by-step compliance framework setup and configuration{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-save"></i>
+    Save as Draft
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-eye"></i>
+    Preview Framework
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-check"></i>
+    Complete Setup
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wizard-container {
+        background: rgba(30, 41, 59, 0.95);
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 1200px;
+        margin: 2rem auto;
+        min-height: 700px;
+    }
+
+    .wizard-header {
+        background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .wizard-form {
+        padding: 2rem;
+        position: relative;
+    }
+    
+    /* Multi-step Form Styles */
+    .form-step {
+        display: none;
+        min-height: 500px;
+    }
+    
+    .form-step.active {
+        display: block;
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        padding: 0 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .step {
+        display: flex;
+        align-items: center;
+        margin: 0 0.5rem 1rem 0.5rem;
+        color: #6c757d;
+        font-size: 0.85rem;
+        text-align: center;
+    }
+    
+    .step.completed {
+        color: #28a745;
+    }
+    
+    .step.active {
+        color: #0a2447;
+        font-weight: 600;
+    }
+    
+    .step-number {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    
+    .step.completed .step-number {
+        background: #28a745;
+        color: white;
+    }
+    
+    .step.active .step-number {
+        background: #0a2447;
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .step-connector {
+        width: 40px;
+        height: 2px;
+        background: #e9ecef;
+        margin: 0 0.5rem;
+        align-self: center;
+    }
+    
+    .step.completed + .step-connector {
+        background: #28a745;
+    }
+    
+    /* Form Controls */
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0a2447;
+        box-shadow: 0 0 0 0.2rem rgba(10, 36, 71, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Required field indicator */
+    .form-label.required::after {
+        content: " *";
+        color: #dc3545;
+    }
+    
+    /* Navigation Buttons */
+    .form-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn-nav {
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .btn-prev {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-prev:hover {
+        background: #5a6268;
+        transform: translateY(-1px);
+    }
+    
+    .btn-next, .btn-submit {
+        background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+        color: white;
+    }
+    
+    .btn-next:hover, .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(10, 36, 71, 0.4);
+    }
+    
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    /* Section Headers */
+    .section-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .section-header h5 {
+        color: #0a2447;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .section-header p {
+        color: #6c757d;
+        margin: 0.5rem 0 0 0;
+        font-size: 0.9rem;
+    }
+    
+    /* Progress Bar */
+    .progress-container {
+        background: #e9ecef;
+        height: 4px;
+        border-radius: 2px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .step-indicator {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .step-connector {
+            display: none;
+        }
+        
+        .wizard-form {
+            padding: 1rem;
+        }
+        
+        .form-navigation {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+    
+    /* Validation styles */
+    .is-invalid {
+        border-color: #dc3545;
+    }
+    
+    .is-valid {
+        border-color: #28a745;
+    }
+    
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Framework Risk Level Indicators */
+    .risk-indicator {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .risk-low { background: #d4edda; color: #155724; }
+    .risk-medium { background: #fff3cd; color: #856404; }
+    .risk-high { background: #f8d7da; color: #721c24; }
+    .risk-critical { background: #f5c6cb; color: #491217; }
+    
+    /* Summary section */
+    .summary-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+    
+    .summary-label {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .summary-value {
+        color: #212529;
+    }
+    .card { background: #1e293b !important; border: 1px solid #334155 !important; color: #e2e8f0 !important; }
+    .btn-primary { background: #3b82f6 !important; border-color: #3b82f6 !important; }
+    .form-control, .form-select { background: #334155 !important; border: 1px solid #475569 !important; color: #e2e8f0 !important; }
+    .form-control:focus, .form-select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important; }
+    .form-check-input:checked { background-color: #3b82f6 !important; border-color: #3b82f6 !important; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Compliance Framework Wizard Functions
+function saveAsDraft() {
+    const formData = new FormData(document.getElementById('frameworkWizardForm'));
+    fetch('/compliance/frameworks/draft', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+        }
+    }).then(response => {
+        if (response.ok) {
+            alert('Framework saved as draft');
+        } else {
+            alert('Error saving draft');
+        }
+    });
+}
+
+function previewFramework() {
+    const formData = new FormData(document.getElementById('frameworkWizardForm'));
+    const params = new URLSearchParams(formData);
+    window.open('/compliance/frameworks/preview?' + params.toString(), '_blank');
+}
+
+function completeWizard() {
+    const form = document.getElementById('frameworkWizardForm');
+    if (form.checkValidity()) {
+        form.submit();
+    } else {
+        alert('Please complete all required fields');
+        form.reportValidity();
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="wizard-container">
+        <div class="wizard-header">
+            <h2><i class="fas fa-shield-alt"></i> Compliance Framework Management</h2>
+            <p class="mb-0">Create and configure enterprise-grade regulatory compliance frameworks</p>
+        </div>
+        
+        <div class="wizard-form">
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <span>Framework<br>Basic Info</span>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <span>Regulatory<br>Details</span>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <span>Requirements<br>& Controls</span>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step" data-step="4">
+                    <div class="step-number">4</div>
+                    <span>Risk & Impact<br>Assessment</span>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step" data-step="5">
+                    <div class="step-number">5</div>
+                    <span>Timeline &<br>Review</span>
+                </div>
+            </div>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} nvc-alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'info-circle' }}"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" action="{{ url_for('compliance.create_framework') }}" id="complianceFrameworkForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                
+                <!-- Step 1: Framework Basic Information -->
+                <div class="form-step active" data-step="1">
+                    <div class="section-header">
+                        <h5><i class="fas fa-info-circle"></i> Framework Basic Information</h5>
+                        <p>Define the core identification and classification of your compliance framework</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="framework_code" class="nvc-form-label required">Framework Code</label>
+                            <input type="text" class="nvc-form-input" id="framework_code" name="framework_code" 
+                                   placeholder="e.g., BSA-AML-2025" maxlength="50" required>
+                            <small class="text-light">Unique identifier for this framework (3-50 characters)</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="framework_name" class="nvc-form-label required">Framework Name</label>
+                            <input type="text" class="nvc-form-input" id="framework_name" name="framework_name" 
+                                   placeholder="e.g., Bank Secrecy Act Anti-Money Laundering Framework" maxlength="200" required>
+                            <small class="text-light">Descriptive name for the framework (10-200 characters)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="regulation_type" class="nvc-form-label required">Regulation Type</label>
+                            <select class="nvc-form-select" id="regulation_type" name="regulation_type" required>
+                                <option value="">Select regulation type</option>
+                                <option value="bsa_aml">BSA/AML Compliance</option>
+                                <option value="kyc_cdd">KYC/Customer Due Diligence</option>
+                                <option value="patriot_act">USA PATRIOT Act</option>
+                                <option value="ofac_sanctions">OFAC Sanctions</option>
+                                <option value="pci_dss">PCI DSS</option>
+                                <option value="sox_compliance">Sarbanes-Oxley</option>
+                                <option value="basel_iii">Basel III</option>
+                                <option value="dodd_frank">Dodd-Frank</option>
+                                <option value="mifid_ii">MiFID II</option>
+                                <option value="gdpr">GDPR</option>
+                                <option value="ccar_stress_test">CCAR Stress Testing</option>
+                                <option value="volcker_rule">Volcker Rule</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="risk_level" class="nvc-form-label required">Risk Level</label>
+                            <select class="nvc-form-select" id="risk_level" name="risk_level" required>
+                                <option value="">Select risk level</option>
+                                <option value="low">Low Risk</option>
+                                <option value="medium">Medium Risk</option>
+                                <option value="high">High Risk</option>
+                                <option value="critical">Critical Risk</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Regulatory Details -->
+                <div class="form-step" data-step="2">
+                    <div class="section-header">
+                        <h5><i class="fas fa-building"></i> Regulatory Authority & Jurisdiction</h5>
+                        <p>Specify the regulatory body, jurisdiction, and testing requirements</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="regulatory_body" class="nvc-form-label required">Regulatory Body</label>
+                            <input type="text" class="nvc-form-input" id="regulatory_body" name="regulatory_body" 
+                                   placeholder="e.g., Federal Reserve, OCC, FDIC" maxlength="200" required>
+                            <small class="text-light">Primary regulatory authority overseeing this framework</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="jurisdiction" class="nvc-form-label required">Jurisdiction</label>
+                            <input type="text" class="nvc-form-input" id="jurisdiction" name="jurisdiction" 
+                                   placeholder="e.g., United States, European Union" maxlength="100" required>
+                            <small class="text-light">Geographic or legal jurisdiction</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="testing_frequency" class="nvc-form-label required">Testing Frequency</label>
+                            <select class="nvc-form-select" id="testing_frequency" name="testing_frequency" required>
+                                <option value="">Select testing frequency</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="quarterly">Quarterly</option>
+                                <option value="semi_annual">Semi-Annual</option>
+                                <option value="annual">Annual</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="implementation_deadline" class="nvc-form-label">Implementation Deadline</label>
+                            <input type="datetime-local" class="nvc-form-input" id="implementation_deadline" name="implementation_deadline">
+                            <small class="text-light">Target date for full framework implementation</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Requirements & Controls -->
+                <div class="form-step" data-step="3">
+                    <div class="section-header">
+                        <h5><i class="fas fa-tasks"></i> Compliance Requirements & Controls</h5>
+                        <p>Define detailed requirements, objectives, and control mechanisms</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="compliance_requirements" class="nvc-form-label required">Compliance Requirements</label>
+                        <textarea class="nvc-form-input" id="compliance_requirements" name="compliance_requirements" 
+                                  rows="5" minlength="100" maxlength="5000" required 
+                                  placeholder="Detailed description of all compliance requirements, procedures, and standards that must be met under this framework..."></textarea>
+                        <small class="text-light">Comprehensive list of requirements (100-5000 characters)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="control_objectives" class="nvc-form-label required">Control Objectives</label>
+                        <textarea class="nvc-form-input" id="control_objectives" name="control_objectives" 
+                                  rows="4" minlength="100" maxlength="3000" required
+                                  placeholder="Define the specific objectives that controls are designed to achieve..."></textarea>
+                        <small class="text-light">Clear statement of control objectives (100-3000 characters)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="key_controls" class="nvc-form-label required">Key Controls</label>
+                        <textarea class="nvc-form-input" id="key_controls" name="key_controls" 
+                                  rows="4" minlength="100" maxlength="3000" required
+                                  placeholder="Specify the key controls, procedures, and mechanisms that will be implemented..."></textarea>
+                        <small class="text-light">Detailed description of control mechanisms (100-3000 characters)</small>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Risk & Impact Assessment -->
+                <div class="form-step" data-step="4">
+                    <div class="section-header">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Risk Assessment & Business Impact</h5>
+                        <p>Analyze potential risks, penalties, and business impact</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="business_impact" class="nvc-form-label required">Business Impact Assessment</label>
+                        <textarea class="nvc-form-input" id="business_impact" name="business_impact" 
+                                  rows="4" minlength="100" maxlength="2000" required
+                                  placeholder="Assess the potential impact of non-compliance on business operations, reputation, and financial performance..."></textarea>
+                        <small class="text-light">Comprehensive impact analysis (100-2000 characters)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="regulatory_penalties" class="nvc-form-label">Regulatory Penalties</label>
+                        <textarea class="nvc-form-input" id="regulatory_penalties" name="regulatory_penalties" 
+                                  rows="3" maxlength="2000"
+                                  placeholder="Describe potential fines, sanctions, or other penalties for non-compliance..."></textarea>
+                        <small class="text-light">Description of potential penalties (optional, max 2000 characters)</small>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Timeline & Review -->
+                <div class="form-step" data-step="5">
+                    <div class="section-header">
+                        <h5><i class="fas fa-calendar-check"></i> Timeline & Assessment Schedule</h5>
+                        <p>Set assessment dates and review the complete framework configuration</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="next_assessment_date" class="nvc-form-label required">Next Assessment Date</label>
+                            <input type="datetime-local" class="nvc-form-input" id="next_assessment_date" name="next_assessment_date" required>
+                            <small class="text-light">Schedule the next compliance assessment</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Framework Summary -->
+                    <div class="mt-4">
+                        <h6><i class="fas fa-clipboard-list"></i> Framework Summary</h6>
+                        <div class="summary-section" id="frameworkSummary">
+                            <div class="summary-item">
+                                <span class="summary-label">Framework Code:</span>
+                                <span class="summary-value" id="summaryFrameworkCode">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Framework Name:</span>
+                                <span class="summary-value" id="summaryFrameworkName">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Regulation Type:</span>
+                                <span class="summary-value" id="summaryRegulationType">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Regulatory Body:</span>
+                                <span class="summary-value" id="summaryRegulatoryBody">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Risk Level:</span>
+                                <span class="summary-value" id="summaryRiskLevel">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Testing Frequency:</span>
+                                <span class="summary-value" id="summaryTestingFrequency">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Buttons -->
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-nav btn-prev" id="prevBtn" data-action="custom-action" class="d-none">
+                        <i class="fas fa-arrow-left me-2"></i>Previous
+                    </button>
+                    <div class="text-center">
+                        <small class="text-light">Step <span id="currentStepText">1</span> of 5</small>
+                    </div>
+                    <button type="button" class="btn btn-nav btn-next" id="nextBtn" data-action="custom-action">
+                        Next<i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                    <button type="submit" class="btn btn-nav btn-submit" id="submitBtn" class="d-none">
+                        <i class="fas fa-save me-2"></i>Create Framework
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentStep = 1;
+const totalSteps = 5;
+
+function updateProgressBar() {
+    const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+}
+
+function updateStepIndicator() {
+    const steps = document.querySelectorAll('.step');
+    steps.forEach((step, index) => {
+        const stepNumber = index + 1;
+        step.classList.remove('active', 'completed');
+        
+        if (stepNumber < currentStep) {
+            step.classList.add('completed');
+        } else if (stepNumber === currentStep) {
+            step.classList.add('active');
+        }
+    });
+}
+
+function showStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.form-step').forEach(stepEl => {
+        stepEl.classList.remove('active');
+    });
+    
+    // Show current step
+    document.querySelector(`[data-step="${step}"]`).classList.add('active');
+    
+    // Update navigation buttons
+    document.getElementById('prevBtn').style.display = step === 1 ? 'none' : 'inline-block';
+    document.getElementById('nextBtn').style.display = step === totalSteps ? 'none' : 'inline-block';
+    document.getElementById('submitBtn').style.display = step === totalSteps ? 'inline-block' : 'none';
+    
+    // Update step text
+    document.getElementById('currentStepText').textContent = step;
+    
+    // Update progress and indicators
+    updateProgressBar();
+    updateStepIndicator();
+    
+    // Update summary on final step
+    if (step === totalSteps) {
+        updateSummary();
+    }
+}
+
+function validateStep(step) {
+    const stepElement = document.querySelector(`[data-step="${step}"]`);
+    const requiredFields = stepElement.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            if (isValid) {
+                field.focus();
+                isValid = false;
+            }
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+        }
+    });
+    
+    // Additional validation for textareas with length requirements
+    const textareas = stepElement.querySelectorAll('textarea[minlength]');
+    textareas.forEach(textarea => {
+        const minLength = parseInt(textarea.getAttribute('minlength'));
+        if (textarea.value.trim().length < minLength) {
+            textarea.classList.add('is-invalid');
+            if (isValid) {
+                textarea.focus();
+                isValid = false;
+            }
+        }
+    });
+    
+    return isValid;
+}
+
+function changeStep(direction) {
+    if (direction === 1) {
+        // Validate current step before moving forward
+        if (!validateStep(currentStep)) {
+            return;
+        }
+    }
+    
+    const newStep = currentStep + direction;
+    
+    if (newStep >= 1 && newStep <= totalSteps) {
+        currentStep = newStep;
+        showStep(currentStep);
+    }
+}
+
+function updateSummary() {
+    // Update summary fields
+    document.getElementById('summaryFrameworkCode').textContent = 
+        document.getElementById('framework_code').value || '-';
+    document.getElementById('summaryFrameworkName').textContent = 
+        document.getElementById('framework_name').value || '-';
+    
+    const regulationType = document.getElementById('regulation_type');
+    document.getElementById('summaryRegulationType').textContent = 
+        regulationType.options[regulationType.selectedIndex]?.text || '-';
+    
+    document.getElementById('summaryRegulatoryBody').textContent = 
+        document.getElementById('regulatory_body').value || '-';
+    
+    const riskLevel = document.getElementById('risk_level');
+    const riskValue = riskLevel.options[riskLevel.selectedIndex]?.text || '-';
+    const riskClass = riskLevel.value ? `risk-${riskLevel.value}` : '';
+    document.getElementById('summaryRiskLevel').innerHTML = 
+        riskValue !== '-' ? `<span class="risk-indicator ${riskClass}">${riskValue}</span>` : '-';
+    
+    const testingFreq = document.getElementById('testing_frequency');
+    document.getElementById('summaryTestingFrequency').textContent = 
+        testingFreq.options[testingFreq.selectedIndex]?.text || '-';
+}
+
+// Initialize form
+document.addEventListener('DOMContentLoaded', function() {
+    showStep(1);
+    
+    // Add real-time validation
+    document.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
+        field.addEventListener('blur', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+        
+        field.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+    
+    // Character counters for textareas
+    document.querySelectorAll('textarea[maxlength]').forEach(textarea => {
+        const maxLength = parseInt(textarea.getAttribute('maxlength'));
+        const counter = document.createElement('small');
+        counter.className = 'text-light character-counter';
+        textarea.parentNode.appendChild(counter);
+        
+        function updateCounter() {
+            const remaining = maxLength - textarea.value.length;
+            counter.textContent = `${remaining} characters remaining`;
+            counter.style.color = remaining < 100 ? '#dc3545' : '#6c757d';
+        }
+        
+        textarea.addEventListener('input', updateCounter);
+        updateCounter();
+    });
+});
+
+// Form submission
+document.getElementById('complianceFrameworkForm').addEventListener('submit', function(e) {
+    if (!validateStep(5)) {
+        e.preventDefault();
+        return;
+    }
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

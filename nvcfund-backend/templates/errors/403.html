@@ -1,0 +1,97 @@
+{% extends "errors/minimal_layout.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Access Denied - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 text-center">
+            <div class="error-nvc-card">
+                <style>
+                    .error-card {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 20px;
+                        padding: 40px;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        backdrop-filter: blur(10px);
+                    }
+                    .error-icon {
+                        font-size: 4em;
+                        color: #f59e0b;
+                        margin-bottom: 20px;
+                    }
+                    .error-title {
+                        font-size: 2.5em;
+                        font-weight: bold;
+                        margin-bottom: 15px;
+                        color: white;
+                    }
+                    .error-message {
+                        font-size: 1.2em;
+                        opacity: 0.8;
+                        margin-bottom: 30px;
+                        color: white;
+                    }
+                    .action-buttons {
+                        display: flex;
+                        gap: 15px;
+                        justify-content: center;
+                        flex-wrap: wrap;
+                    }
+                    .btn-custom {
+                        padding: 12px 25px;
+                        border-radius: 10px;
+                        font-weight: bold;
+                        text-decoration: none;
+                        transition: all 0.3s ease;
+                        border: none;
+                    }
+                    .btn-primary-custom {
+                        background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+                        color: white;
+                    }
+                    .btn-secondary-custom {
+                        background: rgba(255, 255, 255, 0.1);
+                        color: white;
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                    }
+                    .btn-custom:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                        color: white;
+                    }
+                </style>
+                
+                <div class="error-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                
+                <h1 class="error-title">Access Denied</h1>
+                
+                <p class="error-message">
+                    You don't have permission to access this resource. This area requires special authorization to ensure banking security and compliance.
+                </p>
+                
+                <div class="action-buttons">
+                    <a href="/dashboard/main" class="btn-custom nvc-btn nvc-btn-primary-custom">
+                        <i class="fas fa-home"></i> Return to Dashboard
+                    </a>
+                    <a href="/auth/login" class="btn-custom nvc-btn nvc-btn-secondary-custom">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </a>
+                </div>
+                
+                <div class="mt-4">
+                    <small class="text-white-50">
+                        If you believe this is an error, contact your system administrator or security team.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

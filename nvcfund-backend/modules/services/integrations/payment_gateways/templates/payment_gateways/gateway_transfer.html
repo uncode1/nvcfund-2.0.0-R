@@ -1,0 +1,335 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}{{ page_title }} - NVC Banking{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Section -->
+            <div class="card dashboard-stat-nvc-card mb-4">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">{{ gateway }} Transfer</h3>
+                            <p class="text-light mb-0">Send money using {{ gateway }} payment gateway</p>
+                        </div>
+                        <div class="text-end">
+                            <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                <i class="fas fa-arrow-left"></i> Back to Transfers
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Transfer Form -->
+                <div class="col-lg-8">
+                    <div class="card dashboard-stat-nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-paper-plane me-2"></i>{{ gateway }} Transfer Details
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <form method="POST" class="needs-validation" novalidate>
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                
+                                <!-- Amount Section -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label for="amount" class="nvc-form-label">Transfer Amount *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" 
+                                                   class="nvc-form-input" 
+                                                   id="amount" 
+                                                   name="amount" 
+                                                   step="0.01" 
+                                                   min="{{ gateway_details.config.min_amount if gateway_details and gateway_details.config else 0.01 }}"
+                                                   max="{{ gateway_details.config.max_amount if gateway_details and gateway_details.config else 1000000 }}"
+                                                   required>
+                                            <div class="invalid-feedback">
+                                                Please enter a valid amount.
+                                            </div>
+                                        </div>
+                                        {% if gateway_details and gateway_details.config %}
+                                        <div class="form-text">
+                                            Min: ${{ gateway_details.config.min_amount }} | Max: ${{ "{:,}".format(gateway_details.config.max_amount) }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="currency" class="nvc-form-label">Currency</label>
+                                        <select class="nvc-form-select" id="currency" name="currency">
+                                            {% if gateway_details and gateway_details.config and gateway_details.config.supported_currencies %}
+                                                {% for currency in gateway_details.config.supported_currencies %}
+                                                <option value="{{ currency }}" {% if currency == 'USD' %}selected{% endif %}>
+                                                    {{ currency }} {% if currency == 'USD' %}(US Dollar){% elif currency == 'EUR' %}(Euro){% elif currency == 'GBP' %}(British Pound){% elif currency == 'CAD' %}(Canadian Dollar){% elif currency == 'NGN' %}(Nigerian Naira){% elif currency == 'KES' %}(Kenyan Shilling){% elif currency == 'GHS' %}(Ghanaian Cedi){% endif %}
+                                                </option>
+                                                {% endfor %}
+                                            {% else %}
+                                            <option value="USD" selected>USD - US Dollar</option>
+                                            <option value="EUR">EUR - Euro</option>
+                                            <option value="GBP">GBP - British Pound</option>
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Recipient Section -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label for="recipient" class="nvc-form-label">
+                                            {% if gateway_id == 'paypal' %}Recipient PayPal Email{% endif %}
+                                            {% if gateway_id == 'stripe' %}Recipient Account{% endif %}
+                                            {% if gateway_id == 'flutterwave' %}Recipient Phone/Email{% endif %}
+                                            {% if gateway_id == 'mojaloop' %}Recipient ID{% endif %}
+                                            {% if gateway_id == 'mobile' %}Mobile Number{% endif %}
+                                            *
+                                        </label>
+                                        <input type="text" 
+                                               class="nvc-form-input" 
+                                               id="recipient" 
+                                               name="recipient" 
+                                               placeholder="{% if gateway_id == 'paypal' %}user@example.com{% endif %}{% if gateway_id == 'stripe' %}acct_xxxxxxxxxxxxxxxx{% endif %}{% if gateway_id == 'flutterwave' %}+234XXXXXXXXXX{% endif %}{% if gateway_id == 'mojaloop' %}participant-id{% endif %}{% if gateway_id == 'mobile' %}+1234567890{% endif %}"
+                                               required>
+                                        <div class="invalid-feedback">
+                                            Please enter a valid recipient identifier.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="description" class="nvc-form-label">Transfer Description</label>
+                                        <input type="text" 
+                                               class="nvc-form-input" 
+                                               id="description" 
+                                               name="description" 
+                                               placeholder="Payment for services"
+                                               maxlength="100">
+                                        <div class="form-text">Optional description for this transfer</div>
+                                    </div>
+                                </div>
+
+                                <!-- Gateway Specific Information -->
+                                {% if gateway_details and gateway_details.config %}
+                                <div class="alert nvc-nvc-alert-info">
+                                    <h6 class="nvc-alert-heading">{{ gateway }} Transfer Information</h6>
+                                    <p class="mb-2"><strong>Processing Time:</strong> {{ gateway_details.config.processing_time }}</p>
+                                    <p class="mb-2"><strong>Fee:</strong> {{ gateway_details.config.fee_percentage }}% + ${{ gateway_details.config.fee_fixed }}</p>
+                                    <p class="mb-2"><strong>Limit:</strong> ${{ "{:,}".format(gateway_details.config.max_amount) }} per transaction</p>
+                                    <p class="mb-0"><small>{{ gateway_details.config.description }}</small></p>
+                                </div>
+                                {% endif %}
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex gap-3">
+                                    <button type="submit" class="btn nvc-btn nvc-btn-primary btn-lg">
+                                        <i class="fas fa-paper-plane me-2"></i>Send {{ gateway }} Transfer
+                                    </button>
+                                    <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-secondary btn-lg">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gateway Information Sidebar -->
+                <div class="col-lg-4">
+                    <div class="card dashboard-stat-nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>{{ gateway }} Gateway
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <!-- Gateway Logo -->
+                            <div class="text-center mb-4">
+                                {% if gateway_id == 'paypal' %}
+                                <div class="gateway-logo paypal-logo mx-auto mb-3 nvc-style-045ed1" >
+                                    <div class="paypal-p">P</div>
+                                    <span class="logo-text">PAYPAL</span>
+                                </div>
+                                {% elif gateway_id == 'stripe' %}
+                                <div class="gateway-logo stripe-logo mx-auto mb-3 nvc-style-045ed1" >
+                                    <div class="stripe-s">S</div>
+                                    <span class="logo-text">STRIPE</span>
+                                </div>
+                                {% elif gateway_id == 'flutterwave' %}
+                                <div class="gateway-logo flutterwave-logo mx-auto mb-3 nvc-style-045ed1" >
+                                    <div class="flutter-icon">▲</div>
+                                    <span class="logo-text">FLUTTER</span>
+                                </div>
+                                {% elif gateway_id == 'mojaloop' %}
+                                <div class="gateway-logo mojaloop-logo mx-auto mb-3 nvc-style-045ed1" >
+                                    <div class="moja-icon">○</div>
+                                    <span class="logo-text">MOJA</span>
+                                </div>
+                                {% elif gateway_id == 'mobile' %}
+                                <div class="gateway-logo mobile-logo mx-auto mb-3 nvc-style-045ed1" >
+                                    <div class="mobile-icon">📱</div>
+                                    <span class="logo-text">MOBILE</span>
+                                </div>
+                                {% endif %}
+                                <span class="badge bg-success">LIVE</span>
+                            </div>
+
+                            <!-- Gateway Features -->
+                            {% if gateway_details and gateway_details.config and gateway_details.config.features %}
+                            <div class="mb-4">
+                                <h6 class="text-light mb-3">Key Features</h6>
+                                <ul class="list-unstyled">
+                                    {% for feature in gateway_details.config.features %}
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>{{ feature }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            <!-- Security Information -->
+                            <div class="alert nvc-nvc-alert-success">
+                                <h6 class="nvc-alert-heading">Secure Transfer</h6>
+                                <p class="mb-0">All transfers are secured with banking-grade encryption and fraud detection.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Gateway Logo Styles */
+.gateway-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* PayPal Logo */
+.paypal-logo {
+    background: linear-gradient(135deg, #003087 0%, #009cde 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.paypal-p {
+    width: 20px;
+    height: 20px;
+    background: #ffc439;
+    color: #003087;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    font-style: italic;
+}
+
+.paypal-logo .logo-text {
+    font-size: 9px;
+    font-weight: 700;
+}
+
+/* Stripe Logo */
+.stripe-logo {
+    background: linear-gradient(135deg, #635bff 0%, #5851e6 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.stripe-s {
+    width: 18px;
+    height: 18px;
+    background: white;
+    color: #635bff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    font-style: italic;
+}
+
+.stripe-logo .logo-text {
+    font-size: 9px;
+    font-weight: 700;
+}
+
+/* Flutterwave Logo */
+.flutterwave-logo {
+    background: linear-gradient(135deg, #f5a623 0%, #f39019 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.flutter-icon {
+    font-size: 16px;
+    font-weight: 900;
+    color: white;
+    transform: rotate(90deg);
+}
+
+.flutterwave-logo .logo-text {
+    font-size: 8px;
+    font-weight: 700;
+}
+
+/* Mojaloop Logo */
+.mojaloop-logo {
+    background: linear-gradient(135deg, #00a651 0%, #007d3c 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.moja-icon {
+    width: 18px;
+    height: 18px;
+    border: 2px solid white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 900;
+}
+
+.mojaloop-logo .logo-text {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* Mobile Logo */
+.mobile-logo {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.mobile-icon {
+    font-size: 16px;
+}
+
+.mobile-logo .logo-text {
+    font-size: 9px;
+    font-weight: 700;
+}
+</style>
+</div>
+{% endblock %}

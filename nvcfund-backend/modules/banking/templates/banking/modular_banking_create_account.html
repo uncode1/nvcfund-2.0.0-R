@@ -1,0 +1,1372 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Create New Account - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Create New Account{% endblock %}
+{% block page_description %}Open traditional banking accounts and digital asset wallets{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-save"></i>
+    Save Progress
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-eye"></i>
+    Preview Account
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-check"></i>
+    Submit Application
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Modern Account Creation -->
+<div class="row justify-content-center">
+    <div class="col-xl-10">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body p-5">
+                <!-- Progress Indicator -->
+                <div class="account-creation-progress mb-5">
+                    <div class="progress" class="nvc-h-8">
+                        <div class="progress-bar bg-primary" role="progressbar" class="progress-bar-25" id="creationProgress"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <small class="text-primary fw-bold">Account Type</small>
+                        <small class="text-muted">Personal Info</small>
+                        <small class="text-muted">Verification</small>
+                        <small class="text-muted">Complete</small>
+                    </div>
+                </div>
+
+                <!-- Step 1: Account Type Selection -->
+                <div class="creation-step active" id="step1">
+                    <div class="text-center mb-4">
+                        <h4 class="text-primary mb-2">Choose Your Account Type</h4>
+                        <p class="text-muted">Select the account that best fits your financial needs</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Traditional Banking Accounts -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-university me-2"></i>
+                                Traditional Banking
+                            </h6>
+
+                            <!-- Checking Account -->
+                            <div class="account-option mb-3" data-account-type="checking">
+                                <div class="account-option-header">
+                                    <div class="account-icon bg-primary">
+                                        <i class="fas fa-credit-nvc-card"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <h6>Premium Checking</h6>
+                                        <p class="text-muted small">Everyday banking with premium benefits</p>
+                                    </div>
+                                    <div class="account-features">
+                                        <span class="badge bg-success">No Monthly Fee</span>
+                                        <span class="badge bg-info">Free ATM</span>
+                                    </div>
+                                </div>
+                                <div class="account-benefits">
+                                    <ul class="list-unstyled small">
+                                        <li><i class="fas fa-check text-success me-1"></i> No minimum balance</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> Free debit card</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> Mobile banking</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Savings Account -->
+                            <div class="account-option mb-3" data-account-type="savings">
+                                <div class="account-option-header">
+                                    <div class="account-icon bg-success">
+                                        <i class="fas fa-piggy-bank"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <h6>High-Yield Savings</h6>
+                                        <p class="text-muted small">Grow your money with competitive rates</p>
+                                    </div>
+                                    <div class="account-features">
+                                        <span class="badge bg-warning">2.5% APY</span>
+                                        <span class="badge bg-success">FDIC Insured</span>
+                                    </div>
+                                </div>
+                                <div class="account-benefits">
+                                    <ul class="list-unstyled small">
+                                        <li><i class="fas fa-check text-success me-1"></i> 2.5% annual percentage yield</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> No monthly maintenance fees</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> FDIC insured up to $250,000</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Business Account -->
+                            <div class="account-option mb-3" data-account-type="business">
+                                <div class="account-option-header">
+                                    <div class="account-icon bg-info">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <h6>Business Account</h6>
+                                        <p class="text-muted small">Professional banking for businesses</p>
+                                    </div>
+                                    <div class="account-features">
+                                        <span class="badge bg-primary">Business Tools</span>
+                                        <span class="badge bg-info">Multi-user</span>
+                                    </div>
+                                </div>
+                                <div class="account-benefits">
+                                    <ul class="list-unstyled small">
+                                        <li><i class="fas fa-check text-success me-1"></i> Business debit cards</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> Multi-user access</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> Accounting integration</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Digital Asset Accounts -->
+                        <div class="col-md-6">
+                            <h6 class="text-warning mb-3">
+                                <i class="fab fa-bitcoin me-2"></i>
+                                Digital Assets & Crypto
+                            </h6>
+
+                            <!-- Crypto Wallet -->
+                            <div class="account-option mb-3" data-account-type="crypto-wallet">
+                                <div class="account-option-header">
+                                    <div class="account-icon bg-warning">
+                                        <i class="fab fa-bitcoin"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <h6>Multi-Currency Crypto Wallet</h6>
+                                        <p class="text-muted small">Store and manage cryptocurrencies</p>
+                                    </div>
+                                    <div class="account-features">
+                                        <span class="badge bg-warning">50+ Coins</span>
+                                        <span class="badge bg-success">Cold Storage</span>
+                                    </div>
+                                </div>
+                                <div class="account-benefits">
+                                    <ul class="list-unstyled small">
+                                        <li><i class="fas fa-check text-success me-1"></i> Bitcoin, Ethereum, and 50+ altcoins</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> Hardware wallet integration</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> DeFi protocol access</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- NVCT Stablecoin Account -->
+                            <div class="account-option mb-3" data-account-type="nvct-account">
+                                <div class="account-option-header">
+                                    <div class="account-icon bg-info">
+                                        <i class="fas fa-coins"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <h6>NVCT Stablecoin Account</h6>
+                                        <p class="text-muted small">Our native USD-pegged stablecoin</p>
+                                    </div>
+                                    <div class="account-features">
+                                        <span class="badge bg-success">USD Pegged</span>
+                                        <span class="badge bg-primary">Low Fees</span>
+                                    </div>
+                                </div>
+                                <div class="account-benefits">
+                                    <ul class="list-unstyled small">
+                                        <li><i class="fas fa-check text-success me-1"></i> 1:1 USD backing</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> Instant settlements</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> Minimal transaction fees</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- DeFi Yield Account -->
+                            <div class="account-option mb-3" data-account-type="defi-yield">
+                                <div class="account-option-header">
+                                    <div class="account-icon bg-secondary">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="account-info">
+                                        <h6>DeFi Yield Account</h6>
+                                        <p class="text-muted small">Earn yield through DeFi protocols</p>
+                                    </div>
+                                    <div class="account-features">
+                                        <span class="badge bg-warning">High Yield</span>
+                                        <span class="badge bg-danger">Higher Risk</span>
+                                    </div>
+                                </div>
+                                <div class="account-benefits">
+                                    <ul class="list-unstyled small">
+                                        <li><i class="fas fa-check text-success me-1"></i> Automated yield farming</li>
+                                        <li><i class="fas fa-check text-success me-1"></i> Diversified protocol exposure</li>
+                                        <li><i class="fas fa-exclamation-triangle text-warning me-1"></i> Smart contract risks apply</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="button" class="btn nvc-btn nvc-btn-primary btn-lg" data-action="custom-action" disabled id="nextStepBtn">
+                            Next Step
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-circle">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <span class="step-label">Funding</span>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-circle">
+                    <i class="fas fa-check"></i>
+                </div>
+                <span class="step-label">Review</span>
+            </div>
+        </div>
+        <div class="progress-line">
+            <div class="progress-line-fill" class="progress-bar-33"></div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Application Form -->
+        <div class="col-lg-8">
+            <div class="nvc-card enhanced-nvc-card">
+                <div class="banking-nvc-nvc-card-header enhanced-header">
+                    <div class="header-content">
+                        <h5 class="mb-0">
+                            <i class="fas fa-file-alt me-2"></i>Account Application
+                        </h5>
+                        <p class="header-subtitle">Complete the form below to open your new account</p>
+                    </div>
+                </div>
+                <div class="banking-nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('banking.create_account') }}" class="enhanced-form needs-validation" novalidate>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                        <!-- Enhanced Account Type Selection -->
+                        <div class="form-section">
+                            <h6 class="form-section-title">
+                                <i class="fas fa-university me-2"></i>Choose Your Account Type
+                            </h6>
+                            <div class="account-type-grid">
+                                <div class="account-type-nvc-card" data-type="Checking">
+                                    <div class="nvc-card-icon">
+                                        <i class="fas fa-university"></i>
+                                    </div>
+                                    <h6>Checking Account</h6>
+                                    <p>Perfect for daily transactions and bill payments</p>
+                                    <ul class="feature-list">
+                                        <li><i class="fas fa-check"></i> No minimum balance</li>
+                                        <li><i class="fas fa-check"></i> Free online banking</li>
+                                        <li><i class="fas fa-check"></i> Debit card included</li>
+                                    </ul>
+                                    <div class="nvc-nvc-card-footer">
+                                        <span class="rate">0.05% APY</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="account-type-nvc-card" data-type="Savings">
+                                    <div class="nvc-card-icon">
+                                        <i class="fas fa-piggy-bank"></i>
+                                    </div>
+                                    <h6>Savings Account</h6>
+                                    <p>Grow your money with competitive interest rates</p>
+                                    <ul class="feature-list">
+                                        <li><i class="fas fa-check"></i> High yield interest</li>
+                                        <li><i class="fas fa-check"></i> Compound interest</li>
+                                        <li><i class="fas fa-check"></i> No monthly fees</li>
+                                    </ul>
+                                    <div class="nvc-nvc-card-footer">
+                                        <span class="rate">4.25% APY</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="account-type-nvc-card" data-type="Business">
+                                    <div class="nvc-card-icon">
+                                        <i class="fas fa-briefcase"></i>
+                                    </div>
+                                    <h6>Business Account</h6>
+                                    <p>Comprehensive banking solutions for businesses</p>
+                                    <ul class="feature-list">
+                                        <li><i class="fas fa-check"></i> Business tools</li>
+                                        <li><i class="fas fa-check"></i> Merchant services</li>
+                                        <li><i class="fas fa-check"></i> Multiple users</li>
+                                    </ul>
+                                    <div class="nvc-nvc-card-footer">
+                                        <span class="rate">0.15% APY</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="account-type-nvc-card premium" data-type="Investment">
+                                    <div class="premium-badge">
+                                        <i class="fas fa-star"></i> Premium
+                                    </div>
+                                    <div class="nvc-card-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <h6>Investment Account</h6>
+                                    <p>Advanced investment and wealth management</p>
+                                    <ul class="feature-list">
+                                        <li><i class="fas fa-check"></i> Investment options</li>
+                                        <li><i class="fas fa-check"></i> Portfolio management</li>
+                                        <li><i class="fas fa-check"></i> Advisory services</li>
+                                    </ul>
+                                    <div class="nvc-nvc-card-footer">
+                                        <span class="rate">Variable APY</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" id="account_type" name="account_type" required>
+                            <div class="invalid-feedback">Please select an account type.</div>
+                            
+                            <!-- Currency Selection -->
+                            <div class="row g-3 mt-3">
+                                <div class="col-md-6">
+                                    <label for="currency" class="nvc-form-label-banking">Currency *</label>
+                                    <div class="select-wrapper">
+                                        <select class="nvc-form-input-banking enhanced" id="currency" name="currency" required>
+                                            <option value="">Select currency</option>
+                                            {% for curr in currencies %}
+                                            <option value="{{ curr }}" {{ 'selected' if curr == 'USD' else '' }}>
+                                                {{ curr }} 
+                                                {% if curr == 'USD' %}(US Dollar){% endif %}
+                                                {% if curr == 'EUR' %}(Euro){% endif %}
+                                                {% if curr == 'GBP' %}(British Pound){% endif %}
+                                                {% if curr == 'CAD' %}(Canadian Dollar){% endif %}
+                                                {% if curr == 'AUD' %}(Australian Dollar){% endif %}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        <i class="fas fa-chevron-down select-arrow"></i>
+                                    </div>
+                                    <div class="form-hint">Select your preferred currency</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Branch and Deposit -->
+                        <div class="form-section">
+                            <h6 class="form-section-title">
+                                <i class="fas fa-map-marker-alt me-2"></i>Branch & Initial Deposit
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="branch" class="nvc-form-label-banking">Preferred Branch</label>
+                                    <select class="nvc-form-input-banking" id="branch" name="branch">
+                                        <option value="Main Branch">Main Branch</option>
+                                        <option value="Downtown Branch">Downtown Branch</option>
+                                        <option value="Business Center">Business Center</option>
+                                        <option value="Online Banking">Online Banking</option>
+                                    </select>
+                                    <div class="form-hint">Choose your preferred branch location</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="initial_deposit" class="nvc-form-label-banking">Initial Deposit</label>
+                                    <div class="amount-input-group">
+                                        <span class="currency-symbol">$</span>
+                                        <input type="number" class="nvc-form-input-banking amount-input" id="initial_deposit" 
+                                               name="initial_deposit" step="0.01" min="0" placeholder="0.00">
+                                    </div>
+                                    <div class="amount-suggestions">
+                                        <span class="amount-tag" data-amount="100">$100</span>
+                                        <span class="amount-tag" data-amount="500">$500</span>
+                                        <span class="amount-tag" data-amount="1000">$1,000</span>
+                                        <span class="amount-tag" data-amount="5000">$5,000</span>
+                                    </div>
+                                    <div class="form-hint">Minimum deposit may apply for certain account types</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="form-section">
+                            <h6 class="form-section-title">
+                                <i class="fas fa-shield-alt me-2"></i>Terms and Conditions
+                            </h6>
+                            <div class="banking-checkbox-group">
+                                <div class="banking-checkbox">
+                                    <input class="form-check-input" type="checkbox" id="terms_agreement" required>
+                                    <label class="form-check-label" for="terms_agreement">
+                                        I agree to the <a href="/legal/terms" class="banking-link">Terms and Conditions</a> 
+                                        and <a href="/legal/account-agreement" class="banking-link">Account Agreement</a>
+                                    </label>
+                                    <div class="invalid-feedback">You must agree to the terms and conditions.</div>
+                                </div>
+                                <div class="banking-checkbox">
+                                    <input class="form-check-input" type="checkbox" id="privacy_policy" required>
+                                    <label class="form-check-label" for="privacy_policy">
+                                        I acknowledge the <a href="/legal/privacy" class="banking-link">Privacy Policy</a> 
+                                        and consent to data processing
+                                    </label>
+                                    <div class="invalid-feedback">You must acknowledge the privacy policy.</div>
+                                </div>
+                                <div class="banking-checkbox">
+                                    <input class="form-check-input" type="checkbox" id="marketing_consent">
+                                    <label class="form-check-label" for="marketing_consent">
+                                        I consent to receive marketing communications and product updates
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-section">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-banking-primary btn-lg">
+                                    <i class="fas fa-check me-2"></i>Submit Account Application
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Benefits Sidebar -->
+        <div class="col-lg-4">
+            <div class="banking-nvc-card">
+                <div class="banking-nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Account Benefits
+                    </h5>
+                </div>
+                <div class="banking-nvc-nvc-card-body">
+                    <div class="benefit-list">
+                        <div class="benefit-item">
+                            <div class="benefit-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="benefit-content">
+                                <h6>FDIC Insured</h6>
+                                <p>Your deposits are protected up to $250,000</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <div class="benefit-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="benefit-content">
+                                <h6>Mobile Banking</h6>
+                                <p>24/7 access through our mobile app</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <div class="benefit-icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="benefit-content">
+                                <h6>Competitive Rates</h6>
+                                <p>Industry-leading interest rates</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <div class="benefit-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div class="benefit-content">
+                                <h6>24/7 Support</h6>
+                                <p>Expert customer service when you need it</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Types Info -->
+            <div class="banking-nvc-card">
+                <div class="banking-nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Account Types
+                    </h5>
+                </div>
+                <div class="banking-nvc-nvc-card-body">
+                    <div class="account-type-info">
+                        <div class="account-type-item" data-type="Checking">
+                            <h6><i class="fas fa-university me-2"></i>Checking</h6>
+                            <p>Perfect for daily transactions and bill payments</p>
+                            <small class="text-light">• No minimum balance • Free online banking</small>
+                        </div>
+                        <div class="account-type-item" data-type="Savings">
+                            <h6><i class="fas fa-piggy-bank me-2"></i>Savings</h6>
+                            <p>Grow your money with competitive interest rates</p>
+                            <small class="text-light">• High yield • Compound interest</small>
+                        </div>
+                        <div class="account-type-item" data-type="Business">
+                            <h6><i class="fas fa-briefcase me-2"></i>Business</h6>
+                            <p>Comprehensive banking solutions for businesses</p>
+                            <small class="text-light">• Business tools • Merchant services</small>
+                        </div>
+                        <div class="account-type-item" data-type="Premium">
+                            <h6><i class="fas fa-crown me-2"></i>Premium</h6>
+                            <p>Exclusive benefits and personalized service</p>
+                            <small class="text-light">• VIP support • Premium rewards</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Enhanced Progress Indicator */
+.progress-container {
+    position: relative;
+    background: linear-gradient(135deg, #0a2447 0%, #1e4f72 100%);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 0 auto;
+    max-width: 600px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.step-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.progress-step.active .step-circle {
+    background: #66ccff;
+    border-color: #66ccff;
+    box-shadow: 0 0 20px rgba(102, 204, 255, 0.5);
+}
+
+.step-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    font-weight: 500;
+}
+
+.progress-step.active .step-label {
+    color: #66ccff;
+    font-weight: 600;
+}
+
+.progress-line {
+    position: absolute;
+    top: 48px;
+    left: 48px;
+    right: 48px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 1px;
+    z-index: 1;
+}
+
+.progress-line-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #66ccff, #4da3e0);
+    border-radius: 1px;
+    transition: width 0.5s ease;
+}
+
+/* Enhanced Cards */
+.enhanced-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.enhanced-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.enhanced-header {
+    background: linear-gradient(135deg, #0a2447 0%, #1e4f72 100%);
+    color: white;
+    padding: 24px;
+    border-bottom: none;
+}
+
+.header-content h5 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.header-subtitle {
+    margin: 8px 0 0 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Account Type Cards */
+.account-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.account-type-card {
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.account-type-card:hover {
+    border-color: #66ccff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 204, 255, 0.15);
+}
+
+.account-type-card.selected {
+    border-color: #66ccff;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    box-shadow: 0 8px 24px rgba(102, 204, 255, 0.2);
+}
+
+.account-type-card.premium {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-color: #f59e0b;
+}
+
+.account-type-card.premium:hover {
+    border-color: #d97706;
+    box-shadow: 0 8px 24px rgba(217, 119, 6, 0.15);
+}
+
+.premium-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #f59e0b;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #66ccff 0%, #4da3e0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 24px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.account-type-card:hover .card-icon {
+    transform: scale(1.1);
+}
+
+.account-type-card h6 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: #1f2937;
+}
+
+.account-type-card p {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 16px 0;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #374151;
+    margin: 6px 0;
+}
+
+.feature-list i {
+    color: #10b981;
+    font-size: 12px;
+}
+
+.card-footer {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 16px;
+    margin-top: 16px;
+}
+
+.rate {
+    font-size: 16px;
+    font-weight: 700;
+    color: #059669;
+    background: #d1fae5;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* Enhanced Form Elements */
+.enhanced-form {
+    padding: 32px;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper .select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    pointer-events: none;
+}
+
+.form-control-banking.enhanced {
+    padding-right: 40px;
+}
+
+/* Amount Input */
+.amount-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #374151;
+    font-weight: 600;
+    z-index: 2;
+}
+
+.amount-input {
+    padding-left: 32px !important;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.amount-suggestions {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+.amount-tag {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #d1d5db;
+}
+
+.amount-tag:hover {
+    background: #66ccff;
+    color: white;
+    border-color: #66ccff;
+}
+
+/* Enhanced Buttons */
+.btn-banking-primary {
+    background: linear-gradient(135deg, #66ccff 0%, #4da3e0 100%);
+    border: none;
+    color: white;
+    padding: 12px 32px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 204, 255, 0.3);
+}
+
+.btn-banking-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 204, 255, 0.4);
+}
+
+.btn-banking-secondary {
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 12px 32px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-banking-secondary:hover {
+    background: #e2e8f0;
+    color: #334155;
+    transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .account-type-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .progress-steps {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .progress-line {
+        display: none;
+    }
+    
+    .enhanced-form {
+        padding: 24px;
+    }
+    
+    .progress-container {
+        padding: 16px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Account type selection
+    const accountTypeCards = document.querySelectorAll('.account-type-card');
+    const accountTypeInput = document.getElementById('account_type');
+    
+    accountTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected class from all cards
+            accountTypeCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            
+            // Update hidden input value
+            const accountType = this.getAttribute('data-type');
+            accountTypeInput.value = accountType;
+            
+            // Remove any validation error
+            this.classList.remove('is-invalid');
+        });
+    });
+    
+    // Amount suggestion tags
+    const amountTags = document.querySelectorAll('.amount-tag');
+    const amountInput = document.getElementById('initial_deposit');
+    
+    amountTags.forEach(tag => {
+        tag.addEventListener('click', function() {
+            const amount = this.getAttribute('data-amount');
+            amountInput.value = amount;
+            
+            // Visual feedback
+            amountTags.forEach(t => t.style.background = '#f3f4f6');
+            amountTags.forEach(t => t.style.color = '#374151');
+            this.style.background = '#66ccff';
+            this.style.color = 'white';
+        });
+    });
+    
+    // Enhanced form validation
+    const form = document.querySelector('.enhanced-form');
+    form.addEventListener('submit', function(e) {
+        if (!accountTypeInput.value) {
+            e.preventDefault();
+            
+            // Show error for account type selection
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger mt-3';
+            errorDiv.textContent = 'Please select an account type to continue.';
+            
+            const accountSection = document.querySelector('.account-type-grid').parentElement;
+            accountSection.appendChild(errorDiv);
+            
+            // Remove error after 5 seconds
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+    });
+    
+    // Animate progress steps
+    setTimeout(() => {
+        const progressFill = document.querySelector('.progress-line-fill');
+        if (progressFill) {
+            progressFill.style.width = '33%';
+        }
+    }, 500);
+});
+</script>
+
+<!-- Additional Styles -->
+<style>
+/* Professional Form Styles */
+.banking-container {
+    max-width: 100%;
+    padding: 0;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--banking-border-color);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.form-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--banking-text-color);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0, 123, 255, 0.2);
+}
+
+.form-section-title i {
+    color: var(--banking-primary-color);
+}
+
+.form-label-banking {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--banking-text-color);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control-banking {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    border: 2px solid var(--banking-border-color);
+    border-radius: var(--banking-border-radius);
+    background-color: var(--banking-input-bg);
+    color: var(--banking-text-color);
+    transition: all 0.3s ease;
+}
+
+.form-control-banking:focus {
+    outline: none;
+    border-color: var(--banking-primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    background-color: var(--banking-input-focus-bg);
+}
+
+.form-control-banking:invalid {
+    border-color: #dc3545;
+}
+
+.form-control-banking:valid {
+    border-color: #28a745;
+}
+
+.banking-input-addon {
+    background-color: var(--banking-primary-color);
+    color: white;
+    border: 2px solid var(--banking-primary-color);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.input-group .form-control-banking {
+    border-left: 0;
+}
+
+.input-group:focus-within .banking-input-addon {
+    background-color: var(--banking-primary-color);
+    border-color: var(--banking-primary-color);
+}
+
+.input-group:focus-within .form-control-banking {
+    border-color: var(--banking-primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-hint {
+    font-size: 0.8rem;
+    color: var(--banking-muted-color);
+    margin-top: 0.25rem;
+    font-style: italic;
+}
+
+.banking-checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.banking-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(0, 123, 255, 0.05);
+    border-radius: var(--banking-border-radius);
+    border: 1px solid rgba(0, 123, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.banking-checkbox:hover {
+    background: rgba(0, 123, 255, 0.08);
+    border-color: rgba(0, 123, 255, 0.2);
+}
+
+.banking-checkbox .form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: var(--banking-primary-color);
+}
+
+.banking-checkbox .form-check-label {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--banking-text-color);
+    margin: 0;
+}
+
+.banking-link {
+    color: var(--banking-primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.banking-link:hover {
+    color: var(--banking-primary-color);
+    text-decoration: underline;
+}
+
+.invalid-feedback {
+    display: none;
+    font-size: 0.8rem;
+    color: #dc3545;
+    margin-top: 0.25rem;
+}
+
+.was-validated .form-control-banking:invalid ~ .invalid-feedback,
+.form-control-banking.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
+/* Benefits and Info Sidebar */
+.benefit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.benefit-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 123, 255, 0.1);
+    color: var(--banking-primary-color);
+    border-radius: 50%;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.benefit-content h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--banking-text-color);
+    margin-bottom: 0.5rem;
+}
+
+.benefit-content p {
+    font-size: 0.9rem;
+    color: var(--banking-muted-color);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.account-type-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.account-type-item {
+    padding: 1rem;
+    background: rgba(0, 123, 255, 0.05);
+    border-radius: var(--banking-border-radius);
+    border: 1px solid rgba(0, 123, 255, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.account-type-item:hover {
+    background: rgba(0, 123, 255, 0.08);
+    border-color: rgba(0, 123, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.account-type-item.selected {
+    background: rgba(0, 123, 255, 0.15);
+    border-color: var(--banking-primary-color);
+}
+
+.account-type-item h6 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--banking-text-color);
+    margin-bottom: 0.5rem;
+}
+
+.account-type-item h6 i {
+    color: var(--banking-primary-color);
+}
+
+.account-type-item p {
+    font-size: 0.85rem;
+    color: var(--banking-muted-color);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.account-type-item small {
+    font-size: 0.75rem;
+    color: var(--banking-muted-color);
+    opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .banking-container .row {
+        flex-direction: column-reverse;
+    }
+    
+    .banking-container .col-lg-4 {
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .banking-checkbox {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .banking-checkbox .form-check-input {
+        align-self: flex-start;
+    }
+    
+    .benefit-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+    
+    .form-section {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+    }
+}
+
+/* Form Validation Animation */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.form-control-banking:invalid {
+    animation: shake 0.3s ease-in-out;
+}
+
+/* Loading State */
+.btn-banking-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-banking-primary.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn-banking-primary.loading::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid white;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+
+<script>
+// Form Enhancement JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    const accountTypeSelect = document.getElementById('account_type');
+    const accountTypeItems = document.querySelectorAll('.account-type-item');
+    const submitButton = document.querySelector('button[type="submit"]');
+    
+    // Account type selection highlighting
+    if (accountTypeSelect && accountTypeItems.length > 0) {
+        accountTypeSelect.addEventListener('change', function() {
+            // Remove previous selections
+            accountTypeItems.forEach(item => item.classList.remove('selected'));
+            
+            // Highlight selected type
+            const selectedType = this.value;
+            const matchingItem = document.querySelector(`[data-type="${selectedType}"]`);
+            if (matchingItem) {
+                matchingItem.classList.add('selected');
+                matchingItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+        
+        // Allow clicking on info items to select account type
+        accountTypeItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                if (type) {
+                    accountTypeSelect.value = type;
+                    accountTypeSelect.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    }
+    
+    // Form validation
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Focus on first invalid field
+                const firstInvalid = form.querySelector(':invalid');
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                // Add loading state
+                submitButton.classList.add('loading');
+                submitButton.disabled = true;
+            }
+            
+            form.classList.add('was-validated');
+        });
+        
+        // Real-time validation feedback
+        const inputs = form.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.checkValidity()) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
+            });
+            
+            input.addEventListener('input', function() {
+                if (this.classList.contains('was-validated') || this.classList.contains('is-invalid')) {
+                    if (this.checkValidity()) {
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                    } else {
+                        this.classList.remove('is-valid');
+                        this.classList.add('is-invalid');
+                    }
+                }
+            });
+        });
+    }
+    
+    // Currency formatting for initial deposit
+    const initialDepositInput = document.getElementById('initial_deposit');
+    if (initialDepositInput) {
+        initialDepositInput.addEventListener('input', function() {
+            let value = parseFloat(this.value);
+            if (!isNaN(value) && value >= 0) {
+                // Update placeholder or show formatted value
+                this.setAttribute('title', `$${value.toFixed(2)}`);
+            }
+        });
+    }
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

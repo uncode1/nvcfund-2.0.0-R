@@ -1,0 +1,306 @@
+{% extends "unified_base.html" %}
+
+{% block title %}KYC Management - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Know Your Customer Management{% endblock %}
+{% block page_description %}Customer due diligence, identity verification, and KYC compliance management{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="btn btn-outline-primary">
+    <i class="fas fa-download"></i>
+    Export KYC Report
+</button>
+<button type="button" class="btn btn-secondary">
+    <i class="fas fa-plus"></i>
+    Manual Review
+</button>
+<button type="button" class="btn btn-primary">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Status
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- KYC Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Verified Customers</h6>
+                            <h3 class="mb-0">{{ kyc_stats.verified_customers or '11,247' }}</h3>
+                            <small class="text-light">{{ kyc_stats.verification_rate or '94.2' }}% completion rate</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-user-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Pending Reviews</h6>
+                            <h3 class="mb-0">{{ kyc_stats.pending_reviews or '247' }}</h3>
+                            <small class="text-light">Awaiting verification</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Failed Verifications</h6>
+                            <h3 class="mb-0">{{ kyc_stats.failed_verifications or '89' }}</h3>
+                            <small class="text-light">Require attention</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-user-times fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Due for Renewal</h6>
+                            <h3 class="mb-0">{{ kyc_stats.due_renewal or '156' }}</h3>
+                            <small class="text-light">Next 30 days</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-redo fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KYC Processing Queue -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        KYC Processing Queue ({{ kyc_stats.pending_reviews or '247' }} pending)
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                        <button type="button" class="btn btn-outline-success">
+                            <i class="fas fa-check"></i>
+                            Bulk Approve
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" class="form-check-input">
+                                    </th>
+                                    <th>Customer ID</th>
+                                    <th>Customer Name</th>
+                                    <th>KYC Level</th>
+                                    <th>Documents</th>
+                                    <th>Risk Score</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for kyc in kyc_queue or [
+                                    {'id': 'KYC-001234', 'customer': 'John Doe', 'email': 'john.doe@email.com', 'level': 'Enhanced', 'documents': '4/5', 'risk_score': '3.2', 'submitted': '2024-01-15', 'status': 'Under Review'},
+                                    {'id': 'KYC-001235', 'customer': 'Jane Smith', 'email': 'jane.smith@email.com', 'level': 'Standard', 'documents': '3/3', 'risk_score': '1.8', 'submitted': '2024-01-14', 'status': 'Pending Documents'},
+                                    {'id': 'KYC-001236', 'customer': 'Mike Johnson', 'email': 'mike.j@email.com', 'level': 'Enhanced', 'documents': '5/5', 'risk_score': '4.1', 'submitted': '2024-01-13', 'status': 'Manual Review'},
+                                    {'id': 'KYC-001237', 'customer': 'Sarah Wilson', 'email': 'sarah.w@email.com', 'level': 'Basic', 'documents': '2/2', 'risk_score': '2.1', 'submitted': '2024-01-12', 'status': 'Auto-Approved'},
+                                    {'id': 'KYC-001238', 'customer': 'David Brown', 'email': 'david.b@email.com', 'level': 'Enhanced', 'documents': '3/5', 'risk_score': '5.2', 'submitted': '2024-01-11', 'status': 'Rejected'}
+                                ] %}
+                                <tr class="{{ 'table-success' if kyc.status == 'Auto-Approved' else 'table-warning' if kyc.status == 'Manual Review' else 'table-danger' if kyc.status == 'Rejected' else '' }}">
+                                    <td>
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <strong>{{ kyc.id }}</strong>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ kyc.customer }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ kyc.email }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if kyc.level == 'Basic' else 'info' if kyc.level == 'Standard' else 'warning' }}">
+                                            {{ kyc.level }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-{{ 'success' if kyc.documents.split('/')[0] == kyc.documents.split('/')[1] else 'warning' }}" 
+                                                 style="width: {{ (kyc.documents.split('/')[0]|int / kyc.documents.split('/')[1]|int * 100)|round }}%">
+                                                {{ kyc.documents }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if kyc.risk_score|float < 2.0 else 'warning' if kyc.risk_score|float < 4.0 else 'danger' }}">
+                                            {{ kyc.risk_score }}
+                                        </span>
+                                    </td>
+                                    <td>{{ kyc.submitted }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if kyc.status == 'Auto-Approved' else 'warning' if kyc.status == 'Manual Review' else 'info' if kyc.status == 'Under Review' else 'secondary' if kyc.status == 'Pending Documents' else 'danger' }}">
+                                            {{ kyc.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="Review Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if kyc.status == 'Under Review' or kyc.status == 'Manual Review' %}
+                                            <button type="button" class="btn btn-outline-success" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger" title="Reject">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            {% elif kyc.status == 'Pending Documents' %}
+                                            <button type="button" class="btn btn-outline-warning" title="Request Documents">
+                                                <i class="fas fa-file-alt"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KYC Analytics -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        KYC Processing Trends
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container nvc-style-54c806" >
+                        <canvas id="kycTrendsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Verification Methods
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Digital ID Verification</span>
+                            <span class="text-primary">{{ verification_methods.digital or '65%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" class="progress-bar-65"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Manual Document Review</span>
+                            <span class="text-warning">{{ verification_methods.manual or '25%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" class="progress-bar-25"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Video Call Verification</span>
+                            <span class="text-info">{{ verification_methods.video or '10%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" class="progress-bar-10"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Status -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Document Requirements
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for doc_type in document_types or [
+                        {'name': 'Government ID', 'required': '100%', 'submitted': '94%', 'verified': '89%'},
+                        {'name': 'Proof of Address', 'required': '100%', 'submitted': '87%', 'verified': '82%'},
+                        {'name': 'Income Verification', 'required': '60%', 'submitted': '45%', 'verified': '41%'},
+                        {'name': 'Bank Statements', 'required': '40%', 'submitted': '32%', 'verified': '28%'}
+                    ] %}
+                    <div class="mb-3">
+                        <h6>{{ doc_type.name }}</h6>
+                        <div class="row">
+                            <div class="col-4">
+                                <small class="text-muted">Required</small>
+                                <div class="text-primary">{{ doc_type.required }}</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Submitted</small>
+                                <div class="text-warning">{{ doc_type.submitted }}</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Verified</small>
+                                <div class="text-success">{{ doc_type.verified }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

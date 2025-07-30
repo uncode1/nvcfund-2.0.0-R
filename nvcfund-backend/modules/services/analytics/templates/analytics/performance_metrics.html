@@ -1,0 +1,218 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Performance Metrics - NVC Banking Platform{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Professional Navbar */
+        .navbar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            color: white !important;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            margin: 0 2px;
+            padding: 0.5rem 0.8rem !important;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+            transform: translateY(-1px);
+        }
+
+        .btn-light {
+            background-color: white;
+            color: #1e3c72;
+            font-weight: 500;
+        }
+
+        /* Form Container */
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1a365d 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .form-header h3 {
+            margin: 0 0 0.5rem 0;
+            font-weight: 600;
+        }
+
+        .form-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .form-body {
+            padding: 2rem;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            border-color: #0a2447;
+            box-shadow: 0 0 0 0.2rem rgba(10, 36, 71, 0.25);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .form-nav-links {
+            text-align: center;
+            padding-top: 1rem;
+            border-top: 1px solid #e9ecef;
+            margin-top: 1.5rem;
+        }
+
+        .form-nav-links a {
+            color: #0a2447;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-nav-links a:hover {
+            color: #1e3a5f;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                margin: 1rem auto;
+                padding: 0 0.5rem;
+            }
+            .form-header {
+                padding: 1.5rem;
+            }
+            .form-body {
+                padding: 1.5rem;
+            }
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <!-- Professional Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
+                <i class="fas fa-university me-2" class="nvc-text-gold"></i>
+                <span class="d-none d-sm-inline">NVC Banking Platform</span>
+                <span class="d-inline d-sm-none">NVC</span>
+            </a>
+
+            <div class="navbar-nav ms-auto d-flex flex-row">
+                <a class="nav-link me-3" href="/">
+                    <i class="fas fa-home me-1"></i> Home
+                </a>
+                <a class="nav-link me-3" href="/about">
+                    <i class="fas fa-info-circle me-1"></i> About
+                </a>
+                <a class="nav-link me-3" href="/contact">
+                    <i class="fas fa-envelope me-1"></i> Contact
+                </a>
+                <a class="btn btn-light btn-sm nvc-spaced-bordered-6fdd6e" href="/auth/login" >
+                    <i class="fas fa-sign-in-alt me-1"></i> Sign In
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Form Content -->
+    <div class="form-container">
+        <div class="form-nvc-card">
+            <div class="form-header">
+                <h3><i class="fas fa-user-plus me-2"></i>Performance Metrics</h3>
+                <p>Complete your analytics banking form with enterprise-grade security</p>
+            </div>
+            
+            <div class="form-body">
+                
+                
+                
+                
+                
+                
+                <div class="form-nav-links">
+                    <a href="/auth/login">Already have an account? Sign in</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

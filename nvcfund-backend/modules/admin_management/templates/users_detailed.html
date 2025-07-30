@@ -1,0 +1,815 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Users Detailed - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Detailed User Management{% endblock %}
+{% block page_description %}Comprehensive user management with detailed analytics and controls{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}">Administration</a>
+</li>
+<li class="nvc-breadcrumb-item active">Users Detailed</li>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <style>
+        .dashboard-stat-card { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 8px !important; padding: 1.5rem; margin-bottom: 1rem; }
+        .card { background: #1e293b !important; border: 1px solid #334155 !important; color: #e2e8f0 !important; }
+        .btn-primary { background: #3b82f6 !important; border-color: #3b82f6 !important; }
+        .table-dark { background: #1e293b !important; }
+        .table-dark td, .table-dark th { border-color: #334155 !important; color: #e2e8f0 !important; }
+    </style>
+</head>
+<body>
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<style>
+    .users-detailed {
+        background: linear-gradient(135deg, #0a2447 0%, #1a365d 100%);
+        min-height: 100vh;
+        color: #ffffff;
+        padding: 20px;
+    }
+    
+    .page-header {
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        padding: 20px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        background: rgba(255,255,255,0.15);
+        transform: translateY(-3px);
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        color: #66ccff;
+        margin-bottom: 15px;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #66ccff;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+    
+    .users-table-container {
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        margin-bottom: 30px;
+    }
+    
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .users-table th {
+        background: rgba(255,255,255,0.1);
+        font-weight: bold;
+        color: #66ccff;
+        position: sticky;
+        top: 0;
+    }
+    
+    .users-table tbody tr:hover {
+        background: rgba(255,255,255,0.05);
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .status-active { background: #00ff88; color: #000; }
+    .status-inactive { background: #ff6b6b; color: #fff; }
+    .status-suspended { background: #ff9500; color: #fff; }
+    .status-pending { background: #ffd93d; color: #000; }
+    
+    .role-badge {
+        padding: 3px 6px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin-right: 5px;
+    }
+    
+    .role-admin { background: #ff4757; color: #fff; }
+    .role-treasury { background: #3742fa; color: #fff; }
+    .role-business { background: #2ed573; color: #fff; }
+    .role-standard { background: #747d8c; color: #fff; }
+    
+    .action-btn {
+        background: #66ccff;
+        color: #0a2447;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: bold;
+        margin-right: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        background: #4db8ff;
+        transform: scale(1.05);
+    }
+    
+    .action-btn.danger {
+        background: #ff4757;
+        color: #fff;
+    }
+    
+    .action-btn.danger:hover {
+        background: #ff3838;
+    }
+    
+    .search-filters {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .search-input {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        padding: 10px;
+        color: #fff;
+        min-width: 200px;
+    }
+    
+    .search-input::placeholder {
+        color: rgba(255,255,255,0.6);
+    }
+    
+    .filter-select {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        padding: 10px;
+        color: #fff;
+        min-width: 150px;
+    }
+    
+    .realtime-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .realtime-dot {
+        width: 8px;
+        height: 8px;
+        background: #00ff88;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .user-activity-chart {
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        margin-bottom: 30px;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .page-btn {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .page-btn:hover,
+    .page-btn.active {
+        background: #66ccff;
+        color: #0a2447;
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+    }
+    
+    .modal-content {
+        background: linear-gradient(135deg, #0a2447 0%, #1a365d 100%);
+        margin: 5% auto;
+        padding: 30px;
+        border-radius: 15px;
+        width: 80%;
+        max-width: 600px;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .close:hover {
+        color: #fff;
+    }
+</style>
+
+<div class="users-detailed">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1><i class="fas fa-users-cog"></i> User Management - Detailed View</h1>
+            <p>Comprehensive user administration with real-time monitoring</p>
+        </div>
+        <div class="realtime-indicator">
+            <span class="realtime-dot"></span>
+            <span>Live Data</span>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-nvc-cards">
+        <div class="stat-nvc-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-value" id="total-users">{{ users_data.total_users or 0 }}</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        
+        <div class="stat-nvc-card">
+            <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+            <div class="stat-value" id="active-users">{{ users_data.active_users or 0 }}</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+        
+        <div class="stat-nvc-card">
+            <div class="stat-icon"><i class="fas fa-user-plus"></i></div>
+            <div class="stat-value" id="new-registrations">{{ users_data.new_registrations_today or 0 }}</div>
+            <div class="stat-label">New Today</div>
+        </div>
+        
+        <div class="stat-nvc-card">
+            <div class="stat-icon"><i class="fas fa-user-clock"></i></div>
+            <div class="stat-value" id="online-now">{{ users_data.online_now or 0 }}</div>
+            <div class="stat-label">Online Now</div>
+        </div>
+        
+        <div class="stat-nvc-card">
+            <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
+            <div class="stat-value" id="admin-users">{{ users_data.admin_users or 0 }}</div>
+            <div class="stat-label">Admin Users</div>
+        </div>
+        
+        <div class="stat-nvc-card">
+            <div class="stat-icon"><i class="fas fa-user-times"></i></div>
+            <div class="stat-value" id="suspended-users">{{ users_data.suspended_users or 0 }}</div>
+            <div class="stat-label">Suspended</div>
+        </div>
+    </div>
+
+    <!-- User Activity Chart -->
+    <div class="user-activity-chart">
+        <h3><i class="fas fa-chart-area"></i> Real-time User Activity</h3>
+        <canvas id="userActivityChart" width="400" height="150"></canvas>
+    </div>
+
+    <!-- Users Table -->
+    <div class="users-table-container">
+        <div class="search-filters">
+            <input type="text" class="search-input" id="user-search" placeholder="Search users by name, email, or ID...">
+            <select class="filter-select" id="status-filter">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="suspended">Suspended</option>
+                <option value="pending">Pending</option>
+            </select>
+            <select class="filter-select" id="role-filter">
+                <option value="">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="treasury">Treasury</option>
+                <option value="business">Business</option>
+                <option value="standard">Standard</option>
+            </select>
+            <button type="button" class="action-btn" data-action="custom-action">
+                <i class="fas fa-download"></i> Export
+            </button>
+            <button type="button" class="action-btn" data-action="custom-action">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+        </div>
+
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Registration Date</th>
+                    <th>Account Balance</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="users-table-body">
+                {% if users_data.users %}
+                    {% for user in users_data.users %}
+                    <tr data-user-id="{{ user.id }}">
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.full_name or 'N/A' }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="role-badge role-{{ user.role.lower() }}">{{ user.role }}</span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ user.status.lower() }}">{{ user.status }}</span>
+                        </td>
+                        <td>{{ user.last_login or 'Never' }}</td>
+                        <td>{{ user.registration_date }}</td>
+                        <td>${{ user.account_balance or '0.00' }}</td>
+                        <td>
+                            <button type="button" class="action-btn" data-action="custom-action">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button type="button" class="action-btn" data-action="custom-action">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            {% if user.status != 'suspended' %}
+                            <button type="button" class="action-btn danger" data-action="custom-action">
+                                <i class="fas fa-ban"></i> Suspend
+                            </button>
+                            {% else %}
+                            <button type="button" class="action-btn" data-action="custom-action">
+                                <i class="fas fa-check"></i> Unsuspend
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="nvc-center-spaced-854720">
+                            No users found
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <!-- Pagination buttons will be inserted here -->
+        </div>
+    </div>
+</div>
+
+<!-- User Details Modal -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-user"></i> User Details</h2>
+        <div id="user-details-content">
+            <!-- User details will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Socket.IO connection for real-time updates
+const socket = io('/admin-management');
+
+// Chart instance
+let userActivityChart;
+
+// Current filter settings
+let currentFilters = {
+    search: '',
+    status: '',
+    role: '',
+    page: 1
+};
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    initializeChart();
+    setupEventListeners();
+    setupPagination();
+    
+    // Connect to socket for real-time updates
+    if (socket.connected) {
+        socket.emit('request_dashboard_data');
+    }
+});
+
+// Socket event handlers
+socket.on('connect', function() {
+    console.log('Connected to admin management socket');
+    socket.emit('request_dashboard_data');
+});
+
+socket.on('user_stats_update', function(data) {
+    updateUserStats(data);
+});
+
+socket.on('user_activity_update', function(data) {
+    updateUserActivityChart(data);
+});
+
+socket.on('user_list_update', function(data) {
+    updateUserTable(data.users);
+});
+
+socket.on('user_status_change', function(data) {
+    updateUserRow(data);
+});
+
+// Initialize activity chart
+function initializeChart() {
+    const ctx = document.getElementById('userActivityChart').getContext('2d');
+    userActivityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Active Users',
+                    data: [],
+                    borderColor: '#66ccff',
+                    backgroundColor: 'rgba(102, 204, 255, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'New Registrations',
+                    data: [],
+                    borderColor: '#00ff88',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#ffffff' }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                },
+                y: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                }
+            }
+        }
+    });
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Search input
+    document.getElementById('user-search').addEventListener('input', function(e) {
+        currentFilters.search = e.target.value;
+        currentFilters.page = 1;
+        filterUsers();
+    });
+    
+    // Status filter
+    document.getElementById('status-filter').addEventListener('change', function(e) {
+        currentFilters.status = e.target.value;
+        currentFilters.page = 1;
+        filterUsers();
+    });
+    
+    // Role filter
+    document.getElementById('role-filter').addEventListener('change', function(e) {
+        currentFilters.role = e.target.value;
+        currentFilters.page = 1;
+        filterUsers();
+    });
+    
+    // Modal close
+    document.querySelector('.close').addEventListener('click', function() {
+        document.getElementById('userModal').style.display = 'none';
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        const modal = document.getElementById('userModal');
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+// Update user statistics
+function updateUserStats(data) {
+    document.getElementById('total-users').textContent = data.total_users || 0;
+    document.getElementById('active-users').textContent = data.active_users || 0;
+    document.getElementById('new-registrations').textContent = data.new_registrations || 0;
+    document.getElementById('online-now').textContent = data.online_now || 0;
+    document.getElementById('admin-users').textContent = data.admin_users || 0;
+    document.getElementById('suspended-users').textContent = data.suspended_users || 0;
+}
+
+// Update user activity chart
+function updateUserActivityChart(data) {
+    if (userActivityChart && data.labels) {
+        userActivityChart.data.labels = data.labels;
+        userActivityChart.data.datasets[0].data = data.active_users || [];
+        userActivityChart.data.datasets[1].data = data.new_registrations || [];
+        userActivityChart.update('none');
+    }
+}
+
+// Update user table
+function updateUserTable(users) {
+    const tbody = document.getElementById('users-table-body');
+    tbody.innerHTML = '';
+    
+    if (users && users.length > 0) {
+        users.forEach(user => {
+            const row = createUserRow(user);
+            tbody.appendChild(row);
+        });
+    } else {
+        tbody.innerHTML = '<tr><td colspan="9" class="nvc-center-spaced-854720">No users found</td></tr>';
+    }
+}
+
+// Create user table row
+function createUserRow(user) {
+    const row = document.createElement('tr');
+    row.setAttribute('data-user-id', user.id);
+    
+    const suspendBtn = user.status !== 'suspended' 
+        ? `<button type="button" class="action-btn danger" data-action="custom-action"><i class="fas fa-ban"></i> Suspend</button>`
+        : `<button type="button" class="action-btn" data-action="custom-action"><i class="fas fa-check"></i> Unsuspend</button>`;
+    
+    row.innerHTML = `
+        <td>${user.id}</td>
+        <td>${user.full_name || 'N/A'}</td>
+        <td>${user.email}</td>
+        <td><span class="role-badge role-${user.role.toLowerCase()}">${user.role}</span></td>
+        <td><span class="status-badge status-${user.status.toLowerCase()}">${user.status}</span></td>
+        <td>${user.last_login || 'Never'}</td>
+        <td>${user.registration_date}</td>
+        <td>$${user.account_balance || '0.00'}</td>
+        <td>
+            <button type="button" class="action-btn" data-action="custom-action"><i class="fas fa-eye"></i> View</button>
+            <button type="button" class="action-btn" data-action="custom-action"><i class="fas fa-edit"></i> Edit</button>
+            ${suspendBtn}
+        </td>
+    `;
+    
+    return row;
+}
+
+// Update specific user row
+function updateUserRow(userData) {
+    const row = document.querySelector(`tr[data-user-id="${userData.id}"]`);
+    if (row) {
+        const newRow = createUserRow(userData);
+        row.parentNode.replaceChild(newRow, row);
+    }
+}
+
+// Filter users
+function filterUsers() {
+    // Send filter request to server
+    socket.emit('filter_users', currentFilters);
+}
+
+// User action functions
+function viewUserDetails(userId) {
+    // Request detailed user information
+    fetch(`/admin/api/users/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showUserDetailsModal(data.user);
+            } else {
+                alert('Error loading user details: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading user details');
+        });
+}
+
+function editUser(userId) {
+    window.location.href = `/admin/users/${userId}/edit`;
+}
+
+function suspendUser(userId) {
+    if (confirm('Are you sure you want to suspend this user?')) {
+        fetch(`/admin/api/users/${userId}/suspend`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('User suspended successfully');
+                // Real-time update will handle the UI update
+            } else {
+                alert('Error suspending user: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error suspending user');
+        });
+    }
+}
+
+function unsuspendUser(userId) {
+    if (confirm('Are you sure you want to unsuspend this user?')) {
+        fetch(`/admin/api/users/${userId}/unsuspend`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('User unsuspended successfully');
+                // Real-time update will handle the UI update
+            } else {
+                alert('Error unsuspending user: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error unsuspending user');
+        });
+    }
+}
+
+function exportUsers() {
+    const exportFilters = {
+        ...currentFilters,
+        export: true
+    };
+    
+    window.location.href = `/admin/users/export?${new URLSearchParams(exportFilters)}`;
+}
+
+function refreshUsers() {
+    socket.emit('request_user_list_refresh');
+}
+
+function showUserDetailsModal(user) {
+    const modal = document.getElementById('userModal');
+    const content = document.getElementById('user-details-content');
+    
+    content.innerHTML = `
+        <div class="nvc-style-a52492">
+            <div>
+                <h4>Basic Information</h4>
+                <p><strong>ID:</strong> ${user.id}</p>
+                <p><strong>Name:</strong> ${user.full_name || 'N/A'}</p>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Phone:</strong> ${user.phone || 'N/A'}</p>
+                <p><strong>Role:</strong> ${user.role}</p>
+                <p><strong>Status:</strong> ${user.status}</p>
+            </div>
+            <div>
+                <h4>Account Information</h4>
+                <p><strong>Registration:</strong> ${user.registration_date}</p>
+                <p><strong>Last Login:</strong> ${user.last_login || 'Never'}</p>
+                <p><strong>Account Balance:</strong> $${user.account_balance || '0.00'}</p>
+                <p><strong>Total Transactions:</strong> ${user.total_transactions || 0}</p>
+                <p><strong>KYC Status:</strong> ${user.kyc_status || 'Pending'}</p>
+            </div>
+        </div>
+        <div class="mt-4">
+            <h4>Recent Activity</h4>
+            <div id="user-activity-log">
+                Loading activity...
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+    
+    // Load user activity
+    loadUserActivity(user.id);
+}
+
+function loadUserActivity(userId) {
+    fetch(`/admin/api/users/${userId}/activity`)
+        .then(response => response.json())
+        .then(data => {
+            const activityLog = document.getElementById('user-activity-log');
+            if (data.success && data.activity.length > 0) {
+                activityLog.innerHTML = data.activity.map(activity => `
+                    <div class="p-2">
+                        <strong>${activity.timestamp}</strong> - ${activity.action}
+                    </div>
+                `).join('');
+            } else {
+                activityLog.innerHTML = '<p>No recent activity</p>';
+            }
+        })
+        .catch(error => {
+            document.getElementById('user-activity-log').innerHTML = '<p>Error loading activity</p>';
+        });
+}
+
+function setupPagination() {
+    // Pagination will be updated via socket events
+    // This function sets up the basic structure
+}
+</script>
+</div>
+{% endblock %}

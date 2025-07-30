@@ -1,0 +1,421 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Sovereign Banking Dashboard - NVC Banking Platform{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a; color: #e2e8f0; }
+        .card { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; }
+        .dashboard-stat-card { background: #1e293b; border: 1px solid #334155; }
+        .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+        .text-light { color: #e2e8f0 !important; }
+        .border-warning { border-color: #f59e0b !important; }
+        .border-success { border-color: #10b981 !important; }
+        .border-info { border-color: #06b6d4 !important; }
+        .border-primary { border-color: #3b82f6 !important; }
+        .text-warning { color: #f59e0b !important; }
+        .text-success { color: #10b981 !important; }
+        .text-info { color: #06b6d4 !important; }
+        .text-primary { color: #3b82f6 !important; }
+        .btn-warning { background: #f59e0b; border-color: #f59e0b; }
+        .btn-outline-warning { border-color: #f59e0b; color: #f59e0b; }
+        .btn-outline-warning:hover { background: #f59e0b; border-color: #f59e0b; }
+        .opacity-50 { opacity: 0.5; }
+        .modal-content { background: #1e293b; border: 1px solid #334155; }
+        .modal-header { border-bottom: 1px solid #334155; }
+        .modal-footer { border-top: 1px solid #334155; }
+        .btn-close { background: none; border: none; font-size: 1.5rem; color: #e2e8f0; }
+        .progress-bar { background: #3b82f6; }
+        .progress-bar-warning { background: #f59e0b; }
+        .progress-bar-success { background: #10b981; }
+        .progress-bar-info { background: #06b6d4; }
+    
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-3">
+    <!-- Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-crown text-warning me-2"></i>
+                        Sovereign Banking Dashboard
+                    </h2>
+                    <p class="text-light mb-0">Central Banking Operations & Monetary Policy</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#emergencyModal">
+                        <i class="fas fa-exclamation-triangle me-1"></i> Emergency Protocols
+                    </button>
+                    <a href="{{ url_for('sovereign.monetary_policy') }}" class="btn nvc-btn nvc-btn-warning btn-sm">
+                        <i class="fas fa-university me-1"></i> Monetary Policy
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sovereign Metrics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-warning h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title text-warning">Reserve Assets</h6>
+                            <h4 class="text-warning mb-0">${{ data.reserves.total or '58.5B' }}</h4>
+                            <small class="text-light">Foreign currency reserves</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-vault fa-2x text-warning opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-success h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title text-success">Currency Supply</h6>
+                            <h4 class="text-success mb-0">{{ data.currency.supply or '2.8T' }} NVCT</h4>
+                            <small class="text-success">+2.1% monthly growth</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-coins fa-2x text-success opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-primary h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title text-primary">Interest Rate</h6>
+                            <h4 class="text-primary mb-0">{{ data.interest_rate or '3.25%' }}</h4>
+                            <small class="text-light">Base lending rate</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-percentage fa-2x text-primary opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-info h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title text-info">Economic Index</h6>
+                            <h4 class="text-info mb-0">{{ data.economic_index or '128.5' }}</h4>
+                            <small class="text-success">+4.2% YoY growth</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x text-info opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Sovereign Operations -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-crown text-warning me-2"></i>
+                        Sovereign Operations
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('sovereign.currency_issuance') }}" class="btn nvc-btn nvc-btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-coins fa-2x mb-2"></i>
+                                <span>Currency Issuance</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('sovereign.monetary_policy') }}" class="btn nvc-btn nvc-btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-university fa-2x mb-2"></i>
+                                <span>Monetary Policy</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('sovereign.reserve_management') }}" class="btn nvc-btn nvc-btn-outline-success w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-vault fa-2x mb-2"></i>
+                                <span>Reserve Management</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('sovereign.financial_audit') }}" class="btn nvc-btn nvc-btn-outline-info w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-search fa-2x mb-2"></i>
+                                <span>Financial Audit</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('sovereign.diplomatic_relations') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-globe fa-2x mb-2"></i>
+                                <span>Diplomatic Relations</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('sovereign.asset_management') }}" class="btn nvc-btn nvc-btn-outline-dark w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                                <span>Asset Management</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monetary Policy Dashboard -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-university text-primary me-2"></i>
+                        Monetary Policy Dashboard
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning">
+                            <i class="fas fa-edit me-1"></i> Adjust Policy
+                        </button>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">
+                            <i class="fas fa-sync-alt me-1"></i> Refresh Data
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Policy Instrument</th>
+                                    <th>Current Rate</th>
+                                    <th>Target</th>
+                                    <th>Last Change</th>
+                                    <th>Next Review</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Base Interest Rate</td>
+                                    <td>3.25%</td>
+                                    <td>3.50%</td>
+                                    <td>2025-06-15</td>
+                                    <td>2025-07-15</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-warning">Adjust</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Reserve Requirement</td>
+                                    <td>12.5%</td>
+                                    <td>12.0%</td>
+                                    <td>2025-05-01</td>
+                                    <td>2025-08-01</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-warning">Adjust</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Currency Target</td>
+                                    <td>2.1%</td>
+                                    <td>2.0%</td>
+                                    <td>2025-06-01</td>
+                                    <td>2025-07-01</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-warning">Adjust</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Economic Indicators -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar text-success me-2"></i>
+                        Economic Indicators
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>GDP Growth</span>
+                        <span class="text-success fw-bold">+4.2%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Inflation Rate</span>
+                        <span class="text-warning fw-bold">2.1%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Unemployment</span>
+                        <span class="text-info fw-bold">3.8%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Currency Stability</span>
+                        <span class="text-success fw-bold">98.5%</span>
+                    </div>
+                    <a href="{{ url_for('sovereign.economic_dashboard') }}" class="btn btn-sm nvc-btn nvc-btn-outline-success w-100">Detailed Analysis</a>
+                </div>
+            </div>
+
+            <!-- Reserve Composition -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-pie-chart text-warning me-2"></i>
+                        Reserve Composition
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>USD Reserves</small>
+                            <small>45%</small>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-success" class="progress-bar-45"></div>
+                        </div>
+                        <small class="text-light">$26.3B</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>EUR Reserves</small>
+                            <small>25%</small>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-primary" class="progress-bar-25"></div>
+                        </div>
+                        <small class="text-light">$14.6B</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>Gold Reserves</small>
+                            <small>20%</small>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-warning" class="progress-bar-20"></div>
+                        </div>
+                        <small class="text-light">$11.7B</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>Other Assets</small>
+                            <small>10%</small>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-info" class="progress-bar-10"></div>
+                        </div>
+                        <small class="text-light">$5.9B</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Protocols -->
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header bg-danger text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Emergency Protocols
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#emergencyModal">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Crisis Response
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                            <i class="fas fa-lock me-2"></i>Market Stabilization
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                            <i class="fas fa-phone me-2"></i>Emergency Contacts
+                        </button>
+                        <a href="{{ url_for('sovereign.diplomatic_channels') }}" class="btn nvc-btn nvc-btn-outline-secondary btn-sm">
+                            <i class="fas fa-globe me-2"></i>Diplomatic Channels
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Emergency Protocols Modal -->
+<div class="modal fade" id="emergencyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Emergency Protocol Activation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert nvc-nvc-alert-danger" role="alert">
+                    <strong>Warning:</strong> Emergency protocols should only be activated during critical situations that threaten monetary stability.
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="nvc-form-label">Emergency Type</label>
+                        <select class="nvc-form-select">
+                            <option>Currency Crisis</option>
+                            <option>Banking System Failure</option>
+                            <option>Market Collapse</option>
+                            <option>Cyberattack</option>
+                            <option>Natural Disaster</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="nvc-form-label">Severity Level</label>
+                        <select class="nvc-form-select">
+                            <option>Level 1 - Low</option>
+                            <option>Level 2 - Medium</option>
+                            <option>Level 3 - High</option>
+                            <option>Level 4 - Critical</option>
+                            <option>Level 5 - Catastrophic</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="nvc-form-label">Situation Description</label>
+                        <textarea class="nvc-form-input" rows="3" placeholder="Describe the emergency situation"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="nvc-form-label">Sovereign Authorization Code</label>
+                        <input type="password" class="nvc-form-input" placeholder="Enter highest-level authorization code">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn nvc-btn nvc-btn-danger">Activate Emergency Protocol</button>
+            </div>
+        </div>
+    </div>
+</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

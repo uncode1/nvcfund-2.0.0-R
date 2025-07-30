@@ -1,0 +1,1037 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Transfer History - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Transfer History{% endblock %}
+{% block page_description %}Complete history of traditional banking and cryptocurrency transfers{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export CSV
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-filter"></i>
+    Advanced Filter
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    New Transfer
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Transfer History Functions
+function exportHistory() {
+    const csvData = 'Date,Type,From,To,Amount,Status\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'transfer_history.csv';
+    a.click();
+}
+
+function filterHistory() {
+    alert('Advanced filter functionality will be implemented');
+}
+
+function newTransfer() {
+    window.location.href = "{{ url_for('banking.transfer') }}";
+}
+
+function viewTransfer(transferId) {
+    window.location.href = "{{ url_for('banking.transfer_details') }}?id=" + transferId;
+}
+
+function downloadReceipt(transferId) {
+    window.location.href = "{{ url_for('banking.transfer_receipt') }}?id=" + transferId;
+}
+
+function viewOnBlockchain(transferId) {
+    window.open('https://etherscan.io/tx/' + transferId, '_blank');
+}
+
+function repeatTransfer(transferId) {
+    window.location.href = "{{ url_for('banking.transfer') }}?repeat=" + transferId;
+}
+
+function cancelTransfer(transferId) {
+    if (confirm('Are you sure you want to cancel this transfer?')) {
+        fetch('/banking/transfers/' + transferId + '/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error cancelling transfer');
+            }
+        });
+    }
+}
+
+// Multi-Level Transfer History Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 1: Stat cards drilldown
+    const statCards = document.querySelectorAll('.transfer-stat-card');
+    statCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardType = this.querySelector('h6').textContent;
+            if (cardType.includes('Total Transfers')) {
+                document.getElementById('transferType').value = 'all';
+            } else if (cardType.includes('Successful')) {
+                document.getElementById('transferStatus').value = 'completed';
+            } else if (cardType.includes('Crypto Transfers')) {
+                document.getElementById('transferType').value = 'crypto';
+            } else if (cardType.includes('Avg Processing')) {
+                document.getElementById('transferStatus').value = 'processing';
+            }
+            filterTransfers();
+        });
+    });
+
+    // Level 2: Transfer Category Cards
+    const categoryCards = document.querySelectorAll('.transfer-category-card');
+    categoryCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const transferType = this.getAttribute('data-transfer-type');
+            handleTransferCategoryDrilldown(transferType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: Transfer Table Rows
+    const transferRows = document.querySelectorAll('.transfer-row');
+    transferRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn-group')) return;
+
+            const transferId = this.getAttribute('data-transfer-id');
+            viewTransferDetails(transferId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+});
+
+// Level 2: Transfer Category Drilldown
+function handleTransferCategoryDrilldown(transferType) {
+    // Filter the transfer table by type
+    filterTransfersByType(transferType);
+
+    // Update the filter dropdown if it exists
+    const typeFilter = document.getElementById('transferType');
+    if (typeFilter) {
+        typeFilter.value = transferType;
+    }
+
+    // Scroll to transfer table
+    document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter transfers by type
+function filterTransfersByType(transferType) {
+    const rows = document.querySelectorAll('.transfer-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowType = row.getAttribute('data-transfer-type');
+        if (!transferType || transferType === 'all' || rowType === transferType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updateTransferCounts(transferType, visibleCount);
+}
+
+// Update transfer counts
+function updateTransferCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.transfer-row').length;
+
+    // Update table header or title if needed
+    const tableTitle = document.querySelector('.table-responsive').previousElementSibling;
+    if (tableTitle && tableTitle.tagName === 'H5') {
+        if (!activeFilter || activeFilter === 'all') {
+            tableTitle.innerHTML = `<i class="fas fa-history"></i> Recent Transfers (${totalRows} transfers)`;
+        } else {
+            tableTitle.innerHTML = `<i class="fas fa-history"></i> ${activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)} Transfers (${visibleCount} transfers)`;
+        }
+    }
+}
+
+// Level 4: View individual transfer details (Level 4 → Level 5 drilldown)
+function viewTransferDetails(transferId) {
+    // Navigate to detailed transfer view with comprehensive information
+    const detailsUrl = "{{ url_for('banking.transfer_details', transfer_id='TRANSFER_ID') }}".replace('TRANSFER_ID', encodeURIComponent(transferId));
+    window.location.href = detailsUrl + '?view=comprehensive&include=receipt,blockchain,fees';
+}
+
+// Level 5: Specialized transfer functions
+function viewTransferReceipt(transferId) {
+    // Navigate to transfer receipt view
+    const receiptUrl = "{{ url_for('banking.transfer_receipt', transfer_id='TRANSFER_ID') }}".replace('TRANSFER_ID', encodeURIComponent(transferId));
+    window.location.href = receiptUrl + '?format=pdf';
+}
+
+function viewTransferBlockchain(transferId) {
+    // Navigate to blockchain explorer for crypto transfers
+    const blockchainUrl = "{{ url_for('banking.transfer_blockchain', transfer_id='TRANSFER_ID') }}".replace('TRANSFER_ID', encodeURIComponent(transferId));
+    window.location.href = blockchainUrl + '?explorer=true';
+}
+
+function analyzeTransferPattern(transferId) {
+    // Navigate to transfer pattern analysis
+    const analysisUrl = "{{ url_for('banking.transfer_analysis', transfer_id='TRANSFER_ID') }}".replace('TRANSFER_ID', encodeURIComponent(transferId));
+    window.location.href = analysisUrl + '?view=pattern&ml_analysis=true';
+}
+
+function disputeTransfer(transferId) {
+    if (confirm('Are you sure you want to dispute this transfer? This will initiate a formal dispute process.')) {
+        // Secure transfer dispute
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/banking/dispute_transfer';
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        form.appendChild(csrfToken);
+
+        const transferIdInput = document.createElement('input');
+        transferIdInput.type = 'hidden';
+        transferIdInput.name = 'transfer_id';
+        transferIdInput.value = transferId;
+        form.appendChild(transferIdInput);
+
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'dispute';
+        form.appendChild(action);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}
+
+function filterTransfers() {
+    // Auto-submit filter form
+    const form = document.querySelector('form');
+    if (form) {
+        form.submit();
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Transfer History Dashboard -->
+<div class="row g-4">
+    <!-- Transfer Overview -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="transfer-stat-nvc-card bg-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Total Transfers</h6>
+                                <h3>{{ total_transfers or '1,247' }}</h3>
+                                <small>All time</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="transfer-stat-nvc-card bg-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Successful</h6>
+                                <h3>${{ "%.2f"|format(successful_amount) if successful_amount else '2.4M' }}</h3>
+                                <small>99.8% success rate</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="transfer-stat-nvc-card bg-warning">
+                            <div class="stat-icon">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Crypto Transfers</h6>
+                                <h3>{{ crypto_transfers or '189' }}</h3>
+                                <small>Digital assets</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="transfer-stat-nvc-card bg-info">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Avg Processing</h6>
+                                <h3>{{ avg_processing or '2.3' }}h</h3>
+                                <small>Processing time</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level 2: Transfer Type Breakdown -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <h5 class="nvc-card-title mb-4"><i class="fas fa-chart-pie"></i> Transfer Categories</h5>
+                <div class="row g-3">
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transfer-category-nvc-card" data-transfer-type="internal" >
+                            <div class="category-icon bg-info">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>{{ transfer_stats.internal_count if transfer_stats else '456' }}</h4>
+                                <p>Internal Transfers</p>
+                                <small class="text-muted">Between your accounts</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transfer-category-nvc-card" data-transfer-type="external" >
+                            <div class="category-icon bg-primary">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>{{ transfer_stats.external_count if transfer_stats else '234' }}</h4>
+                                <p>External Transfers</p>
+                                <small class="text-muted">To other banks</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transfer-category-nvc-card" data-transfer-type="crypto" >
+                            <div class="category-icon bg-warning">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>{{ transfer_stats.crypto_count if transfer_stats else '189' }}</h4>
+                                <p>Crypto Transfers</p>
+                                <small class="text-muted">Blockchain transactions</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transfer-category-nvc-card" data-transfer-type="wire" >
+                            <div class="category-icon bg-success">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>{{ transfer_stats.wire_count if transfer_stats else '67' }}</h4>
+                                <p>Wire Transfers</p>
+                                <small class="text-muted">International wires</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transfer-category-nvc-card" data-transfer-type="ach" >
+                            <div class="category-icon bg-secondary">
+                                <i class="fas fa-money-check"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>{{ transfer_stats.ach_count if transfer_stats else '123' }}</h4>
+                                <p>ACH Transfers</p>
+                                <small class="text-muted">Automated clearing</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transfer-category-nvc-card" data-transfer-type="mobile" >
+                            <div class="category-icon bg-danger">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>{{ transfer_stats.mobile_count if transfer_stats else '89' }}</h4>
+                                <p>Mobile Payments</p>
+                                <small class="text-muted">P2P payments</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Filters -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">Date Range</label>
+                        <select class="nvc-form-select" id="dateRange">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month" selected>This Month</option>
+                            <option value="quarter">This Quarter</option>
+                            <option value="year">This Year</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">Transfer Type</label>
+                        <select class="nvc-form-select" id="transferType">
+                            <option value="all">All Types</option>
+                            <option value="internal">Internal</option>
+                            <option value="external">External</option>
+                            <option value="crypto">Cryptocurrency</option>
+                            <option value="wire">Wire Transfer</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">Status</label>
+                        <select class="nvc-form-select" id="transferStatus">
+                            <option value="all">All Status</option>
+                            <option value="completed">Completed</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">Amount Range</label>
+                        <select class="nvc-form-select" id="amountRange">
+                            <option value="all">All Amounts</option>
+                            <option value="small">$0 - $1,000</option>
+                            <option value="medium">$1,000 - $10,000</option>
+                            <option value="large">$10,000 - $100,000</option>
+                            <option value="xlarge">$100,000+</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer History Table -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-list text-primary me-2"></i>
+                    Recent Transfers
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Type</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Banking Transfer -->
+                            <tr class="transfer-row" data-transfer-id="TXN-001" data-transfer-type="internal" data-status="completed" >
+                                <td>
+                                    <div class="transfer-datetime">
+                                        <strong>Dec 15, 2024</strong>
+                                        <small class="text-muted d-block">2:30 PM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-university me-1"></i>
+                                        Internal
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="account-info">
+                                        <strong>Checking ****1234</strong>
+                                        <small class="text-muted d-block">Personal Account</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="account-info">
+                                        <strong>Savings ****5678</strong>
+                                        <small class="text-muted d-block">High-Yield Savings</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="transfer-amount">
+                                        <strong class="text-success">$5,000.00</strong>
+                                        <small class="text-muted d-block">USD</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        Completed
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Crypto Transfer -->
+                            <tr class="transfer-row" data-transfer-id="TXN-002" data-transfer-type="crypto" data-status="confirmed" >
+                                <td>
+                                    <div class="transfer-datetime">
+                                        <strong>Dec 14, 2024</strong>
+                                        <small class="text-muted d-block">11:45 AM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">
+                                        <i class="fab fa-bitcoin me-1"></i>
+                                        Crypto
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="account-info">
+                                        <strong>Bitcoin Wallet</strong>
+                                        <small class="text-muted d-block">1A1z...Nx2B</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="account-info">
+                                        <strong>External Wallet</strong>
+                                        <small class="text-muted d-block">3FGH...Kl9M</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="transfer-amount">
+                                        <strong class="text-warning">0.25 BTC</strong>
+                                        <small class="text-muted d-block">≈ $10,750.00</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        Confirmed
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-warning" data-action="custom-action">
+                                            <i class="fas fa-link"></i>
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- NVCT Transfer -->
+                            <tr class="transfer-row" data-transfer-id="TXN-003" data-transfer-type="nvct" data-status="completed" >
+                                <td>
+                                    <div class="transfer-datetime">
+                                        <strong>Dec 13, 2024</strong>
+                                        <small class="text-muted d-block">4:15 PM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-coins me-1"></i>
+                                        NVCT
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="account-info">
+                                        <strong>NVCT Wallet</strong>
+                                        <small class="text-muted d-block">nvct...7890</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="account-info">
+                                        <strong>Business Partner</strong>
+                                        <small class="text-muted d-block">nvct...4567</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="transfer-amount">
+                                        <strong class="text-info">5,000 NVCT</strong>
+                                        <small class="text-muted d-block">≈ $5,000.00</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        Completed
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Pending Transfer -->
+                            <tr>
+                                <td>
+                                    <div class="transfer-datetime">
+                                        <strong>Dec 13, 2024</strong>
+                                        <small class="text-muted d-block">1:20 PM</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-university me-1"></i>
+                                        External
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="account-info">
+                                        <strong>Business ****9012</strong>
+                                        <small class="text-muted d-block">Business Account</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="account-info">
+                                        <strong>Chase Bank</strong>
+                                        <small class="text-muted d-block">****4567</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="transfer-amount">
+                                        <strong class="text-primary">$15,000.00</strong>
+                                        <small class="text-muted d-block">USD</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Processing
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-danger" data-action="custom-action">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        Showing 1-10 of 1,247 transfers
+                    </div>
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                            <li class="page-item active">
+                                <span class="page-link">1</span>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">2</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">3</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                            </h1>
+                            <p class="text-light mb-0">View all your money transfers and transaction details</p>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-light btn-sm" data-action="custom-action">
+                                    <i class="fas fa-download me-1"></i>Export
+                                </button>
+                                <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                    <i class="fas fa-plus me-1"></i>New Transfer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} nvc-alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Filter Controls -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-filter me-2"></i>Filter Transfers</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="filterForm">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="nvc-form-label">Date Range</label>
+                                <select class="nvc-form-select" id="dateRange">
+                                    <option value="all">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                    <option value="quarter">This Quarter</option>
+                                    <option value="year">This Year</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="nvc-form-label">Transfer Type</label>
+                                <select class="nvc-form-select" id="transferType">
+                                    <option value="all">All Types</option>
+                                    <option value="Transfer">Outgoing Transfer</option>
+                                    <option value="Deposit">Incoming Deposit</option>
+                                    <option value="Internal">Internal Transfer</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="nvc-form-label">Status</label>
+                                <select class="nvc-form-select" id="status">
+                                    <option value="all">All Status</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Failed">Failed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="nvc-form-label">&nbsp;</label>
+                                <button type="submit" class="btn nvc-btn nvc-btn-primary w-100">Apply Filters</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer History Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-list me-2"></i>Transfer History</h5>
+                    <span class="badge bg-primary">{{ transfers|length }} transfers found</span>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if transfers %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Transfer ID</th>
+                                        <th>Type</th>
+                                        <th>From Account</th>
+                                        <th>To Account</th>
+                                        <th>Description</th>
+                                        <th class="text-end">Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transfer in transfers %}
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <strong>{{ transfer.created_at.strftime('%Y-%m-%d') if transfer.created_at else 'N/A' }}</strong>
+                                                <br>
+                                                <small class="text-light">{{ transfer.created_at.strftime('%H:%M:%S') if transfer.created_at else 'N/A' }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <code class="text-primary">{{ transfer.transfer_id }}</code>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'info' if transfer.type == 'Transfer' else 'success' if transfer.type == 'Deposit' else 'secondary' }}">
+                                                {{ transfer.type }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="small">
+                                                <strong>{{ transfer.from_account }}</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="small">
+                                                <strong>{{ transfer.to_account }}</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="text-light">{{ transfer.description or 'No description' }}</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong class="text-{{ 'success' if transfer.type == 'Deposit' else 'primary' }}">
+                                                {{ '+' if transfer.type == 'Deposit' else '' }}${{ "%.2f"|format(transfer.amount) }}
+                                            </strong>
+                                            <br>
+                                            <small class="text-light">{{ transfer.currency }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if transfer.status == 'Completed' else 'warning' if transfer.status == 'Pending' else 'danger' }}">
+                                                {{ transfer.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary" title="View Details" data-action="custom-action">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn nvc-btn nvc-btn-outline-secondary" title="Download Receipt" data-action="custom-action">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                                {% if transfer.status == 'Pending' %}
+                                                <button type="button" class="btn nvc-btn nvc-btn-outline-danger" title="Cancel Transfer" data-action="custom-action">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Transfer history pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-exchange-alt fa-4x text-light mb-4"></i>
+                            <h4 class="text-light">No Transfer History</h4>
+                            <p class="text-light">You haven't made any transfers yet.</p>
+                            <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-primary">
+                                <i class="fas fa-plus me-2"></i>Make Your First Transfer
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Summary Statistics -->
+    {% if transfers %}
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="nvc-card bg-primary text-white">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-arrow-up fa-2x mb-2"></i>
+                    <h5>Total Sent</h5>
+                    <h3>${{ "%.2f"|format(transfers|selectattr('type', 'equalto', 'Transfer')|map(attribute='amount')|sum) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-success text-white">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-arrow-down fa-2x mb-2"></i>
+                    <h5>Total Received</h5>
+                    <h3>${{ "%.2f"|format(transfers|selectattr('type', 'equalto', 'Deposit')|map(attribute='amount')|sum) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-info text-white">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h5>Completed</h5>
+                    <h3>{{ transfers|selectattr('status', 'equalto', 'Completed')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-warning text-white">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h5>Pending</h5>
+                    <h3>{{ transfers|selectattr('status', 'equalto', 'Pending')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Transfer Details Modal -->
+<div class="modal fade" id="transferDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transfer Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="transferDetailsContent">
+                <!-- Transfer details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn nvc-btn nvc-btn-primary" data-action="custom-action">Print</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewTransferDetails(transferId) {
+    // In production, this would fetch transfer details via AJAX
+    const modal = new bootstrap.Modal(document.getElementById('transferDetailsModal'));
+    document.getElementById('transferDetailsContent').innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Transfer Information</h6>
+                <p><strong>Transfer ID:</strong> ${transferId}</p>
+                <p><strong>Date:</strong> {{ transfers[0].created_at.strftime('%Y-%m-%d %H:%M:%S') if transfers else 'N/A' }}</p>
+                <p><strong>Status:</strong> <span class="badge bg-success">Completed</span></p>
+            </div>
+            <div class="col-md-6">
+                <h6>Amount Details</h6>
+                <p><strong>Transfer Amount:</strong> $500.00</p>
+                <p><strong>Transfer Fee:</strong> $2.50</p>
+                <p><strong>Total Charged:</strong> $502.50</p>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-6">
+                <h6>From Account</h6>
+                <p>Checking Account<br>****-****-1234</p>
+            </div>
+            <div class="col-md-6">
+                <h6>To Account</h6>
+                <p>External Account<br>recipient@email.com</p>
+            </div>
+        </div>
+    `;
+    modal.show();
+}
+
+function downloadReceipt(transferId) {
+    alert('Receipt download for transfer ' + transferId + ' will be available soon.');
+}
+
+function cancelTransfer(transferId) {
+    if (confirm('Are you sure you want to cancel this transfer?')) {
+        alert('Transfer ' + transferId + ' has been cancelled.');
+        location.reload();
+    }
+}
+
+function exportTransfers() {
+    alert('Transfer history export will be available soon.');
+}
+
+function printTransferDetails() {
+    window.print();
+}
+
+document.getElementById('filterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    // In production, this would apply filters and reload the data
+    alert('Filters applied successfully!');
+});
+</script>
+{% endblock %}

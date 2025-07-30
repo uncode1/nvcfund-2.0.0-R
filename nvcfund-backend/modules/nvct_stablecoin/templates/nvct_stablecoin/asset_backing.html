@@ -1,0 +1,295 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Asset Backing Portfolio - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Asset Backing Portfolio{% endblock %}
+{% block page_description %}$56.7T backing portfolio with 189% over-collateralization for NVCT stablecoin{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Portfolio
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-balance-scale"></i>
+    Rebalance
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Add Asset
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function exportAssetData() {
+    const csvData = 'Asset,Value,Allocation,Risk Rating,Last Updated\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'asset_backing_portfolio.csv';
+    a.click();
+}
+
+function rebalancePortfolio() {
+    if (confirm('Initiate portfolio rebalancing? This may take several minutes.')) {
+        fetch('/nvct/assets/rebalance', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert('Portfolio rebalancing initiated');
+                location.reload();
+            } else {
+                alert('Error initiating rebalancing');
+            }
+        });
+    }
+}
+
+function addAsset() {
+    const assetType = prompt('Enter asset type (bonds, stocks, crypto, commodities):');
+    const allocation = prompt('Enter allocation percentage:');
+    const value = prompt('Enter asset value (USD):');
+    
+    if (assetType && allocation && value) {
+        const formData = new FormData();
+        formData.append('asset_type', assetType);
+        formData.append('allocation', allocation);
+        formData.append('value', value);
+        
+        fetch('/nvct/assets/add', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                alert('Asset added successfully');
+                location.reload();
+            } else {
+                alert('Error adding asset');
+            }
+        });
+    }
+}
+
+function removeAsset(assetId) {
+    if (confirm('Remove this asset from the backing portfolio?')) {
+        fetch(`/nvct/assets/remove/${assetId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert('Asset removed successfully');
+                location.reload();
+            } else {
+                alert('Error removing asset');
+            }
+        });
+    }
+}
+
+function viewAssetDetails(assetId) {
+    window.location.href = `/nvct/assets/details/${assetId}`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const assetCards = document.querySelectorAll('.card, .asset-card');
+    assetCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Total Portfolio Value')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.asset_analytics') }}";
+            } else if (cardTitle?.includes('Collateralization Ratio')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.collateral_analytics') }}";
+            } else if (cardTitle?.includes('Risk Assessment')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.risk_analytics') }}";
+            } else if (cardTitle?.includes('Asset Allocation')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.allocation_analytics') }}";
+            }
+        });
+    });
+    
+    // Initialize portfolio allocation chart
+    const ctx = document.getElementById('portfolioChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Government Bonds', 'Corporate Bonds', 'Equities', 'Crypto Assets', 'Commodities', 'Real Estate'],
+                datasets: [{
+                    data: [35, 25, 20, 10, 5, 5],
+                    backgroundColor: [
+                        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="row g-4">
+    <!-- Portfolio Overview Cards -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card asset-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-chart-pie text-primary fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Total Portfolio Value</h6>
+                        <h4 class="mb-0 text-primary">$56.7T</h4>
+                        <small class="text-success">+2.3% from last month</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card asset-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-shield-alt text-success fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Collateralization Ratio</h6>
+                        <h4 class="mb-0 text-success">189%</h4>
+                        <small class="text-muted">89% over-collateralized</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card asset-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-warning fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Risk Assessment</h6>
+                        <h4 class="mb-0 text-warning">Low</h4>
+                        <small class="text-muted">AAA+ Rating</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card asset-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-coins text-info fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">NVCT Backed</h6>
+                        <h4 class="mb-0 text-info">$30T</h4>
+                        <small class="text-muted">Total supply backed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <!-- Portfolio Allocation Chart -->
+    <div class="col-lg-6">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <h5 class="nvc-card-title mb-0">Asset Allocation</h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <canvas id="portfolioChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Assets Table -->
+    <div class="col-lg-6">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <h5 class="nvc-card-title mb-0">Top Assets by Value</h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Value</th>
+                                <th>Allocation</th>
+                                <th>Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>US Treasury Bonds</td>
+                                <td>$19.8T</td>
+                                <td>35%</td>
+                                <td><span class="badge bg-success">Low</span></td>
+                            </tr>
+                            <tr>
+                                <td>Corporate Bonds</td>
+                                <td>$14.2T</td>
+                                <td>25%</td>
+                                <td><span class="badge bg-success">Low</span></td>
+                            </tr>
+                            <tr>
+                                <td>Blue Chip Equities</td>
+                                <td>$11.3T</td>
+                                <td>20%</td>
+                                <td><span class="badge bg-warning">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>Crypto Assets</td>
+                                <td>$5.7T</td>
+                                <td>10%</td>
+                                <td><span class="badge bg-warning">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>Commodities</td>
+                                <td>$2.8T</td>
+                                <td>5%</td>
+                                <td><span class="badge bg-success">Low</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

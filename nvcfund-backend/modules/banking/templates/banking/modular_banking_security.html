@@ -1,0 +1,569 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Advanced Security Center - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Advanced Security Center{% endblock %}
+{% block page_description %}Enterprise-grade security for banking and cryptocurrency assets{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Security Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-search"></i>
+    Security Scan
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-shield-alt"></i>
+    Enable Advanced Security
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Security Functions
+function exportSecurityReport() {
+    const csvData = 'Date,Event,Status,Details\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'security_report.csv';
+    a.click();
+}
+
+function runSecurityScan() {
+    alert('Running security scan...');
+    // TODO: Implement security scan
+}
+
+function enableAdvancedSecurity() {
+    alert('Advanced security setup will be implemented');
+}
+
+function configureMFA() {
+    window.location.href = "{{ url_for('banking.setup_mfa') }}";
+}
+
+function setupBiometric() {
+    alert('Biometric setup will be implemented');
+}
+
+function addHardwareKey() {
+    alert('Hardware key setup will be implemented');
+}
+
+function manageColdStorage() {
+    alert('Cold storage management will be implemented');
+}
+
+function configureMultiSig() {
+    alert('Multi-signature wallet setup will be implemented');
+}
+
+function adjustLimits() {
+    alert('Transaction limits adjustment will be implemented');
+}
+
+// Add drilldown functionality for stat cards
+document.addEventListener('DOMContentLoaded', function() {
+    const statCards = document.querySelectorAll('.security-stat-card');
+    statCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardType = this.querySelector('h6').textContent;
+            if (cardType.includes('Security Score')) {
+                runSecurityScan();
+            } else if (cardType.includes('Active Sessions')) {
+                window.location.href = "{{ url_for('banking.active_sessions') }}";
+            } else if (cardType.includes('Security Alerts')) {
+                window.location.href = "{{ url_for('banking.security_alerts') }}";
+            } else if (cardType.includes('Last Login')) {
+                window.location.href = "{{ url_for('banking.login_history') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Advanced Security Center -->
+<div class="row g-4">
+    <!-- Security Overview -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="security-stat-nvc-card bg-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Security Score</h6>
+                                <h3>{{ security_score or '98' }}%</h3>
+                                <small>Excellent</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="security-stat-nvc-card bg-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Active Sessions</h6>
+                                <h3>{{ active_sessions or '3' }}</h3>
+                                <small>Devices logged in</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="security-stat-nvc-card bg-warning">
+                            <div class="stat-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Security Alerts</h6>
+                                <h3>{{ security_alerts or '2' }}</h3>
+                                <small>Require attention</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="security-stat-nvc-card bg-info">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Last Login</h6>
+                                <h3>{{ last_login or '2h' }}</h3>
+                                <small>ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="col-xl-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-cogs text-primary me-2"></i>
+                    Security Configuration
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <!-- Authentication Settings -->
+                <div class="security-section mb-4">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-user-shield me-2"></i>
+                        Authentication & Access
+                    </h6>
+
+                    <div class="security-setting">
+                        <div class="setting-info">
+                            <h6>Multi-Factor Authentication</h6>
+                            <p class="text-muted small">Require additional verification for login</p>
+                        </div>
+                        <div class="setting-control">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="mfaEnabled" checked>
+                                <label class="form-check-label" for="mfaEnabled"></label>
+                            </div>
+                        </div>
+                        <div class="setting-actions">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                Configure
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="security-setting">
+                        <div class="setting-info">
+                            <h6>Biometric Authentication</h6>
+                            <p class="text-muted small">Fingerprint and facial recognition</p>
+                        </div>
+                        <div class="setting-control">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="biometricEnabled">
+                                <label class="form-check-label" for="biometricEnabled"></label>
+                            </div>
+                        </div>
+                        <div class="setting-actions">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                Setup
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="security-setting">
+                        <div class="setting-info">
+                            <h6>Hardware Security Keys</h6>
+                            <p class="text-muted small">YubiKey, FIDO2, WebAuthn devices</p>
+                        </div>
+                        <div class="setting-control">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="hardwareKeyEnabled">
+                                <label class="form-check-label" for="hardwareKeyEnabled"></label>
+                            </div>
+                        </div>
+                        <div class="setting-actions">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">
+                                Add Key
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Crypto Security -->
+                <div class="security-section mb-4">
+                    <h6 class="text-warning mb-3">
+                        <i class="fab fa-bitcoin me-2"></i>
+                        Cryptocurrency Security
+                    </h6>
+
+                    <div class="security-setting">
+                        <div class="setting-info">
+                            <h6>Cold Storage Protection</h6>
+                            <p class="text-muted small">Store crypto assets in offline wallets</p>
+                        </div>
+                        <div class="setting-control">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="coldStorageEnabled" checked>
+                                <label class="form-check-label" for="coldStorageEnabled"></label>
+                            </div>
+                        </div>
+                        <div class="setting-actions">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                Manage
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="security-setting">
+                        <div class="setting-info">
+                            <h6>Multi-Signature Wallets</h6>
+                            <p class="text-muted small">Require multiple signatures for transactions</p>
+                        </div>
+                        <div class="setting-control">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="multiSigEnabled" checked>
+                                <label class="form-check-label" for="multiSigEnabled"></label>
+                            </div>
+                        </div>
+                        <div class="setting-actions">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">
+                                Configure
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="security-setting">
+                        <div class="setting-info">
+                            <h6>Transaction Limits</h6>
+                            <p class="text-muted small">Daily and per-transaction crypto limits</p>
+                        </div>
+                        <div class="setting-control">
+                            <span class="text-info">$50,000/day</span>
+                        </div>
+                        <div class="setting-actions">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                Adjust
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                            </h3>
+                            <small class="text-light">Manage your account security and protection settings</small>
+                        </div>
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-check-circle me-1"></i>Secure
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Status -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-lock fa-3x text-success mb-3"></i>
+                    <h5 class="text-light">Account Locked</h5>
+                    <p class="text-light small">Your account is secure</p>
+                    <span class="badge bg-success">Active</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-key fa-3x text-warning mb-3"></i>
+                    <h5 class="text-light">2FA Enabled</h5>
+                    <p class="text-light small">Two-factor authentication</p>
+                    <span class="badge bg-warning">Enabled</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-eye fa-3x text-info mb-3"></i>
+                    <h5 class="text-light">Monitoring</h5>
+                    <p class="text-light small">24/7 fraud detection</p>
+                    <span class="badge bg-info">Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="nvc-card bg-dark border-primary mb-4">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-lock me-2"></i>Account Security
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="security-setting mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light fw-bold">Password</span><br>
+                                <small class="text-light">Last changed: 30 days ago</small>
+                            </div>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">Change</button>
+                        </div>
+                    </div>
+                    
+                    <div class="security-setting mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light fw-bold">Two-Factor Authentication</span><br>
+                                <small class="text-success">Enabled via SMS</small>
+                            </div>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">Modify</button>
+                        </div>
+                    </div>
+                    
+                    <div class="security-setting mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light fw-bold">Security Questions</span><br>
+                                <small class="text-light">3 questions configured</small>
+                            </div>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">Update</button>
+                        </div>
+                    </div>
+                    
+                    <div class="security-setting">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light fw-bold">Biometric Login</span><br>
+                                <small class="text-light">Fingerprint & Face ID</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="biometric" checked>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="nvc-card bg-dark border-warning mb-4">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bell me-2"></i>Security Alerts
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="nvc-alert-setting mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light">Login Notifications</span><br>
+                                <small class="text-light">Email & SMS alerts for new logins</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="loginAlerts" checked>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="nvc-alert-setting mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light">Transaction Alerts</span><br>
+                                <small class="text-light">Notify for transactions > $500</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="transactionAlerts" checked>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="nvc-alert-setting mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light">Suspicious Activity</span><br>
+                                <small class="text-light">Immediate alerts for fraud detection</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="fraudAlerts" checked>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="nvc-alert-setting">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light">Account Changes</span><br>
+                                <small class="text-light">Profile or contact info updates</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="changeAlerts" checked>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Limits -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-hand-paper me-2"></i>Transaction Limits & Controls
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="limit-setting text-center">
+                                <i class="fas fa-credit-nvc-card fa-2x text-primary mb-2"></i>
+                                <h6 class="text-light">Daily ATM Limit</h6>
+                                <p class="text-success fs-5">$1,000</p>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">Modify</button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="limit-setting text-center">
+                                <i class="fas fa-shopping-cart fa-2x text-warning mb-2"></i>
+                                <h6 class="text-light">Purchase Limit</h6>
+                                <p class="text-success fs-5">$5,000</p>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">Modify</button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="limit-setting text-center">
+                                <i class="fas fa-exchange-alt fa-2x text-info mb-2"></i>
+                                <h6 class="text-light">Transfer Limit</h6>
+                                <p class="text-success fs-5">$10,000</p>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">Modify</button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="limit-setting text-center">
+                                <i class="fas fa-globe fa-2x text-danger mb-2"></i>
+                                <h6 class="text-light">International</h6>
+                                <p class="text-danger fs-5">Disabled</p>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-danger btn-sm">Enable</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Security Activity
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Event</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-07-02 14:30</td>
+                                    <td>
+                                        <i class="fas fa-sign-in-alt text-success me-2"></i>
+                                        Successful Login
+                                    </td>
+                                    <td>New York, NY</td>
+                                    <td><span class="badge bg-success">Approved</span></td>
+                                    <td>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-01 09:15</td>
+                                    <td>
+                                        <i class="fas fa-key text-warning me-2"></i>
+                                        2FA Code Generated
+                                    </td>
+                                    <td>New York, NY</td>
+                                    <td><span class="badge bg-success">Verified</span></td>
+                                    <td>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2025-06-30 16:45</td>
+                                    <td>
+                                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                        Suspicious Login Attempt
+                                    </td>
+                                    <td>Unknown Location</td>
+                                    <td><span class="badge bg-danger">Blocked</span></td>
+                                    <td>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

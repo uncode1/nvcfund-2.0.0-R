@@ -1,0 +1,241 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Treasury Operations Settings{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>Treasury Operations Settings
+                    </h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <!-- Risk Management Settings -->
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card bg-gradient border-secondary">
+                                <div class="nvc-nvc-card-header bg-warning text-dark">
+                                    <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Risk Management</h5>
+                                </div>
+                                <div class="nvc-nvc-card-body bg-dark">
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">Maximum Daily VaR Limit</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input" value="2500000" readonly>
+                                            <span class="input-group-text">USD</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">Risk Appetite Level</label>
+                                        <select class="nvc-form-select">
+                                            <option value="conservative" selected>Conservative</option>
+                                            <option value="moderate">Moderate</option>
+                                            <option value="aggressive">Aggressive</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">Duration Gap Limit</label>
+                                        <div class="input-group">
+                                            <input type="number" class="nvc-form-input" value="2.5" step="0.1">
+                                            <span class="input-group-text">years</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Liquidity Management Settings -->
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card bg-gradient border-secondary">
+                                <div class="nvc-nvc-card-header bg-info text-white">
+                                    <h5 class="mb-0"><i class="fas fa-tint me-2"></i>Liquidity Management</h5>
+                                </div>
+                                <div class="nvc-nvc-card-body bg-dark">
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">Minimum Cash Reserve</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input" value="50000000">
+                                            <span class="input-group-text">USD</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">LCR Minimum Ratio</label>
+                                        <div class="input-group">
+                                            <input type="number" class="nvc-form-input" value="110" step="1">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">NSFR Target Ratio</label>
+                                        <div class="input-group">
+                                            <input type="number" class="nvc-form-input" value="105" step="1">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trading Limits -->
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card bg-gradient border-secondary">
+                                <div class="nvc-nvc-card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Trading Limits</h5>
+                                </div>
+                                <div class="nvc-nvc-card-body bg-dark">
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">Maximum Position Size</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input" value="100000000">
+                                            <span class="input-group-text">USD</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">Single Counterparty Limit</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input" value="25000000">
+                                            <span class="input-group-text">USD</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">Maximum Maturity</label>
+                                        <div class="input-group">
+                                            <input type="number" class="nvc-form-input" value="10" step="1">
+                                            <span class="input-group-text">years</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FX Operations Settings -->
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card bg-gradient border-secondary">
+                                <div class="nvc-nvc-card-header bg-primary text-white">
+                                    <h5 class="mb-0"><i class="fas fa-globe me-2"></i>FX Operations</h5>
+                                </div>
+                                <div class="nvc-nvc-card-body bg-dark">
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">Net Open Position Limit</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input" value="15000000">
+                                            <span class="input-group-text">USD</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">Hedging Requirement</label>
+                                        <div class="input-group">
+                                            <input type="number" class="nvc-form-input" value="85" step="1">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-light">Settlement Currency</label>
+                                        <select class="nvc-form-select">
+                                            <option value="USD" selected>USD - US Dollar</option>
+                                            <option value="EUR">EUR - Euro</option>
+                                            <option value="GBP">GBP - British Pound</option>
+                                            <option value="JPY">JPY - Japanese Yen</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Configuration -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="nvc-card bg-gradient border-secondary mb-4">
+                                <div class="nvc-nvc-card-header bg-dark text-white">
+                                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>System Configuration</h5>
+                                </div>
+                                <div class="nvc-nvc-card-body bg-dark">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="nvc-form-label text-light">Auto-Settlement</label>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="autoSettlement" checked>
+                                                    <label class="form-check-label text-light" for="autoSettlement">
+                                                        Enable automatic settlement
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="nvc-form-label text-light">Real-time Monitoring</label>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="realtimeMonitoring" checked>
+                                                    <label class="form-check-label text-light" for="realtimeMonitoring">
+                                                        Enable real-time monitoring
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="nvc-form-label text-light">Alert Notifications</label>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="alertNotifications" checked>
+                                                    <label class="form-check-label text-light" for="alertNotifications">
+                                                        Enable alert notifications
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CSRF-Protected Form Processing Section -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <!-- Treasury Risk Settings Form -->
+                            {% include 'treasury/forms/treasury_risk_settings.html' %}
+                            
+                            <!-- Liquidity Management Form -->
+                            {% include 'treasury/forms/liquidity_management.html' %}
+                            
+                            <!-- Trading Limits Form -->
+                            {% include 'treasury/forms/trading_limits.html' %}
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end gap-3">
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-secondary">
+                                    <i class="fas fa-undo me-2"></i>Reset to Defaults
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-warning">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-warning">
+                                    <i class="fas fa-check me-2"></i>Apply Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

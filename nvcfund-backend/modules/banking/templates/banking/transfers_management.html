@@ -1,0 +1,408 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Transfer Management Center - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Transfer Management Center{% endblock %}
+{% block page_description %}Comprehensive transfer management for traditional and digital asset transactions{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-tasks"></i>
+    Bulk Actions
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    New Transfer
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Transfer Management Functions
+function exportTransferData() {
+    const csvData = 'Date,Type,From,To,Amount,Status\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'transfer_management.csv';
+    a.click();
+}
+
+function bulkTransferActions() {
+    alert('Bulk transfer actions will be implemented');
+}
+
+function newTransfer() {
+    window.location.href = "{{ url_for('banking.transfer') }}";
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Transfer Management Dashboard -->
+<div class="row g-4">
+    </div>
+
+    <!-- Transfer Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Daily Volume</h6>
+                        <h3 class="text-success mb-0">$8.7M</h3>
+                        <small class="text-success">+12.4% vs yesterday</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-exchange-alt text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Total Transfers</h6>
+                        <h3 class="text-white mb-0">3,247</h3>
+                        <small class="text-info">Today's count</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-right text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Success Rate</h6>
+                        <h3 class="text-success mb-0">99.7%</h3>
+                        <small class="text-success">Excellent performance</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Pending</h6>
+                        <h3 class="text-warning mb-0">47</h3>
+                        <small class="text-warning">Awaiting approval</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-clock text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Management Dashboard -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="text-white mb-0">Transfer Queue Management</h5>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm" data-action="custom-action">
+                            <i class="fas fa-play me-2"></i>Process All
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newTransferModal">
+                            <i class="fas fa-plus me-2"></i>New Transfer
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <!-- Transfer Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select nvc-form-select-sm" id="statusFilter">
+                                <option value="">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="completed">Completed</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select nvc-form-select-sm" id="typeFilter">
+                                <option value="">All Types</option>
+                                <option value="internal">Internal</option>
+                                <option value="external">External</option>
+                                <option value="wire">Wire</option>
+                                <option value="ach">ACH</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control nvc-form-input-sm" placeholder="Search by reference or account..." id="searchFilter">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm w-100" data-action="custom-action">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Transfers Table -->
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                    </th>
+                                    <th>Reference</th>
+                                    <th>From Account</th>
+                                    <th>To Account</th>
+                                    <th>Amount</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Scheduled</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transfersTable">
+                                <tr>
+                                    <td><input type="checkbox" class="transfer-select" value="TRF-847591"></td>
+                                    <td><span class="text-info">TRF-847591</span></td>
+                                    <td>****2847</td>
+                                    <td>****5921</td>
+                                    <td class="text-success">$2,500.00</td>
+                                    <td><span class="badge bg-primary">Internal</span></td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td class="text-light">07/07/2025 15:30</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success me-1" title="Approve" data-action="custom-action">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info me-1" title="View Details" data-action="custom-action">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger" title="Cancel" data-action="custom-action">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="transfer-select" value="TRF-847590"></td>
+                                    <td><span class="text-info">TRF-847590</span></td>
+                                    <td>****7364</td>
+                                    <td>External Bank</td>
+                                    <td class="text-success">$50,000.00</td>
+                                    <td><span class="badge bg-warning">Wire</span></td>
+                                    <td><span class="badge bg-info">Processing</span></td>
+                                    <td class="text-light">07/07/2025 14:00</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info me-1" title="View Details" data-action="custom-action">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" title="Track" data-action="custom-action">
+                                            <i class="fas fa-route"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="transfer-select" value="TRF-847589"></td>
+                                    <td><span class="text-info">TRF-847589</span></td>
+                                    <td>****1234</td>
+                                    <td>****5678</td>
+                                    <td class="text-success">$1,200.00</td>
+                                    <td><span class="badge bg-success">ACH</span></td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td class="text-light">07/07/2025 13:15</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info me-1" title="View Details" data-action="custom-action">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" title="Receipt" data-action="custom-action">
+                                            <i class="fas fa-receipt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav aria-label="Transfer pagination">
+                        <ul class="pagination pagination-sm justify-content-center">
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                            <li class="page-item active">
+                                <span class="page-link">1</span>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">2</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">3</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Transfer Analytics -->
+            <div class="dashboard-stat-nvc-card mb-3">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="text-white mb-0">Transfer Analytics</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="transferTypesChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="text-white mb-0">Recent Activity</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="activity-item mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="activity-icon bg-success me-3">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="text-white fw-bold">Transfer Completed</div>
+                                <div class="text-light small">TRF-847589 - $1,200.00</div>
+                                <div class="text-light small">2 minutes ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="activity-item mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="activity-icon bg-info me-3">
+                                <i class="fas fa-play text-white"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="text-white fw-bold">Transfer Processing</div>
+                                <div class="text-light small">TRF-847590 - $50,000.00</div>
+                                <div class="text-light small">15 minutes ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="d-flex align-items-center">
+                            <div class="activity-icon bg-warning me-3">
+                                <i class="fas fa-clock text-white"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="text-white fw-bold">Transfer Scheduled</div>
+                                <div class="text-light small">TRF-847591 - $2,500.00</div>
+                                <div class="text-light small">1 hour ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Transfer management functions
+function processAllPending() {
+    if (confirm('Process all pending transfers?')) {
+        console.log('Processing all pending transfers...');
+        // Implementation would process all pending transfers
+    }
+}
+
+function approveTransfer(transferId) {
+    if (confirm('Approve transfer ' + transferId + '?')) {
+        console.log('Approving transfer:', transferId);
+        // Implementation would approve the transfer
+    }
+}
+
+function viewTransfer(transferId) {
+    console.log('Viewing transfer details:', transferId);
+    // Implementation would show transfer details modal
+}
+
+function cancelTransfer(transferId) {
+    if (confirm('Cancel transfer ' + transferId + '?')) {
+        console.log('Cancelling transfer:', transferId);
+        // Implementation would cancel the transfer
+    }
+}
+
+function trackTransfer(transferId) {
+    console.log('Tracking transfer:', transferId);
+    // Implementation would show transfer tracking information
+}
+
+function generateReceipt(transferId) {
+    console.log('Generating receipt for:', transferId);
+    // Implementation would generate and download receipt
+}
+
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.transfer-select');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+}
+
+function applyFilters() {
+    const status = document.getElementById('statusFilter').value;
+    const type = document.getElementById('typeFilter').value;
+    const search = document.getElementById('searchFilter').value;
+    
+    console.log('Applying filters:', { status, type, search });
+    // Implementation would filter the transfers table
+}
+
+// Initialize transfer types chart
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('transferTypesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Internal', 'External', 'Wire', 'ACH'],
+            datasets: [{
+                data: [55, 25, 12, 8],
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#17a2b8'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#e2e8f0',
+                        padding: 10
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

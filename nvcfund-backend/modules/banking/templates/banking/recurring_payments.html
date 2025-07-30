@@ -1,0 +1,143 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Recurring Payments - NVC Banking{% endblock %}
+
+{% block page_title %}Recurring Payments{% endblock %}
+{% block page_description %}Manage your automatic recurring payments and subscriptions{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <!-- Active Subscriptions -->
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sync-alt me-2"></i>Active Recurring Payments
+                    </h5>
+                    <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Recurring Payment
+                    </button>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if recurring_data.active_subscriptions %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Amount</th>
+                                        <th>Frequency</th>
+                                        <th>Next Payment</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subscription in recurring_data.active_subscriptions %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-{{ subscription.icon }} me-2 text-primary"></i>
+                                                {{ subscription.service_name }}
+                                            </div>
+                                        </td>
+                                        <td>${{ subscription.amount }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ subscription.frequency|title }}</span>
+                                        </td>
+                                        <td>{{ subscription.next_payment }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if subscription.status == 'Active' %}success{% else %}warning{% endif %}">
+                                                {{ subscription.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn nvc-btn nvc-btn-outline-warning" title="Pause">
+                                                    <i class="fas fa-pause"></i>
+                                                </button>
+                                                <button type="button" class="btn nvc-btn nvc-btn-outline-danger" title="Cancel">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-sync fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recurring payments set up</p>
+                            <button type="button" class="btn nvc-btn nvc-btn-primary">Set Up Recurring Payment</button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Schedules -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Payment Schedules</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if recurring_data.payment_schedules %}
+                        {% for schedule in recurring_data.payment_schedules %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                            <div>
+                                <strong>{{ schedule.name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ schedule.frequency }} - ${{ schedule.amount }}</small>
+                                <br>
+                                <small class="text-info">Next: {{ schedule.next_date }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-{% if schedule.status == 'Active' %}success{% else %}secondary{% endif %}">
+                                    {{ schedule.status }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No payment schedules configured</p>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-primary">Create Schedule</button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Monthly Summary</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row text-center">
+                        <div class="col-12 mb-3">
+                            <h4 class="text-primary">$0.00</h4>
+                            <small class="text-muted">Total Monthly Recurring</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-success">{{ recurring_data.active_subscriptions|length if recurring_data.active_subscriptions else 0 }}</h5>
+                            <small class="text-muted">Active</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-warning">0</h5>
+                            <small class="text-muted">Paused</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

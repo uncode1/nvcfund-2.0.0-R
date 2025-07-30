@@ -1,0 +1,173 @@
+{% extends "public/public_base.html" %}
+
+{% block title %}FAQ - NVC Banking Platform{% endblock %}
+
+{% block meta_description %}Frequently asked questions about NVC Banking Platform's digital banking services, security, cryptocurrency features, and account management.{% endblock %}
+
+{% block meta_keywords %}NVC Banking FAQ, digital banking questions, cryptocurrency banking help, banking support{% endblock %}
+
+{% block content %}
+<!-- FAQ Hero Section -->
+<section class="nvc-hero-section py-5" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); min-height: 50vh;">
+    <div class="container">
+        <div class="row align-items-center justify-content-center text-center">
+            <div class="col-lg-8">
+                <h1 class="nvc-hero-title text-white mb-4">Frequently Asked Questions</h1>
+                <p class="nvc-hero-subtitle text-light">
+                    Find answers to common questions about NVC Banking Platform's services, security, and features.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content Section -->
+<section class="nvc-section py-5">
+    <div class="nvc-public-container">
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-primary text-white mb-4">
+                <div class="nvc-nvc-card-body">
+                    <h1 class="h2 mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Frequently Asked Questions
+                    </h1>
+                    <p class="mb-0 opacity-75">Find answers to common questions about NVC Banking Platform</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="accordion" id="faqAccordion">
+                        
+                        <!-- Account Questions -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading1">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                    <strong>How do I open an account with NVC Banking Platform?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Opening an account is simple! Visit our registration page and choose from three account types: Individual Account, Business Client, or Partner Program. Complete our KYC-compliant registration process with required documentation.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NVCT Questions -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                    <strong>What is NVCT and how is it backed?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    NVCT is our stablecoin with a 30 trillion token supply targeting $1:1 USD parity. It's backed by $56.7T in documented assets providing 189% over-collateralization including US Treasury bonds, corporate bonds, real estate, and gold reserves.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Questions -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                    <strong>How secure is my account and data?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We implement banking-grade security with zero trust architecture, comprehensive threat protection, CSRF protection, and banking industry-compliant session management meeting PCI DSS and FFIEC standards.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Banking Services Questions -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4">
+                                    <strong>What banking services do you offer?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapse4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We offer comprehensive banking services including checking and savings accounts, transfers, wire transfers, ACH processing, NVCT stablecoin services, treasury operations, sovereign banking, and institutional banking services.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Questions -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading5">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5">
+                                    <strong>Do you provide Service access for developers?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapse5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! We provide a comprehensive REST Service v1.0 with endpoints for banking operations, treasury management, NVCT operations, and more. Visit our Service documentation for detailed information.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Support Questions -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading6">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse6">
+                                    <strong>How can I get help or support?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapse6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Our support team is available through multiple channels: contact form, live chat, or by visiting our contact support page. We're here to help with any questions about your account or our services.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Islamic Banking Questions -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading7">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse7">
+                                    <strong>Do you offer Islamic banking services?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapse7" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! We provide comprehensive Sharia-compliant banking services including Murabaha financing, Ijara leasing, Sukuk investments, halal investment screening, and Zakat calculation services with 98.5% compliance score.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="nvc-card border-primary">
+                <div class="nvc-nvc-card-body text-center">
+                    <h5 class="nvc-card-title">
+                        <i class="fas fa-envelope me-2"></i>
+                        Still have questions?
+                    </h5>
+                    <p class="nvc-card-text">Can't find what you're looking for? Our support team is here to help.</p>
+                    <a href="{{ url_for('public.contact_support') }}" class="btn nvc-btn nvc-btn-primary">
+                        <i class="fas fa-headset me-2"></i>
+                        Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

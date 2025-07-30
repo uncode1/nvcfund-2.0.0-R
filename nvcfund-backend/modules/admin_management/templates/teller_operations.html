@@ -1,0 +1,89 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Teller Operations - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Teller Operations{% endblock %}
+{% block page_description %}Comprehensive teller operations and transaction management{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}">Administration</a>
+</li>
+<li class="nvc-breadcrumb-item active">Teller Operations</li>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <style>
+        .dashboard-stat-card { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 8px !important; padding: 1.5rem; margin-bottom: 1rem; }
+        .card { background: #1e293b !important; border: 1px solid #334155 !important; color: #e2e8f0 !important; }
+        .btn-primary { background: #3b82f6 !important; border-color: #3b82f6 !important; }
+        .table-dark { background: #1e293b !important; }
+        .table-dark td, .table-dark th { border-color: #334155 !important; color: #e2e8f0 !important; }
+    </style>
+</head>
+<body>
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h3 class="nvc-card-title">Teller Operations</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info"><i class="fas fa-users"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Tellers</span>
+                                    <span class="info-box-number">{{ teller_data.total_tellers }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success"><i class="fas fa-user-check"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Active Tellers</span>
+                                    <span class="info-box-number">{{ teller_data.active_tellers }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h4>Teller Activity</h4>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Branch</th>
+                                        <th>Transactions</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for teller in teller_data.tellers %}
+                                    <tr>
+                                        <td>{{ teller.id }}</td>
+                                        <td>{{ teller.name }}</td>
+                                        <td>{{ teller.branch }}</td>
+                                        <td>{{ teller.transactions }}</td>
+                                        <td><span class="badge badge-success">{{ teller.status }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

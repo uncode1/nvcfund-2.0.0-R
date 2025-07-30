@@ -1,0 +1,18 @@
+2025-07-25T04:24:02.047344 - template_render_error: Failed to render homepage: Could not build url for endpoint 'public.documents'. Did you mean 'public.documentation' instead?
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-25T04:24:04.974123 - template_render_error: Failed to render homepage: Could not build url for endpoint 'public.documents'. Did you mean 'public.documentation' instead?
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-25T04:27:34.644354 - template_render_error: Failed to render contact page: Could not build url for endpoint 'public.documents'. Did you mean 'public.documentation' instead?
+Details: {'route': 'public.contact', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-25T04:27:39.982248 - template_render_error: Failed to render homepage: Could not build url for endpoint 'public.documents'. Did you mean 'public.documentation' instead?
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-25T04:55:14.286220 - template_render_error: Failed to render public.ai_assistant: public/ai_assistant.html
+Details: {'route': 'public.ai_assistant', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-25T07:31:31.944993 - DASHBOARD_ERROR: 'dashboard_data' is undefined
+Details: {'user_id': 1}
+---

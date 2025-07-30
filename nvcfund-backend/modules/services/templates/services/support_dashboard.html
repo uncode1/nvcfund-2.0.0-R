@@ -1,0 +1,122 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Support Dashboard - NVC Banking{% endblock %}
+
+{% block page_title %}Support Dashboard{% endblock %}
+{% block page_description %}Customer support and ticket management{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <!-- Support Statistics -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="nvc-card bg-primary text-white">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ support_data.active_tickets }}</h4>
+                            <p class="mb-0">Active Tickets</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-ticket-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="nvc-card bg-success text-white">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ support_data.resolved_today }}</h4>
+                            <p class="mb-0">Resolved Today</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="nvc-card bg-info text-white">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ support_data.average_response_time }}</h4>
+                            <p class="mb-0">Avg Response Time</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="nvc-card bg-warning text-white">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ support_data.customer_satisfaction }}%</h4>
+                            <p class="mb-0">Customer Satisfaction</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-smile fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Support Categories</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Count</th>
+                                    <th>Priority</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in support_data.support_categories %}
+                                <tr>
+                                    <td>{{ category.name }}</td>
+                                    <td>{{ category.count }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if category.priority == 'high' %}danger{% elif category.priority == 'medium' %}warning{% else %}success{% endif %}">
+                                            {{ category.priority|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-primary">View</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-secondary">Manage</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

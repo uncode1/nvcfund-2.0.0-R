@@ -1,0 +1,335 @@
+{% extends "public/public_base.html" %}
+
+{% block title %}NVCT Whitepaper - NVC Banking Platform{% endblock %}
+
+{% block meta_description %}Read the official NVCT stablecoin whitepaper. Learn about our $30 trillion stablecoin backed by $56.7T in documented assets.{% endblock %}
+
+{% block meta_keywords %}NVCT whitepaper, stablecoin documentation, blockchain banking, cryptocurrency whitepaper{% endblock %}
+
+{% block content %}
+<!-- NVCT Whitepaper Hero Section -->
+<section class="nvc-hero-section py-5" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); min-height: 50vh;">
+    <div class="container">
+        <div class="row align-items-center justify-content-center text-center">
+            <div class="col-lg-8">
+                <h1 class="nvc-hero-title text-white mb-4">NVCT Stablecoin Whitepaper</h1>
+                <p class="nvc-hero-subtitle text-light">
+                    Official documentation for our $30 trillion stablecoin backed by $56.7T in documented assets.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content Section -->
+<section class="nvc-section py-5">
+    <div class="nvc-public-container">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-4 text-primary">NVCT Stablecoin Whitepaper</h1>
+                <p class="lead text-light">Technical Overview and Economic Framework</p>
+                <div class="text-center mb-4">
+                    <button type="button" data-action="custom-action" class="btn nvc-btn nvc-btn-primary btn-lg me-3">
+                        <i class="fas fa-download me-2"></i>Download Full Whitepaper
+                    </button>
+                    <a href="{{ url_for('public.contact') }}" class="btn nvc-btn nvc-btn-outline-primary btn-lg">
+                        <i class="fas fa-envelope me-2"></i>Contact Team
+                    </a>
+                </div>
+            </div>
+
+            <!-- Executive Summary -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-executive-summary me-2"></i>Executive Summary</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <p>NVCT (NVC Token) represents a revolutionary approach to institutional-grade stablecoin infrastructure, targeting $1:1 USD parity with unprecedented over-collateralization of 189%.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5>Total Supply</h5>
+                            <p class="h3 text-primary">30 Trillion NVCT</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Backing Assets</h5>
+                            <p class="h3 text-success">$56.7 Trillion USD</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Collateralization</h5>
+                            <p class="h3 text-warning">189% Over-Collateralized</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Architecture -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h3 class="mb-0"><i class="fas fa-cogs me-2"></i>Technical Architecture</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Blockchain Infrastructure</h5>
+                            <ul>
+                                <li>Multi-chain deployment (Ethereum, Polygon, BSC)</li>
+                                <li>Smart contract-based minting and burning</li>
+                                <li>Real-time collateral monitoring</li>
+                                <li>Automated reserve management</li>
+                            </ul>
+                            
+                            <h5>Security Framework</h5>
+                            <ul>
+                                <li>Multi-signature wallet architecture</li>
+                                <li>Hardware security modules (HSMs)</li>
+                                <li>Regular security audits</li>
+                                <li>Insurance coverage</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Stability Mechanisms</h5>
+                            <ul>
+                                <li>Algorithmic supply adjustment</li>
+                                <li>Reserve ratio monitoring</li>
+                                <li>Emergency circuit breakers</li>
+                                <li>Liquidity pool management</li>
+                            </ul>
+                            
+                            <h5>Compliance Features</h5>
+                            <ul>
+                                <li>KYC/AML integration</li>
+                                <li>Regulatory reporting</li>
+                                <li>Transaction monitoring</li>
+                                <li>Audit trail maintenance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Economic Model -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="fas fa-chart-line me-2"></i>Economic Model</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <h5>Reserve Composition</h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Cash & Equivalents</h6>
+                                <p class="h4 text-primary">40%</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Government Bonds</h6>
+                                <p class="h4 text-success">35%</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Corporate Bonds</h6>
+                                <p class="h4 text-warning">20%</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Other Assets</h6>
+                                <p class="h4 text-info">5%</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4">Stability Targets</h5>
+                    <ul>
+                        <li><strong>Price Stability:</strong> ±0.1% from $1.00 USD target</li>
+                        <li><strong>Liquidity:</strong> $1B+ daily trading volume</li>
+                        <li><strong>Redemption:</strong> 24/7 instant redemption at par value</li>
+                        <li><strong>Transparency:</strong> Real-time reserve reporting</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Use Cases -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-warning text-white">
+                    <h3 class="mb-0"><i class="fas fa-building me-2"></i>Institutional Use Cases</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Corporate Treasury</h5>
+                            <ul>
+                                <li>Cash management optimization</li>
+                                <li>Cross-border payments</li>
+                                <li>Supply chain financing</li>
+                                <li>Working capital management</li>
+                            </ul>
+                            
+                            <h5>Financial Institutions</h5>
+                            <ul>
+                                <li>Correspondent banking</li>
+                                <li>Settlement layer</li>
+                                <li>Liquidity management</li>
+                                <li>Risk mitigation</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>DeFi Integration</h5>
+                            <ul>
+                                <li>Lending protocols</li>
+                                <li>Yield farming</li>
+                                <li>Automated market makers</li>
+                                <li>Synthetic asset backing</li>
+                            </ul>
+                            
+                            <h5>Government Services</h5>
+                            <ul>
+                                <li>Digital currency initiatives</li>
+                                <li>Social benefit distribution</li>
+                                <li>Tax collection</li>
+                                <li>Public sector payments</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regulatory Framework -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-danger text-white">
+                    <h3 class="mb-0"><i class="fas fa-gavel me-2"></i>Regulatory Framework</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <h5>Compliance Standards</h5>
+                    <ul>
+                        <li><strong>Banking Regulations:</strong> Compliance with banking laws in operating jurisdictions</li>
+                        <li><strong>Securities Law:</strong> Registration and reporting requirements</li>
+                        <li><strong>AML/CTF:</strong> Anti-money laundering and counter-terrorism financing</li>
+                        <li><strong>Data Protection:</strong> GDPR, CCPA, and other privacy regulations</li>
+                    </ul>
+                    
+                    <h5>Audit & Oversight</h5>
+                    <ul>
+                        <li>Monthly attestation reports by top-tier accounting firms</li>
+                        <li>Quarterly comprehensive audits</li>
+                        <li>Real-time reserve monitoring</li>
+                        <li>Regulatory reporting automation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Technology Stack -->
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header bg-dark text-white">
+                    <h3 class="mb-0"><i class="fas fa-server me-2"></i>Technology Stack</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5>Blockchain Layer</h5>
+                            <ul>
+                                <li>Ethereum (ERC-20)</li>
+                                <li>Polygon (PoS)</li>
+                                <li>Binance Smart Chain</li>
+                                <li>Solana (SPL)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Infrastructure</h5>
+                            <ul>
+                                <li>AWS/Azure cloud hosting</li>
+                                <li>Kubernetes orchestration</li>
+                                <li>Redis caching</li>
+                                <li>PostgreSQL databases</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Security</h5>
+                            <ul>
+                                <li>Hardware Security Modules</li>
+                                <li>Multi-party computation</li>
+                                <li>Zero-knowledge proofs</li>
+                                <li>Formal verification</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function downloadWhitepaper() {
+    // Create whitepaper content
+    const whitepaperContent = `
+NVCT STABLECOIN WHITEPAPER
+Technical Overview and Economic Framework
+NVC Banking Platform
+
+EXECUTIVE SUMMARY
+================
+NVCT (NVC Token) represents a revolutionary approach to institutional-grade stablecoin infrastructure, 
+targeting $1:1 USD parity with unprecedented over-collateralization of 189%.
+
+Key Metrics:
+- Total Supply: 30 Trillion NVCT
+- Backing Assets: $56.7 Trillion USD
+- Collateralization: 189% Over-Collateralized
+- Price Target: $1.00 USD ±0.1%
+
+TECHNICAL ARCHITECTURE
+=====================
+- Multi-chain deployment (Ethereum, Polygon, BSC)
+- Smart contract-based minting and burning
+- Real-time collateral monitoring
+- Automated reserve management
+- Multi-signature wallet architecture
+- Hardware security modules (HSMs)
+
+ECONOMIC MODEL
+==============
+Reserve Composition:
+- Cash & Equivalents: 40%
+- Government Bonds: 35%
+- Corporate Bonds: 20%
+- Other Assets: 5%
+
+REGULATORY FRAMEWORK
+===================
+- Banking regulations compliance
+- Securities law compliance
+- AML/CTF compliance
+- Monthly attestation reports
+- Quarterly comprehensive audits
+- Real-time reserve monitoring
+
+For complete whitepaper details, contact NVC Banking Platform.
+Generated on: ${new Date().toLocaleDateString()}
+`;
+
+    // Create download
+    const blob = new Blob([whitepaperContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'NVCT-Stablecoin-Whitepaper.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    // Show notification
+    if (typeof showNotification === 'function') {
+        showNotification('Whitepaper downloaded successfully!', 'success');
+    } else {
+        alert('NVCT Stablecoin Whitepaper downloaded successfully!');
+    }
+}
+</script>
+</div>
+{% endblock %}

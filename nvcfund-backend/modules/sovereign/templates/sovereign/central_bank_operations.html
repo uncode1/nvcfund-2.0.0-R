@@ -1,0 +1,463 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Central Bank Operations - NVC Banking Platform{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a; color: #e2e8f0; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif; }
+        .card { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; }
+        .card-header { background: #1e293b; border-bottom: 1px solid #334155; }
+        .card-body { background: #1e293b; }
+        .bg-gradient-primary { background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); }
+        .bg-success { background: #10b981 !important; }
+        .bg-info { background: #06b6d4 !important; }
+        .bg-warning { background: #f59e0b !important; }
+        .bg-danger { background: #ef4444 !important; }
+        .text-white { color: #ffffff !important; }
+        .text-light { color: #f8fafc !important; }
+        .text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
+        .btn-light { background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; }
+        .btn-light:hover { background: #e2e8f0; border-color: #cbd5e1; }
+        .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+        .btn-primary:hover { background: #2563eb; border-color: #2563eb; }
+        .table-dark { background: #1e293b; color: #e2e8f0; }
+        .table-dark th { border-color: #374151; }
+        .table-dark td { border-color: #374151; }
+        .alert-info { background: rgba(6, 182, 212, 0.1); border-color: #06b6d4; color: #e2e8f0; }
+        .alert-warning { background: rgba(245, 158, 11, 0.1); border-color: #f59e0b; color: #e2e8f0; }
+        .alert-success { background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #e2e8f0; }
+        .progress { background: #374151; }
+        .progress-bar { background: #3b82f6; }
+        .badge { font-size: 0.75rem; }
+        .bg-gradient-crypto { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .container-fluid { padding: 20px; }
+    
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Central Bank Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-primary">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="h2 text-white mb-2">
+                                <i class="fas fa-landmark me-2"></i>Central Bank Operations
+                            </h1>
+                            <p class="text-light mb-0">Monetary policy, reserve management, and central banking functions</p>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('sovereign.dashboard') }}" class="btn btn-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Sovereign Banking
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Central Bank Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-dollar-sign fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Money Supply (M2)</h4>
+                    <h2 class="text-white">${{ "21.7T"|default("0") }}</h2>
+                    <small class="text-light">Total Money Supply</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-percentage fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Fed Funds Rate</h4>
+                    <h2 class="text-white">{{ "5.25%"|default("0%") }}</h2>
+                    <small class="text-light">Current Target Rate</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Inflation Rate</h4>
+                    <h2 class="text-white">{{ "3.2%"|default("0%") }}</h2>
+                    <small class="text-light">Annual CPI Change</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-danger">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-vault fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Reserves</h4>
+                    <h2 class="text-white">${{ "3.2T"|default("0") }}</h2>
+                    <small class="text-light">Bank Reserves</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monetary Policy Tools -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-tools me-2"></i>Monetary Policy Tools</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row mb-4">
+                        <!-- Interest Rate Management -->
+                        <div class="col-md-6">
+                            <div class="nvc-card border-primary">
+                                <div class="nvc-nvc-card-header bg-primary text-white">
+                                    <h6><i class="fas fa-percentage me-2"></i>Interest Rate Policy</h6>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <form>
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Federal Funds Target Rate</label>
+                                            <div class="input-group">
+                                                <input type="number" class="nvc-form-input" value="5.25" step="0.25" min="0" max="20">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Discount Rate</label>
+                                            <div class="input-group">
+                                                <input type="number" class="nvc-form-input" value="5.50" step="0.25" min="0" max="20">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <button type="button" class="btn nvc-btn nvc-btn-primary">Update Rates</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reserve Requirements -->
+                        <div class="col-md-6">
+                            <div class="nvc-card border-success">
+                                <div class="nvc-nvc-card-header bg-success text-white">
+                                    <h6><i class="fas fa-vault me-2"></i>Reserve Requirements</h6>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <form>
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Reserve Ratio</label>
+                                            <div class="input-group">
+                                                <input type="number" class="nvc-form-input" value="10" step="0.5" min="0" max="25">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Required Reserves</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="text" class="nvc-form-input" value="3.2T" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <button type="button" class="btn nvc-btn nvc-btn-success">Update Requirements</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Open Market Operations -->
+                    <div class="nvc-card border-info">
+                        <div class="nvc-nvc-card-header bg-info text-white">
+                            <h6><i class="fas fa-exchange-alt me-2"></i>Open Market Operations</h6>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label">Operation Type</label>
+                                        <select class="nvc-form-select">
+                                            <option>Purchase Securities</option>
+                                            <option>Sell Securities</option>
+                                            <option>Repurchase Agreement</option>
+                                            <option>Reverse Repo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label">Security Type</label>
+                                        <select class="nvc-form-select">
+                                            <option>Treasury Bills</option>
+                                            <option>Treasury Notes</option>
+                                            <option>Treasury Bonds</option>
+                                            <option>TIPS</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label">Amount</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input" placeholder="0">
+                                            <span class="input-group-text">B</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-info">Execute Operation</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Economic Indicators -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-chart-bar me-2"></i>Economic Indicators</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">GDP Growth Rate</label>
+                        <div class="d-flex justify-content-between">
+                            <span class="h6">{{ "2.1%"|default("0%") }}</span>
+                            <span class="badge bg-success">Quarterly</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Unemployment Rate</label>
+                        <div class="d-flex justify-content-between">
+                            <span class="h6">{{ "3.7%"|default("0%") }}</span>
+                            <span class="badge bg-info">Monthly</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Core PCE</label>
+                        <div class="d-flex justify-content-between">
+                            <span class="h6">{{ "3.8%"|default("0%") }}</span>
+                            <span class="badge bg-warning">YoY Change</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Dollar Index (DXY)</label>
+                        <div class="d-flex justify-content-between">
+                            <span class="h6">{{ "103.45"|default("0") }}</span>
+                            <span class="badge bg-primary">Current</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">10Y Treasury Yield</label>
+                        <div class="d-flex justify-content-between">
+                            <span class="h6">{{ "4.45%"|default("0%") }}</span>
+                            <span class="badge bg-secondary">Current</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOMC Schedule -->
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-calendar me-2"></i>FOMC Schedule</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6>Next Meeting</h6>
+                                <p class="text-light small">{{ "March 19-20, 2025"|default("TBD") }}</p>
+                                <span class="badge bg-primary">Upcoming</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6>Last Decision</h6>
+                                <p class="text-light small">{{ "January 30, 2025"|default("TBD") }}</p>
+                                <span class="badge bg-success">Rate Hold</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6>Beige Book</h6>
+                                <p class="text-light small">{{ "March 6, 2025"|default("TBD") }}</p>
+                                <span class="badge bg-info">Released</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banking System Status -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-university me-2"></i>Banking System Status</h5>
+                    <span class="badge bg-success">System Healthy</span>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <div class="nvc-card bg-light">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <h6>Total Banks</h6>
+                                    <span class="h4">{{ "4,236"|default("0") }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="nvc-card bg-light">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <h6>Total Assets</h6>
+                                    <span class="h4">${{ "23.7T"|default("0") }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="nvc-card bg-light">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <h6>Total Deposits</h6>
+                                    <span class="h4">${{ "18.2T"|default("0") }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="nvc-card bg-light">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <h6>Total Loans</h6>
+                                    <span class="h4">${{ "11.8T"|default("0") }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Stress Tests -->
+                    <div class="mt-4">
+                        <h6><i class="fas fa-stethoscope me-2"></i>Stress Test Results</h6>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Bank Category</th>
+                                        <th>Number of Banks</th>
+                                        <th>Capital Ratio</th>
+                                        <th>Stress Scenario</th>
+                                        <th>Pass Rate</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Large Banks (>$700B)</td>
+                                        <td>8</td>
+                                        <td>13.2%</td>
+                                        <td>Severe Recession</td>
+                                        <td>100%</td>
+                                        <td><span class="badge bg-success">Pass</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Regional Banks ($50B-$700B)</td>
+                                        <td>35</td>
+                                        <td>11.8%</td>
+                                        <td>Severe Recession</td>
+                                        <td>97%</td>
+                                        <td><span class="badge bg-success">Pass</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Community Banks (<$50B)</td>
+                                        <td>4,193</td>
+                                        <td>12.5%</td>
+                                        <td>Economic Downturn</td>
+                                        <td>94%</td>
+                                        <td><span class="badge bg-success">Pass</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+}
+
+.timeline-item {
+    display: flex;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.timeline-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.timeline-content {
+    flex: 1;
+}
+</style>
+
+<script>
+// Central bank operations scripts
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Central Bank Operations dashboard loaded');
+    
+    // Add interactive functionality here
+    const updateButtons = document.querySelectorAll('.btn');
+    updateButtons.forEach(button => {
+        if (button.textContent.includes('Update') || button.textContent.includes('Execute')) {
+            button.addEventListener('click', function() {
+                alert('Central bank operation requires Federal Reserve authorization');
+            });
+        }
+    });
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+// Central bank operations scripts
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Central Bank Operations dashboard loaded');
+    
+    // Add interactive functionality here
+    const updateButtons = document.querySelectorAll('.btn');
+    updateButtons.forEach(button => {
+        if (button.textContent.includes('Update') || button.textContent.includes('Execute')) {
+            button.addEventListener('click', function() {
+                alert('Central bank operation requires Federal Reserve authorization');
+            });
+        }
+    });
+});
+
+{% endblock %}

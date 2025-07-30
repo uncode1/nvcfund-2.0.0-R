@@ -1,0 +1,327 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Premiums Analysis - Insurance Services{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-success">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h2 text-white mb-1">
+                                <i class="fas fa-dollar-sign me-2"></i>Premiums Analysis
+                            </h1>
+                            <p class="text-light mb-0">Comprehensive premium revenue and trend analysis</p>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('insurance.main_dashboard') }}" class="btn btn-light me-2">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                            </a>
+                            <button type="button" class="btn nvc-btn nvc-btn-warning" data-action="custom-action">
+                                <i class="fas fa-file-pdf me-1"></i>Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-chart-line fa-2x text-success mb-3"></i>
+                    <h4>Annual Revenue</h4>
+                    <h3 class="text-primary">$24.7M</h3>
+                    <small class="text-success"><i class="fas fa-arrow-up"></i> +8.5% YoY</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-calendar fa-2x text-info mb-3"></i>
+                    <h4>Monthly Average</h4>
+                    <h3 class="text-primary">$2.06M</h3>
+                    <small class="text-success"><i class="fas fa-arrow-up"></i> +3.2% MoM</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-users fa-2x text-warning mb-3"></i>
+                    <h4>Active Policies</h4>
+                    <h3 class="text-primary">2,847</h3>
+                    <small class="text-info"><i class="fas fa-plus"></i> 47 new this month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-percentage fa-2x text-danger mb-3"></i>
+                    <h4>Average Premium</h4>
+                    <h3 class="text-primary">$8,675</h3>
+                    <small class="text-light">Per policy/year</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Premium Revenue Trends</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="premiumTrendChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Premium by Product</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="productDistChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Analysis Tables -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Performing Products</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Revenue</th>
+                                    <th>Growth</th>
+                                    <th>Policies</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-danger">Life Insurance</span></td>
+                                    <td><strong>$11.2M</strong></td>
+                                    <td><span class="text-success">+12.3%</span></td>
+                                    <td>1,247</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">Auto Insurance</span></td>
+                                    <td><strong>$7.8M</strong></td>
+                                    <td><span class="text-success">+6.7%</span></td>
+                                    <td>856</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-warning">Home Insurance</span></td>
+                                    <td><strong>$4.1M</strong></td>
+                                    <td><span class="text-success">+4.2%</span></td>
+                                    <td>623</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-info">Business</span></td>
+                                    <td><strong>$1.6M</strong></td>
+                                    <td><span class="text-success">+18.9%</span></td>
+                                    <td>121</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Monthly Premium Collection</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Collected</th>
+                                    <th>Outstanding</th>
+                                    <th>Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>January 2025</strong></td>
+                                    <td>$2.1M</td>
+                                    <td>$125K</td>
+                                    <td><span class="badge bg-success">94.4%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>December 2024</strong></td>
+                                    <td>$2.3M</td>
+                                    <td>$89K</td>
+                                    <td><span class="badge bg-success">96.3%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>November 2024</strong></td>
+                                    <td>$2.0M</td>
+                                    <td>$156K</td>
+                                    <td><span class="badge bg-warning">92.8%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>October 2024</strong></td>
+                                    <td>$1.9M</td>
+                                    <td>$98K</td>
+                                    <td><span class="badge bg-success">95.1%</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Age Group Analysis -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Premium Analysis by Demographics</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <h4 class="text-primary">18-35</h4>
+                                <p class="mb-1"><strong>$4.2M</strong> (17%)</p>
+                                <small class="text-light">Young Professionals</small>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar bg-info" class="progress-bar-17"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <h4 class="text-primary">36-50</h4>
+                                <p class="mb-1"><strong>$9.8M</strong> (40%)</p>
+                                <small class="text-light">Peak Earners</small>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar bg-success" class="progress-bar-40"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <h4 class="text-primary">51-65</h4>
+                                <p class="mb-1"><strong>$7.4M</strong> (30%)</p>
+                                <small class="text-light">Pre-Retirement</small>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar bg-warning" class="progress-bar-30"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <h4 class="text-primary">65+</h4>
+                                <p class="mb-1"><strong>$3.3M</strong> (13%)</p>
+                                <small class="text-light">Retirees</small>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar bg-secondary" class="progress-bar-13"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Premium Trend Chart
+    const trendCtx = document.getElementById('premiumTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: '2024',
+                data: [1.8, 1.9, 2.1, 2.0, 2.2, 2.3, 2.1, 2.4, 2.2, 1.9, 2.0, 2.3],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                tension: 0.4
+            }, {
+                label: '2023',
+                data: [1.6, 1.7, 1.8, 1.9, 1.8, 2.0, 1.9, 2.1, 2.0, 1.8, 1.9, 2.0],
+                borderColor: '#6c757d',
+                backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value + 'M';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Product Distribution Chart
+    const distCtx = document.getElementById('productDistChart').getContext('2d');
+    new Chart(distCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Life Insurance', 'Auto Insurance', 'Home Insurance', 'Business Insurance'],
+            datasets: [{
+                data: [45, 32, 17, 6],
+                backgroundColor: ['#dc3545', '#28a745', '#ffc107', '#17a2b8']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    function generateReport() {
+        alert('Generating premium analysis report...');
+    }
+
+    window.generateReport = generateReport;
+});
+</script>
+</div>
+{% endblock %}

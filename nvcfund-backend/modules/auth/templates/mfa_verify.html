@@ -1,0 +1,362 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}MFA Verification - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Security Verification{% endblock %}
+{% block page_description %}Multi-factor authentication for secure access to your banking and crypto assets{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-key"></i>
+    Use Backup Code
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-redo"></i>
+    Resend Code
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-check"></i>
+    Verify
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Modern MFA Verification -->
+<div class="row justify-content-center">
+    <div class="col-xl-6 col-lg-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="security-shield mb-3">
+                        <i class="fas fa-shield-alt text-primary" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="text-primary mb-2">Security Verification Required</h3>
+                    <p class="text-muted">Please verify your identity to access your banking and crypto assets</p>
+                </div>
+
+                <!-- Verification Methods -->
+                <div class="verification-methods">
+                    <!-- Authenticator App Method -->
+                    <div class="verification-method active" id="authenticatorMethod">
+                        <div class="method-header">
+                            <div class="method-icon bg-primary">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="method-info">
+                                <h6>Authenticator App</h6>
+                                <small class="text-muted">Enter the 6-digit code from your authenticator app</small>
+                            </div>
+                        </div>
+                        <div class="method-form mt-3">
+                            <form id="authenticatorForm">
+                                <div class="verification-code-input">
+                                    <input type="text" class="form-control nvc-form-input-lg text-center nvc-style-c279a6"
+                                           id="authCode" maxlength="6" placeholder="000000"
+                                           >
+                                </div>
+                                <div class="d-grid mt-3">
+                                    <button type="submit" class="btn nvc-btn nvc-btn-primary btn-lg">
+                                        <i class="fas fa-check me-2"></i>
+                                        Verify Code
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- SMS Method -->
+                    <div class="verification-method" id="smsMethod" class="d-none">
+                        <div class="method-header">
+                            <div class="method-icon bg-success">
+                                <i class="fas fa-sms"></i>
+                            </div>
+                            <div class="method-info">
+                                <h6>SMS Verification</h6>
+                                <small class="text-muted">Enter the code sent to your phone ****-****-1234</small>
+                            </div>
+                        </div>
+                        <div class="method-form mt-3">
+                            <form id="smsForm">
+                                <div class="verification-code-input">
+                                    <input type="text" class="form-control nvc-form-input-lg text-center nvc-style-c279a6"
+                                           id="smsCode" maxlength="6" placeholder="000000"
+                                           >
+                                </div>
+                                <div class="d-grid mt-3">
+                                    <button type="submit" class="btn nvc-btn nvc-btn-success btn-lg">
+                                        <i class="fas fa-check me-2"></i>
+                                        Verify SMS Code
+                                    </button>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <button type="button" class="btn btn-link btn-sm" data-action="custom-action">
+                                        Didn't receive code? Resend
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Hardware Key Method -->
+                    <div class="verification-method" id="hardwareMethod" class="d-none">
+                        <div class="method-header">
+                            <div class="method-icon bg-warning">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="method-info">
+                                <h6>Hardware Security Key</h6>
+                                <small class="text-muted">Insert and touch your security key</small>
+                            </div>
+                        </div>
+                        <div class="method-form mt-3">
+                            <div class="text-center">
+                                <div class="hardware-key-animation mb-3">
+                                    <i class="fas fa-usb text-warning" class="nvc-fs-3rem"></i>
+                                </div>
+                                <p class="text-muted">Insert your hardware security key and follow the prompts</p>
+                                <button type="button" class="btn nvc-btn nvc-btn-warning btn-lg" data-action="custom-action">
+                                    <i class="fas fa-key me-2"></i>
+                                    Activate Security Key
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alternative Methods -->
+                <div class="alternative-methods mt-4">
+                    <hr>
+                    <div class="text-center">
+                        <p class="text-muted mb-3">Try a different method:</p>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">
+                                <i class="fas fa-mobile-alt me-1"></i>
+                                App
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-sm" data-action="custom-action">
+                                <i class="fas fa-sms me-1"></i>
+                                SMS
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm" data-action="custom-action">
+                                <i class="fas fa-key me-1"></i>
+                                Hardware Key
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup Options -->
+                <div class="backup-options mt-4">
+                    <div class="text-center">
+                        <button type="button" class="btn btn-link text-muted" data-action="custom-action">
+                            <i class="fas fa-unlock-alt me-1"></i>
+                            Use backup recovery code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                <div class="text-center mb-4">
+                    <div class="avatar-lg mx-auto mb-3">
+                        <i class="fas fa-mobile-alt fa-3x text-primary"></i>
+                    </div>
+                    <h5>Enter Verification Code</h5>
+                    <p class="text-light">
+                        Welcome back, <strong>{{ username }}</strong><br>
+                        Enter the 6-digit code from your authenticator app
+                    </p>
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.mfa_verify') }}" id="mfaForm">
+                    <div class="form-group mb-4">
+                        <label for="mfa_token" class="nvc-form-label">Authentication Code</label>
+                        <input type="text" 
+                               class="form-control nvc-form-input-lg text-center" 
+                               id="mfa_token" 
+                               name="mfa_token" 
+                               placeholder="000000"
+                               maxlength="6"
+                               pattern="[0-9]{6}"
+                               required
+                               style="letter-spacing: 8px; font-family: 'Courier New', monospace; font-size: 24px;">
+                        <div class="form-text text-center">Enter the code from your authenticator app</div>
+                    </div>
+
+                    <button type="submit" class="btn nvc-btn nvc-btn-primary btn-lg w-100 mb-3" id="verifyBtn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Verify and Sign In
+                    </button>
+                </form>
+
+                <div class="text-center">
+                    <div class="divider my-3">
+                        <span class="divider-text">or</span>
+                    </div>
+                    
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                        <i class="fas fa-key"></i>
+                        Use Backup Code
+                    </button>
+                </div>
+
+                <!-- Backup Code Form (initially hidden) -->
+                <div id="backupCodeForm" class="d-none" class="mt-4">
+                    <div class="alert nvc-nvc-alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Using Backup Code:</strong> Each backup code can only be used once.
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('auth.mfa_verify') }}">
+                        <input type="hidden" name="use_backup_code" value="true">
+                        <div class="form-group mb-3">
+                            <label for="backup_token" class="nvc-form-label">Backup Code</label>
+                            <input type="text" 
+                                   class="form-control nvc-form-input-lg text-center" 
+                                   id="backup_token" 
+                                   name="mfa_token" 
+                                   placeholder="XXXXXXXX"
+                                   maxlength="8"
+                                   style="letter-spacing: 3px; font-family: 'Courier New', monospace;">
+                            <div class="form-text text-center">Enter one of your backup codes</div>
+                        </div>
+
+                        <button type="submit" class="btn nvc-btn nvc-btn-warning btn-lg w-100">
+                            <i class="fas fa-unlock"></i>
+                            Use Backup Code
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-link" data-action="custom-action">
+                            <i class="fas fa-arrow-left"></i>
+                            Back to Authenticator Code
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <small class="text-light">
+                        Having trouble? <a href="mailto:support@nvcfund.com">Contact Support</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-lg {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 50%;
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #dee2e6;
+}
+
+.divider-text {
+    background: white;
+    padding: 0 15px;
+    color: #6c757d;
+    font-size: 14px;
+}
+</style>
+
+<script>
+// Auto-format authentication code input
+document.getElementById('mfa_token').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length > 6) {
+        value = value.substring(0, 6);
+    }
+    e.target.value = value;
+});
+
+// Auto-submit when 6 digits are entered
+document.getElementById('mfa_token').addEventListener('input', function(e) {
+    if (e.target.value.length === 6) {
+        // Add visual feedback
+        const button = document.getElementById('verifyBtn');
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+        button.disabled = true;
+        
+        // Slight delay to allow user to see the complete code
+        setTimeout(function() {
+            document.getElementById('mfaForm').submit();
+        }, 800);
+    }
+});
+
+// Format backup code input
+document.getElementById('backup_token').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/[^A-Z0-9]/g, '').toUpperCase(); // Remove invalid chars
+    if (value.length > 8) {
+        value = value.substring(0, 8);
+    }
+    e.target.value = value;
+});
+
+function toggleBackupCode() {
+    const normalForm = document.getElementById('mfaForm');
+    const backupForm = document.getElementById('backupCodeForm');
+    
+    if (backupForm.style.display === 'none') {
+        normalForm.style.display = 'none';
+        backupForm.style.display = 'block';
+        document.getElementById('backup_token').focus();
+    } else {
+        normalForm.style.display = 'block';
+        backupForm.style.display = 'none';
+        document.getElementById('mfa_token').focus();
+    }
+}
+
+// Focus on input when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('mfa_token').focus();
+});
+
+// Add countdown timer for session timeout
+let timeLeft = 300; // 5 minutes
+function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    
+    if (timeLeft <= 0) {
+        alert('Session timeout. Redirecting to login...');
+        window.location.href = "{{ url_for('auth.login') }}";
+        return;
+    }
+    
+    timeLeft--;
+    setTimeout(updateTimer, 1000);
+}
+
+// Start timer
+updateTimer();
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

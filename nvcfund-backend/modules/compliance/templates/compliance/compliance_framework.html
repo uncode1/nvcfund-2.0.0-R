@@ -1,0 +1,318 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Compliance Framework - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Compliance Framework{% endblock %}
+{% block page_description %}Comprehensive regulatory framework and policy management system{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Framework
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-cogs"></i>
+    Manage Framework
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Create Framework
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Compliance Framework Functions
+function exportFramework() {
+    const csvData = 'Framework,Category,Status,Compliance Level,Last Updated\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'compliance_framework.csv';
+    a.click();
+}
+
+function manageFramework() {
+    window.location.href = "{{ url_for('compliance.compliance_settings') }}";
+}
+
+function createFramework() {
+    window.location.href = "{{ url_for('compliance.compliance_framework_wizard') }}";
+}
+
+function viewFrameworkDetails(frameworkId) {
+    window.location.href = "{{ url_for('compliance.framework_details') }}?id=" + frameworkId;
+}
+
+function editFramework(frameworkId) {
+    window.location.href = "{{ url_for('compliance.edit_framework') }}?id=" + frameworkId;
+}
+
+function deleteFramework(frameworkId) {
+    if (confirm('Are you sure you want to delete this framework?')) {
+        fetch('/compliance/frameworks/' + frameworkId, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error deleting framework');
+            }
+        });
+    }
+}
+
+// Add interactive functionality for framework items
+document.addEventListener('DOMContentLoaded', function() {
+    const frameworkItems = document.querySelectorAll('.framework-item');
+    frameworkItems.forEach(item => {
+        item.style.cursor = 'pointer';
+        item.addEventListener('click', function() {
+            const frameworkId = this.dataset.frameworkId;
+            if (frameworkId) {
+                viewFrameworkDetails(frameworkId);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Compliance Framework Management -->
+<div class="row g-4">
+
+    <!-- Framework Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Regulatory Frameworks
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="framework-list">
+                        <div class="framework-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">PCI DSS v4.0</h6>
+                                    <small class="text-light">Payment Card Industry Data Security Standard</small>
+                                </div>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                        </div>
+                        <div class="framework-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">SOX Compliance</h6>
+                                    <small class="text-light">Sarbanes-Oxley Act</small>
+                                </div>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                        </div>
+                        <div class="framework-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">GDPR</h6>
+                                    <small class="text-light">General Data Protection Regulation</small>
+                                </div>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                        </div>
+                        <div class="framework-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">FFIEC Guidelines</h6>
+                                    <small class="text-light">Federal Financial Institutions Examination Council</small>
+                                </div>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                        </div>
+                        <div class="framework-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">ISO 27001</h6>
+                                    <small class="text-light">Information Security Management</small>
+                                </div>
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Policy Categories
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="policy-categories">
+                        <div class="policy-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Data Protection</h6>
+                                    <small class="text-light">15 policies</small>
+                                </div>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Manage</button>
+                            </div>
+                        </div>
+                        <div class="policy-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Financial Controls</h6>
+                                    <small class="text-light">23 policies</small>
+                                </div>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Manage</button>
+                            </div>
+                        </div>
+                        <div class="policy-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Security Policies</h6>
+                                    <small class="text-light">18 policies</small>
+                                </div>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Manage</button>
+                            </div>
+                        </div>
+                        <div class="policy-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Risk Management</h6>
+                                    <small class="text-light">12 policies</small>
+                                </div>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Manage</button>
+                            </div>
+                        </div>
+                        <div class="policy-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Operational Procedures</h6>
+                                    <small class="text-light">27 policies</small>
+                                </div>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Manage</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Framework Management -->
+    <div class="nvc-card">
+        <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+            <h5 class="nvc-card-title mb-0">
+                <i class="fas fa-cogs me-2"></i>
+                Framework Management
+            </h5>
+            <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">
+                <i class="fas fa-plus me-2"></i>
+                Add Policy
+            </button>
+        </div>
+        <div class="nvc-nvc-card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Policy ID</th>
+                            <th>Name</th>
+                            <th>Framework</th>
+                            <th>Category</th>
+                            <th>Last Updated</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>POL-001</strong></td>
+                            <td>Data Retention Policy</td>
+                            <td>GDPR</td>
+                            <td>Data Protection</td>
+                            <td>June 15, 2025</td>
+                            <td>Sarah Mitchell</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary me-1">Edit</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info">Review</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>POL-002</strong></td>
+                            <td>Access Control Standards</td>
+                            <td>PCI DSS</td>
+                            <td>Security Policies</td>
+                            <td>June 20, 2025</td>
+                            <td>Michael Chen</td>
+                            <td><span class="badge bg-warning">Under Review</span></td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary me-1">Edit</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info">Review</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>POL-003</strong></td>
+                            <td>Financial Transaction Controls</td>
+                            <td>SOX</td>
+                            <td>Financial Controls</td>
+                            <td>June 25, 2025</td>
+                            <td>Lisa Rodriguez</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary me-1">Edit</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info">Review</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.compliance-framework-container {
+    padding: 2rem 0;
+}
+
+.framework-item,
+.policy-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.framework-item:last-child,
+.policy-item:last-child {
+    border-bottom: none;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

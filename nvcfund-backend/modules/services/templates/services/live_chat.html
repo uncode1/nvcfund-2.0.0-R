@@ -1,0 +1,118 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Live Chat Support - NVC Banking{% endblock %}
+
+{% block page_title %}Live Chat Support{% endblock %}
+{% block page_description %}Get instant help from our support team{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>Live Chat Support
+                    </h5>
+                    <div class="chat-status">
+                        <span class="badge bg-success">
+                            <i class="fas fa-circle me-1"></i>{{ chat_data.chat_status|title }}
+                        </span>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="chat-info mb-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-item">
+                                    <strong>Queue Position:</strong> {{ chat_data.queue_position }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-item">
+                                    <strong>Estimated Wait:</strong> {{ chat_data.estimated_wait }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-item">
+                                    <strong>Available Agents:</strong> {{ chat_data.available_agents }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-container" class="nvc-overflow-y-auto">
+                        <div class="chat-messages">
+                            {% if chat_data.chat_history %}
+                                {% for message in chat_data.chat_history %}
+                                <div class="message mb-2">
+                                    <strong>{{ message.sender }}:</strong> {{ message.content }}
+                                    <small class="text-muted d-block">{{ message.timestamp }}</small>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-comments fa-3x mb-3"></i>
+                                <p>Welcome to NVC Banking Live Chat Support!</p>
+                                <p>An agent will be with you shortly.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input mt-3">
+                        <div class="input-group">
+                            <input type="text" class="nvc-form-input" placeholder="Type your message..." id="chatInput">
+                            <button class="btn nvc-btn nvc-btn-primary" type="button" id="sendMessage">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-actions mt-3">
+                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm">
+                            <i class="fas fa-phone"></i> Request Call
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm">
+                            <i class="fas fa-file-alt"></i> Create Ticket
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-secondary btn-sm">
+                            <i class="fas fa-download"></i> Download Transcript
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('sendMessage').addEventListener('click', function() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if (message) {
+        // Add message to chat (placeholder functionality)
+        const chatMessages = document.querySelector('.chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message mb-2';
+        messageDiv.innerHTML = `
+            <strong>You:</strong> ${message}
+            <small class="text-muted d-block">${new Date().toLocaleTimeString()}</small>
+        `;
+        chatMessages.appendChild(messageDiv);
+        input.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});
+
+document.getElementById('chatInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('sendMessage').click();
+    }
+});
+</script>
+</div>
+{% endblock %}

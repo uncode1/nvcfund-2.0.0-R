@@ -1,0 +1,367 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Investment Products - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Investment Products{% endblock %}
+{% block page_description %}Comprehensive investment portfolio and wealth management solutions{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="btn btn-outline-primary">
+    <i class="fas fa-download"></i>
+    Export Portfolio
+</button>
+<button type="button" class="btn btn-secondary">
+    <i class="fas fa-plus"></i>
+    New Investment
+</button>
+<button type="button" class="btn btn-primary">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Prices
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Investment Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Total AUM</h6>
+                            <h3 class="mb-0">${{ investment_stats.total_aum or '1.2B' }}</h3>
+                            <small class="text-light">+{{ investment_stats.aum_growth or '15.2' }}% YTD</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Active Investors</h6>
+                            <h3 class="mb-0">{{ investment_stats.active_investors or '12,847' }}</h3>
+                            <small class="text-light">{{ investment_stats.new_investors or '247' }} new this month</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Portfolio Performance</h6>
+                            <h3 class="mb-0">{{ investment_stats.portfolio_return or '+12.8' }}%</h3>
+                            <small class="text-light">Avg annual return</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-percentage fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Revenue</h6>
+                            <h3 class="mb-0">${{ investment_stats.revenue or '89.2M' }}</h3>
+                            <small class="text-light">Management fees YTD</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Product Categories -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-th-large me-2"></i>
+                        Investment Product Categories
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for category in investment_categories or [
+                            {'name': 'Mutual Funds', 'aum': '$456M', 'products': '45', 'investors': '8.2K', 'return': '+11.2%', 'color': 'primary'},
+                            {'name': 'ETFs', 'aum': '$234M', 'products': '28', 'investors': '5.1K', 'return': '+13.8%', 'color': 'success'},
+                            {'name': 'Bonds', 'aum': '$189M', 'products': '32', 'investors': '3.4K', 'return': '+6.5%', 'color': 'info'},
+                            {'name': 'Stocks', 'aum': '$167M', 'products': '156', 'investors': '4.7K', 'return': '+18.3%', 'color': 'warning'},
+                            {'name': 'Alternative Investments', 'aum': '$89M', 'products': '12', 'investors': '1.2K', 'return': '+22.1%', 'color': 'secondary'},
+                            {'name': 'Cryptocurrency', 'aum': '$67M', 'products': '8', 'investors': '2.8K', 'return': '+45.7%', 'color': 'dark'}
+                        ] %}
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="card border-{{ category.color }} h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="text-{{ category.color }}">{{ category.name }}</h5>
+                                        <span class="badge bg-{{ category.color }}">{{ category.return }}</span>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <h6 class="text-{{ category.color }}">{{ category.aum }}</h6>
+                                            <small class="text-muted">AUM</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <h6 class="text-{{ category.color }}">{{ category.products }}</h6>
+                                            <small class="text-muted">Products</small>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="text-center">
+                                        <strong>{{ category.investors }}</strong>
+                                        <br>
+                                        <small class="text-muted">Active Investors</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performing Products -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-trophy me-2"></i>
+                        Top Performing Investment Products
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>AUM</th>
+                                    <th>1Y Return</th>
+                                    <th>3Y Return</th>
+                                    <th>Risk Level</th>
+                                    <th>Investors</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in top_products or [
+                                    {'name': 'NVC Growth Fund', 'category': 'Mutual Fund', 'aum': '$89M', 'return_1y': '+24.5%', 'return_3y': '+18.2%', 'risk': 'High', 'investors': '2.3K'},
+                                    {'name': 'Tech Innovation ETF', 'category': 'ETF', 'aum': '$67M', 'return_1y': '+31.8%', 'return_3y': '+22.1%', 'risk': 'High', 'investors': '1.8K'},
+                                    {'name': 'Balanced Portfolio', 'category': 'Mutual Fund', 'aum': '$123M', 'return_1y': '+12.3%', 'return_3y': '+11.8%', 'risk': 'Medium', 'investors': '4.5K'},
+                                    {'name': 'Government Bonds', 'category': 'Bonds', 'aum': '$156M', 'return_1y': '+6.8%', 'return_3y': '+5.9%', 'risk': 'Low', 'investors': '3.2K'},
+                                    {'name': 'Crypto Index Fund', 'category': 'Cryptocurrency', 'aum': '$45M', 'return_1y': '+67.2%', 'return_3y': '+45.8%', 'risk': 'Very High', 'investors': '1.2K'}
+                                ] %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ product.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if product.category == 'Mutual Fund' else 'success' if product.category == 'ETF' else 'info' if product.category == 'Bonds' else 'warning' if product.category == 'Stocks' else 'dark' }}">
+                                            {{ product.category }}
+                                        </span>
+                                    </td>
+                                    <td>{{ product.aum }}</td>
+                                    <td>
+                                        <span class="text-{{ 'success' if product.return_1y.startswith('+') else 'danger' }}">
+                                            {{ product.return_1y }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-{{ 'success' if product.return_3y.startswith('+') else 'danger' }}">
+                                            {{ product.return_3y }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if product.risk == 'Low' else 'warning' if product.risk == 'Medium' else 'danger' if product.risk == 'High' else 'dark' }}">
+                                            {{ product.risk }}
+                                        </span>
+                                    </td>
+                                    <td>{{ product.investors }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info" title="Performance Chart">
+                                                <i class="fas fa-chart-line"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-success" title="Invest">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Asset Allocation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Equities</span>
+                            <span class="text-primary">{{ asset_allocation.equities or '45%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" class="progress-bar-45"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Fixed Income</span>
+                            <span class="text-success">{{ asset_allocation.fixed_income or '30%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-30"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Alternative Investments</span>
+                            <span class="text-warning">{{ asset_allocation.alternatives or '15%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" class="progress-bar-15"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Cash & Equivalents</span>
+                            <span class="text-info">{{ asset_allocation.cash or '10%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" class="progress-bar-10"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Insights -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Market Insights
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for insight in market_insights or [
+                        {'title': 'Tech Sector Rally', 'description': 'Technology stocks showing strong momentum', 'impact': 'Positive', 'time': '2 hours ago'},
+                        {'title': 'Interest Rate Decision', 'description': 'Fed maintains current rates', 'impact': 'Neutral', 'time': '1 day ago'},
+                        {'title': 'Crypto Volatility', 'description': 'High volatility in cryptocurrency markets', 'impact': 'Negative', 'time': '3 hours ago'}
+                    ] %}
+                    <div class="alert alert-{{ 'success' if insight.impact == 'Positive' else 'warning' if insight.impact == 'Neutral' else 'danger' }} alert-sm">
+                        <h6 class="alert-heading">{{ insight.title }}</h6>
+                        <p class="mb-1">{{ insight.description }}</p>
+                        <small class="text-muted">{{ insight.time }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Tools -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        Investment Management Tools
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-calculator fa-3x text-primary mb-3"></i>
+                                    <h5>Portfolio Analyzer</h5>
+                                    <p class="text-muted">Analyze portfolio performance and risk metrics</p>
+                                    <button type="button" class="btn btn-primary">Launch Tool</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-balance-scale fa-3x text-success mb-3"></i>
+                                    <h5>Rebalancing Tool</h5>
+                                    <p class="text-muted">Automatic portfolio rebalancing recommendations</p>
+                                    <button type="button" class="btn btn-success">Launch Tool</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-search fa-3x text-info mb-3"></i>
+                                    <h5>Research Center</h5>
+                                    <p class="text-muted">Market research and investment analysis</p>
+                                    <button type="button" class="btn btn-info">Launch Tool</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                                    <h5>Risk Assessment</h5>
+                                    <p class="text-muted">Comprehensive risk analysis and monitoring</p>
+                                    <button type="button" class="btn btn-warning">Launch Tool</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,970 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Currency Exchange - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Currency Exchange{% endblock %}
+{% block page_description %}Real-time foreign exchange and cryptocurrency trading platform{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-line"></i>
+    Rate History
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-exchange-alt"></i>
+    Start Trading
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Exchange Specific Styles */
+    .exchange-metric-card {
+        background: linear-gradient(135deg, var(--success-bg) 0%, var(--success-hover) 100%);
+        border: 2px solid var(--success-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .exchange-metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .currency-pair-card {
+        background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+        border-left: 4px solid var(--success-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .currency-pair-card:hover {
+        border-left-width: 6px;
+        transform: translateX(3px);
+    }
+
+    .price-change-positive {
+        color: #10b981;
+    }
+
+    .price-change-negative {
+        color: #ef4444;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+<!-- Exchange Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Exchange Trading Center</h3>
+                        <p>Real-time foreign exchange and cryptocurrency trading platform</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh Rates
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exchange Trading Metrics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card exchange-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon primary">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ "47"|default("47") }}</h3>
+                    <p>Currency Pairs</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-plus"></i> +3 new pairs
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card exchange-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon success">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>${{ "2.4M"|default("2.4M") }}</h3>
+                    <p>Daily Volume</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-arrow-up"></i> +18.5% today
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card exchange-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon info">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ "0.15%"|default("0.15%") }}</h3>
+                    <p>Average Spread</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-arrow-down"></i> Tight spreads
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card exchange-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ "Live"|default("Live") }}</h3>
+                    <p>Market Status</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-circle"></i> Real-time data
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Level 2: Currency Type Breakdown -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-layer-group"></i> Currency Categories</h4>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="row g-3">
+                    <div class="col-xl-2 col-md-4">
+                        <div class="currency-type-nvc-card" data-currency-type="major" >
+                            <div class="currency-icon bg-primary">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="currency-content">
+                                <h4>$1.8M</h4>
+                                <p>Major Pairs</p>
+                                <small class="text-success">USD, EUR, GBP, JPY</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="currency-type-nvc-card" data-currency-type="minor" >
+                            <div class="currency-icon bg-success">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="currency-content">
+                                <h4>$420K</h4>
+                                <p>Minor Pairs</p>
+                                <small class="text-info">CHF, CAD, AUD, NZD</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="currency-type-nvc-card" data-currency-type="exotic" >
+                            <div class="currency-icon bg-warning">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="currency-content">
+                                <h4>$180K</h4>
+                                <p>Exotic Pairs</p>
+                                <small class="text-warning">Emerging markets</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="currency-type-nvc-card" data-currency-type="crypto" >
+                            <div class="currency-icon bg-info">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="currency-content">
+                                <h4>$650K</h4>
+                                <p>Cryptocurrency</p>
+                                <small class="text-primary">BTC, ETH, ADA</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="currency-type-nvc-card" data-currency-type="commodities" >
+                            <div class="currency-icon bg-secondary">
+                                <i class="fas fa-gem"></i>
+                            </div>
+                            <div class="currency-content">
+                                <h4>$320K</h4>
+                                <p>Commodities</p>
+                                <small class="text-secondary">Gold, Silver, Oil</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="currency-type-nvc-card" data-currency-type="stablecoins" >
+                            <div class="currency-icon bg-danger">
+                                <i class="fas fa-anchor"></i>
+                            </div>
+                            <div class="currency-content">
+                                <h4>$890K</h4>
+                                <p>Stablecoins</p>
+                                <small class="text-danger">USDT, USDC, DAI</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Level 3: Exchange Rates Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-table"></i> Live Exchange Rates</h4>
+                <div class="header-actions">
+                    <select id="currency-type-filter" class="form-select nvc-form-select-sm">
+                        <option value="">All Currency Types</option>
+                        <option value="major">Major Pairs</option>
+                        <option value="minor">Minor Pairs</option>
+                        <option value="exotic">Exotic Pairs</option>
+                        <option value="crypto">Cryptocurrency</option>
+                        <option value="commodities">Commodities</option>
+                        <option value="stablecoins">Stablecoins</option>
+                    </select>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table enterprise-table">
+                        <thead>
+                            <tr>
+                                <th>Currency Pair</th>
+                                <th>Type</th>
+                                <th>Rate</th>
+                                <th>Change</th>
+                                <th>Volume</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="exchange-rates-table">
+                            <tr class="exchange-rate-row" data-pair-id="USD-EUR" data-currency-type="major" data-status="active" >
+                                <td><strong>USD/EUR</strong></td>
+                                <td><span class="badge bg-primary">Major</span></td>
+                                <td class="text-success">0.8456</td>
+                                <td class="text-success">+0.12%</td>
+                                <td class="text-info">$1.2M</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">Trade</button>
+                                </td>
+                            </tr>
+                            <tr class="exchange-rate-row" data-pair-id="BTC-USD" data-currency-type="crypto" data-status="active" >
+                                <td><strong>BTC/USD</strong></td>
+                                <td><span class="badge bg-info">Crypto</span></td>
+                                <td class="text-success">43,250.00</td>
+                                <td class="text-success">+2.45%</td>
+                                <td class="text-info">$650K</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">Trade</button>
+                                </td>
+                            </tr>
+                            <tr class="exchange-rate-row" data-pair-id="GBP-JPY" data-currency-type="minor" data-status="active" >
+                                <td><strong>GBP/JPY</strong></td>
+                                <td><span class="badge bg-success">Minor</span></td>
+                                <td class="text-warning">185.42</td>
+                                <td class="text-danger">-0.08%</td>
+                                <td class="text-info">$180K</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">Trade</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Currency Exchange Interface -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-calculator me-2"></i>Currency Exchange</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="exchangeForm">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="nvc-card border-primary">
+                                    <div class="nvc-nvc-card-header bg-primary text-white text-center">
+                                        <h6>From</h6>
+                                    </div>
+                                    <div class="nvc-nvc-card-body">
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Currency</label>
+                                            <select class="nvc-form-select" id="fromCurrency">
+                                                <option value="USD" selected>USD - US Dollar</option>
+                                                <option value="EUR">EUR - Euro</option>
+                                                <option value="GBP">GBP - British Pound</option>
+                                                <option value="JPY">JPY - Japanese Yen</option>
+                                                <option value="CHF">CHF - Swiss Franc</option>
+                                                <option value="CAD">CAD - Canadian Dollar</option>
+                                                <option value="AUD">AUD - Australian Dollar</option>
+                                                <option value="CNY">CNY - Chinese Yuan</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Amount</label>
+                                            <input type="number" class="nvc-form-input" id="fromAmount" value="1000" step="0.01">
+                                        </div>
+                                        <div class="text-center">
+                                            <h4 class="text-primary">$1,000.00</h4>
+                                            <small class="text-light">Available: $15,847.23</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-2 d-flex align-items-center justify-content-center">
+                                <button type="button" class="btn nvc-btn nvc-btn-success btn-lg rounded-circle" data-action="custom-action">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <div class="nvc-card border-success">
+                                    <div class="nvc-nvc-card-header bg-success text-white text-center">
+                                        <h6>To</h6>
+                                    </div>
+                                    <div class="nvc-nvc-card-body">
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Currency</label>
+                                            <select class="nvc-form-select" id="toCurrency">
+                                                <option value="EUR" selected>EUR - Euro</option>
+                                                <option value="USD">USD - US Dollar</option>
+                                                <option value="GBP">GBP - British Pound</option>
+                                                <option value="JPY">JPY - Japanese Yen</option>
+                                                <option value="CHF">CHF - Swiss Franc</option>
+                                                <option value="CAD">CAD - Canadian Dollar</option>
+                                                <option value="AUD">AUD - Australian Dollar</option>
+                                                <option value="CNY">CNY - Chinese Yuan</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Amount</label>
+                                            <input type="number" class="nvc-form-input" id="toAmount" value="925.47" readonly>
+                                        </div>
+                                        <div class="text-center">
+                                            <h4 class="text-success">€925.47</h4>
+                                            <small class="text-light">Rate: 1 USD = 0.9255 EUR</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="nvc-card border-info">
+                                    <div class="nvc-nvc-card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <strong>Exchange Rate:</strong><br>
+                                                <span class="h5 text-primary">1 USD = 0.9255 EUR</span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <strong>Fee:</strong><br>
+                                                <span class="h6 text-warning">$2.50 (0.25%)</span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <strong>Total Cost:</strong><br>
+                                                <span class="h5 text-danger">$1,002.50</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <button type="submit" class="btn nvc-btn nvc-btn-primary btn-lg">
+                                                <i class="fas fa-exchange-alt me-2"></i>Execute Exchange
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Exchange Rates -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-chart-bar me-2"></i>Live Exchange Rates</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Pair</th>
+                                    <th>Rate</th>
+                                    <th>Change</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>USD/EUR</strong></td>
+                                    <td>0.9255</td>
+                                    <td><span class="text-success">+0.15%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>USD/GBP</strong></td>
+                                    <td>0.7847</td>
+                                    <td><span class="text-danger">-0.23%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>USD/JPY</strong></td>
+                                    <td>148.75</td>
+                                    <td><span class="text-success">+0.45%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>USD/CHF</strong></td>
+                                    <td>0.8924</td>
+                                    <td><span class="text-success">+0.08%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>USD/CAD</strong></td>
+                                    <td>1.3567</td>
+                                    <td><span class="text-danger">-0.12%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>USD/AUD</strong></td>
+                                    <td>1.5234</td>
+                                    <td><span class="text-success">+0.31%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>USD/CNY</strong></td>
+                                    <td>7.2845</td>
+                                    <td><span class="text-danger">-0.05%</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rate Alerts -->
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-bell me-2"></i>Rate Alerts</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="alertForm">
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Currency Pair</label>
+                            <select class="nvc-form-select">
+                                <option value="USDEUR">USD/EUR</option>
+                                <option value="USDGBP">USD/GBP</option>
+                                <option value="USDJPY">USD/JPY</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Target Rate</label>
+                            <input type="number" class="nvc-form-input" step="0.0001" placeholder="0.9200">
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Alert Type</label>
+                            <select class="nvc-form-select">
+                                <option value="above">Above target</option>
+                                <option value="below">Below target</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn nvc-btn nvc-btn-warning w-100">Set Alert</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exchange History & Market Analysis -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between">
+                    <h5><i class="fas fa-chart-area me-2"></i>Exchange Rate Trends</h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary active">24H</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">7D</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">30D</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">1Y</button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="rateChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-history me-2"></i>Recent Exchanges</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ "14:32"|default("--:--") }}</td>
+                                    <td>$1,500</td>
+                                    <td>€1,388</td>
+                                    <td>0.9255</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "14:15"|default("--:--") }}</td>
+                                    <td>€2,000</td>
+                                    <td>£1,569</td>
+                                    <td>0.7845</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "13:58"|default("--:--") }}</td>
+                                    <td>$5,000</td>
+                                    <td>¥743,750</td>
+                                    <td>148.75</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "13:45"|default("--:--") }}</td>
+                                    <td>£800</td>
+                                    <td>$1,019</td>
+                                    <td>1.2738</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "13:30"|default("--:--") }}</td>
+                                    <td>$3,200</td>
+                                    <td>€2,962</td>
+                                    <td>0.9256</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Calendar -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-calendar-alt me-2"></i>Economic Calendar - Market Moving Events</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Currency</th>
+                                    <th>Event</th>
+                                    <th>Impact</th>
+                                    <th>Previous</th>
+                                    <th>Forecast</th>
+                                    <th>Actual</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ "15:30"|default("--:--") }}</td>
+                                    <td><img src="https://flagcdn.com/16x12/us.png" class="me-2" alt="USD">USD</td>
+                                    <td>Non-Farm Payrolls</td>
+                                    <td><span class="badge bg-danger">High</span></td>
+                                    <td>185K</td>
+                                    <td>190K</td>
+                                    <td>--</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "14:00"|default("--:--") }}</td>
+                                    <td><img src="https://flagcdn.com/16x12/gb.png" class="me-2" alt="GBP">GBP</td>
+                                    <td>GDP Growth Rate</td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                    <td>0.2%</td>
+                                    <td>0.3%</td>
+                                    <td>0.4%</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "13:45"|default("--:--") }}</td>
+                                    <td><img src="https://flagcdn.com/16x12/eu.png" class="me-2" alt="EUR">EUR</td>
+                                    <td>ECB Interest Rate Decision</td>
+                                    <td><span class="badge bg-danger">High</span></td>
+                                    <td>4.50%</td>
+                                    <td>4.50%</td>
+                                    <td>4.50%</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "12:30"|default("--:--") }}</td>
+                                    <td><img src="https://flagcdn.com/16x12/jp.png" class="me-2" alt="JPY">JPY</td>
+                                    <td>Industrial Production</td>
+                                    <td><span class="badge bg-info">Low</span></td>
+                                    <td>-0.5%</td>
+                                    <td>0.1%</td>
+                                    <td>0.3%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Exchange Rate Chart
+    const rateCtx = document.getElementById('rateChart').getContext('2d');
+    new Chart(rateCtx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+            datasets: [{
+                label: 'USD/EUR',
+                data: [0.9240, 0.9245, 0.9238, 0.9252, 0.9255, 0.9248, 0.9255],
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                tension: 0.4
+            }, {
+                label: 'USD/GBP',
+                data: [0.7855, 0.7848, 0.7852, 0.7845, 0.7847, 0.7850, 0.7847],
+                borderColor: '#198754',
+                backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+
+    // Real-time rate updates
+    setInterval(updateRates, 30000);
+});
+
+function swapCurrencies() {
+    const fromCurrency = document.getElementById('fromCurrency');
+    const toCurrency = document.getElementById('toCurrency');
+    
+    const temp = fromCurrency.value;
+    fromCurrency.value = toCurrency.value;
+    toCurrency.value = temp;
+    
+    calculateExchange();
+}
+
+function calculateExchange() {
+    // In production, this would call real exchange rate API
+    const amount = parseFloat(document.getElementById('fromAmount').value);
+    const rate = 0.9255; // Mock rate
+    const converted = amount * rate;
+    document.getElementById('toAmount').value = converted.toFixed(2);
+}
+
+function updateRates() {
+    // In production, this would fetch real-time rates
+    console.log('Updating exchange rates...');
+}
+
+// Enhanced template functions
+function exportExchangeData() {
+    const csvData = 'Currency Pair,Rate,Volume,Change,Timestamp\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'exchange_data.csv';
+    a.click();
+}
+
+function viewRateHistory() {
+    window.location.href = "{{ url_for('exchange.history') }}";
+}
+
+function startTrading() {
+    window.location.href = "{{ url_for('exchange.markets') }}";
+}
+
+function refreshRates() {
+    updateRates();
+    location.reload();
+}
+
+document.getElementById('exchangeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Currency exchange executed successfully!');
+});
+
+document.getElementById('alertForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Rate alert has been set. You will be notified when the target rate is reached.');
+});
+
+document.getElementById('fromAmount').addEventListener('input', calculateExchange);
+document.getElementById('fromCurrency').addEventListener('change', calculateExchange);
+document.getElementById('toCurrency').addEventListener('change', calculateExchange);
+
+// Multi-Level Exchange Dashboard Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 1: Metric cards with drilldown navigation (existing functionality enhanced)
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+
+        // Enhanced click handlers for drilldown navigation
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6, .metric-title')?.textContent;
+            handleExchangeDrilldown(cardTitle);
+        });
+    });
+
+    // Level 2: Currency Type Cards
+    const currencyTypeCards = document.querySelectorAll('.currency-type-card');
+    currencyTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const currencyType = this.getAttribute('data-currency-type');
+            handleCurrencyTypeDrilldown(currencyType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: Exchange Rate Rows
+    const rateRows = document.querySelectorAll('.exchange-rate-row');
+    rateRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const pairId = this.getAttribute('data-pair-id');
+            viewPairDetails(pairId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Currency type filter
+    const currencyTypeFilter = document.getElementById('currency-type-filter');
+    if (currencyTypeFilter) {
+        currencyTypeFilter.addEventListener('change', function() {
+            filterRatesByType(this.value);
+        });
+    }
+
+    // Add hover effects for currency pair cards
+    const pairCards = document.querySelectorAll('.currency-pair-card');
+    pairCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+});
+
+// Level 2: Currency Type Drilldown
+function handleCurrencyTypeDrilldown(currencyType) {
+    // Filter the exchange rates table by type
+    filterRatesByType(currencyType);
+
+    // Update the filter dropdown
+    const currencyTypeFilter = document.getElementById('currency-type-filter');
+    if (currencyTypeFilter) {
+        currencyTypeFilter.value = currencyType;
+    }
+
+    // Scroll to rates table
+    document.querySelector('#exchange-rates-table').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter rates by type
+function filterRatesByType(currencyType) {
+    const rows = document.querySelectorAll('.exchange-rate-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowType = row.getAttribute('data-currency-type');
+        if (!currencyType || rowType === currencyType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updateRateCounts(currencyType, visibleCount);
+}
+
+// Update rate counts
+function updateRateCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.exchange-rate-row').length;
+    const header = document.querySelector('.card-header-enterprise h4');
+    if (header) {
+        if (!activeFilter) {
+            header.innerHTML = `<i class="fas fa-table"></i> Live Exchange Rates (${totalRows} pairs)`;
+        } else {
+            const filterName = activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
+            header.innerHTML = `<i class="fas fa-table"></i> ${filterName} Exchange Rates (${visibleCount} pairs)`;
+        }
+    }
+}
+
+// Level 4: View individual pair details (Level 4 → Level 5 drilldown)
+function viewPairDetails(pairId) {
+    // Navigate to detailed pair view with comprehensive analysis
+    const detailsUrl = "{{ url_for('exchange.pair_details', pair_id='PAIR_ID') }}".replace('PAIR_ID', encodeURIComponent(pairId));
+    window.location.href = detailsUrl + '?view=comprehensive&include=chart,orderbook,trades';
+}
+
+// Level 5: Specialized exchange functions
+function startExchange(pairId) {
+    // Navigate to exchange interface for specific pair
+    const tradeUrl = "{{ url_for('exchange.trade') }}";
+    window.location.href = tradeUrl + `?pair=${encodeURIComponent(pairId)}&prefill=true`;
+}
+
+function analyzePairTrends(pairId) {
+    // Navigate to pair trend analysis
+    const analysisUrl = "{{ url_for('exchange.pair_analysis', pair_id='PAIR_ID') }}".replace('PAIR_ID', encodeURIComponent(pairId));
+    window.location.href = analysisUrl + '?view=trends&technical_analysis=true';
+}
+
+function viewPairHistory(pairId) {
+    // Navigate to pair history
+    const historyUrl = "{{ url_for('exchange.pair_history', pair_id='PAIR_ID') }}".replace('PAIR_ID', encodeURIComponent(pairId));
+    window.location.href = historyUrl + '?view=detailed&period=all';
+}
+
+function setPairAlert(pairId) {
+    // Navigate to pair alert setup
+    const alertUrl = "{{ url_for('exchange.pair_alerts', pair_id='PAIR_ID') }}".replace('PAIR_ID', encodeURIComponent(pairId));
+    window.location.href = alertUrl + '?setup=true&thresholds=custom';
+}
+
+function viewOrderBook(pairId) {
+    // Navigate to order book
+    const orderbookUrl = "{{ url_for('exchange.orderbook', pair_id='PAIR_ID') }}".replace('PAIR_ID', encodeURIComponent(pairId));
+    window.location.href = orderbookUrl + '?view=detailed&depth=50';
+}
+
+function viewMarketDepth(pairId) {
+    // Navigate to market depth analysis
+    const depthUrl = "{{ url_for('exchange.market_depth', pair_id='PAIR_ID') }}".replace('PAIR_ID', encodeURIComponent(pairId));
+    window.location.href = depthUrl + '?view=visual&liquidity_analysis=true';
+}
+
+function generatePairReport(pairId) {
+    // Navigate to pair report generation
+    const reportUrl = "{{ url_for('exchange.pair_report', pair_id='PAIR_ID') }}".replace('PAIR_ID', encodeURIComponent(pairId));
+    window.location.href = reportUrl + '?format=comprehensive&export=pdf&period=30d';
+}
+
+function handleExchangeDrilldown(cardTitle) {
+    if (!cardTitle) return;
+
+    if (cardTitle.includes('24h Volume') || cardTitle.includes('Volume')) {
+        window.location.href = "{{ url_for('exchange.volume_analytics') }}?period=24h";
+    } else if (cardTitle.includes('Active Pairs') || cardTitle.includes('Trading Pairs')) {
+        window.location.href = "{{ url_for('exchange.trading_pairs') }}?filter=active";
+    } else if (cardTitle.includes('Total Trades') || cardTitle.includes('Trades')) {
+        window.location.href = "{{ url_for('exchange.trade_history') }}?view=all";
+    } else if (cardTitle.includes('Liquidity') || cardTitle.includes('Pool')) {
+        window.location.href = "{{ url_for('exchange.liquidity_management') }}?view=pools";
+    } else if (cardTitle.includes('Fees Collected') || cardTitle.includes('Fees')) {
+        window.location.href = "{{ url_for('exchange.fee_analytics') }}?period=daily";
+    } else if (cardTitle.includes('Market Cap') || cardTitle.includes('Market')) {
+        window.location.href = "{{ url_for('exchange.market_analytics') }}?view=overview";
+    } else if (cardTitle.includes('Price') || cardTitle.includes('Rate')) {
+        window.location.href = "{{ url_for('exchange.price_analytics') }}?view=trends";
+    }
+}
+</script>
+</div>
+{% endblock %}
+{% endblock %}

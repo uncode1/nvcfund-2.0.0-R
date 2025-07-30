@@ -1,0 +1,245 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Portfolio Management - NVC Treasury{% endblock %}
+
+{% block page_title %}Treasury Portfolio Management{% endblock %}
+{% block page_description %}Investment portfolio optimization and asset-liability management{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="btn btn-outline-primary">
+    <i class="fas fa-download"></i>
+    Export Portfolio
+</button>
+<button type="button" class="btn btn-secondary">
+    <i class="fas fa-plus"></i>
+    New Investment
+</button>
+<button type="button" class="btn btn-primary">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Prices
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Portfolio Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Total Portfolio Value</h6>
+                            <h3 class="mb-0">${{ portfolio_stats.total_value or '1.2B' }}</h3>
+                            <small class="text-light">+{{ portfolio_stats.daily_change or '0.8' }}% today</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-chart-pie fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Yield to Maturity</h6>
+                            <h3 class="mb-0">{{ portfolio_stats.ytm or '4.25' }}%</h3>
+                            <small class="text-light">Weighted average</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-percentage fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Duration</h6>
+                            <h3 class="mb-0">{{ portfolio_stats.duration or '3.8' }}</h3>
+                            <small class="text-light">Years</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Credit Rating</h6>
+                            <h3 class="mb-0">{{ portfolio_stats.credit_rating or 'AA-' }}</h3>
+                            <small class="text-light">Average rating</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-star fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Asset Allocation -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-area me-2"></i>
+                        Asset Allocation & Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container nvc-style-54c806" >
+                        <canvas id="assetAllocationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-balance-scale me-2"></i>
+                        Portfolio Composition
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for asset_class in asset_allocation or [
+                        {'name': 'Government Bonds', 'allocation': '45%', 'value': '$540M', 'yield': '3.8%'},
+                        {'name': 'Corporate Bonds', 'allocation': '25%', 'value': '$300M', 'yield': '5.2%'},
+                        {'name': 'Money Market', 'allocation': '15%', 'value': '$180M', 'yield': '2.1%'},
+                        {'name': 'Equities', 'allocation': '10%', 'value': '$120M', 'yield': '8.5%'},
+                        {'name': 'Alternative Investments', 'allocation': '5%', 'value': '$60M', 'yield': '6.8%'}
+                    ] %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>{{ asset_class.name }}</span>
+                            <span class="text-primary">{{ asset_class.allocation }}</span>
+                        </div>
+                        <div class="progress mb-1">
+                            <div class="progress-bar bg-primary" style="width: {{ asset_class.allocation.replace('%', '') }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">{{ asset_class.value }}</small>
+                            <small class="text-success">{{ asset_class.yield }} yield</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Portfolio Holdings
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                        <button type="button" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i>
+                            Add Holding
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Security</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Market Value</th>
+                                    <th>Yield</th>
+                                    <th>Duration</th>
+                                    <th>Rating</th>
+                                    <th>P&L</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for holding in portfolio_holdings or [
+                                    {'security': 'US Treasury 10Y', 'type': 'Government Bond', 'quantity': '50,000,000', 'value': '$48.5M', 'yield': '3.8%', 'duration': '8.2', 'rating': 'AAA', 'pnl': '+$125K'},
+                                    {'security': 'Apple Inc. Bond', 'type': 'Corporate Bond', 'quantity': '25,000,000', 'value': '$24.8M', 'yield': '4.2%', 'duration': '5.1', 'rating': 'AA+', 'pnl': '+$89K'},
+                                    {'security': 'Money Market Fund', 'type': 'Money Market', 'quantity': '180,000,000', 'value': '$180.0M', 'yield': '2.1%', 'duration': '0.1', 'rating': 'AAA', 'pnl': '+$12K'},
+                                    {'security': 'S&P 500 ETF', 'type': 'Equity', 'quantity': '250,000', 'value': '$120.5M', 'yield': '1.8%', 'duration': 'N/A', 'rating': 'N/A', 'pnl': '+$2.1M'},
+                                    {'security': 'REIT Fund', 'type': 'Alternative', 'quantity': '2,000,000', 'value': '$60.2M', 'yield': '6.8%', 'duration': 'N/A', 'rating': 'A-', 'pnl': '+$234K'}
+                                ] %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ holding.security }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if holding.type == 'Government Bond' else 'primary' if holding.type == 'Corporate Bond' else 'info' if holding.type == 'Money Market' else 'warning' if holding.type == 'Equity' else 'secondary' }}">
+                                            {{ holding.type }}
+                                        </span>
+                                    </td>
+                                    <td>{{ holding.quantity }}</td>
+                                    <td>
+                                        <strong>{{ holding.value }}</strong>
+                                    </td>
+                                    <td>{{ holding.yield }}</td>
+                                    <td>{{ holding.duration }}</td>
+                                    <td>
+                                        {% if holding.rating != 'N/A' %}
+                                        <span class="badge bg-{{ 'success' if holding.rating.startswith('AAA') or holding.rating.startswith('AA') else 'warning' if holding.rating.startswith('A') else 'danger' }}">
+                                            {{ holding.rating }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">{{ holding.rating }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-{{ 'success' if holding.pnl.startswith('+') else 'danger' }}">
+                                            {{ holding.pnl }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-warning" title="Trade">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

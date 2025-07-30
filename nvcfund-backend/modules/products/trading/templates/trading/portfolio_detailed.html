@@ -1,0 +1,448 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-white mb-0">Detailed Portfolio Analysis</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent mb-0">
+                <li class="breadcrumb-item"><a href="{{ url_for('trading.trading_dashboard') }}" class="text-info">Trading</a></li>
+                <li class="breadcrumb-item active text-white">Portfolio Analysis</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Portfolio Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Total Value</h6>
+                        <h3 class="text-white mb-0">$2.84M</h3>
+                        <small class="text-success">+12.7% YTD</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Day P&L</h6>
+                        <h3 class="text-success mb-0">+$18,247</h3>
+                        <small class="text-success">+0.64% today</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-up text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Active Positions</h6>
+                        <h3 class="text-white mb-0">47</h3>
+                        <small class="text-info">Across 8 sectors</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-layer-group text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Cash Available</h6>
+                        <h3 class="text-white mb-0">$247.8K</h3>
+                        <small class="text-warning">8.7% allocation</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Charts -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="text-white mb-0">Portfolio Performance</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">1D</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">1W</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm active">1M</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">3M</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">YTD</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">1Y</button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="portfolioChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="text-white mb-0">Asset Allocation</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="allocationChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="text-white mb-0">Portfolio Holdings</h5>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                            <i class="fas fa-filter me-2"></i>Filter
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Name</th>
+                                    <th>Quantity</th>
+                                    <th>Avg Price</th>
+                                    <th>Current Price</th>
+                                    <th>Market Value</th>
+                                    <th>Day P&L</th>
+                                    <th>Total P&L</th>
+                                    <th>Weight</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span class="fw-bold text-info">AAPL</span>
+                                        <br><small class="text-light">NASDAQ</small>
+                                    </td>
+                                    <td>Apple Inc.</td>
+                                    <td>1,250</td>
+                                    <td class="text-light">$178.45</td>
+                                    <td class="text-white">$192.75</td>
+                                    <td class="text-white fw-bold">$240,938</td>
+                                    <td class="text-success">+$2,125</td>
+                                    <td class="text-success">+$17,875</td>
+                                    <td>8.5%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info me-1" title="Trade">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" title="Details">
+                                            <i class="fas fa-chart-area"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="fw-bold text-info">GOOGL</span>
+                                        <br><small class="text-light">NASDAQ</small>
+                                    </td>
+                                    <td>Alphabet Inc.</td>
+                                    <td>875</td>
+                                    <td class="text-light">$142.30</td>
+                                    <td class="text-white">$168.25</td>
+                                    <td class="text-white fw-bold">$147,219</td>
+                                    <td class="text-success">+$1,578</td>
+                                    <td class="text-success">+$22,706</td>
+                                    <td>5.2%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info me-1" title="Trade">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" title="Details">
+                                            <i class="fas fa-chart-area"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="fw-bold text-info">TSLA</span>
+                                        <br><small class="text-light">NASDAQ</small>
+                                    </td>
+                                    <td>Tesla Inc.</td>
+                                    <td>650</td>
+                                    <td class="text-light">$215.80</td>
+                                    <td class="text-white">$248.90</td>
+                                    <td class="text-white fw-bold">$161,785</td>
+                                    <td class="text-danger">-$845</td>
+                                    <td class="text-success">+$21,515</td>
+                                    <td>5.7%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info me-1" title="Trade">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" title="Details">
+                                            <i class="fas fa-chart-area"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="fw-bold text-info">NVDA</span>
+                                        <br><small class="text-light">NASDAQ</small>
+                                    </td>
+                                    <td>NVIDIA Corporation</td>
+                                    <td>425</td>
+                                    <td class="text-light">$487.20</td>
+                                    <td class="text-white">$718.45</td>
+                                    <td class="text-white fw-bold">$305,341</td>
+                                    <td class="text-success">+$4,892</td>
+                                    <td class="text-success">+$98,231</td>
+                                    <td>10.8%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info me-1" title="Trade">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" title="Details">
+                                            <i class="fas fa-chart-area"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="fw-bold text-info">SPY</span>
+                                        <br><small class="text-light">NYSE ARCA</small>
+                                    </td>
+                                    <td>SPDR S&P 500 ETF Trust</td>
+                                    <td>2,150</td>
+                                    <td class="text-light">$428.65</td>
+                                    <td class="text-white">$445.20</td>
+                                    <td class="text-white fw-bold">$957,180</td>
+                                    <td class="text-success">+$3,225</td>
+                                    <td class="text-success">+$35,583</td>
+                                    <td>33.7%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info me-1" title="Trade">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" title="Details">
+                                            <i class="fas fa-chart-area"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Metrics -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="text-white mb-0">Risk Metrics</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="risk-metric mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-light">Portfolio Beta</span>
+                            <span class="text-white fw-bold">1.12</span>
+                        </div>
+                        <div class="progress mt-1" class="nvc-h-4">
+                            <div class="progress-bar bg-info" class="progress-bar-78"></div>
+                        </div>
+                        <small class="text-light">More volatile than market</small>
+                    </div>
+                    <div class="risk-metric mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-light">Sharpe Ratio</span>
+                            <span class="text-success fw-bold">1.85</span>
+                        </div>
+                        <div class="progress mt-1" class="nvc-h-4">
+                            <div class="progress-bar bg-success" class="progress-bar-92"></div>
+                        </div>
+                        <small class="text-light">Excellent risk-adjusted returns</small>
+                    </div>
+                    <div class="risk-metric mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-light">Max Drawdown</span>
+                            <span class="text-warning fw-bold">-8.3%</span>
+                        </div>
+                        <div class="progress mt-1" class="nvc-h-4">
+                            <div class="progress-bar bg-warning" class="progress-bar-65"></div>
+                        </div>
+                        <small class="text-light">Peak-to-trough decline</small>
+                    </div>
+                    <div class="risk-metric">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-light">Volatility (30D)</span>
+                            <span class="text-danger fw-bold">15.7%</span>
+                        </div>
+                        <div class="progress mt-1" class="nvc-h-4">
+                            <div class="progress-bar bg-danger" class="progress-bar-82"></div>
+                        </div>
+                        <small class="text-light">Annualized volatility</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="text-white mb-0">Performance Summary</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="performance-item">
+                                <div class="text-light small">1 Day</div>
+                                <div class="text-success fw-bold">+0.64%</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="performance-item">
+                                <div class="text-light small">1 Week</div>
+                                <div class="text-success fw-bold">+2.1%</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="performance-item">
+                                <div class="text-light small">1 Month</div>
+                                <div class="text-success fw-bold">+5.8%</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="performance-item">
+                                <div class="text-light small">3 Months</div>
+                                <div class="text-success fw-bold">+11.2%</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="performance-item">
+                                <div class="text-light small">YTD</div>
+                                <div class="text-success fw-bold">+12.7%</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="performance-item">
+                                <div class="text-light small">1 Year</div>
+                                <div class="text-success fw-bold">+18.9%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Portfolio Performance Chart
+    const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
+    new Chart(portfolioCtx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+                label: 'Portfolio Value',
+                data: [2675000, 2712000, 2798000, 2840000],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'S&P 500 Benchmark',
+                data: [2675000, 2698000, 2745000, 2762000],
+                borderColor: '#17a2b8',
+                backgroundColor: 'transparent',
+                borderDash: [5, 5]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#e2e8f0'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#e2e8f0'
+                    },
+                    grid: {
+                        color: 'rgba(226, 232, 240, 0.1)'
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: '#e2e8f0',
+                        callback: function(value) {
+                            return '$' + (value / 1000000).toFixed(1) + 'M';
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(226, 232, 240, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Asset Allocation Chart
+    const allocationCtx = document.getElementById('allocationChart').getContext('2d');
+    new Chart(allocationCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Equities', 'ETFs', 'Options', 'Cash'],
+            datasets: [{
+                data: [62.5, 28.7, 0.1, 8.7],
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#6c757d'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#e2e8f0',
+                        padding: 10
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+</div>
+{% endblock %}

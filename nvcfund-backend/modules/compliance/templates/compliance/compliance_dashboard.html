@@ -1,0 +1,191 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Compliance Dashboard - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Compliance Dashboard{% endblock %}
+{% block page_description %}Real-time compliance monitoring and regulatory oversight{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-file-alt"></i>
+    Generate Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-shield-alt"></i>
+    Run Compliance Check
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Compliance Dashboard Functions
+function exportComplianceData() {
+    const csvData = 'Date,Category,Status,Risk Level,Score\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'compliance_dashboard.csv';
+    a.click();
+}
+
+function generateComplianceReport() {
+    window.location.href = "{{ url_for('compliance.compliance_reports') }}";
+}
+
+function runComplianceCheck() {
+    alert('Running comprehensive compliance check...');
+    // TODO: Implement compliance check
+}
+
+function viewComplianceDetails(category) {
+    window.location.href = "{{ url_for('compliance.compliance_overview') }}?category=" + category;
+}
+
+function manageRisk(riskId) {
+    window.location.href = "{{ url_for('compliance.risk_management') }}?id=" + riskId;
+}
+
+function viewViolations() {
+    window.location.href = "{{ url_for('compliance.compliance_violations') }}";
+}
+
+// Add drilldown functionality for dashboard cards
+document.addEventListener('DOMContentLoaded', function() {
+    const dashboardCards = document.querySelectorAll('.dashboard-stat-card');
+    dashboardCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h5, h6')?.textContent;
+            if (cardTitle?.includes('Compliance Score')) {
+                window.location.href = "{{ url_for('compliance.compliance_assessment') }}";
+            } else if (cardTitle?.includes('Risk Level')) {
+                window.location.href = "{{ url_for('compliance.risk_management') }}";
+            } else if (cardTitle?.includes('Violations')) {
+                window.location.href = "{{ url_for('compliance.compliance_violations') }}";
+            } else if (cardTitle?.includes('Reports')) {
+                window.location.href = "{{ url_for('compliance.compliance_reports') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- Compliance Dashboard -->
+<div class="row g-4">
+    <!-- Dashboard Header -->
+    <div class="col-12">
+        <div class="nvc-card bg-dark border-primary">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="text-primary mb-1">
+                            <i class="fas fa-shield-alt me-2"></i>Compliance Dashboard
+                        </h3>
+                        <small class="text-light">Enterprise compliance monitoring and regulatory oversight</small>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{{ url_for('compliance.compliance_overview') }}" class="btn nvc-btn nvc-btn-outline-info">
+                            <i class="fas fa-chart-bar me-2"></i>Overview
+                        </a>
+                        <a href="{{ url_for('compliance.compliance_settings') }}" class="btn nvc-btn nvc-btn-outline-warning">
+                            <i class="fas fa-cog me-2"></i>Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-light">Operations</h5>
+                    <h3 class="text-success">1,200</h3>
+                    <small class="text-light">Successful</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                    <h5 class="text-light">Pending</h5>
+                    <h3 class="text-warning">25</h3>
+                    <small class="text-light">In Progress</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-dollar-sign fa-3x text-info mb-3"></i>
+                    <h5 class="text-light">Volume</h5>
+                    <h3 class="text-info">$2.5M</h3>
+                    <small class="text-light">Monthly</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-danger">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-shield-alt fa-3x text-danger mb-3"></i>
+                    <h5 class="text-light">Security</h5>
+                    <h3 class="text-success">100%</h3>
+                    <small class="text-light">Compliant</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Action</th>
+                                    <th>Status</th>
+                                    <th>User</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span id="current-time">{{ current_time.strftime('%H:%M:%S') if current_time else '' }}</span></td>
+                                    <td>Compliance & Risk Operation</td>
+                                    <td><span class="badge bg-success">Success</span></td>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,516 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Services Management - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Services Management{% endblock %}
+{% block page_description %}Comprehensive service portfolio management for banking and cryptocurrency operations{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-line"></i>
+    Analytics
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Add Service
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <!-- Services Portfolio Overview Section -->
+    <div class="nvc-content-section" id="overview">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-concierge-bell"></i> Services Portfolio Overview
+            </h3>
+            <div class="nvc-content-section-actions">
+                <button type="button" class="nvc-btn nvc-btn-outline">
+                    <i class="fas fa-sync"></i>
+                    Refresh
+                </button>
+            </div>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="nvc-card nvc-card-elevated">
+                <div class="nvc-card-body">
+                    <p class="nvc-text-muted mb-0">Comprehensive management of banking and cryptocurrency services</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Statistics Section -->
+    <div class="nvc-content-section" id="statistics">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-chart-bar"></i> Services Statistics
+            </h3>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-success">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-concierge-bell"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">{{ total_services|default('28') }}</div>
+                                    <div class="nvc-metric-label">Total Services</div>
+                                    <div class="nvc-metric-status nvc-status-success">+4 this quarter</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-primary">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">{{ active_services|default('26') }}</div>
+                                    <div class="nvc-metric-label">Active Services</div>
+                                    <div class="nvc-metric-status nvc-status-success">
+                        <i class="fas fa-check"></i> 92.9% operational
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon info">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ daily_requests|default('45,892')|int|round|string }}</h3>
+                    <p>Daily Requests</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-arrow-up"></i> +18% today
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon warning">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ service_uptime|default('99.6') }}%</h3>
+                    <p>Service Uptime</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-check"></i> All services operational
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modern Banking & Crypto Services -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Service Categories</h3>
+                        <p>Comprehensive banking and cryptocurrency service portfolio</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="row">
+                    <!-- Customer Services -->
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="nvc-card category-nvc-card">
+                            <div class="category-header">
+                                <div class="category-icon primary">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                <div class="category-info">
+                                    <h4>Customer Services</h4>
+                                    <p>24/7 support, live chat, and customer relationship management</p>
+                                </div>
+                                <div class="category-badge">
+                                    <span class="badge-enterprise primary">8/8</span>
+                                </div>
+                            </div>
+                            <div class="category-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-value">8</span>
+                                    <span class="metric-label">Total Services</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">8</span>
+                                    <span class="metric-label">Active Services</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">100%</span>
+                                    <span class="metric-label">Availability</span>
+                                </div>
+                            </div>
+                            <div class="category-modules">
+                                <div class="modules-label">Services:</div>
+                                <div class="modules-list">
+                                    <span class="module-tag">Live Chat</span>
+                                    <span class="module-tag">Phone Support</span>
+                                    <span class="module-tag">Email Support</span>
+                                    <span class="module-tag">Video Banking</span>
+                                </div>
+                            </div>
+                            <div class="category-actions">
+                                <div class="progress-indicator">
+                                    <div class="progress-bar" class="w-100"></div>
+                                </div>
+                                <a href="{{ url_for('services.customer_services') }}" class="nvc-btn nvc-btn-primary-enterprise">
+                                    <i class="fas fa-arrow-right"></i>
+                                    View Services
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Digital Asset Services -->
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="nvc-card category-nvc-card">
+                            <div class="category-header">
+                                <div class="category-icon success">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="category-info">
+                                    <h4>Digital Asset Services</h4>
+                                    <p>Cryptocurrency trading, staking, and DeFi integration</p>
+                                </div>
+                                <div class="category-badge">
+                                    <span class="badge-enterprise success">6/7</span>
+                                </div>
+                            </div>
+                            <div class="category-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-value">7</span>
+                                    <span class="metric-label">Total Services</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">6</span>
+                                    <span class="metric-label">Active Services</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">85.7%</span>
+                                    <span class="metric-label">Availability</span>
+                                </div>
+                            </div>
+                            <div class="category-modules">
+                                <div class="modules-label">Services:</div>
+                                <div class="modules-list">
+                                    <span class="module-tag">Crypto Trading</span>
+                                    <span class="module-tag">Staking</span>
+                                    <span class="module-tag">DeFi</span>
+                                    <span class="module-tag">NFT Marketplace</span>
+                                </div>
+                            </div>
+                            <div class="category-actions">
+                                <div class="progress-indicator">
+                                    <div class="progress-bar" style="width: 85.7%"></div>
+                                </div>
+                                <a href="#" class="nvc-btn nvc-btn-primary-enterprise">
+                                    <i class="fas fa-arrow-right"></i>
+                                    View Services
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Services -->
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="nvc-card category-nvc-card">
+                            <div class="category-header">
+                                <div class="category-icon danger">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="category-info">
+                                    <h4>Security Services</h4>
+                                    <p>Multi-factor authentication, fraud detection, and cybersecurity</p>
+                                </div>
+                                <div class="category-badge">
+                                    <span class="badge-enterprise danger">5/5</span>
+                                </div>
+                            </div>
+                            <div class="category-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-value">5</span>
+                                    <span class="metric-label">Total Services</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">5</span>
+                                    <span class="metric-label">Active Services</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">100%</span>
+                                    <span class="metric-label">Availability</span>
+                                </div>
+                            </div>
+                            <div class="category-modules">
+                                <div class="modules-label">Services:</div>
+                                <div class="modules-list">
+                                    <span class="module-tag">MFA</span>
+                                    <span class="module-tag">Fraud Detection</span>
+                                    <span class="module-tag">Biometrics</span>
+                                    <span class="module-tag">Risk Assessment</span>
+                                </div>
+                            </div>
+                            <div class="category-actions">
+                                <div class="progress-indicator">
+                                    <div class="progress-bar" class="w-100"></div>
+                                </div>
+                                <a href="{{ url_for('security_center.security_dashboard') }}" class="nvc-btn nvc-btn-primary-enterprise">
+                                    <i class="fas fa-arrow-right"></i>
+                                    View Services
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics & Intelligence -->
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="nvc-card category-nvc-card">
+                            <div class="category-header">
+                                <div class="category-icon info">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="category-info">
+                                    <h4>Analytics & Intelligence</h4>
+                                    <p>AI-powered insights, market analysis, and business intelligence</p>
+                                </div>
+                                <div class="category-badge">
+                                    <span class="badge-enterprise info">4/5</span>
+                                </div>
+                            </div>
+                            <div class="category-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-value">5</span>
+                                    <span class="metric-label">Total Services</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">4</span>
+                                    <span class="metric-label">Active Services</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">80%</span>
+                                    <span class="metric-label">Availability</span>
+                                </div>
+                            </div>
+                            <div class="category-modules">
+                                <div class="modules-label">Services:</div>
+                                <div class="modules-list">
+                                    <span class="module-tag">AI Analytics</span>
+                                    <span class="module-tag">Market Data</span>
+                                    <span class="module-tag">Reporting</span>
+                                    <span class="module-tag">Predictive Models</span>
+                                </div>
+                            </div>
+                            <div class="category-actions">
+                                <div class="progress-indicator">
+                                    <div class="progress-bar" class="progress-bar-80"></div>
+                                </div>
+                                <a href="#" class="nvc-btn nvc-btn-primary-enterprise">
+                                    <i class="fas fa-arrow-right"></i>
+                                    View Services
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Performance & Activity -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Service Performance</h3>
+                        <p>Real-time performance metrics</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="performance-metrics">
+                    <div class="performance-item">
+                        <div class="performance-icon success">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="performance-details">
+                            <h4>{{ response_time|default('127') }}ms</h4>
+                            <p>Avg Response Time</p>
+                        </div>
+                    </div>
+                    <div class="performance-item">
+                        <div class="performance-icon primary">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <div class="performance-details">
+                            <h4>{{ client_satisfaction|default('96.8') }}%</h4>
+                            <p>Client Satisfaction</p>
+                        </div>
+                    </div>
+                    <div class="performance-item">
+                        <div class="performance-icon info">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div class="performance-details">
+                            <h4>{{ service_uptime|default('99.6') }}%</h4>
+                            <p>Service Uptime</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-activity"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Recent Service Activity</h3>
+                        <p>Live service operations</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon success">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h5>Live Chat Support</h5>
+                            <p>547 chats processed today</p>
+                            <span class="activity-status success">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon danger">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h5>Security Center</h5>
+                            <p>2,456 security scans completed</p>
+                            <span class="activity-status success">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon info">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h5>Crypto Trading</h5>
+                            <p>8,234 trades executed</p>
+                            <span class="activity-status success">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon warning">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h5>Multi-Factor Auth</h5>
+                            <p>15,647 authentications</p>
+                            <span class="activity-status success">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Services Dashboard Functions
+function exportServicesData() {
+    const csvData = 'Service,Category,Status,Requests,Uptime\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'services_data.csv';
+    a.click();
+}
+
+function analyzeServices() {
+    window.location.href = "{{ url_for('services.analytics') }}";
+}
+
+function addNewService() {
+    window.location.href = "{{ url_for('services.add_service') }}";
+}
+
+function refreshServices() {
+    location.reload();
+}
+
+// Initialize services dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for category cards
+    const categoryCards = document.querySelectorAll('.category-card');
+    categoryCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function(e) {
+            if (!e.target.closest('.btn-primary-enterprise')) {
+                const link = this.querySelector('.btn-primary-enterprise');
+                if (link) link.click();
+            }
+        });
+    });
+
+    // Add hover effects for metric cards
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+</div>
+{% endblock %}
+{% endblock %}

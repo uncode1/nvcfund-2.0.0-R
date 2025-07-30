@@ -1,0 +1,369 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Coverage Details - Insurance Services{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-info">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h2 text-white mb-1">
+                                <i class="fas fa-chart-pie me-2"></i>Coverage Details
+                            </h1>
+                            <p class="text-light mb-0">Comprehensive overview of total insurance coverage</p>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('insurance.main_dashboard') }}" class="btn btn-light me-2">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                            </a>
+                            <button type="button" class="btn nvc-btn nvc-btn-warning" data-action="custom-action">
+                                <i class="fas fa-download me-1"></i>Export Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coverage Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-shield-alt fa-2x text-primary mb-3"></i>
+                    <h4>Total Coverage</h4>
+                    <h3 class="text-primary">$1.2B</h3>
+                    <small class="text-light">Across all policies</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-calculator fa-2x text-success mb-3"></i>
+                    <h4>Average Coverage</h4>
+                    <h3 class="text-primary">$421K</h3>
+                    <small class="text-light">Per policy</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                    <h4>High Value Policies</h4>
+                    <h3 class="text-primary">78</h3>
+                    <small class="text-light">Above $1M coverage</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-chart-line fa-2x text-info mb-3"></i>
+                    <h4>Growth Rate</h4>
+                    <h3 class="text-primary">+15.3%</h3>
+                    <small class="text-light">YoY coverage increase</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coverage Breakdown -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Coverage by Product Type</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="coverageChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0"><i class="fas fa-list me-2"></i>Coverage Distribution</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="coverage-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-heartbeat text-danger me-2"></i>Life Insurance</span>
+                            <strong>$540M</strong>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-danger" class="progress-bar-45"></div>
+                        </div>
+                        <small class="text-light">45% of total coverage</small>
+                    </div>
+                    
+                    <div class="coverage-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-car text-success me-2"></i>Auto Insurance</span>
+                            <strong>$312M</strong>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-success" class="progress-bar-26"></div>
+                        </div>
+                        <small class="text-light">26% of total coverage</small>
+                    </div>
+                    
+                    <div class="coverage-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-home text-warning me-2"></i>Home Insurance</span>
+                            <strong>$228M</strong>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-warning" class="progress-bar-19"></div>
+                        </div>
+                        <small class="text-light">19% of total coverage</small>
+                    </div>
+                    
+                    <div class="coverage-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-building text-info me-2"></i>Business</span>
+                            <strong>$120M</strong>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-info" class="progress-bar-10"></div>
+                        </div>
+                        <small class="text-light">10% of total coverage</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coverage Analysis Tables -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0"><i class="fas fa-crown me-2"></i>Highest Coverage Policies</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Policy</th>
+                                    <th>Type</th>
+                                    <th>Coverage</th>
+                                    <th>Policyholder</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>BP-2024-001</strong></td>
+                                    <td><span class="badge bg-info">Business</span></td>
+                                    <td>$25M</td>
+                                    <td>Fortune Corp</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>LP-2024-003</strong></td>
+                                    <td><span class="badge bg-danger">Life</span></td>
+                                    <td>$15M</td>
+                                    <td>Executive Suite</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>BP-2024-002</strong></td>
+                                    <td><span class="badge bg-info">Business</span></td>
+                                    <td>$12M</td>
+                                    <td>Tech Innovations</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>LP-2024-005</strong></td>
+                                    <td><span class="badge bg-danger">Life</span></td>
+                                    <td>$10M</td>
+                                    <td>Healthcare Group</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>HP-2024-007</strong></td>
+                                    <td><span class="badge bg-warning">Home</span></td>
+                                    <td>$8.5M</td>
+                                    <td>Luxury Estates</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Coverage by Region</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Region</th>
+                                    <th>Policies</th>
+                                    <th>Coverage</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>California</strong></td>
+                                    <td>847</td>
+                                    <td>$387M</td>
+                                    <td><span class="badge bg-primary">32.3%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Texas</strong></td>
+                                    <td>623</td>
+                                    <td>$289M</td>
+                                    <td><span class="badge bg-success">24.1%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>New York</strong></td>
+                                    <td>456</td>
+                                    <td>$234M</td>
+                                    <td><span class="badge bg-info">19.5%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Florida</strong></td>
+                                    <td>389</td>
+                                    <td>$156M</td>
+                                    <td><span class="badge bg-warning">13.0%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Other States</strong></td>
+                                    <td>532</td>
+                                    <td>$134M</td>
+                                    <td><span class="badge bg-secondary">11.1%</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Assessment -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Risk Assessment & Exposure</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <div class="risk-indicator low">
+                                    <i class="fas fa-check-circle fa-3x text-success"></i>
+                                </div>
+                                <h5 class="mt-3">Low Risk</h5>
+                                <p class="text-success"><strong>$678M</strong> (56.5%)</p>
+                                <small class="text-light">Well-distributed, low-risk policies</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <div class="risk-indicator medium">
+                                    <i class="fas fa-exclamation-triangle fa-3x text-warning"></i>
+                                </div>
+                                <h5 class="mt-3">Medium Risk</h5>
+                                <p class="text-warning"><strong>$384M</strong> (32.0%)</p>
+                                <small class="text-light">Moderate risk concentration</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <div class="risk-indicator high">
+                                    <i class="fas fa-times-circle fa-3x text-danger"></i>
+                                </div>
+                                <h5 class="mt-3">High Risk</h5>
+                                <p class="text-danger"><strong>$138M</strong> (11.5%)</p>
+                                <small class="text-light">High-value, concentrated exposure</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="alert nvc-nvc-alert-info" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Risk Management Recommendation:</strong> Consider reinsurance for policies above $5M to reduce exposure concentration.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Coverage Chart
+    const ctx = document.getElementById('coverageChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Life Insurance', 'Auto Insurance', 'Home Insurance', 'Business Insurance'],
+            datasets: [{
+                label: 'Coverage Amount (Millions)',
+                data: [540, 312, 228, 120],
+                backgroundColor: ['#dc3545', '#28a745', '#ffc107', '#17a2b8'],
+                borderColor: ['#dc3545', '#28a745', '#ffc107', '#17a2b8'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value + 'M';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    function exportCoverage() {
+        alert('Exporting coverage data to CSV...');
+    }
+
+    window.exportCoverage = exportCoverage;
+});
+</script>
+
+<style>
+.coverage-item {
+    padding: 10px;
+    border-radius: 5px;
+    background-color: rgba(0,0,0,0.02);
+}
+
+.risk-indicator {
+    padding: 20px;
+    border-radius: 50%;
+    display: inline-block;
+}
+</style>
+</div>
+{% endblock %}

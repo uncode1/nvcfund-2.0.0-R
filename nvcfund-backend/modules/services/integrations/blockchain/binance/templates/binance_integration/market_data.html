@@ -1,0 +1,227 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Market Data Dashboard - Cryptocurrency Trading{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Market Data Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-primary">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="h2 text-white mb-2">
+                                <i class="fas fa-chart-line me-2"></i>Market Data Dashboard
+                            </h1>
+                            <p class="text-light mb-0">Real-time cryptocurrency market data and analysis</p>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-light btn-sm" data-action="custom-action">
+                                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                                </button>
+                                <a href="{{ url_for('binance.advanced_trading') }}" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                    <i class="fas fa-chart-area me-1"></i>Advanced Trading
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Overview - Now Clickable for Drill-Down -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('binance_integration.portfolio_analysis') }}" class="text-decoration-none">
+                <div class="card bg-success dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fas fa-coins fa-3x text-white-50 mb-3"></i>
+                        <h4 class="text-white">Total Markets</h4>
+                        <h2 class="text-white">{{ prices.get('total_symbols', 0) }}</h2>
+                        <small class="text-light">Active Trading Pairs</small>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Portfolio Analysis</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('binance_integration.api_status') }}" class="text-decoration-none">
+                <div class="card bg-info dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fas fa-database fa-3x text-white-50 mb-3"></i>
+                        <h4 class="text-white">Data Source</h4>
+                        <h2 class="text-white">{{ prices.get('source', 'Unknown').title() }}</h2>
+                        <small class="text-light">Live Market Feed</small>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>API Status</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('binance_integration.trading_interface') }}" class="text-decoration-none">
+                <div class="card bg-warning dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fas fa-clock fa-3x text-white-50 mb-3"></i>
+                        <h4 class="text-white">Last Update</h4>
+                        <h2 class="text-white" id="lastUpdate">Live</h2>
+                        <small class="text-light">Real-time Data</small>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Trading Interface</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('binance_integration.market_analysis') }}" class="text-decoration-none">
+                <div class="card bg-danger dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fas fa-chart-area fa-3x text-white-50 mb-3"></i>
+                        <h4 class="text-white">Market Cap</h4>
+                        <h2 class="text-white">$2.1T</h2>
+                        <small class="text-light">Total Crypto Market</small>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Market Analysis</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Cryptocurrencies -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-trophy me-2"></i>Top Cryptocurrencies
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Name</th>
+                                    <th>Symbol</th>
+                                    <th>Price</th>
+                                    <th>24h Change</th>
+                                    <th>Volume</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if prices.get('status') == 'success' and prices.get('ticker_data') %}
+                                    {% for ticker in prices.ticker_data[:20] %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>
+                                            <strong>{{ ticker.get('name', ticker.symbol.replace('USDT', '')) }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ ticker.symbol }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>${{ "%.2f"|format(ticker.lastPrice|float) }}</strong>
+                                        </td>
+                                        <td>
+                                            {% set change = ticker.priceChangePercent|float %}
+                                            <span class="badge bg-{{ 'success' if change >= 0 else 'danger' }}">
+                                                {{ "%+.2f"|format(change) }}%
+                                            </span>
+                                        </td>
+                                        <td>${{ "%.0f"|format(ticker.volume|float) }}</td>
+                                        <td>
+                                            <a href="{{ url_for('binance.advanced_trading', symbol=ticker.symbol) }}" 
+                                               class="btn btn-sm nvc-btn nvc-btn-outline-primary">
+                                                <i class="fas fa-chart-line me-1"></i>Trade
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-light">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Unable to load market data. Please try again later.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exchange Information -->
+    {% if exchange_info.get('status') == 'success' %}
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-building me-2"></i>Exchange Information
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Exchange Details</h6>
+                            {% if exchange_info.source == 'coingecko' %}
+                                <p><strong>Name:</strong> {{ exchange_info.exchange_data.name }}</p>
+                                <p><strong>Country:</strong> {{ exchange_info.exchange_data.country }}</p>
+                                <p><strong>Trust Score:</strong> {{ exchange_info.exchange_data.trust_score }}/10</p>
+                                <p><strong>Established:</strong> {{ exchange_info.exchange_data.year_established }}</p>
+                            {% else %}
+                                <p><strong>Timezone:</strong> {{ exchange_info.exchange_data.timezone }}</p>
+                                <p><strong>Total Symbols:</strong> {{ exchange_info.exchange_data.total_symbols }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Trading Information</h6>
+                            {% if exchange_info.source == 'coingecko' %}
+                                <p><strong>24h Volume:</strong> {{ exchange_info.exchange_data.trade_volume_24h_btc }} BTC</p>
+                                <p><strong>Website:</strong> <a href="{{ exchange_info.exchange_data.url }}" target="_blank">{{ exchange_info.exchange_data.url }}</a></p>
+                            {% endif %}
+                            <p><strong>Data Source:</strong> {{ exchange_info.source|title }}</p>
+                            {% if exchange_info.note %}
+                                <p class="text-info"><small>{{ exchange_info.note }}</small></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function refreshMarketData() {
+    location.reload();
+}
+
+// Auto-refresh every 30 seconds
+setInterval(function() {
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+}, 30000);
+
+// Initialize last update time
+document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+</script>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+2025-07-22T05:30:27.293211 - Banking dashboard error: 'metric_card_standard' is undefined: 1
+---
+2025-07-22T05:30:52.227693 - Transaction history error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-22T05:30:52.243018 - Banking dashboard error: 'metric_card_standard' is undefined: 1
+---
+2025-07-22T05:41:55.567921 - Banking dashboard error: 'nvc' is undefined: 1
+---
+2025-07-22T05:42:10.198306 - Cards page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-22T05:42:10.211611 - Banking dashboard error: 'nvc' is undefined: 1
+---
+2025-07-22T05:42:14.164798 - Crypto portfolio error: 'metric_card_standard' is undefined: 1
+---
+2025-07-22T05:42:14.175695 - Banking dashboard error: 'nvc' is undefined: 1
+---
+2025-07-22T05:51:15.685153 - Cards page error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-22T05:51:24.758720 - Crypto portfolio error: 'metric_card_standard' is undefined: 1
+---
+2025-07-22T07:03:53.292280 - Banking dashboard error: 'current_user' is undefined: 1
+---
+2025-07-22T07:05:25.336679 - Banking dashboard error: 'current_user' is undefined: 1
+---

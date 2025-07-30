@@ -1,0 +1,461 @@
+{% from 'macros/dashboard_macros.html' import metric_card_standard, metric_card_animated, progress_card, alert_card, data_table %}
+{% from 'components/unified_navigation.html' import render_main_navigation, render_mobile_navigation %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}NVC Banking Platform{% endblock %}</title>
+
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='icons/fontawesome/css/enhanced-banking.css') }}">
+
+    <!-- NVC Central Theme - Professional Bootstrap-based Fintech UI -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nvc-central-theme.css') }}">
+
+    {% block extra_css %}{% endblock %}
+
+    <!-- Enhanced Security Meta Tags -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' cdn.jsdelivr.net fonts.gstatic.com cdnjs.cloudflare.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
+    <!-- CSRF Token for AJAX requests -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains; preload">
+    
+    <!-- WCAG AA+ Compliance Meta -->
+    <meta name="color-scheme" content="dark light">
+    <meta name="finra-compliant" content="true">
+    <meta name="audit-trail" content="enabled">
+</head>
+<body class="nvc-app h-100" data-user-role="{{ current_user.role if (current_user is defined and current_user and current_user.is_authenticated) else 'guest' }}">
+    <!-- WCAG Skip Link -->
+    <a href="#main-content" class="nvc-wcag-skip-link">Skip to main content</a>
+    
+    <!-- Enhanced NVC Navigation Header -->
+    <nav class="nvc-navbar nvc-navbar-enhanced">
+        <div class="nvc-navbar-container">
+            <!-- Brand Logo - Left Side -->
+            <div class="nvc-navbar-brand">
+                <a href="{{ url_for('public.index') }}" class="nvc-brand-link">
+                    <div class="nvc-logo-container me-3">
+                        <svg width="45" height="45" viewBox="0 0 45 45" xmlns="http://www.w3.org/2000/svg" class="nvc-logo">
+                            <!-- Outer Circle -->
+                            <circle cx="22.5" cy="22.5" r="21" fill="none" stroke="url(#logoGradient)" stroke-width="2"/>
+                            <!-- Inner Design -->
+                            <g transform="translate(22.5, 22.5)">
+                                <!-- Central Diamond -->
+                                <path d="M-8,-8 L8,-8 L12,0 L8,8 L-8,8 L-12,0 Z" fill="url(#logoGradient)" opacity="0.9"/>
+                                <!-- Side Elements -->
+                                <circle cx="-15" cy="0" r="3" fill="url(#logoAccent)"/>
+                                <circle cx="15" cy="0" r="3" fill="url(#logoAccent)"/>
+                                <!-- Top/Bottom Elements -->
+                                <rect x="-2" y="-18" width="4" height="8" rx="2" fill="url(#logoAccent)"/>
+                                <rect x="-2" y="10" width="4" height="8" rx="2" fill="url(#logoAccent)"/>
+                            </g>
+                            <!-- Gradient Definitions -->
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                </linearGradient>
+                                <linearGradient id="logoAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="nvc-brand-text-wrapper">
+                        <span class="nvc-brand-text">NVC Banking Platform</span>
+                        <span class="nvc-brand-tagline">Professional Banking Solutions</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Center Spacer for non-authenticated users -->
+            {% if not (current_user is defined and current_user and current_user.is_authenticated) %}
+            <div class="nvc-navbar-spacer"></div>
+            {% endif %}
+
+            <!-- Search Bar (for authenticated users only) -->
+            {% if current_user is defined and current_user and current_user.is_authenticated %}
+            <div class="nvc-search-container">
+                <div class="nvc-search-wrapper">
+                    <label for="global-search" class="nvc-sr-only">Search transactions, accounts, and reports</label>
+                    <i class="fas fa-search nvc-search-icon" aria-hidden="true"></i>
+                    <input
+                      type="text"
+                      id="global-search"
+                      class="nvc-search-input nvc-wcag-focus"
+                      placeholder="Search transactions, accounts, reports..."
+                      aria-label="Search transactions, accounts, and reports"
+                    >
+                    <button type="button" class="nvc-search-btn nvc-wcag-focus nvc-touch-target" aria-label="Execute search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Navigation Actions - Right Side -->
+            <div class="nvc-navbar-actions">
+                {% if current_user is defined and current_user and current_user.is_authenticated %}
+                    <!-- Authenticated User Actions - Role-based -->
+                    <div class="nvc-quick-actions">
+                        {% block quick_actions %}
+                        <!-- Standard users can create transactions -->
+                        {% if check_permission('can_initiate_transfer') %}
+                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-navbar nvc-wcag-focus nvc-touch-target" 
+                                aria-label="Create new transaction">
+                            <i class="fas fa-plus" aria-hidden="true"></i>
+                            <span class="nvc-btn-text">New Transaction</span>
+                        </button>
+                        {% endif %}
+
+                        <!-- Manager users can access reports -->
+                        {% if check_permission('can_access_reports') %}
+                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-navbar nvc-wcag-focus nvc-touch-target" 
+                                data-role="manager"
+                                aria-label="Access reports - Manager level">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
+                            <span class="nvc-btn-text">Reports</span>
+                            <span class="nvc-role-badge manager">MGR</span>
+                        </button>
+                        {% endif %}
+
+                        <!-- Admin users can manage system -->
+                        {% if check_permission('can_access_admin_dashboard') %}
+                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-navbar nvc-wcag-focus nvc-touch-target" 
+                                data-role="admin"
+                                aria-label="Admin panel - Administrator access">
+                            <i class="fas fa-cogs" aria-hidden="true"></i>
+                            <span class="nvc-btn-text">Admin</span>
+                            <span class="nvc-role-badge admin">ADMIN</span>
+                        </button>
+                        {% endif %}
+                        {% endblock %}
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="nvc-notification-wrapper">
+                        <button type="button" class="nvc-notification-btn" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="nvc-notification-badge">3</span>
+                        </button>
+                    </div>
+
+                    <!-- Messages -->
+                    <div class="nvc-message-wrapper">
+                        <button type="button" class="nvc-message-btn" title="Messages">
+                            <i class="fas fa-envelope"></i>
+                            <span class="nvc-message-badge">2</span>
+                        </button>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="nvc-user-menu">
+                        <button type="button" class="nvc-user-btn nvc-wcag-focus nvc-touch-target"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                aria-label="User menu for {{ current_user.username if (current_user is defined and current_user and current_user.is_authenticated) else 'Guest' }}">
+                            <div class="nvc-user-profile-container">
+                                <div class="nvc-user-avatar">
+                                    {% if current_user and current_user.is_authenticated %}
+                                        {% if current_user.role and current_user.role.value in ['super_admin', 'admin'] %}
+                                            <i class="fas fa-crown" aria-hidden="true"></i>
+                                        {% elif current_user.role and current_user.role.value in ['treasury_officer', 'banking_officer'] %}
+                                            <i class="fas fa-user-tie" aria-hidden="true"></i>
+                                        {% elif current_user.role and current_user.role.value in ['compliance_officer', 'risk_manager'] %}
+                                            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                        {% else %}
+                                            <i class="fas fa-user-circle" aria-hidden="true"></i>
+                                        {% endif %}
+                                    {% else %}
+                                        <i class="fas fa-user-circle" aria-hidden="true"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="nvc-user-info">
+                                    <div class="nvc-user-name nvc-wcag-high-contrast">
+                                        {{ current_user.username if (current_user is defined and current_user and current_user.is_authenticated) else 'Guest' }}
+                                    </div>
+                                    <div class="nvc-user-role nvc-wcag-medium-contrast">
+                                        {{ get_role_display(current_user) if (current_user is defined and current_user and current_user.is_authenticated) else 'Guest' }}
+                                    </div>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-down nvc-dropdown-arrow" aria-hidden="true"></i>
+                        </button>
+                        <ul class="dropdown-menu nvc-user-dropdown" aria-label="User account menu">
+                            <li class="nvc-dropdown-header">
+                                <div class="nvc-dropdown-user-info">
+                                    <div class="nvc-dropdown-user-avatar">
+                                        {% if current_user and current_user.is_authenticated %}
+                                            {% if current_user.role and current_user.role.value in ['super_admin', 'admin'] %}
+                                                <i class="fas fa-crown" aria-hidden="true"></i>
+                                            {% elif current_user.role and current_user.role.value in ['treasury_officer', 'banking_officer'] %}
+                                                <i class="fas fa-user-tie" aria-hidden="true"></i>
+                                            {% elif current_user.role and current_user.role.value in ['compliance_officer', 'risk_manager'] %}
+                                                <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                            {% else %}
+                                                <i class="fas fa-user-circle" aria-hidden="true"></i>
+                                            {% endif %}
+                                        {% else %}
+                                            <i class="fas fa-user-circle" aria-hidden="true"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="nvc-dropdown-user-details">
+                                        <div class="nvc-dropdown-username nvc-wcag-high-contrast">
+                                            {{ current_user.username if (current_user is defined and current_user and current_user.is_authenticated) else 'Guest' }}
+                                        </div>
+                                        <div class="nvc-dropdown-userrole nvc-wcag-medium-contrast">
+                                            {{ get_role_display(current_user) if (current_user is defined and current_user and current_user.is_authenticated) else 'Guest' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <!-- Basic user profile - available to all authenticated users -->
+                            <li><a class="dropdown-item nvc-dropdown-item" href="/user-management/profile"><i class="fas fa-user"></i>My Profile</a></li>
+                            <li><a class="dropdown-item nvc-dropdown-item" href="{{ url_for('user_management.user_dashboard') }}"><i class="fas fa-cog"></i>Account Settings</a></li>
+
+                            <!-- Security Center - only for privileged users -->
+                            {% if check_permission('can_access_security_center') %}
+                            <li><a class="dropdown-item nvc-dropdown-item" href="{{ url_for('security_center.security_dashboard_new') }}"><i class="fas fa-shield-alt"></i>Security Center</a></li>
+                            {% endif %}
+                            <!-- Admin Management - only for admin roles -->
+                            {% if check_permission('can_access_admin_dashboard') %}
+                            <li><a class="dropdown-item nvc-dropdown-item" href="{{ url_for('admin_management.admin_dashboard') }}"><i class="fas fa-users-cog"></i>Admin Panel</a></li>
+                            {% endif %}
+                            <!-- Treasury Access - only for treasury roles -->
+                            {% if check_permission('can_access_treasury') %}
+                            <li><a class="dropdown-item nvc-dropdown-item" href="{{ url_for('treasury.main_dashboard') }}"><i class="fas fa-coins"></i>Treasury</a></li>
+                            {% endif %}
+                            <!-- Compliance Access - only for compliance roles -->
+                            {% if check_permission('can_access_compliance') %}
+                            <li><a class="dropdown-item nvc-dropdown-item" href="{{ url_for('compliance.compliance_dashboard') }}"><i class="fas fa-balance-scale"></i>Compliance</a></li>
+                            {% endif %}
+                            <!-- Help & Support - available to all authenticated users -->
+                            <li><a class="dropdown-item nvc-dropdown-item" href="{{ url_for('services.support_dashboard') }}"><i class="fas fa-question-circle"></i>Help & Support</a></li>
+
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item nvc-dropdown-item nvc-logout-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i>Sign Out</a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <!-- Non-authenticated User Actions - Properly Spaced -->
+                    <div class="nvc-auth-actions">
+                        <a href="{{ url_for('public.contact') }}" class="nvc-btn nvc-btn-ghost nvc-btn-navbar nvc-help-btn">
+                            <i class="fas fa-question-circle"></i>
+                            <span class="nvc-btn-text">Help</span>
+                        </a>
+                        <a href="{{ url_for('auth.login') }}" class="nvc-btn nvc-btn-outline nvc-btn-navbar nvc-login-btn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span class="nvc-btn-text">Login</span>
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="nvc-btn nvc-btn-primary nvc-btn-navbar nvc-register-btn">
+                            <i class="fas fa-user-plus"></i>
+                            <span class="nvc-btn-text">Register</span>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Unified Navigation Menu -->
+    {{ render_main_navigation(current_page=request.endpoint.split('.')[0] if request.endpoint else '') }}
+    
+    <!-- Mobile Navigation -->
+    {{ render_mobile_navigation() }}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="nvc-flash-container">
+                {% for category, message in messages %}
+                    <div class="nvc-alert nvc-alert-{{ 'danger' if category == 'error' else category }}">
+                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'info-circle' }} nvc-alert-icon"></i>
+                        <span class="nvc-alert-message">{{ message }}</span>
+                        <button type="button" class="nvc-alert-close" data-bs-dismiss="alert" title="Close alert" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Application Layout -->
+    <div class="nvc-app-layout">
+        <!-- Breadcrumb Navigation -->
+        {% block breadcrumbs %}
+        <nav class="nvc-breadcrumb-nav" aria-label="Breadcrumb">
+            <div class="nvc-container">
+                <ol class="nvc-breadcrumb">
+                    <li class="nvc-breadcrumb-item">
+                        <a href="{{ url_for('public.index') }}"><i class="fas fa-home"></i> Home</a>
+                    </li>
+                    {% block breadcrumb_items %}{% endblock %}
+                </ol>
+            </div>
+        </nav>
+        {% endblock %}
+
+        <!-- Page Header Section -->
+        {% block page_header %}
+        <header class="nvc-page-header">
+            <div class="nvc-container">
+                <div class="nvc-page-header-content">
+                    <div class="nvc-page-title-section">
+                        <h1 class="nvc-page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                        <p class="nvc-page-description">{% block page_description %}Welcome to your banking operations center{% endblock %}</p>
+                    </div>
+                    <div class="nvc-page-actions">
+                        {% block page_actions %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+        </header>
+        {% endblock %}
+
+        <!-- Main Content Layout -->
+        <main class="nvc-main-content flex-grow-1" id="main-content" role="main" aria-label="Main content">
+            <div class="nvc-container">
+                {% set has_sidebar = self.sidebar() %}
+                {% set has_secondary = self.secondary_content() %}
+                <div class="nvc-content-layout{% if has_sidebar %} has-sidebar{% endif %}{% if has_secondary %} has-secondary{% endif %}{% if has_sidebar and has_secondary %} has-both{% endif %}">
+                    <!-- Sidebar (Optional) -->
+                    {% block sidebar %}{% endblock %}
+
+                    <!-- Primary Content Area -->
+                    <div class="nvc-content-primary">
+                        <!-- Content Sections -->
+                        <div class="nvc-content-sections">
+                            {% block content %}
+                            <div class="nvc-default-content">
+                                <div class="nvc-card nvc-card-elevated">
+                                    <div class="nvc-card-body">
+                                        <h3 class="nvc-wcag-high-contrast">Welcome to NVC Banking Platform</h3>
+                                        <p class="nvc-text-accessible">Your comprehensive banking and financial services solution.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endblock %}
+                        </div>
+                    </div>
+
+                    <!-- Secondary Content (Optional) -->
+                    {% block secondary_content %}{% endblock %}
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Compact Professional Footer -->
+    <footer class="nvc-footer-compact" role="contentinfo">
+        <div class="container-fluid">
+            <div class="row align-items-center py-2">
+                <!-- FINRA Compliance -->
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-shield-alt text-success me-2"></i>
+                        <span class="small text-muted">
+                            FINRA Compliant | Session: <code class="text-info">{{ session.get('session_id', 'N/A') }}</code> |
+                            <time>{{ now.strftime('%Y-%m-%d %H:%M UTC') if now else 'N/A' }}</time>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Copyright & Links -->
+                <div class="col-md-6 text-md-end">
+                    <div class="d-flex align-items-center justify-content-md-end">
+                        <span class="small text-muted me-3">© 2024 NVC Banking Platform</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-success bg-opacity-20 text-success">
+                                <i class="fas fa-lock me-1"></i>Secure
+                            </span>
+                            <span class="badge bg-info bg-opacity-20 text-info">
+                                <i class="fas fa-check me-1"></i>Compliant
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Moment.js for Date/Time Formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+
+    <!-- Bootstrap Compatibility Layer -->
+    <script src="{{ url_for('static', filename='js/bootstrap-compatibility.js') }}"></script>
+
+    <!-- Unified Interactions System -->
+    <script src="{{ url_for('static', filename='js/unified-interactions.js') }}"></script>
+    
+    <!-- Unified JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize NVC Banking Platform
+            console.log('🏦 NVC Banking Platform initialized');
+            
+            // Enhanced interactions
+            initializeInteractions();
+            
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.nvc-alert, .alert');
+                alerts.forEach(alert => {
+                    if (alert.classList.contains('nvc-alert-success') || 
+                        alert.classList.contains('nvc-alert-info') ||
+                        alert.classList.contains('alert-success') || 
+                        alert.classList.contains('alert-info')) {
+                        alert.style.opacity = '0';
+                        setTimeout(() => alert.remove(), 300);
+                    }
+                });
+            }, 5000);
+        });
+
+        function initializeInteractions() {
+            // Smooth hover effects
+            const interactiveElements = document.querySelectorAll('.nvc-btn, .btn, .nvc-card, .card, .nvc-notification-btn, .nvc-message-btn');
+            interactiveElements.forEach(element => {
+                element.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-1px)';
+                });
+                element.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Search functionality
+            const searchInput = document.querySelector('.nvc-search-input');
+            if (searchInput) {
+                searchInput.addEventListener('focus', function() {
+                    this.parentElement.classList.add('nvc-search-focused');
+                });
+                searchInput.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('nvc-search-focused');
+                });
+            }
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

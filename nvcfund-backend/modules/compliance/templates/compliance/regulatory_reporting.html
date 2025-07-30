@@ -1,0 +1,515 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Regulatory Reporting - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Regulatory Reporting{% endblock %}
+{% block page_description %}Automated regulatory reporting and compliance documentation{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Reports
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-calendar-alt"></i>
+    Schedule Reports
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-file-alt"></i>
+    Generate Report
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Regulatory Reporting Functions
+function exportReports() {
+    const csvData = 'Report Type,Due Date,Status,Submitted Date,Regulator\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'regulatory_reports.csv';
+    a.click();
+}
+
+function scheduleReporting() {
+    alert('Schedule reporting functionality will be implemented');
+}
+
+function generateReport() {
+    window.location.href = "{{ url_for('compliance.new_regulatory_report') }}";
+}
+
+function viewReport(reportId) {
+    window.open('/compliance/regulatory-reports/' + reportId + '/view', '_blank');
+}
+
+function submitReport(reportId) {
+    if (confirm('Are you sure you want to submit this report to the regulator?')) {
+        fetch('/compliance/regulatory-reports/' + reportId + '/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert('Report submitted successfully');
+                location.reload();
+            } else {
+                alert('Error submitting report');
+            }
+        });
+    }
+}
+
+function downloadReport(reportId) {
+    window.location.href = '/compliance/regulatory-reports/' + reportId + '/download';
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Regulatory Reporting Dashboard -->
+<div class="row g-4">
+                            </h1>
+                            <p class="text-light mb-0">Comprehensive regulatory compliance and reporting dashboard</p>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('compliance.main_dashboard') }}" class="btn btn-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Compliance
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Status -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-check-circle fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Compliance Score</h4>
+                    <h2 class="text-white">{{ "98.5%"|default("0%") }}</h2>
+                    <small class="text-light">Overall Compliance</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-file-invoice fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Reports Due</h4>
+                    <h2 class="text-white">{{ "7"|default("0") }}</h2>
+                    <small class="text-light">Next 30 Days</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Violations</h4>
+                    <h2 class="text-white">{{ "2"|default("0") }}</h2>
+                    <small class="text-light">Open Violations</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-primary">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-certificate fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Certifications</h4>
+                    <h2 class="text-white">{{ "12"|default("0") }}</h2>
+                    <small class="text-light">Active Certifications</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Regulatory Requirements -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-gavel me-2"></i>Regulatory Requirements</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="accordion" id="regulatoryAccordion">
+                        <!-- Basel III -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#basel3">
+                                    <i class="fas fa-university me-2"></i>Basel III Capital Requirements
+                                    <span class="badge bg-success ms-auto me-2">Compliant</span>
+                                </button>
+                            </h2>
+                            <div id="basel3" class="accordion-collapse collapse show">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Capital Ratios</h6>
+                                            <div class="mb-2">
+                                                <label>Common Equity Tier 1 (CET1)</label>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-success" class="progress-bar-85">12.8% (Min: 4.5%)</div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label>Tier 1 Capital Ratio</label>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-success" class="progress-bar-90">15.2% (Min: 6.0%)</div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label>Total Capital Ratio</label>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-success" class="progress-bar-95">18.7% (Min: 8.0%)</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Liquidity Coverage Ratio (LCR)</h6>
+                                            <div class="mb-2">
+                                                <label>Current LCR</label>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-success" class="progress-bar-80">145% (Min: 100%)</div>
+                                                </div>
+                                            </div>
+                                            <h6>Net Stable Funding Ratio (NSFR)</h6>
+                                            <div class="mb-2">
+                                                <label>Current NSFR</label>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-success" class="progress-bar-75">132% (Min: 100%)</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dodd-Frank -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#doddFrank">
+                                    <i class="fas fa-balance-scale me-2"></i>Dodd-Frank Compliance
+                                    <span class="badge bg-success ms-auto me-2">Compliant</span>
+                                </button>
+                            </h2>
+                            <div id="doddFrank" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Requirement</th>
+                                                    <th>Status</th>
+                                                    <th>Last Review</th>
+                                                    <th>Next Due</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Volcker Rule</td>
+                                                    <td><span class="badge bg-success">Compliant</span></td>
+                                                    <td>{{ "2025-06-15"|default("N/A") }}</td>
+                                                    <td>{{ "2025-12-15"|default("N/A") }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Stress Testing (DFAST)</td>
+                                                    <td><span class="badge bg-success">Passed</span></td>
+                                                    <td>{{ "2025-05-30"|default("N/A") }}</td>
+                                                    <td>{{ "2026-05-30"|default("N/A") }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Living Wills</td>
+                                                    <td><span class="badge bg-success">Submitted</span></td>
+                                                    <td>{{ "2025-07-01"|default("N/A") }}</td>
+                                                    <td>{{ "2026-07-01"|default("N/A") }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AML/KYC -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#amlKyc">
+                                    <i class="fas fa-search me-2"></i>AML/KYC Compliance
+                                    <span class="badge bg-warning ms-auto me-2">Under Review</span>
+                                </button>
+                            </h2>
+                            <div id="amlKyc" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Customer Due Diligence (CDD)</h6>
+                                            <div class="mb-3">
+                                                <label>Completed Verifications</label>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>{{ "24,567"|default("0") }}</span>
+                                                    <span class="badge bg-success">98.2%</span>
+                                                </div>
+                                            </div>
+                                            <h6>Suspicious Activity Reports (SARs)</h6>
+                                            <div class="mb-3">
+                                                <label>Filed this Quarter</label>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>{{ "47"|default("0") }}</span>
+                                                    <span class="badge bg-info">On Time</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Currency Transaction Reports (CTRs)</h6>
+                                            <div class="mb-3">
+                                                <label>Filed this Month</label>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>{{ "1,234"|default("0") }}</span>
+                                                    <span class="badge bg-success">Compliant</span>
+                                                </div>
+                                            </div>
+                                            <h6>High-Risk Customers</h6>
+                                            <div class="mb-3">
+                                                <label>Under Enhanced Monitoring</label>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>{{ "89"|default("0") }}</span>
+                                                    <span class="badge bg-warning">Monitored</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SOX Compliance -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sox">
+                                    <i class="fas fa-file-contract me-2"></i>Sarbanes-Oxley (SOX)
+                                    <span class="badge bg-success ms-auto me-2">Compliant</span>
+                                </button>
+                            </h2>
+                            <div id="sox" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Control</th>
+                                                    <th>Effectiveness</th>
+                                                    <th>Last Test</th>
+                                                    <th>Deficiencies</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Financial Reporting Controls</td>
+                                                    <td><span class="badge bg-success">Effective</span></td>
+                                                    <td>{{ "2025-06-30"|default("N/A") }}</td>
+                                                    <td>0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>IT General Controls</td>
+                                                    <td><span class="badge bg-success">Effective</span></td>
+                                                    <td>{{ "2025-06-15"|default("N/A") }}</td>
+                                                    <td>0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Entity Level Controls</td>
+                                                    <td><span class="badge bg-warning">Minor Issues</span></td>
+                                                    <td>{{ "2025-05-31"|default("N/A") }}</td>
+                                                    <td>2</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Reports -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-calendar-alt me-2"></i>Upcoming Reports</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-danger"></div>
+                            <div class="timeline-content">
+                                <h6>Call Report (RC)</h6>
+                                <p class="text-light small">Due: {{ "July 30, 2025"|default("TBD") }}</p>
+                                <span class="badge bg-danger">Critical</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6>CRA Performance Evaluation</h6>
+                                <p class="text-light small">Due: {{ "August 15, 2025"|default("TBD") }}</p>
+                                <span class="badge bg-warning">Important</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6>HMDA Report</h6>
+                                <p class="text-light small">Due: {{ "September 1, 2025"|default("TBD") }}</p>
+                                <span class="badge bg-info">Scheduled</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6>BSA/AML Report</h6>
+                                <p class="text-light small">Due: {{ "September 30, 2025"|default("TBD") }}</p>
+                                <span class="badge bg-success">Prepared</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Audits -->
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-search me-2"></i>Recent Audits</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><strong>Federal Reserve</strong></span>
+                            <span class="badge bg-success">Passed</span>
+                        </div>
+                        <small class="text-light">Safety & Soundness Exam</small>
+                        <small class="text-light d-block">{{ "June 15, 2025"|default("TBD") }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><strong>FDIC</strong></span>
+                            <span class="badge bg-success">Satisfactory</span>
+                        </div>
+                        <small class="text-light">CRA Examination</small>
+                        <small class="text-light d-block">{{ "May 20, 2025"|default("TBD") }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><strong>OCC</strong></span>
+                            <span class="badge bg-warning">Needs Improvement</span>
+                        </div>
+                        <small class="text-light">IT Risk Assessment</small>
+                        <small class="text-light d-block">{{ "April 10, 2025"|default("TBD") }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Generation -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-file-export me-2"></i>Generate Compliance Reports</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="nvc-form-label">Report Type</label>
+                                <select class="nvc-form-select">
+                                    <option>Call Report (RC)</option>
+                                    <option>BSA/AML Report</option>
+                                    <option>CRA Report</option>
+                                    <option>HMDA Report</option>
+                                    <option>Stress Test Results</option>
+                                    <option>Capital Adequacy Report</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="nvc-form-label">Reporting Period</label>
+                                <select class="nvc-form-select">
+                                    <option>Q2 2025</option>
+                                    <option>Q1 2025</option>
+                                    <option>Q4 2024</option>
+                                    <option>Q3 2024</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="nvc-form-label">Format</label>
+                                <select class="nvc-form-select">
+                                    <option>PDF</option>
+                                    <option>Excel</option>
+                                    <option>XML</option>
+                                    <option>CSV</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="nvc-form-label">&nbsp;</label>
+                                <button type="button" class="btn nvc-btn nvc-btn-primary w-100">Generate Report</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+}
+
+.timeline-item {
+    display: flex;
+    margin-bottom: 1.5rem;
+    align-items: flex-start;
+}
+
+.timeline-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+.timeline-content {
+    flex: 1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    console.log('Regulatory reporting dashboard loaded');
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

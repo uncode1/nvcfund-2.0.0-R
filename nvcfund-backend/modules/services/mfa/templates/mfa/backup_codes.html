@@ -1,0 +1,331 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Backup Codes - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            background-color: #0a2447;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .main-content {
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid #66ccff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.3);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 100%);
+            border-bottom: 1px solid #66ccff;
+            color: #66ccff;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            border: none;
+            color: #0a2447;
+            font-weight: bold;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4da6d9 0%, #66ccff 100%);
+            transform: translateY(-2px);
+        }
+        .backup-codes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .backup-code {
+            background: #0a2447;
+            border: 1px solid #66ccff;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .backup-code:hover {
+            background: #1e3c72;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.4);
+        }
+        .backup-code.used {
+            background: #dc3545;
+            border-color: #dc3545;
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        .backup-code.used::after {
+            content: "USED";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .security-warning {
+            background: #856404;
+            border: 1px solid #ffc107;
+            color: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .print-area {
+            background: white;
+            color: black;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-area, .print-area * {
+                visibility: visible;
+            }
+            .print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                background: white;
+                color: black;
+                display: block;
+            }
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="main-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <!-- Header -->
+                    <div class="text-center mb-4">
+                        <h1><i class="fas fa-key"></i> Backup Codes</h1>
+                        <p class="lead">Use these codes when your authenticator app is unavailable</p>
+                    </div>
+
+                    <!-- Security Warning -->
+                    <div class="security-warning">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Important Security Information</h5>
+                        <ul class="mb-0">
+                            <li>Each backup code can only be used once</li>
+                            <li>Keep these codes in a secure location</li>
+                            <li>Don't share these codes with anyone</li>
+                            <li>Generate new codes if you suspect they've been compromised</li>
+                        </ul>
+                    </div>
+
+                    <!-- Backup Codes -->
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                            <h4><i class="fas fa-key"></i> Your Backup Codes</h4>
+                            <div>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm me-2" data-action="custom-action">
+                                    <i class="fas fa-copy"></i> Copy All
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm me-2" data-action="custom-action">
+                                    <i class="fas fa-print"></i> Print
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm" data-action="custom-action">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="backup-codes-grid">
+                                {% for code in backup_codes %}
+                                <div class="backup-code {% if code.used %}used{% endif %}" 
+                                     data-code="{{ code.code }}"
+                                     data-action="custom-action">
+                                    {{ code.code }}
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="nvc-card bg-transparent border-info">
+                                        <div class="nvc-nvc-card-body">
+                                            <h6><i class="fas fa-info-circle text-info"></i> Usage Statistics</h6>
+                                            <p><strong>Total Codes:</strong> {{ backup_codes|length }}</p>
+                                            <p><strong>Used Codes:</strong> {{ backup_codes|selectattr('used')|list|length }}</p>
+                                            <p><strong>Remaining:</strong> {{ backup_codes|rejectattr('used')|list|length }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="nvc-card bg-transparent border-warning">
+                                        <div class="nvc-nvc-card-body">
+                                            <h6><i class="fas fa-exclamation-triangle text-warning"></i> Recommendations</h6>
+                                            {% if backup_codes|rejectattr('used')|list|length < 3 %}
+                                            <p class="text-warning">⚠️ Low backup codes remaining</p>
+                                            {% endif %}
+                                            {% if backup_codes|rejectattr('used')|list|length == 0 %}
+                                            <p class="text-danger">🚨 No backup codes available!</p>
+                                            {% endif %}
+                                            <p><small>Generate new codes when you have 3 or fewer remaining</small></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="nvc-card mt-4">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-cog"></i> Backup Code Management</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Generate New Codes</h6>
+                                    <p class="small text-light">This will invalidate all existing backup codes</p>
+                                    <form method="POST" action="{{ url_for('mfa.generate_backup_codes') }}" 
+                                          onsubmit="return confirm('This will invalidate all existing backup codes. Continue?')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <button type="submit" class="btn nvc-btn nvc-btn-warning">
+                                            <i class="fas fa-refresh"></i> Generate New Codes
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Test Backup Code</h6>
+                                    <p class="small text-light">Test a backup code to ensure it works</p>
+                                    <form method="POST" action="{{ url_for('mfa.test_backup_code') }}" class="d-flex">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <input type="text" name="test_code" class="nvc-form-input me-2" 
+                                               placeholder="Enter backup code" maxlength="8" required>
+                                        <button type="submit" class="btn nvc-btn nvc-btn-outline-light">
+                                            <i class="fas fa-test"></i> Test
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('mfa.mfa_dashboard') }}" class="btn nvc-btn nvc-btn-primary">
+                            <i class="fas fa-arrow-left"></i> Back to MFA Dashboard
+                        </a>
+                    </div>
+
+                    <!-- Print Area (Hidden) -->
+                    <div class="print-area" id="printArea">
+                        <h2>NVC Banking - Backup Codes</h2>
+                        <p><strong>Account:</strong> {{ current_user.username }}</p>
+                        <p><strong>Generated:</strong> {{ backup_codes[0].created_at.strftime('%Y-%m-%d %H:%M') if backup_codes else 'N/A' }}</p>
+                        <hr>
+                        <h3>Backup Codes</h3>
+                        <div style="gap: var(--nvc-space-md)">
+                            {% for code in backup_codes %}
+                            <div class="p-3">
+                                {{ code.code }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <hr>
+                        <h4>Important Instructions:</h4>
+                        <ul>
+                            <li>Each code can only be used once</li>
+                            <li>Keep this document in a secure location</li>
+                            <li>Don't share these codes with anyone</li>
+                            <li>Generate new codes if compromised</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyCode(element) {
+            const code = element.getAttribute('data-code');
+            navigator.clipboard.writeText(code).then(function() {
+                const originalBg = element.style.backgroundColor;
+                element.style.backgroundColor = '#28a745';
+                element.style.borderColor = '#28a745';
+                
+                setTimeout(function() {
+                    element.style.backgroundColor = originalBg;
+                    element.style.borderColor = '#66ccff';
+                }, 1000);
+            });
+        }
+
+        function copyAllCodes() {
+            const codes = [];
+            document.querySelectorAll('.backup-code[data-code]').forEach(function(element) {
+                codes.push(element.getAttribute('data-code'));
+            });
+            
+            const allCodes = codes.join('\n');
+            navigator.clipboard.writeText(allCodes).then(function() {
+                alert('All backup codes copied to clipboard');
+            });
+        }
+
+        function printCodes() {
+            window.print();
+        }
+
+        function downloadCodes() {
+            const codes = [];
+            document.querySelectorAll('.backup-code[data-code]').forEach(function(element) {
+                codes.push(element.getAttribute('data-code'));
+            });
+            
+            const content = `NVC Banking - Backup Codes
+Account: {{ current_user.username }}
+Generated: {{ backup_codes[0].created_at.strftime('%Y-%m-%d %H:%M') if backup_codes else 'N/A' }}
+
+Backup Codes:
+${codes.join('\n')}
+
+Important Instructions:
+- Each code can only be used once
+- Keep this document in a secure location
+- Don't share these codes with anyone
+- Generate new codes if compromised`;
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'nvc-banking-backup-codes.txt';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+    </script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

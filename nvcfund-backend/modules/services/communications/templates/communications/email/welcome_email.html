@@ -1,0 +1,126 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Welcome to NVC Banking Platform{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 30px;
+            padding: 20px;
+        }
+        .features {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .features ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .features li {
+            margin: 8px 0;
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="header">
+        <h1>Welcome to NVC Banking Platform!</h1>
+        <p>Your trusted partner for secure digital banking</p>
+    </div>
+    
+    <div class="content">
+        <h2>Hello {{ first_name }}!</h2>
+        
+        <p>Welcome to the NVC Banking Platform family! We're excited to have you join our community of secure digital banking users.</p>
+        
+        <p>Your account has been successfully created on {{ signup_date }}. Here are your account details:</p>
+        
+        <div class="nvc-bg-spaced-bordered-dafa46">
+            <strong>Account Information:</strong><br>
+            Name: {{ first_name }} {{ last_name }}<br>
+            Email: {{ email }}<br>
+            Account Number: {{ account_number }}
+        </div>
+        
+        <div class="features">
+            <h3>What you can do with your NVC Banking account:</h3>
+            <ul>
+                <li><strong>Secure Transfers:</strong> Send and receive money instantly with bank-grade security</li>
+                <li><strong>Digital Wallet:</strong> Manage your cryptocurrencies and stablecoins</li>
+                <li><strong>Multi-Factor Authentication:</strong> Enhanced security for your peace of mind</li>
+                <li><strong>Real-time Notifications:</strong> Stay informed about all account activities</li>
+                <li><strong>24/7 Customer Support:</strong> We're here whenever you need assistance</li>
+                <li><strong>Mobile Banking:</strong> Access your account anytime, anywhere</li>
+            </ul>
+        </div>
+        
+        <p>To get started, simply log in to your account and explore all the features we have to offer.</p>
+        
+        <div class="text-center">
+            <a href="{{ login_url }}" class="button">Login to Your Account</a>
+        </div>
+        
+        <h3>Security Tips:</h3>
+        <ul>
+            <li>Never share your login credentials with anyone</li>
+            <li>Enable two-factor authentication for extra security</li>
+            <li>Always log out when using public computers</li>
+            <li>Monitor your account regularly for any unauthorized activity</li>
+        </ul>
+        
+        <p>If you have any questions or need assistance, please don't hesitate to contact our support team at <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+        
+        <p>Thank you for choosing NVC Banking Platform. We look forward to serving you!</p>
+        
+        <p>Best regards,<br>
+        <strong>The NVC Banking Team</strong></p>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; {{ current_year }} NVC Banking Platform. All rights reserved.</p>
+        <p>This is an automated message. Please do not reply to this email.</p>
+        <p>If you did not create this account, please contact us immediately at {{ support_email }}</p>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

@@ -1,0 +1,801 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}User Management - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}User Management{% endblock %}
+{% block page_description %}Comprehensive user administration, role management, and access control for banking and crypto operations{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Users
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-bar"></i>
+    Analytics
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-bs-toggle="modal" data-bs-target="#addUserModal">
+    <i class="fas fa-user-plus"></i>
+    Add User
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* User Management Specific Styles */
+    .user-metric-card {
+        background: linear-gradient(135deg, var(--info-bg) 0%, var(--info-hover) 100%);
+        border: 2px solid var(--info-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .user-metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
+    }
+
+    .role-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--border-radius);
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .role-admin {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid #dc3545;
+    }
+
+    .role-manager {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid #ffc107;
+    }
+
+    .role-user {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid #28a745;
+    }
+
+    .user-status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .status-inactive {
+        background: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+        border: 1px solid rgba(108, 117, 125, 0.3);
+    }
+
+    .status-suspended {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+    }
+
+    .user-activity-card {
+        background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+        border-left: 4px solid var(--info-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .user-activity-card:hover {
+        border-left-width: 6px;
+        transform: translateX(3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- User Management Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>User Administration Center</h3>
+                        <p>Comprehensive user management and access control</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Statistics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('user_management.list_users') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card user-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ "15,847"|default("0") }}</h3>
+                        <p>Total Users</p>
+                        <span class="metric-trend positive">
+                            <i class="fas fa-arrow-up"></i> +234 this month
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Manage Users
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('user_management.role_management') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card user-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon success">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ "1,247"|default("0") }}</h3>
+                        <p>Online Now</p>
+                        <span class="user-status-indicator status-active">
+                            <i class="fas fa-circle"></i> Active Sessions
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Role Management
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('user_management.permissions_management') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card user-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon warning">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ "47"|default("0") }}</h3>
+                        <p>Pending Approval</p>
+                        <span class="role-indicator role-manager">
+                            <i class="fas fa-clock"></i> Awaiting Review
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Permissions
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('user_management.bulk_operations') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card user-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon danger">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ "23"|default("0") }}</h3>
+                        <p>Blocked Users</p>
+                        <span class="user-status-indicator status-suspended">
+                            <i class="fas fa-ban"></i> Security Block
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Bulk Operations
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- User Search & Filters -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-search me-2"></i>User Search & Filters</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="userSearchForm">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="nvc-form-label">Search Users</label>
+                                <input type="text" class="nvc-form-input" placeholder="Name, email, or ID" id="searchInput">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="nvc-form-label">Role</label>
+                                <select class="nvc-form-select" id="roleFilter">
+                                    <option value="">All Roles</option>
+                                    <option value="super_admin">Super Admin</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="treasury_officer">Treasury Officer</option>
+                                    <option value="compliance_officer">Compliance Officer</option>
+                                    <option value="banking_officer">Banking Officer</option>
+                                    <option value="standard">Standard User</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="nvc-form-label">Status</label>
+                                <select class="nvc-form-select" id="statusFilter">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="suspended">Suspended</option>
+                                    <option value="blocked">Blocked</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="nvc-form-label">Department</label>
+                                <select class="nvc-form-select" id="departmentFilter">
+                                    <option value="">All Departments</option>
+                                    <option value="treasury">Treasury</option>
+                                    <option value="compliance">Compliance</option>
+                                    <option value="banking">Banking</option>
+                                    <option value="trading">Trading</option>
+                                    <option value="administration">Administration</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="nvc-form-label">Last Login</label>
+                                <select class="nvc-form-select" id="loginFilter">
+                                    <option value="">Any Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                    <option value="inactive">30+ Days</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="nvc-form-label">&nbsp;</label>
+                                <button type="submit" class="btn nvc-btn nvc-btn-primary w-100">Search</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Management Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-table me-2"></i>User Directory</h5>
+                    <div>
+                        <span class="badge bg-info">{{ "15,847"|default("0") }} Total Users</span>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" class="form-check-input" id="selectAll">
+                                    </th>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                    <th>Last Login</th>
+                                    <th>MFA</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input user-checkbox">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/40" class="rounded-circle me-3" alt="Avatar">
+                                            <div>
+                                                <h6 class="mb-0">{{ user.username if user else "John Smith" }}</h6>
+                                                <small class="text-light">john.smith@nvcbank.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-danger">Super Admin</span></td>
+                                    <td>Administration</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td>{{ "2 hours ago"|default("Never") }}</td>
+                                    <td><span class="badge bg-success">Enabled</span></td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-warning" title="Reset Password">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-danger" title="Suspend">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input user-checkbox">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/40" class="rounded-circle me-3" alt="Avatar">
+                                            <div>
+                                                <h6 class="mb-0">Sarah Johnson</h6>
+                                                <small class="text-light">sarah.johnson@nvcbank.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-warning">Treasury Officer</span></td>
+                                    <td>Treasury</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td>{{ "1 day ago"|default("Never") }}</td>
+                                    <td><span class="badge bg-success">Enabled</span></td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-warning" title="Reset Password">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-danger" title="Suspend">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input user-checkbox">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/40" class="rounded-circle me-3" alt="Avatar">
+                                            <div>
+                                                <h6 class="mb-0">Mike Davis</h6>
+                                                <small class="text-light">mike.davis@nvcbank.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-info">Compliance Officer</span></td>
+                                    <td>Compliance</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td>{{ "3 days ago"|default("Never") }}</td>
+                                    <td><span class="badge bg-danger">Disabled</span></td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-success" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-danger" title="Reject">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input user-checkbox">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/40" class="rounded-circle me-3" alt="Avatar">
+                                            <div>
+                                                <h6 class="mb-0">Emily Wilson</h6>
+                                                <small class="text-light">emily.wilson@nvcbank.com</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-primary">Banking Officer</span></td>
+                                    <td>Banking</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td>{{ "5 minutes ago"|default("Never") }}</td>
+                                    <td><span class="badge bg-success">Enabled</span></td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-warning" title="Reset Password">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-danger" title="Suspend">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="User list pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <h6>Bulk Actions</h6>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-success" id="bulkApprove" disabled>
+                            <i class="fas fa-check me-1"></i>Approve Selected
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-warning" id="bulkSuspend" disabled>
+                            <i class="fas fa-pause me-1"></i>Suspend Selected
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info" id="bulkMFA" disabled>
+                            <i class="fas fa-shield-alt me-1"></i>Enable MFA
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary" id="bulkExport" disabled>
+                            <i class="fas fa-download me-1"></i>Export Selected
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-danger" id="bulkDelete" disabled>
+                            <i class="fas fa-trash me-1"></i>Delete Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="nvc-form-label">First Name</label>
+                                <input type="text" class="nvc-form-input" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Last Name</label>
+                                <input type="text" class="nvc-form-input" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Email Address</label>
+                        <input type="email" class="nvc-form-input" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Role</label>
+                                <select class="nvc-form-select" required>
+                                    <option value="">Select Role</option>
+                                    <option value="super_admin">Super Admin</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="treasury_officer">Treasury Officer</option>
+                                    <option value="compliance_officer">Compliance Officer</option>
+                                    <option value="banking_officer">Banking Officer</option>
+                                    <option value="standard">Standard User</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Department</label>
+                                <select class="nvc-form-select" required>
+                                    <option value="">Select Department</option>
+                                    <option value="treasury">Treasury</option>
+                                    <option value="compliance">Compliance</option>
+                                    <option value="banking">Banking</option>
+                                    <option value="trading">Trading</option>
+                                    <option value="administration">Administration</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Phone Number</label>
+                                <input type="tel" class="nvc-form-input">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Employee ID</label>
+                                <input type="text" class="nvc-form-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="requireMFA">
+                            <label class="form-check-label" for="requireMFA">
+                                Require Multi-Factor Authentication
+                            </label>
+                        </div>
+<!-- User Management Operations -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Recent User Activities</h3>
+                        <p>Latest user management operations and activities</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="activity-list">
+                    <div class="user-activity-nvc-card">
+                        <div class="activity-header">
+                            <div class="activity-icon success">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h5>New User Registration</h5>
+                                <p>John Smith registered for crypto trading account</p>
+                                <div class="activity-meta">
+                                    <span class="role-indicator role-user">Customer</span>
+                                    <span class="timestamp">5 minutes ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-activity-nvc-card">
+                        <div class="activity-header">
+                            <div class="activity-icon warning">
+                                <i class="fas fa-user-edit"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h5>Role Update</h5>
+                                <p>Sarah Johnson promoted to Branch Manager</p>
+                                <div class="activity-meta">
+                                    <span class="role-indicator role-manager">Manager</span>
+                                    <span class="timestamp">12 minutes ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-activity-nvc-card">
+                        <div class="activity-header">
+                            <div class="activity-icon danger">
+                                <i class="fas fa-user-lock"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h5>Account Suspended</h5>
+                                <p>Security violation detected - account locked</p>
+                                <div class="activity-meta">
+                                    <span class="user-status-indicator status-suspended">Suspended</span>
+                                    <span class="timestamp">25 minutes ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>User Distribution</h3>
+                        <p>Role and status breakdown</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="user-distribution">
+                    <div class="distribution-item">
+                        <div class="distribution-label">Administrators</div>
+                        <div class="distribution-bar">
+                            <div class="distribution-fill danger" class="progress-bar-5"></div>
+                        </div>
+                        <div class="distribution-value">847 (5%)</div>
+                    </div>
+                    <div class="distribution-item">
+                        <div class="distribution-label">Managers</div>
+                        <div class="distribution-bar">
+                            <div class="distribution-fill warning" class="progress-bar-15"></div>
+                        </div>
+                        <div class="distribution-value">2,377 (15%)</div>
+                    </div>
+                    <div class="distribution-item">
+                        <div class="distribution-label">Customers</div>
+                        <div class="distribution-bar">
+                            <div class="distribution-fill success" class="progress-bar-80"></div>
+                        </div>
+                        <div class="distribution-value">12,623 (80%)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// User Management Functions
+function exportUserData() {
+    const csvData = 'Username,Email,Role,Status,Last Login\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'user_management_data.csv';
+    a.click();
+}
+
+function viewUserAnalytics() {
+    window.location.href = "{{ url_for('user_management.analytics') }}";
+}
+
+function submitAddUser() {
+    // In production, this would submit the form data
+    alert('User created successfully! Welcome email sent.');
+    const modal = bootstrap.Modal.getInstance(document.getElementById('addUserModal'));
+    if (modal) modal.hide();
+}
+
+// Initialize user management dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for metric cards
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Add hover effects for user activity cards
+    const activityCards = document.querySelectorAll('.user-activity-card');
+    activityCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+
+    // Select all checkbox functionality (if exists)
+    const selectAllCheckbox = document.getElementById('selectAll');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+
+    // Individual checkbox functionality (if exists)
+    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+
+    function updateBulkActions() {
+        const checkedBoxes = document.querySelectorAll('.user-checkbox:checked');
+        const bulkButtons = ['bulkApprove', 'bulkSuspend', 'bulkMFA', 'bulkExport', 'bulkDelete'];
+
+        bulkButtons.forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) button.disabled = checkedBoxes.length === 0;
+        });
+    }
+
+    // Search form handler (if exists)
+    const searchForm = document.getElementById('userSearchForm');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Searching users with current filters...');
+        });
+    }
+});
+</script>
+</div>
+{% endblock %}
+{% endblock %}

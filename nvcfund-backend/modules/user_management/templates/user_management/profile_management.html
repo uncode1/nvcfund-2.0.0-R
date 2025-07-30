@@ -1,0 +1,311 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Profile Management - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Profile Management{% endblock %}
+{% block page_description %}Manage your personal information and account settings{% endblock %}
+
+{% block extra_css %}
+<style>
+        /* Profile Management Specific Styles */
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid var(--nvc-accent-gold);
+            background: var(--nvc-primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            color: var(--nvc-text-primary);
+            margin: 0 auto 20px;
+            box-shadow: var(--nvc-shadow-lg);
+        }
+
+        .nvc-form-input, .nvc-form-select {
+            background: var(--nvc-bg-secondary);
+            border: 1px solid var(--nvc-border-primary);
+            color: var(--nvc-text-primary);
+            border-radius: var(--nvc-radius-md);
+            padding: var(--nvc-space-3);
+        }
+
+        .nvc-form-input:focus, .nvc-form-select:focus {
+            background: var(--nvc-bg-secondary);
+            border-color: var(--nvc-accent-gold);
+            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+            color: var(--nvc-text-primary);
+        }
+
+        .nvc-form-label {
+            color: var(--nvc-text-secondary);
+            font-weight: 600;
+            margin-bottom: var(--nvc-space-2);
+            display: block;
+        }
+
+        .verification-badge {
+            display: inline-block;
+            padding: var(--nvc-space-1) var(--nvc-space-2);
+            border-radius: var(--nvc-radius-full);
+            font-size: var(--nvc-text-sm);
+            font-weight: 600;
+        }
+
+        .verified {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--nvc-success);
+            border: 1px solid var(--nvc-success);
+        }
+
+        .pending {
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--nvc-warning);
+            border: 1px solid var(--nvc-warning);
+        }
+
+        .profile-completion {
+            background: var(--nvc-bg-tertiary);
+            border: 1px solid var(--nvc-border-primary);
+            border-radius: var(--nvc-radius-lg);
+            padding: var(--nvc-space-4);
+        }
+
+        .progress-custom {
+            height: 8px;
+            background-color: var(--nvc-bg-secondary);
+            border-radius: var(--nvc-radius-full);
+        }
+
+        .progress-bar-custom {
+            background: var(--nvc-accent-gradient);
+            border-radius: var(--nvc-radius-full);
+        }
+    </style>
+{% endblock %}
+
+{% block page_actions %}
+<div class="nvc-page-actions">
+    <span class="nvc-badge nvc-badge-success">Profile Active</span>
+</div>
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('user_management.user_dashboard') }}">User Management</a>
+</li>
+<li class="nvc-breadcrumb-item active">Profile Management</li>
+{% endblock %}
+
+{% block sidebar %}
+<div class="nvc-sidebar">
+    <h6 class="nvc-sidebar-title">Profile Menu</h6>
+    <nav class="nvc-sidebar-nav">
+        <ul class="nvc-sidebar-nav">
+            <li class="nvc-sidebar-nav-item">
+                <a href="#personal-info" class="nvc-sidebar-nav-link active">
+                    <i class="fas fa-user"></i> Personal Information
+                </a>
+            </li>
+            <li class="nvc-sidebar-nav-item">
+                <a href="#address-info" class="nvc-sidebar-nav-link">
+                    <i class="fas fa-map-marker-alt"></i> Address Information
+                </a>
+            </li>
+            <li class="nvc-sidebar-nav-item">
+                <a href="#security-settings" class="nvc-sidebar-nav-link">
+                    <i class="fas fa-shield-alt"></i> Security Settings
+                </a>
+            </li>
+            <li class="nvc-sidebar-nav-item">
+                <a href="#verification-status" class="nvc-sidebar-nav-link">
+                    <i class="fas fa-check-circle"></i> Verification Status
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <!-- Profile Overview Section -->
+    <div class="nvc-content-section" id="verification-status">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title"><i class="fas fa-user-circle"></i> Profile Overview</h3>
+            <div class="nvc-content-section-actions">
+                <span class="nvc-badge nvc-badge-success">Profile Active</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h4 class="nvc-text-primary">{{ user.username if user else 'John Anderson' }}</h4>
+                <p class="nvc-text-secondary">Premium Banking Customer</p>
+
+                <div class="mb-3">
+                    <span class="verification-badge verified">
+                        <i class="fas fa-check"></i> KYC Verified
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <span class="verification-badge verified">
+                        <i class="fas fa-shield-alt"></i> MFA Enabled
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <span class="verification-badge pending">
+                        <i class="fas fa-clock"></i> Document Review
+                    </span>
+                </div>
+
+                <div class="profile-completion">
+                    <h6 class="nvc-text-primary">Profile Completion</h6>
+                    <div class="progress progress-custom mb-2">
+                        <div class="progress-bar progress-bar-custom" style="width: 85%"></div>
+                    </div>
+                    <small class="nvc-text-secondary">85% Complete</small>
+                </div>
+
+                <button type="button" class="nvc-btn nvc-btn-outline w-100 mb-2">
+                    <i class="fas fa-camera"></i> Update Photo
+                </button>
+                <button type="button" class="nvc-btn nvc-btn-outline w-100">
+                    <i class="fas fa-download"></i> Download Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Information Section -->
+    <div class="nvc-content-section" id="personal-info">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title"><i class="fas fa-id-card"></i> Personal Information</h3>
+            <div class="nvc-content-section-actions">
+                <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+        </div>
+        <div class="nvc-content-section-body">
+                            <form>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="firstName" class="nvc-form-label">First Name</label>
+                                        <input type="text" id="firstName" name="firstName" class="nvc-form-input" value="{{ user.first_name if user else 'John' }}" placeholder="Enter your first name">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lastName" class="nvc-form-label">Last Name</label>
+                                        <input type="text" id="lastName" name="lastName" class="nvc-form-input" value="{{ user.last_name if user else 'Anderson' }}" placeholder="Enter your last name">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="nvc-form-label">Email Address</label>
+                                        <input type="email" id="email" name="email" class="nvc-form-input" value="{{ user.email if user else 'john.anderson@nvcfund.com' }}" placeholder="Enter your email address">
+                                        <span class="verification-badge verified mt-1">
+                                            <i class="fas fa-check"></i> Verified
+                                        </span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="nvc-form-label">Phone Number</label>
+                                        <input type="tel" id="phone" name="phone" class="nvc-form-input" value="{{ user.phone if user else '+1 (555) 123-4567' }}" placeholder="Enter your phone number">
+                                        <span class="verification-badge verified mt-1">
+                                            <i class="fas fa-check"></i> Verified
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="dateOfBirth" class="nvc-form-label">Date of Birth</label>
+                                        <input type="date" id="dateOfBirth" name="dateOfBirth" class="nvc-form-input" value="1985-03-15">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="nationality" class="nvc-form-label">Nationality</label>
+                                        <select id="nationality" name="nationality" class="nvc-form-select">
+                                            <option selected>United States</option>
+                                            <option>Canada</option>
+                                            <option>United Kingdom</option>
+                                            <option>Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="gender" class="nvc-form-label">Gender</label>
+                                        <select id="gender" name="gender" class="nvc-form-select">
+                                            <option selected>Male</option>
+                                            <option>Female</option>
+                                            <option>Other</option>
+                                            <option>Prefer not to say</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="button" class="nvc-btn nvc-btn-outline me-md-2">Cancel</button>
+                                    <button type="submit" class="nvc-btn nvc-btn-primary">
+                                        <i class="fas fa-save"></i> Save Personal Info
+                                    </button>
+                                </div>
+                            </form>
+        </div>
+    </div>
+
+    <!-- Address Information Section -->
+    <div class="nvc-content-section" id="address-info">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title"><i class="fas fa-map-marker-alt"></i> Address Information</h3>
+            <div class="nvc-content-section-actions">
+                <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+        </div>
+        <div class="nvc-content-section-body">
+            <form>
+                <div class="mb-3">
+                    <label for="streetAddress" class="nvc-form-label">Street Address</label>
+                    <input type="text" id="streetAddress" name="streetAddress" class="nvc-form-input" value="123 Main Street, Apt 4B" placeholder="Enter your street address">
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="city" class="nvc-form-label">City</label>
+                        <input type="text" id="city" name="city" class="nvc-form-input" value="New York" placeholder="Enter your city">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="state" class="nvc-form-label">State/Province</label>
+                        <input type="text" id="state" name="state" class="nvc-form-input" value="NY" placeholder="Enter your state">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="zipCode" class="nvc-form-label">ZIP/Postal Code</label>
+                        <input type="text" id="zipCode" name="zipCode" class="nvc-form-input" value="10001" placeholder="Enter your ZIP code">
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="button" class="nvc-btn nvc-btn-outline me-md-2">Cancel</button>
+                    <button type="submit" class="nvc-btn nvc-btn-primary">
+                        <i class="fas fa-save"></i> Save Address
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Profile updated successfully!');
+    });
+</script>
+{% endblock %}

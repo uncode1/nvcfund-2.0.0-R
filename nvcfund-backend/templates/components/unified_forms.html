@@ -1,0 +1,591 @@
+<!-- Unified Form Components -->
+<!-- Professional form components for consistent presentation across all templates -->
+
+{% macro form_container(title, description='', form_id='', class='') %}
+<div class="nvc-form-container {{ class }}">
+    <div class="nvc-form-header">
+        <h3 class="nvc-form-title">{{ title }}</h3>
+        {% if description %}
+        <p class="nvc-form-description">{{ description }}</p>
+        {% endif %}
+    </div>
+    <div class="nvc-form-body">
+        <form {% if form_id %}id="{{ form_id }}"{% endif %} class="nvc-form">
+            {{ caller() }}
+        </form>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro form_group(label, name, type='text', placeholder='', required=false, value='', help_text='', icon='') %}
+<div class="nvc-form-group">
+    <label for="{{ name }}" class="nvc-form-label">
+        {% if icon %}<i class="{{ icon }}"></i>{% endif %}
+        {{ label }}
+        {% if required %}<span class="nvc-required">*</span>{% endif %}
+    </label>
+    <div class="nvc-input-wrapper">
+        {% if icon %}<i class="nvc-input-icon {{ icon }}"></i>{% endif %}
+        <input type="{{ type }}" 
+               id="{{ name }}" 
+               name="{{ name }}" 
+               class="nvc-form-input {% if icon %}with-icon{% endif %}"
+               placeholder="{{ placeholder }}"
+               value="{{ value }}"
+               {% if required %}required{% endif %}>
+    </div>
+    {% if help_text %}
+    <small class="nvc-form-help">{{ help_text }}</small>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro form_select(label, name, options, selected='', required=false, help_text='', icon='') %}
+<div class="nvc-form-group">
+    <label for="{{ name }}" class="nvc-form-label">
+        {% if icon %}<i class="{{ icon }}"></i>{% endif %}
+        {{ label }}
+        {% if required %}<span class="nvc-required">*</span>{% endif %}
+    </label>
+    <div class="nvc-select-wrapper">
+        {% if icon %}<i class="nvc-input-icon {{ icon }}"></i>{% endif %}
+        <select id="{{ name }}" 
+                name="{{ name }}" 
+                class="nvc-form-select {% if icon %}with-icon{% endif %}"
+                {% if required %}required{% endif %}>
+            {% for option in options %}
+            <option value="{{ option.value }}" {% if option.value == selected %}selected{% endif %}>
+                {{ option.label }}
+            </option>
+            {% endfor %}
+        </select>
+        <i class="nvc-select-arrow fas fa-chevron-down"></i>
+    </div>
+    {% if help_text %}
+    <small class="nvc-form-help">{{ help_text }}</small>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro form_textarea(label, name, placeholder='', required=false, value='', help_text='', icon='', rows=4) %}
+<div class="nvc-form-group">
+    <label for="{{ name }}" class="nvc-form-label">
+        {% if icon %}<i class="{{ icon }}"></i>{% endif %}
+        {{ label }}
+        {% if required %}<span class="nvc-required">*</span>{% endif %}
+    </label>
+    <div class="nvc-textarea-wrapper">
+        <textarea id="{{ name }}" 
+                  name="{{ name }}" 
+                  class="nvc-form-textarea"
+                  placeholder="{{ placeholder }}"
+                  rows="{{ rows }}"
+                  {% if required %}required{% endif %}>{{ value }}</textarea>
+    </div>
+    {% if help_text %}
+    <small class="nvc-form-help">{{ help_text }}</small>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro form_checkbox(label, name, checked=false, help_text='', value='1') %}
+<div class="nvc-form-group nvc-checkbox-group">
+    <div class="nvc-checkbox-wrapper">
+        <input type="checkbox" 
+               id="{{ name }}" 
+               name="{{ name }}" 
+               class="nvc-form-checkbox"
+               value="{{ value }}"
+               {% if checked %}checked{% endif %}>
+        <label for="{{ name }}" class="nvc-checkbox-label">
+            <span class="nvc-checkbox-indicator"></span>
+            {{ label }}
+        </label>
+    </div>
+    {% if help_text %}
+    <small class="nvc-form-help">{{ help_text }}</small>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro form_radio_group(label, name, options, selected='', required=false, help_text='') %}
+<div class="nvc-form-group">
+    <fieldset class="nvc-radio-fieldset">
+        <legend class="nvc-form-label">
+            {{ label }}
+            {% if required %}<span class="nvc-required">*</span>{% endif %}
+        </legend>
+        <div class="nvc-radio-group">
+            {% for option in options %}
+            <div class="nvc-radio-wrapper">
+                <input type="radio" 
+                       id="{{ name }}_{{ loop.index }}" 
+                       name="{{ name }}" 
+                       class="nvc-form-radio"
+                       value="{{ option.value }}"
+                       {% if option.value == selected %}checked{% endif %}
+                       {% if required %}required{% endif %}>
+                <label for="{{ name }}_{{ loop.index }}" class="nvc-radio-label">
+                    <span class="nvc-radio-indicator"></span>
+                    {{ option.label }}
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+    </fieldset>
+    {% if help_text %}
+    <small class="nvc-form-help">{{ help_text }}</small>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro form_actions(primary_text='Submit', secondary_text='Cancel', primary_type='submit', secondary_href='#', loading_text='Processing...') %}
+<div class="nvc-form-actions">
+    <button type="{{ primary_type }}" class="nvc-btn nvc-btn-primary nvc-btn-loading">
+        <span class="nvc-btn-text">{{ primary_text }}</span>
+        <span class="nvc-btn-loading-text">{{ loading_text }}</span>
+        <i class="nvc-btn-spinner fas fa-spinner fa-spin"></i>
+    </button>
+    {% if secondary_text %}
+    <a href="{{ secondary_href }}" class="nvc-btn nvc-btn-outline">{{ secondary_text }}</a>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro form_section(title, description='') %}
+<div class="nvc-form-section">
+    <div class="nvc-form-section-header">
+        <h4 class="nvc-form-section-title">{{ title }}</h4>
+        {% if description %}
+        <p class="nvc-form-section-description">{{ description }}</p>
+        {% endif %}
+    </div>
+    <div class="nvc-form-section-content">
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}
+
+<!-- Form Styles -->
+<style>
+/* Unified Form Styling */
+.nvc-form-container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.nvc-form-header {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.nvc-form-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white !important;
+}
+
+.nvc-form-description {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1rem;
+    color: white !important;
+}
+
+.nvc-form-body {
+    padding: 2rem;
+}
+
+.nvc-form {
+    max-width: 100%;
+}
+
+.nvc-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.nvc-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #374151 !important;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.nvc-form-label i {
+    margin-right: 0.5rem;
+    color: #6b7280;
+}
+
+.nvc-required {
+    color: #ef4444;
+    margin-left: 0.25rem;
+}
+
+.nvc-input-wrapper {
+    position: relative;
+}
+
+.nvc-input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    z-index: 2;
+}
+
+.nvc-form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #374151 !important;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.nvc-form-input.with-icon {
+    padding-left: 3rem;
+}
+
+.nvc-form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.nvc-form-input:invalid {
+    border-color: #ef4444;
+}
+
+.nvc-select-wrapper {
+    position: relative;
+}
+
+.nvc-form-select {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #374151 !important;
+    background-color: #ffffff;
+    appearance: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nvc-form-select.with-icon {
+    padding-left: 3rem;
+}
+
+.nvc-select-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    pointer-events: none;
+}
+
+.nvc-form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.nvc-form-textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #374151 !important;
+    background-color: #ffffff;
+    resize: vertical;
+    min-height: 100px;
+    transition: all 0.2s ease;
+}
+
+.nvc-form-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.nvc-checkbox-group {
+    margin-bottom: 1rem;
+}
+
+.nvc-checkbox-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.nvc-form-checkbox {
+    display: none;
+}
+
+.nvc-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #374151 !important;
+    line-height: 1.5;
+}
+
+.nvc-checkbox-indicator {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.nvc-form-checkbox:checked + .nvc-checkbox-label .nvc-checkbox-indicator {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.nvc-form-checkbox:checked + .nvc-checkbox-label .nvc-checkbox-indicator::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    color: white;
+    font-size: 12px;
+}
+
+.nvc-radio-fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nvc-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.nvc-radio-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nvc-form-radio {
+    display: none;
+}
+
+.nvc-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #374151 !important;
+}
+
+.nvc-radio-indicator {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.nvc-form-radio:checked + .nvc-radio-label .nvc-radio-indicator {
+    border-color: #3b82f6;
+}
+
+.nvc-form-radio:checked + .nvc-radio-label .nvc-radio-indicator::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #3b82f6;
+    border-radius: 50%;
+}
+
+.nvc-form-help {
+    display: block;
+    margin-top: 0.5rem;
+    color: #6b7280 !important;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.nvc-form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.nvc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.nvc-btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white !important;
+    border-color: #3b82f6;
+}
+
+.nvc-btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.nvc-btn-outline {
+    background: transparent;
+    color: #374151 !important;
+    border-color: #d1d5db;
+}
+
+.nvc-btn-outline:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.nvc-btn-loading .nvc-btn-text {
+    transition: opacity 0.2s ease;
+}
+
+.nvc-btn-loading .nvc-btn-loading-text,
+.nvc-btn-loading .nvc-btn-spinner {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.nvc-btn-loading.loading .nvc-btn-text {
+    opacity: 0;
+}
+
+.nvc-btn-loading.loading .nvc-btn-loading-text,
+.nvc-btn-loading.loading .nvc-btn-spinner {
+    opacity: 1;
+}
+
+.nvc-form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.nvc-form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.nvc-form-section-header {
+    margin-bottom: 1.5rem;
+}
+
+.nvc-form-section-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937 !important;
+}
+
+.nvc-form-section-description {
+    margin: 0;
+    color: #6b7280 !important;
+    font-size: 0.875rem;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    .nvc-form-container {
+        background: #1f2937;
+        color: #e5e7eb;
+    }
+    
+    .nvc-form-input,
+    .nvc-form-select,
+    .nvc-form-textarea {
+        background: #374151;
+        border-color: #4b5563;
+        color: #e5e7eb !important;
+    }
+    
+    .nvc-form-label,
+    .nvc-checkbox-label,
+    .nvc-radio-label,
+    .nvc-form-section-title {
+        color: #e5e7eb !important;
+    }
+    
+    .nvc-form-help,
+    .nvc-form-section-description {
+        color: #9ca3af !important;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nvc-form-body {
+        padding: 1.5rem;
+    }
+    
+    .nvc-form-header {
+        padding: 1.5rem;
+    }
+    
+    .nvc-form-actions {
+        flex-direction: column;
+    }
+    
+    .nvc-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .nvc-radio-group {
+        gap: 1rem;
+    }
+}
+</style>

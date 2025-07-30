@@ -1,0 +1,305 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Integrations Dashboard - NVC Banking{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Section -->
+            <div class="card dashboard-stat-nvc-card mb-4">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">Integrations Management</h3>
+                            <p class="text-light mb-0">Centralized management for all external service integrations</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-success me-2">{{ active_integrations }}/{{ total_integrations }} Active</span>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm" data-action="custom-action">
+                                <i class="fas fa-sync-alt"></i> Refresh Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Integration Categories Overview -->
+            <div class="row mb-4">
+                {% for category in integration_categories %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card dashboard-stat-card integration-category-nvc-card">
+                        <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">
+                                    <i class="{{ category.icon }} text-{{ category.color }} me-2"></i>
+                                    {{ category.name }}
+                                </h5>
+                                <p class="text-light mb-0 small">{{ category.description }}</p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-{{ category.color }}">
+                                    {{ category.services|selectattr('status', 'equalto', 'active')|list|length }}/{{ category.services|length }} Active
+                                </span>
+                            </div>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <!-- Service Status List -->
+                            <div class="service-list mb-3">
+                                {% for service in category.services %}
+                                <div class="service-item d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="status-indicator me-2">
+                                            {% if service.status == 'active' %}
+                                            <i class="fas fa-circle text-success" style="font-size: 8px;"></i>
+                                            {% else %}
+                                            <i class="fas fa-circle text-danger" style="font-size: 8px;"></i>
+                                            {% endif %}
+                                        </div>
+                                        <span class="service-name">{{ service.name }}</span>
+                                    </div>
+                                    <div class="service-uptime">
+                                        {% if service.status == 'active' %}
+                                        <span class="badge bg-success">{{ service.uptime }}</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Offline</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Category Actions -->
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for(category.route) }}" class="btn btn-{{ category.color }} btn-sm flex-fill">
+                                    <i class="fas fa-cog me-1"></i>Manage
+                                </a>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-{{ category.color }} btn-sm" data-action="custom-action">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Integration Status Summary -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card dashboard-stat-nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Integration Health Summary
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center mb-3">
+                                        <div class="h2 text-success mb-1">{{ active_integrations }}</div>
+                                        <div class="text-light small">Active Integrations</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center mb-3">
+                                        <div class="h2 text-primary mb-1">{{ total_integrations }}</div>
+                                        <div class="text-light small">Total Integrations</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center mb-3">
+                                        <div class="h2 text-info mb-1">99.7%</div>
+                                        <div class="text-light small">Average Uptime</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center mb-3">
+                                        <div class="h2 text-warning mb-1">12.5K</div>
+                                        <div class="text-light small">Daily API Calls</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Health Status Chart -->
+                            <div class="mt-4">
+                                <h6 class="text-light mb-3">Integration Performance (Last 24 Hours)</h6>
+                                <canvas id="integrationHealthChart" height="100"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Integration health chart
+const ctx = document.getElementById('integrationHealthChart').getContext('2d');
+const integrationChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+        datasets: [
+            {
+                label: 'Payment Gateways',
+                data: [99.8, 99.9, 99.7, 99.8, 99.9, 99.8, 99.8],
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4
+            },
+            {
+                label: 'Blockchain',
+                data: [99.5, 99.6, 99.4, 99.5, 99.7, 99.6, 99.5],
+                borderColor: 'rgb(245, 158, 11)',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                tension: 0.4
+            },
+            {
+                label: 'Communications',
+                data: [99.9, 99.8, 99.9, 99.7, 99.8, 99.9, 99.7],
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4
+            },
+            {
+                label: 'Financial Data',
+                data: [99.8, 99.9, 99.8, 99.9, 99.8, 99.9, 99.9],
+                borderColor: 'rgb(34, 197, 94)',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                tension: 0.4
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: '#e2e8f0',
+                    usePointStyle: true,
+                    padding: 20
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: false,
+                min: 99,
+                max: 100,
+                ticks: {
+                    color: '#94a3b8',
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                },
+                grid: {
+                    color: 'rgba(148, 163, 184, 0.1)'
+                }
+            },
+            x: {
+                ticks: {
+                    color: '#94a3b8'
+                },
+                grid: {
+                    color: 'rgba(148, 163, 184, 0.1)'
+                }
+            }
+        },
+        elements: {
+            point: {
+                radius: 4,
+                hoverRadius: 6
+            }
+        }
+    }
+});
+
+// Refresh functions
+function refreshIntegrations() {
+    // Show loading state
+    const refreshBtn = document.querySelector('button[data-action="custom-action"]');
+    const originalHTML = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    refreshBtn.disabled = true;
+
+    // Simulate API call
+    setTimeout(() => {
+        refreshBtn.innerHTML = originalHTML;
+        refreshBtn.disabled = false;
+        // In a real implementation, this would update the page data
+        location.reload();
+    }, 2000);
+}
+
+function refreshCategory(category) {
+    // Show loading state for specific category
+    const refreshBtn = document.querySelector(`button[data-action="custom-action"]`);
+    const originalHTML = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    refreshBtn.disabled = true;
+
+    // Simulate API call
+    setTimeout(() => {
+        refreshBtn.innerHTML = originalHTML;
+        refreshBtn.disabled = false;
+        // In a real implementation, this would update specific category data
+    }, 1500);
+}
+
+// Auto-refresh every 5 minutes
+setInterval(() => {
+    fetch('/integrations/api/status')
+        .then(response => response.json())
+        .then(data => {
+            // Update status indicators without full page reload
+            console.log('Integration status updated:', data);
+        })
+        .catch(error => {
+            console.error('Error refreshing integration status:', error);
+        });
+}, 300000); // 5 minutes
+</script>
+
+<style>
+.integration-category-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.integration-category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.1);
+}
+
+.service-item {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.service-item:last-child {
+    border-bottom: none;
+}
+
+.service-name {
+    font-size: 0.9rem;
+    color: #e2e8f0;
+}
+
+.service-uptime {
+    font-size: 0.8rem;
+}
+
+.status-indicator {
+    width: 12px;
+    display: flex;
+    justify-content: center;
+}
+</style>
+</div>
+{% endblock %}

@@ -1,0 +1,360 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Smart Contracts Audit - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Contracts Audit{% endblock %}
+{% block page_description %}Security audit and verification for NVCT smart contracts{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Audit
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-calendar-alt"></i>
+    Schedule Audit
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-shield-alt"></i>
+    Security Scan
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportAuditData() {
+    const csvData = 'Contract,Audit Date,Security Score,Vulnerabilities,Status\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'smart_contracts_audit.csv';
+    a.click();
+}
+
+function scheduleAudit() {
+    const contractAddress = prompt('Enter contract address to audit:');
+    const auditType = prompt('Enter audit type (security, performance, compliance):');
+    
+    if (contractAddress && auditType) {
+        const formData = new FormData();
+        formData.append('contract_address', contractAddress);
+        formData.append('audit_type', auditType);
+        
+        fetch("{{ url_for('smart_contracts.audit_contracts') }}/schedule", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                alert('Audit scheduled successfully');
+                location.reload();
+            } else {
+                alert('Error scheduling audit');
+            }
+        });
+    }
+}
+
+function runSecurityScan() {
+    if (confirm('Run comprehensive security scan on all contracts?')) {
+        fetch("{{ url_for('smart_contracts.audit_contracts') }}/security-scan", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert('Security scan initiated');
+                location.reload();
+            } else {
+                alert('Error running security scan');
+            }
+        });
+    }
+}
+
+function viewAuditReport(auditId) {
+    window.open(`{{ url_for('smart_contracts.audit_contracts') }}/report/${auditId}`, '_blank');
+}
+
+function resolveVulnerability(vulnId) {
+    if (confirm('Mark this vulnerability as resolved?')) {
+        fetch(`{{ url_for('smart_contracts.audit_contracts') }}/resolve/${vulnId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert('Vulnerability marked as resolved');
+                location.reload();
+            } else {
+                alert('Error resolving vulnerability');
+            }
+        });
+    }
+}
+
+function requestExternalAudit(contractAddress) {
+    if (confirm('Request external audit for this contract?')) {
+        fetch("{{ url_for('smart_contracts.audit_contracts') }}/external-request", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: JSON.stringify({ contract_address: contractAddress })
+        }).then(response => {
+            if (response.ok) {
+                alert('External audit requested');
+                location.reload();
+            } else {
+                alert('Error requesting external audit');
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const auditCards = document.querySelectorAll('.card, .audit-card');
+    auditCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Security Score')) {
+                window.location.href = "{{ url_for('smart_contracts.security_analytics') }}";
+            } else if (cardTitle?.includes('Vulnerabilities')) {
+                window.location.href = "{{ url_for('smart_contracts.vulnerability_report') }}";
+            } else if (cardTitle?.includes('Audited Contracts')) {
+                window.location.href = "{{ url_for('smart_contracts.audited_contracts') }}";
+            } else if (cardTitle?.includes('Compliance Score')) {
+                window.location.href = "{{ url_for('smart_contracts.compliance_report') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="row g-4">
+    <!-- Audit Overview Cards -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card audit-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-shield-alt text-success fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Security Score</h6>
+                        <h4 class="mb-0 text-success">98.5%</h4>
+                        <small class="text-success">Excellent security</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card audit-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-warning fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Open Vulnerabilities</h6>
+                        <h4 class="mb-0 text-warning">2</h4>
+                        <small class="text-muted">Low severity</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card audit-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-primary fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Audited Contracts</h6>
+                        <h4 class="mb-0 text-primary">24</h4>
+                        <small class="text-success">All verified</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card audit-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clipboard-check text-info fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Compliance Score</h6>
+                        <h4 class="mb-0 text-info">100%</h4>
+                        <small class="text-muted">Fully compliant</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <!-- Audit Results Table -->
+    <div class="col-12">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <h5 class="nvc-card-title mb-0">Recent Audit Results</h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Contract</th>
+                                <th>Network</th>
+                                <th>Audit Date</th>
+                                <th>Security Score</th>
+                                <th>Vulnerabilities</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>NVCT Token</td>
+                                <td>Ethereum</td>
+                                <td>2024-07-15</td>
+                                <td><span class="badge bg-success">98.5%</span></td>
+                                <td>0 Critical, 1 Low</td>
+                                <td><span class="badge bg-success">Passed</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">View Report</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" data-action="custom-action">External Audit</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>NVCT Governance</td>
+                                <td>Ethereum</td>
+                                <td>2024-07-14</td>
+                                <td><span class="badge bg-success">99.2%</span></td>
+                                <td>0 Critical, 0 Low</td>
+                                <td><span class="badge bg-success">Passed</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">View Report</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" data-action="custom-action">External Audit</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Cross-Chain Bridge</td>
+                                <td>Multi-Chain</td>
+                                <td>2024-07-13</td>
+                                <td><span class="badge bg-warning">95.8%</span></td>
+                                <td>0 Critical, 2 Medium</td>
+                                <td><span class="badge bg-warning">Review Required</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">View Report</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Resolve Issues</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Liquidity Pool</td>
+                                <td>BSC</td>
+                                <td>2024-07-12</td>
+                                <td><span class="badge bg-info">Scanning...</span></td>
+                                <td>-</td>
+                                <td><span class="badge bg-info">In Progress</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" disabled>Scanning...</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <!-- Vulnerability Details -->
+    <div class="col-lg-6">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <h5 class="nvc-card-title mb-0">Open Vulnerabilities</h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Gas Optimization Opportunity</h6>
+                            <small class="text-warning">Low Severity</small>
+                        </div>
+                        <p class="mb-1">Contract can be optimized to reduce gas consumption by 15%.</p>
+                        <small>Contract: NVCT Token (Ethereum)</small>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">Mark Resolved</button>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Documentation Update Required</h6>
+                            <small class="text-info">Informational</small>
+                        </div>
+                        <p class="mb-1">Function documentation needs to be updated to reflect recent changes.</p>
+                        <small>Contract: Cross-Chain Bridge (Multi-Chain)</small>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">Mark Resolved</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audit Schedule -->
+    <div class="col-lg-6">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <h5 class="nvc-card-title mb-0">Upcoming Audits</h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">NVCT Staking Contract</h6>
+                            <small>July 20, 2024</small>
+                        </div>
+                        <p class="mb-1">Comprehensive security audit for new staking functionality.</p>
+                        <small>Network: Polygon</small>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Yield Farming Contract</h6>
+                            <small>July 25, 2024</small>
+                        </div>
+                        <p class="mb-1">Security review for yield farming implementation.</p>
+                        <small>Network: BSC</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

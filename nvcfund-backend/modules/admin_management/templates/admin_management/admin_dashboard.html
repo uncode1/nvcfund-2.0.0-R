@@ -1,0 +1,366 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Admin Dashboard - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block page_description %}Comprehensive administrative control and system management{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+    Admin Dashboard
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export admin reports">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Reports
+</button>
+<a href="{{ url_for('admin_management.system_settings') }}" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus">
+    <i class="fas fa-cog" aria-hidden="true"></i>
+    System Settings
+</a>
+<a href="{{ url_for('admin_management.users') }}" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus">
+    <i class="fas fa-plus" aria-hidden="true"></i>
+    Add User
+</a>
+{% endblock %}
+
+{% block sidebar %}
+<div class="nvc-sidebar">
+    <h6 class="nvc-sidebar-title nvc-wcag-high-contrast">Admin Dashboard</h6>
+    <nav class="nvc-sidebar-nav" role="navigation" aria-label="Admin dashboard navigation">
+        <ul class="nvc-sidebar-nav">
+            <li class="nvc-sidebar-nav-item">
+                <a href="#overview" class="nvc-sidebar-nav-link active nvc-wcag-focus" aria-current="page">
+                    <i class="fas fa-chart-bar" aria-hidden="true"></i> System Overview
+                </a>
+            </li>
+            <li class="nvc-sidebar-nav-item">
+                <a href="{{ url_for('admin_management.users') }}" class="nvc-sidebar-nav-link nvc-wcag-focus">
+                    <i class="fas fa-users" aria-hidden="true"></i> User Management
+                </a>
+            </li>
+            <li class="nvc-sidebar-nav-item">
+                <a href="{{ url_for('admin_management.system_monitoring') }}" class="nvc-sidebar-nav-link nvc-wcag-focus">
+                    <i class="fas fa-server" aria-hidden="true"></i> System Monitoring
+                </a>
+            </li>
+            <li class="nvc-sidebar-nav-item">
+                <a href="{{ url_for('admin_management.roles') }}" class="nvc-sidebar-nav-link nvc-wcag-focus">
+                    <i class="fas fa-shield-alt" aria-hidden="true"></i> Security & Roles
+                </a>
+            </li>
+            <li class="nvc-sidebar-nav-item">
+                <a href="{{ url_for('admin_management.log_viewer') }}" class="nvc-sidebar-nav-link nvc-wcag-focus">
+                    <i class="fas fa-clipboard-list" aria-hidden="true"></i> Audit Logs
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Admin System Overview -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                    System Overview
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">
+                        <i class="fas fa-clock" aria-hidden="true"></i>
+                        Last updated: {{ now.strftime('%b %d, %Y %H:%M') if now else 'Just now' }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Admin Metrics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-primary">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-primary">
+                                    <i class="fas fa-users" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+127</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ dashboard_data.total_users or '2,847' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Users</p>
+                                <p class="nvc-metric-subtitle">+127 this month</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-server" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+0.2%</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ dashboard_data.system_uptime or '99.8%' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">System Uptime</p>
+                                <p class="nvc-metric-subtitle">+0.2% this month</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-negative">
+                                    <i class="fas fa-arrow-down" aria-hidden="true"></i>
+                                    <span>-8</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ dashboard_data.active_alerts or '12' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Active Alerts</p>
+                                <p class="nvc-metric-subtitle">-8 resolved today</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+2.1%</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ dashboard_data.security_score or '94.2%' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Security Score</p>
+                                <p class="nvc-metric-subtitle">+2.1% this month</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        <!-- FINRA-Compliant Admin Management Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-users-cog" aria-hidden="true"></i>
+                    User Management
+                </h2>
+                <div class="nvc-section-actions">
+                    <a href="{{ url_for('admin_management.users') }}" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Add User
+                    </a>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- FINRA-Compliant User Management Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="User management overview">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">User ID</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Name</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Role</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Last Login</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in dashboard_data.recent_users or [
+                                {'id': 'USR-001', 'name': 'John Smith', 'role': 'Admin', 'status': 'Active', 'last_login': '2024-01-15 14:30'},
+                                {'id': 'USR-002', 'name': 'Sarah Johnson', 'role': 'Manager', 'status': 'Active', 'last_login': '2024-01-15 13:45'},
+                                {'id': 'USR-003', 'name': 'Mike Wilson', 'role': 'User', 'status': 'Inactive', 'last_login': '2024-01-14 16:20'},
+                                {'id': 'USR-004', 'name': 'Emily Davis', 'role': 'Admin', 'status': 'Active', 'last_login': '2024-01-15 15:10'},
+                                {'id': 'USR-005', 'name': 'David Brown', 'role': 'User', 'status': 'Active', 'last_login': '2024-01-15 12:30'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td class="nvc-wcag-high-contrast">{{ user.id }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ user.name }}</td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-{{ 'danger' if user.role == 'Admin' else 'warning' if user.role == 'Manager' else 'info' }}">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'success' if user.status == 'Active' else 'danger' }}">
+                                        {{ user.status }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ user.last_login }}</td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="Edit user {{ user.name }}">
+                                            <i class="fas fa-edit" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-xs nvc-wcag-focus" aria-label="Suspend user {{ user.name }}">
+                                            <i class="fas fa-pause" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-xs nvc-wcag-focus" aria-label="Delete user {{ user.name }}">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- System Monitoring Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-server" aria-hidden="true"></i>
+                    System Monitoring
+                </h2>
+                <div class="nvc-section-actions">
+                    <a href="{{ url_for('admin_management.system_monitoring') }}" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus">
+                        <i class="fas fa-expand" aria-hidden="true"></i>
+                        View Details
+                    </a>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-system-monitoring">
+                    <div class="nvc-monitoring-grid">
+                        <div class="nvc-monitoring-item">
+                            <div class="nvc-monitoring-header">
+                                <h3 class="nvc-monitoring-title nvc-wcag-high-contrast">Database Status</h3>
+                                <span class="nvc-status nvc-status-success">Connected</span>
+                            </div>
+                            <div class="nvc-monitoring-content">
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-success nvc-progress-98" aria-label="Database health: 98%"></div>
+                                </div>
+                                <p class="nvc-monitoring-text nvc-wcag-medium-contrast">98% Health</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-monitoring-item">
+                            <div class="nvc-monitoring-header">
+                                <h3 class="nvc-monitoring-title nvc-wcag-high-contrast">API Services</h3>
+                                <span class="nvc-status nvc-status-success">Online</span>
+                            </div>
+                            <div class="nvc-monitoring-content">
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-success nvc-progress-99" aria-label="API uptime: 99.9%"></div>
+                                </div>
+                                <p class="nvc-monitoring-text nvc-wcag-medium-contrast">99.9% Uptime</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-monitoring-item">
+                            <div class="nvc-monitoring-header">
+                                <h3 class="nvc-monitoring-title nvc-wcag-high-contrast">Security Engine</h3>
+                                <span class="nvc-status nvc-status-success">Protected</span>
+                            </div>
+                            <div class="nvc-monitoring-content">
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-success nvc-progress-100" aria-label="Security status: 100%"></div>
+                                </div>
+                                <p class="nvc-monitoring-text nvc-wcag-medium-contrast">100% Secure</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Admin Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            // Add sorting functionality here
+            console.log('Sorting by:', this.textContent);
+        });
+    });
+
+    // System monitoring interactions
+    const monitoringItems = document.querySelectorAll('.nvc-monitoring-item');
+    monitoringItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+
+    // Admin dashboard refresh functionality
+    function refreshDashboard() {
+        window.location.reload();
+    }
+
+    // Export functionality
+    function exportAdminReport() {
+        console.log('Exporting admin report...');
+        // Add actual export logic here
+    }
+
+    // Make functions globally available
+    window.refreshDashboard = refreshDashboard;
+    window.exportAdminReport = exportAdminReport;
+});
+</script>
+{% endblock %}

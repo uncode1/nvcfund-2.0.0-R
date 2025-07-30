@@ -1,0 +1,792 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Cryptocurrency Trading - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Real-time Connection Status -->
+    <div id="connection-status" class="position-fixed top-0 end-0 m-3" class="nvc-z-1050">
+        <div class="alert nvc-alert-info nvc-alert-dismissible fade show d-none" role="alert" id="connection-alert">
+            <i class="fas fa-wifi me-2"></i>
+            <span id="connection-text">Connecting to real-time data...</span>
+        </div>
+    </div>
+
+    <!-- Binance Integration Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%); border: 2px solid #f3ba2f;">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="d-flex align-items-center mb-2">
+                                <!-- Fixed Binance Logo -->
+                                <div class="me-3">
+                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="40" height="40" rx="8" fill="#F3BA2F"/>
+                                        <path d="M20 8L28 16L20 24L12 16L20 8Z" fill="#1E1E1E"/>
+                                        <path d="M8 20L12 16L16 20L12 24L8 20Z" fill="#1E1E1E"/>
+                                        <path d="M24 20L28 16L32 20L28 24L24 20Z" fill="#1E1E1E"/>
+                                        <path d="M20 32L28 24L20 16L12 24L20 32Z" fill="#1E1E1E"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h1 class="h2 text-white mb-0 fw-bold">Binance Integration</h1>
+                                    <small class="text-light">Professional cryptocurrency trading platform</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-success me-2" id="api-status">
+                                    <i class="fas fa-circle me-1"></i>Live Data
+                                </span>
+                                <span class="text-white" id="last-update">
+                                    Last update: <span id="update-time">--:--:--</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-group">
+                                <a href="{{ url_for('binance.market_data_dashboard') }}" class="btn nvc-btn nvc-btn-warning btn-sm">
+                                    <i class="fas fa-chart-bar me-1"></i>Market Data
+                                </a>
+                                <a href="{{ url_for('binance.advanced_trading') }}" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                    <i class="fas fa-chart-line me-1"></i>Advanced Trading
+                                </a>
+                                <a href="{{ url_for('binance.portfolio_analytics') }}" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                    <i class="fas fa-chart-pie me-1"></i>Portfolio
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Portfolio Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card border-0 shadow-sm h-100 nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-body text-center position-relative">
+                    <div class="position-absolute top-0 end-0 p-2">
+                        <div class="spinner-border spinner-border-sm text-success" role="status" id="portfolio-spinner">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <i class="fas fa-wallet fa-3x text-success mb-3"></i>
+                    <h6 class="text-light mb-1">Portfolio Value</h6>
+                    <h3 class="fw-bold mb-1 text-white" id="portfolio-value">$847,250.00</h3>
+                    <small class="text-success fw-bold" id="portfolio-change">+$12,450 (+1.49%)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card border-0 shadow-sm h-100 nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                    <h6 class="text-light mb-1">24h Volume</h6>
+                    <h3 class="fw-bold mb-1 text-white" id="daily-volume">$125,840</h3>
+                    <small class="text-primary fw-bold" id="volume-change">+8.7%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card border-0 shadow-sm h-100 nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-coins fa-3x text-warning mb-3"></i>
+                    <h6 class="text-light mb-1">Active Positions</h6>
+                    <h3 class="fw-bold mb-1 text-white" id="active-positions">12</h3>
+                    <small class="text-light">Across 8 coins</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card border-0 shadow-sm h-100 nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-percentage fa-3x text-info mb-3"></i>
+                    <h6 class="text-light mb-1">P&L Today</h6>
+                    <h3 class="fw-bold mb-1 text-white" id="daily-pnl">+$3,247</h3>
+                    <small class="text-success fw-bold" id="pnl-percentage">+0.38%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-coins fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Holdings</h4>
+                    <h2 class="text-white">{{ "15"|default("0") }}</h2>
+                    <small class="text-light">Different Assets</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card border-0 shadow-sm h-100 nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                    <h6 class="text-light mb-1">24h P&L</h6>
+                    <h3 class="fw-bold mb-1 text-white" id="daily-pnl-card">+$12,847</h3>
+                    <small class="text-success fw-bold" id="pnl-change">+1.54%</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Market Data & Trading Interface -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card border-0 shadow-sm nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-header border-bottom d-flex justify-content-between align-items-center" class="nvc-bg-dark-20"">
+                    <div>
+                        <h5 class="mb-0 text-white"><i class="fas fa-chart-area me-2 text-primary"></i>Live Market Data</h5>
+                        <small class="text-light">Real-time cryptocurrency prices</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="btn-group btn-group-sm me-3" role="group">
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary active" data-market="spot">Spot</button>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary" data-market="futures">Futures</button>
+                        </div>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" id="refresh-market-data">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body" class="nvc-bg-dark-10">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped" id="market-data-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-white">Asset</th>
+                                    <th class="text-white">Price</th>
+                                    <th class="text-white">24h Change</th>
+                                    <th class="text-white">24h Volume</th>
+                                    <th class="text-white">Market Cap</th>
+                                    <th class="text-white">Last Update</th>
+                                    <th class="text-white">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="market-data-tbody">
+                                <!-- Real-time data will be populated here -->
+                                <tr class="placeholder-glow">
+                                    <td colspan="7">
+                                        <div class="d-flex align-items-center justify-content-center py-3">
+                                            <div class="spinner-border text-primary me-2" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <span class="text-light">Loading real-time market data...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" width="24" class="me-2" alt="ETH">
+                                            <strong>ETH/USDT</strong>
+                                        </div>
+                                    </td>
+                                    <td>$3,847.92</td>
+                                    <td><span class="text-danger">-1.27%</span></td>
+                                    <td>$1.1B</td>
+                                    <td>$462B</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Buy</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger">Sell</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" width="24" class="me-2" alt="BNB">
+                                            <strong>BNB/USDT</strong>
+                                        </div>
+                                    </td>
+                                    <td>$645.78</td>
+                                    <td><span class="text-success">+3.92%</span></td>
+                                    <td>$890M</td>
+                                    <td>$96.8B</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Buy</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger">Sell</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://cryptologos.cc/logos/solana-sol-logo.png" width="24" class="me-2" alt="SOL">
+                                            <strong>SOL/USDT</strong>
+                                        </div>
+                                    </td>
+                                    <td>$187.45</td>
+                                    <td><span class="text-success">+5.67%</span></td>
+                                    <td>$567M</td>
+                                    <td>$87.2B</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Buy</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger">Sell</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Trade -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card border-0 shadow-sm nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-header border-bottom" class="nvc-bg-dark-20">
+                    <h5 class="text-white mb-0"><i class="fas fa-bolt me-2 text-warning"></i>Quick Trade</h5>
+                    <small class="text-light">Execute trades instantly</small>
+                </div>
+                <div class="nvc-nvc-card-body" class="nvc-bg-dark-10">
+                    <form id="quickTradeForm">
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Trading Pair</label>
+                            <select class="nvc-form-select" id="tradingPair">
+                                <option value="BTCUSDT">BTC/USDT</option>
+                                <option value="ETHUSDT">ETH/USDT</option>
+                                <option value="BNBUSDT">BNB/USDT</option>
+                                <option value="SOLUSDT">SOL/USDT</option>
+                                <option value="ADAUSDT">ADA/USDT</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Side</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="side" id="buyRadio" value="buy" checked>
+                                <label class="btn nvc-btn nvc-btn-outline-success" for="buyRadio">Buy</label>
+                                <input type="radio" class="btn-check" name="side" id="sellRadio" value="sell">
+                                <label class="btn nvc-btn nvc-btn-outline-danger" for="sellRadio">Sell</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Order Type</label>
+                            <select class="nvc-form-select" id="orderType">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                                <option value="STOP_LOSS">Stop Loss</option>
+                                <option value="STOP_LOSS_LIMIT">Stop Loss Limit</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Quantity</label>
+                            <input type="number" class="nvc-form-input" id="quantity" placeholder="0.001" step="0.0001">
+                        </div>
+                        <div class="mb-3" id="priceField" class="d-none">
+                            <label class="nvc-form-label">Price (USDT)</label>
+                            <input type="number" class="nvc-form-input" id="price" step="0.01">
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Total (USDT)</label>
+                            <input type="number" class="nvc-form-input" id="total" placeholder="100.00" step="0.01">
+                        </div>
+                        <button type="submit" class="btn nvc-btn nvc-btn-primary w-100">Place Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Holdings -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card border-0 shadow-sm nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-header border-bottom" class="nvc-bg-dark-20">
+                    <h5 class="text-white mb-0"><i class="fas fa-briefcase me-2 text-primary"></i>Portfolio Holdings</h5>
+                    <small class="text-light">Your cryptocurrency holdings</small>
+                </div>
+                <div class="nvc-nvc-card-body" class="nvc-bg-dark-10">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-white">Asset</th>
+                                    <th class="text-white">Free Balance</th>
+                                    <th class="text-white">Locked</th>
+                                    <th class="text-white">USD Value</th>
+                                    <th class="text-white">24h Change</th>
+                                    <th class="text-white">Allocation</th>
+                                    <th class="text-white">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" width="24" class="me-2" alt="BTC">
+                                            <strong>BTC</strong>
+                                        </div>
+                                    </td>
+                                    <td>2.45783</td>
+                                    <td>0.00000</td>
+                                    <td>$166,784.52</td>
+                                    <td><span class="text-success">+2.34%</span></td>
+                                    <td>19.7%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Trade</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" width="24" class="me-2" alt="ETH">
+                                            <strong>ETH</strong>
+                                        </div>
+                                    </td>
+                                    <td>45.2847</td>
+                                    <td>2.5000</td>
+                                    <td>$183,847.92</td>
+                                    <td><span class="text-danger">-1.27%</span></td>
+                                    <td>21.7%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Trade</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" width="24" class="me-2" alt="BNB">
+                                            <strong>BNB</strong>
+                                        </div>
+                                    </td>
+                                    <td>125.7834</td>
+                                    <td>0.0000</td>
+                                    <td>$81,234.67</td>
+                                    <td><span class="text-success">+3.92%</span></td>
+                                    <td>9.6%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Trade</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" width="24" class="me-2" alt="USDT">
+                                            <strong>USDT</strong>
+                                        </div>
+                                    </td>
+                                    <td>415,382.89</td>
+                                    <td>5,000.00</td>
+                                    <td>$415,382.89</td>
+                                    <td><span class="text-light">0.00%</span></td>
+                                    <td>49.0%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Trade</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade History -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-history me-2"></i>Recent Trades</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">BUY BTC/USDT</h6>
+                                <p class="mb-1 text-light small">0.0147 BTC @ $67,845.23</p>
+                                <small class="text-light">2 minutes ago</small>
+                            </div>
+                            <span class="badge bg-success">Filled</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">SELL ETH/USDT</h6>
+                                <p class="mb-1 text-light small">1.25 ETH @ $3,847.92</p>
+                                <small class="text-light">15 minutes ago</small>
+                            </div>
+                            <span class="badge bg-success">Filled</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">BUY SOL/USDT</h6>
+                                <p class="mb-1 text-light small">25.5 SOL @ $187.45</p>
+                                <small class="text-light">1 hour ago</small>
+                            </div>
+                            <span class="badge bg-warning">Partial</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">BUY BNB/USDT</h6>
+                                <p class="mb-1 text-light small">15.7 BNB @ $645.78</p>
+                                <small class="text-light">2 hours ago</small>
+                            </div>
+                            <span class="badge bg-success">Filled</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Status & Settings -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-plug me-2"></i>API Connection Status</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Spot API</label>
+                                <div class="d-flex justify-content-between">
+                                    <span class="badge bg-success">Connected</span>
+                                    <small class="text-light">Latency: 45ms</small>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Futures API</label>
+                                <div class="d-flex justify-content-between">
+                                    <span class="badge bg-success">Connected</span>
+                                    <small class="text-light">Latency: 52ms</small>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label">WebSocket</label>
+                                <div class="d-flex justify-content-between">
+                                    <span class="badge bg-success">Active</span>
+                                    <small class="text-light">Real-time</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="nvc-form-label">API Key Permissions</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" checked disabled>
+                                    <label class="form-check-label">Spot Trading</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" checked disabled>
+                                    <label class="form-check-label">Futures Trading</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" disabled>
+                                    <label class="form-check-label">Withdrawals</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Trading Statistics</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="statsChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Real-time WebSocket Connection
+    let socket;
+    let isConnected = false;
+    let reconnectInterval;
+    
+    // Connection status elements
+    const connectionAlert = document.getElementById('connection-alert');
+    const connectionText = document.getElementById('connection-text');
+    const apiStatus = document.getElementById('api-status');
+    const updateTime = document.getElementById('update-time');
+    const portfolioSpinner = document.getElementById('portfolio-spinner');
+    
+    // Initialize WebSocket connection
+    function initializeWebSocket() {
+        try {
+            socket = io('/binance', {
+                transports: ['websocket', 'polling'],
+                timeout: 20000,
+                reconnection: true,
+                reconnectionDelay: 2000,
+                reconnectionDelayMax: 10000,
+                maxReconnectionAttempts: 5
+            });
+            
+            // Connection event handlers
+            socket.on('connect', function() {
+                console.log('✅ Connected to Binance real-time data');
+                isConnected = true;
+                showConnectionStatus('Connected to real-time data', 'success');
+                apiStatus.innerHTML = '<i class="fas fa-circle me-1"></i>Live Data';
+                apiStatus.className = 'badge bg-success me-2';
+                
+                // Join market data room
+                socket.emit('join_market_data', {});
+                
+                // Hide loading spinner
+                if (portfolioSpinner) {
+                    portfolioSpinner.style.display = 'none';
+                }
+                
+                // Clear reconnect interval
+                if (reconnectInterval) {
+                    clearInterval(reconnectInterval);
+                }
+            });
+            
+            socket.on('disconnect', function() {
+                console.log('❌ Disconnected from real-time data');
+                isConnected = false;
+                showConnectionStatus('Disconnected - trying to reconnect...', 'warning');
+                apiStatus.innerHTML = '<i class="fas fa-circle me-1"></i>Offline';
+                apiStatus.className = 'badge bg-danger me-2';
+            });
+            
+            socket.on('connect_error', function(error) {
+                console.error('Connection error:', error);
+                showConnectionStatus('Connection failed - retrying...', 'danger');
+            });
+            
+            // Real-time data handlers
+            socket.on('market_data_update', function(data) {
+                updateMarketDataTable(data);
+                updateTimestamp();
+            });
+            
+            socket.on('portfolio_update', function(data) {
+                updatePortfolioMetrics(data);
+                updateTimestamp();
+            });
+            
+            socket.on('joined_market_data', function(data) {
+                console.log('✅ Joined market data room:', data.room);
+            });
+            
+        } catch (error) {
+            console.error('Failed to initialize WebSocket:', error);
+            showConnectionStatus('Failed to connect', 'danger');
+        }
+    }
+    
+    // Update market data table with real-time data
+    function updateMarketDataTable(marketData) {
+        const tbody = document.getElementById('market-data-tbody');
+        if (!tbody || !marketData.data) return;
+        
+        // Clear loading placeholder
+        tbody.innerHTML = '';
+        
+        marketData.data.forEach(coin => {
+            const changeClass = coin.change_24h >= 0 ? 'text-success' : 'text-danger';
+            const changeIcon = coin.change_24h >= 0 ? '▲' : '▼';
+            
+            const row = `
+                <tr class="crypto-row" data-symbol="${coin.symbol}">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="crypto-icon me-2">
+                                <i class="fab fa-bitcoin text-warning"></i>
+                            </div>
+                            <div>
+                                <strong>${coin.name}</strong>
+                                <br><small class="text-light">${coin.symbol}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="fw-bold">$${formatNumber(coin.price)}</td>
+                    <td>
+                        <span class="${changeClass}">
+                            ${changeIcon} ${coin.change_24h.toFixed(2)}%
+                        </span>
+                    </td>
+                    <td>$${formatLargeNumber(coin.volume_24h)}</td>
+                    <td>$${formatLargeNumber(coin.market_cap)}</td>
+                    <td>
+                        <small class="text-light">${formatTime(coin.last_updated)}</small>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn nvc-btn nvc-btn-success btn-sm" data-action="custom-action">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-danger btn-sm" data-action="custom-action">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    }
+    
+    // Update portfolio metrics
+    function updatePortfolioMetrics(data) {
+        const portfolioValue = document.getElementById('portfolio-value');
+        const portfolioChange = document.getElementById('portfolio-change');
+        const dailyVolume = document.getElementById('daily-volume');
+        const volumeChange = document.getElementById('volume-change');
+        const activePositions = document.getElementById('active-positions');
+        const dailyPnl = document.getElementById('daily-pnl');
+        const pnlPercentage = document.getElementById('pnl-percentage');
+        
+        if (portfolioValue) {
+            portfolioValue.textContent = `$${formatNumber(data.portfolio_value)}`;
+        }
+        
+        if (portfolioChange) {
+            const changeClass = data.daily_change >= 0 ? 'text-success' : 'text-danger';
+            const changeSign = data.daily_change >= 0 ? '+' : '';
+            portfolioChange.className = changeClass;
+            portfolioChange.textContent = `${changeSign}${data.daily_change.toFixed(2)}%`;
+        }
+        
+        if (dailyVolume) {
+            dailyVolume.textContent = `$${formatNumber(data.daily_volume)}`;
+        }
+        
+        if (activePositions) {
+            activePositions.textContent = data.positions_count;
+        }
+        
+        if (dailyPnl) {
+            const pnlClass = data.daily_pnl >= 0 ? 'text-success' : 'text-danger';
+            const pnlSign = data.daily_pnl >= 0 ? '+' : '';
+            dailyPnl.className = `fw-bold mb-1 ${pnlClass}`;
+            dailyPnl.textContent = `${pnlSign}$${formatNumber(Math.abs(data.daily_pnl))}`;
+        }
+    }
+    
+    // Show connection status
+    function showConnectionStatus(message, type) {
+        if (connectionAlert && connectionText) {
+            connectionText.textContent = message;
+            connectionAlert.className = `alert alert-${type} alert-dismissible fade show`;
+            connectionAlert.classList.remove('d-none');
+            
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    connectionAlert.classList.add('d-none');
+                }, 3000);
+            }
+        }
+    }
+    
+    // Update timestamp
+    function updateTimestamp() {
+        if (updateTime) {
+            const now = new Date();
+            updateTime.textContent = now.toLocaleTimeString();
+        }
+    }
+    
+    // Utility functions
+    function formatNumber(num) {
+        return new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(num);
+    }
+    
+    function formatLargeNumber(num) {
+        if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
+        if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+        if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+        if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+        return num.toFixed(0);
+    }
+    
+    function formatTime(timestamp) {
+        return new Date(timestamp).toLocaleTimeString('en-US', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    }
+    
+    // Trading functions
+    window.quickBuy = function(symbol) {
+        console.log(`Quick buy: ${symbol}`);
+        showNotification(`Buy order for ${symbol} placed`, 'success');
+    };
+    
+    window.quickSell = function(symbol) {
+        console.log(`Quick sell: ${symbol}`);
+        showNotification(`Sell order for ${symbol} placed`, 'info');
+    };
+    
+    function showNotification(message, type) {
+        // Create and show notification
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 1055; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+    
+    // Manual refresh button
+    const refreshButton = document.getElementById('refresh-market-data');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            if (socket && isConnected) {
+                socket.emit('request_price_update', { symbol: 'BTCUSDT' });
+                this.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                }, 1000);
+            }
+        });
+    }
+    
+    // Initialize WebSocket connection
+    initializeWebSocket();
+    
+    // Fallback: Load data if WebSocket fails
+    setTimeout(() => {
+        if (!isConnected) {
+            console.log('WebSocket failed, loading fallback data...');
+            loadFallbackData();
+        }
+    }, 5000);
+    
+    function loadFallbackData() {
+        // Load static market data as fallback
+        fetch('/binance/api/market-overview')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.market_data) {
+                    updateMarketDataTable(data.market_data);
+                }
+            })
+            .catch(error => {
+                console.error('Fallback data load failed:', error);
+            });
+    }
+});
+</script>
+</div>
+{% endblock %}

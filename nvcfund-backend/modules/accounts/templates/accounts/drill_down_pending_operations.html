@@ -1,0 +1,485 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Pending Operations - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Pending Operations Analysis{% endblock %}
+{% block page_description %}Detailed analysis of pending operations, transactions, and account activities{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('accounts.main_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        Accounts
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-clock" aria-hidden="true"></i>
+    Pending Operations
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export pending operations report">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Bulk approve operations">
+    <i class="fas fa-check-double" aria-hidden="true"></i>
+    Bulk Approve
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh operation status">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh Status
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Pending Operations Summary -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-clock" aria-hidden="true"></i>
+                    Pending Operations Analysis
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-warning">{{ pending_data.total or '127' }} Pending</span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-clock" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-minus" aria-hidden="true"></i>
+                                    <span>Awaiting</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ pending_data.total or '127' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Pending</p>
+                                <p class="nvc-metric-subtitle">Awaiting action</p>
+                            </div>
+                        </div>
+                        <div class="nvc-metric-card nvc-metric-danger">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-danger">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-negative">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>Urgent</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ pending_data.high_priority or '23' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">High Priority</p>
+                                <p class="nvc-metric-subtitle">Urgent attention required</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-dollar-sign" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-equals" aria-hidden="true"></i>
+                                    <span>Total</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">${{ pending_data.total_value or '2.4M' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Pending Value</p>
+                                <p class="nvc-metric-subtitle">Total amount pending</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-stopwatch" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-down" aria-hidden="true"></i>
+                                    <span>Improving</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ pending_data.avg_time or '2.3h' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Avg Processing Time</p>
+                                <p class="nvc-metric-subtitle">Current average</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Operations Analysis Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-line" aria-hidden="true"></i>
+                    Operations Analysis
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="View detailed analysis">
+                        <i class="fas fa-expand" aria-hidden="true"></i>
+                        View Details
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-operations-analysis-grid">
+                    <div class="nvc-operations-chart">
+                        <div class="nvc-chart-header">
+                            <h3 class="nvc-chart-title nvc-wcag-high-contrast">Pending Operations Trend</h3>
+                            <span class="nvc-chart-period nvc-wcag-medium-contrast">7 Days</span>
+                        </div>
+                        <div class="nvc-chart-container">
+                            <div class="nvc-chart-placeholder" aria-label="Pending operations trend chart showing 7 days of data">
+                                <i class="fas fa-chart-line nvc-chart-icon" aria-hidden="true"></i>
+                                <span class="nvc-chart-text">Operations Trend Chart</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nvc-operations-breakdown">
+                        <div class="nvc-breakdown-header">
+                            <h3 class="nvc-breakdown-title nvc-wcag-high-contrast">Operation Types</h3>
+                        </div>
+                        <div class="nvc-breakdown-content">
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">Account Verifications</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">34</div>
+                                <div class="nvc-breakdown-change nvc-amount-negative">High Priority</div>
+                            </div>
+
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">Large Transfers</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">28</div>
+                                <div class="nvc-breakdown-change nvc-amount-warning">High Priority</div>
+                            </div>
+
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">Document Reviews</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">19</div>
+                                <div class="nvc-breakdown-change nvc-amount-info">Medium Priority</div>
+                            </div>
+
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">Compliance Checks</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">12</div>
+                                <div class="nvc-breakdown-change nvc-amount-negative">High Priority</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Pending Operations Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-list" aria-hidden="true"></i>
+                    Pending Operations Queue
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Filter operations">
+                        <i class="fas fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Sort by priority">
+                        <i class="fas fa-sort" aria-hidden="true"></i>
+                        Sort by Priority
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- FINRA-Compliant Operations Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="Pending operations queue">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">
+                                    <input type="checkbox" id="select-all-operations" class="nvc-checkbox nvc-wcag-focus" aria-label="Select all operations">
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Operation ID</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Type</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Account</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Amount</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Priority</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Submitted</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Waiting Time</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for operation in pending_operations or [
+                                {'id': 'OP-001234', 'type': 'Account Verification', 'account': 'ACC-001234', 'amount': 'N/A', 'priority': 'High', 'submitted': '2024-01-15 09:30', 'waiting': '2.5h', 'status': 'Pending Review'},
+                                {'id': 'OP-001235', 'type': 'Large Transfer', 'account': 'ACC-001235', 'amount': '$125,000', 'priority': 'High', 'submitted': '2024-01-15 08:15', 'waiting': '3.8h', 'status': 'Compliance Check'},
+                                {'id': 'OP-001236', 'type': 'Document Review', 'account': 'ACC-001236', 'amount': 'N/A', 'priority': 'Medium', 'submitted': '2024-01-15 07:45', 'waiting': '4.2h', 'status': 'Under Review'},
+                                {'id': 'OP-001237', 'type': 'Account Closure', 'account': 'ACC-001237', 'amount': '$89,203', 'priority': 'Medium', 'submitted': '2024-01-14 16:20', 'waiting': '19.7h', 'status': 'Pending Approval'},
+                                {'id': 'OP-001238', 'type': 'Compliance Check', 'account': 'ACC-001238', 'amount': '$298,900', 'priority': 'High', 'submitted': '2024-01-15 10:15', 'waiting': '1.8h', 'status': 'In Progress'},
+                                {'id': 'OP-001239', 'type': 'Wire Transfer', 'account': 'ACC-001239', 'amount': '$45,000', 'priority': 'Medium', 'submitted': '2024-01-15 11:30', 'waiting': '0.5h', 'status': 'Pending Review'},
+                                {'id': 'OP-001240', 'type': 'Account Verification', 'account': 'ACC-001240', 'amount': 'N/A', 'priority': 'Low', 'submitted': '2024-01-15 06:00', 'waiting': '6.0h', 'status': 'Waiting Documents'}
+                            ] %}
+                            <tr class="nvc-finra-row nvc-row-{{ 'danger' if operation.priority == 'High' else 'warning' if operation.priority == 'Medium' else 'default' }}">
+                                <td>
+                                    <input type="checkbox" class="nvc-checkbox nvc-wcag-focus" aria-label="Select operation {{ operation.id }}">
+                                </td>
+                                <td class="nvc-wcag-high-contrast">{{ operation.id }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ operation.type }}</td>
+                                <td>
+                                    <a href="#" class="nvc-link nvc-wcag-focus">{{ operation.account }}</a>
+                                </td>
+                                <td class="nvc-wcag-high-contrast">
+                                    {% if operation.amount != 'N/A' %}
+                                        <span class="nvc-amount-positive">{{ operation.amount }}</span>
+                                    {% else %}
+                                        <span class="nvc-wcag-medium-contrast">{{ operation.amount }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'danger' if operation.priority == 'High' else 'warning' if operation.priority == 'Medium' else 'success' }}">
+                                        {{ operation.priority }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ operation.submitted }}</td>
+                                <td class="nvc-wcag-high-contrast nvc-amount-{{ 'negative' if operation.waiting.replace('h', '')|float > 4 else 'warning' if operation.waiting.replace('h', '')|float > 2 else 'positive' }}">
+                                    {{ operation.waiting }}
+                                </td>
+                                <td>
+                                    <span class="nvc-status nvc-status-info">{{ operation.status }}</span>
+                                </td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-success nvc-btn-xs nvc-wcag-focus" aria-label="Approve operation {{ operation.id }}">
+                                            <i class="fas fa-check" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="Review operation {{ operation.id }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-xs nvc-wcag-focus" aria-label="Request info for operation {{ operation.id }}">
+                                            <i class="fas fa-question" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-xs nvc-wcag-focus" aria-label="Reject operation {{ operation.id }}">
+                                            <i class="fas fa-times" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Processing Statistics and Alerts -->
+                <div class="nvc-processing-analysis">
+                    <div class="nvc-processing-stats">
+                        <div class="nvc-stats-header">
+                            <h3 class="nvc-stats-title nvc-wcag-high-contrast">Processing Time Analysis</h3>
+                        </div>
+                        <div class="nvc-stats-content">
+                            <div class="nvc-stats-item">
+                                <div class="nvc-stats-metric">
+                                    <span class="nvc-stats-label nvc-wcag-medium-contrast">Under 1 hour</span>
+                                    <span class="nvc-stats-value nvc-amount-positive">{{ processing_stats.under_1h or '45' }} operations</span>
+                                </div>
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-success nvc-progress-35" aria-label="Under 1 hour: 35%"></div>
+                                </div>
+                            </div>
+
+                            <div class="nvc-stats-item">
+                                <div class="nvc-stats-metric">
+                                    <span class="nvc-stats-label nvc-wcag-medium-contrast">1-4 hours</span>
+                                    <span class="nvc-stats-value nvc-amount-info">{{ processing_stats.one_to_four_h or '58' }} operations</span>
+                                </div>
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-info nvc-progress-46" aria-label="1-4 hours: 46%"></div>
+                                </div>
+                            </div>
+
+                            <div class="nvc-stats-item">
+                                <div class="nvc-stats-metric">
+                                    <span class="nvc-stats-label nvc-wcag-medium-contrast">4-24 hours</span>
+                                    <span class="nvc-stats-value nvc-amount-warning">{{ processing_stats.four_to_twentyfour_h or '19' }} operations</span>
+                                </div>
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-warning nvc-progress-15" aria-label="4-24 hours: 15%"></div>
+                                </div>
+                            </div>
+
+                            <div class="nvc-stats-item">
+                                <div class="nvc-stats-metric">
+                                    <span class="nvc-stats-label nvc-wcag-medium-contrast">Over 24 hours</span>
+                                    <span class="nvc-stats-value nvc-amount-negative">{{ processing_stats.over_24h or '5' }} operations</span>
+                                </div>
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-danger nvc-progress-4" aria-label="Over 24 hours: 4%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-alerts-grid">
+                        <div class="nvc-alert-card nvc-alert-danger">
+                            <div class="nvc-alert-icon">
+                                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-alert-content">
+                                <h4 class="nvc-alert-title nvc-wcag-high-contrast">Urgent</h4>
+                                <p class="nvc-alert-text nvc-wcag-medium-contrast">5 operations have been pending for over 24 hours.</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-alert-card nvc-alert-warning">
+                            <div class="nvc-alert-icon">
+                                <i class="fas fa-clock" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-alert-content">
+                                <h4 class="nvc-alert-title nvc-wcag-high-contrast">Attention</h4>
+                                <p class="nvc-alert-text nvc-wcag-medium-contrast">23 high-priority operations require immediate review.</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-alert-card nvc-alert-info">
+                            <div class="nvc-alert-icon">
+                                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-alert-content">
+                                <h4 class="nvc-alert-title nvc-wcag-high-contrast">Notice</h4>
+                                <p class="nvc-alert-text nvc-wcag-medium-contrast">Average processing time has increased by 15% this week.</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-alert-card nvc-alert-success">
+                            <div class="nvc-alert-icon">
+                                <i class="fas fa-thumbs-up" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-alert-content">
+                                <h4 class="nvc-alert-title nvc-wcag-high-contrast">Good</h4>
+                                <p class="nvc-alert-text nvc-wcag-medium-contrast">89% of operations are processed within SLA targets.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Actions Footer -->
+                <div class="nvc-table-footer">
+                    <div class="nvc-table-info">
+                        <span class="nvc-wcag-medium-contrast">Showing {{ pending_operations|length or '7' }} pending operations</span>
+                        <span class="nvc-selected-count nvc-wcag-medium-contrast">0 operations selected</span>
+                    </div>
+
+                    <div class="nvc-bulk-actions">
+                        <button type="button" class="nvc-btn nvc-btn-success nvc-btn-sm nvc-wcag-focus" disabled aria-label="Bulk approve selected operations">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                            Bulk Approve
+                        </button>
+                        <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-sm nvc-wcag-focus" disabled aria-label="Request info for selected operations">
+                            <i class="fas fa-question" aria-hidden="true"></i>
+                            Request Info
+                        </button>
+                        <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-sm nvc-wcag-focus" disabled aria-label="Bulk reject selected operations">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                            Bulk Reject
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Pending Operations Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Checkbox selection management
+    const selectAllCheckbox = document.getElementById('select-all-operations');
+    const rowCheckboxes = document.querySelectorAll('.nvc-checkbox:not(#select-all-operations)');
+    const selectedCountElement = document.querySelector('.nvc-selected-count');
+    const bulkActionButtons = document.querySelectorAll('.nvc-bulk-actions .nvc-btn');
+
+    function updateBulkActions() {
+        const selectedCount = document.querySelectorAll('.nvc-checkbox:not(#select-all-operations):checked').length;
+        selectedCountElement.textContent = `${selectedCount} operations selected`;
+
+        bulkActionButtons.forEach(button => {
+            button.disabled = selectedCount === 0;
+        });
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+
+    // Alert card interactions
+    const alertCards = document.querySelectorAll('.nvc-alert-card');
+    alertCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

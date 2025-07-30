@@ -1,0 +1,96 @@
+2025-07-20T06:52:00.419827 - Banking dashboard error: Could not build url for endpoint 'banking.transaction_details'. Did you forget to specify values ['transaction_id']?: 1
+---
+2025-07-20T06:52:08.453398 - DASHBOARD_ERROR: Could not build url for endpoint 'treasury.transaction_details' with values ['transaction_id']. Did you mean 'banking.transaction_details' instead?
+Details: {'user_id': 1}
+---
+2025-07-20T06:52:48.609078 - COMPLIANCE_ASSESSMENT_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-20T06:52:55.302363 - COMPLIANCE_VIOLATIONS_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-20T06:53:23.357177 - RISK_MANAGEMENT_ERROR: public/navbars/role_based_navbar.html
+Details: {'user_id': 1}
+---
+2025-07-20T07:03:28.638790 - Banking dashboard error: Could not build url for endpoint 'banking.transaction_details'. Did you forget to specify values ['transaction_id']?: 1
+---
+2025-07-20T07:13:38.088450 - Banking dashboard error: Could not build url for endpoint 'banking.transaction_details'. Did you forget to specify values ['transaction_id']?: 1
+---
+2025-07-20T07:13:43.985493 - Banking dashboard error: Could not build url for endpoint 'banking.transaction_details'. Did you forget to specify values ['transaction_id']?: 1
+---
+2025-07-20T07:21:20.591078 - Banking dashboard error: Could not build url for endpoint 'banking.transaction_details'. Did you forget to specify values ['transaction_id']?: 1
+---
+2025-07-20T07:21:38.705003 - Banking dashboard error: Could not build url for endpoint 'banking.transaction_details'. Did you forget to specify values ['transaction_id']?: 1
+---
+2025-07-20T07:21:41.813799 - DASHBOARD_ERROR: Could not build url for endpoint 'treasury.transaction_details' with values ['transaction_id']. Did you mean 'banking.transaction_details' instead?
+Details: {'user_id': 1}
+---
+2025-07-20T07:22:06.162661 - RISK_MANAGEMENT_ERROR: public/navbars/role_based_navbar.html
+Details: {'user_id': 1}
+---
+2025-07-20T07:22:08.053591 - SETTINGS_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-20T07:22:09.297907 - SETTINGS_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-20T08:30:32.604444 - CARDS_MANAGEMENT_ERROR: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+Details: {'user_id': 1}
+---
+2025-07-20T10:28:26.463469 - Banking dashboard error: block 'page_actions' defined twice: 1
+---
+2025-07-20T10:29:21.831848 - DASHBOARD_ERROR: block 'page_actions' defined twice
+Details: {'user_id': 1}
+---
+2025-07-20T10:39:01.924218 - Banking dashboard error: 'nvc' is undefined: 1
+---
+2025-07-20T11:59:01.109025 - Banking dashboard error: 'nvc' is undefined: 1
+---
+2025-07-20T11:59:07.103618 - Transaction history error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-20T11:59:07.114345 - Banking dashboard error: 'nvc' is undefined: 1
+---
+2025-07-20T12:00:35.880731 - Statement generation error: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.: 1
+---
+2025-07-20T12:01:04.763571 - DASHBOARD_ERROR: Could not build url for endpoint 'investments.investment_details' with values ['investment_id']. Did you mean 'investments.investment_analysis' instead?
+Details: {'user_id': 1}
+---
+2025-07-20T14:58:00.745883 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T14:58:15.627241 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T15:19:21.702752 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T15:59:58.896090 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T16:02:45.728527 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T16:35:53.518268 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T17:24:04.097905 - NEW_ACCOUNT_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T17:24:04.116421 - OVERVIEW_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T17:24:04.123774 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T17:24:36.267993 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T17:24:47.053221 - NEW_ACCOUNT_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T17:24:47.066948 - OVERVIEW_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-20T17:24:47.073950 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---

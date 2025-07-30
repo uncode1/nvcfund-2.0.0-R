@@ -1,0 +1,174 @@
+<!-- Modern Banking & Crypto Withdrawal Form -->
+<div class="nvc-card border-0 shadow-sm mb-4">
+    <div class="nvc-nvc-card-header bg-transparent border-0">
+        <h5 class="mb-0 text-warning">
+            <i class="fas fa-minus-circle me-2"></i>
+            Smart Withdrawal System
+        </h5>
+        <small class="text-muted">Secure withdrawals from traditional and digital asset accounts</small>
+    </div>
+    <div class="nvc-nvc-card-body">
+        <form method="POST" action="{{ url_for('banking.withdrawal') }}" id="modernWithdrawalForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+            <input type="hidden" name="form_type" value="withdrawal">
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="account_id" class="nvc-form-label">
+                            <i class="fas fa-wallet text-warning me-1"></i>
+                            Withdraw From Account
+                        </label>
+                        <select class="nvc-form-select" id="account_id" name="account_id" required onchange="updateWithdrawalOptions()">
+                            <option value="">Select source account</option>
+                            <optgroup label="Traditional Accounts">
+                                <option value="1">🏦 Checking - ****1234 ($15,250.00)</option>
+                                <option value="2">💰 Savings - ****5678 ($75,500.00)</option>
+                                <option value="3">🏢 Business - ****9012 ($125,750.00)</option>
+                            </optgroup>
+                            <optgroup label="Digital Wallets">
+                                <option value="4">₿ Bitcoin Wallet - ****BTC1 (2.5 BTC)</option>
+                                <option value="5">⟠ Ethereum Wallet - ****ETH1 (15.7 ETH)</option>
+                                <option value="6">🪙 NVCT Wallet - ****NVCT (10,000 NVCT)</option>
+                                <option value="7">💎 USDC Wallet - ****USDC (25,000 USDC)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="withdrawal_method" class="nvc-form-label">
+                            <i class="fas fa-credit-nvc-card text-info me-1"></i>
+                            Withdrawal Method
+                        </label>
+                        <select class="nvc-form-select" id="withdrawal_method" name="withdrawal_method" required>
+                            <option value="">Select withdrawal method</option>
+                            <optgroup label="Traditional Methods">
+                                <option value="atm">🏧 ATM Withdrawal</option>
+                                <option value="teller">👤 Teller Withdrawal</option>
+                                <option value="check">📄 Cashier's Check</option>
+                                <option value="wire">📡 Wire Transfer</option>
+                                <option value="ach">🔄 ACH Transfer</option>
+                            </optgroup>
+                            <optgroup label="Digital Methods">
+                                <option value="debit_card">💳 Instant Debit Card</option>
+                                <option value="paypal">🅿️ PayPal Transfer</option>
+                                <option value="mobile_wallet">📱 Mobile Wallet</option>
+                                <option value="apple_pay">🍎 Apple Pay Cash</option>
+                            </optgroup>
+                            <optgroup label="Cryptocurrency">
+                                <option value="crypto_exchange">🔄 Crypto Exchange</option>
+                                <option value="external_wallet">₿ External Wallet</option>
+                                <option value="defi_protocol">🌐 DeFi Protocol</option>
+                                <option value="stablecoin_convert">🪙 Convert to Stablecoin</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                            <option value="wire">Wire Transfer</option>
+                            <option value="ach">ACH Transfer</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="amount">Withdrawal Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="nvc-form-input" id="amount" name="amount" 
+                                   step="0.01" min="0.01" max="25000" required placeholder="0.00">
+                        </div>
+                        <small class="form-text text-light">Daily withdrawal limit: $25,000</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="currency">Currency</label>
+                        <select class="nvc-form-input" id="currency" name="currency" required>
+                            <option value="USD" selected>USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="CAD">CAD - Canadian Dollar</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="external_transfer_details" class="d-none">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="external_account">External Account Number</label>
+                            <input type="text" class="nvc-form-input" id="external_account" name="external_account_number" placeholder="Account number">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="routing_number">Routing Number</label>
+                            <input type="text" class="nvc-form-input" id="routing_number" name="routing_number" placeholder="9-digit routing number">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="beneficiary_name">Beneficiary Name</label>
+                    <input type="text" class="nvc-form-input" id="beneficiary_name" name="beneficiary_name" placeholder="Full name of recipient">
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="purpose">Purpose of Withdrawal</label>
+                <select class="nvc-form-input" id="purpose" name="purpose" required>
+                    <option value="">Select purpose</option>
+                    <option value="personal">Personal Use</option>
+                    <option value="business">Business Expense</option>
+                    <option value="investment">Investment</option>
+                    <option value="bill_payment">Bill Payment</option>
+                    <option value="loan_payment">Loan Payment</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="description">Withdrawal Description</label>
+                <textarea class="nvc-form-input" id="description" name="description" rows="3" 
+                          placeholder="Optional description for this withdrawal" maxlength="255"></textarea>
+            </div>
+            
+            <div class="form-group mb-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="confirm_withdrawal" required>
+                    <label class="form-check-label" for="confirm_withdrawal">
+                        I authorize this withdrawal and understand applicable fees may apply
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn nvc-btn nvc-btn-warning">
+                <i class="fas fa-minus"></i> Process Withdrawal
+            </button>
+            <button type="button" class="btn nvc-btn nvc-btn-secondary ms-2">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('withdrawal_method').addEventListener('change', function() {
+    const externalDetails = document.getElementById('external_transfer_details');
+    if (this.value === 'wire' || this.value === 'ach') {
+        externalDetails.style.display = 'block';
+        document.getElementById('external_account').required = true;
+        document.getElementById('routing_number').required = true;
+        document.getElementById('beneficiary_name').required = true;
+    } else {
+        externalDetails.style.display = 'none';
+        document.getElementById('external_account').required = false;
+        document.getElementById('routing_number').required = false;
+        document.getElementById('beneficiary_name').required = false;
+    }
+});
+</script>

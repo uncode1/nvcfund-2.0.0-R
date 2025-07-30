@@ -1,0 +1,919 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Insurance Dashboard - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a !important; color: #e2e8f0 !important; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif !important; margin: 0; padding: 20px; }
+        .dashboard-stat-card { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 8px !important; padding: 1.5rem; margin-bottom: 1rem; }
+        .card { background: #1e293b !important; border: 1px solid #334155 !important; color: #e2e8f0 !important; }
+        .btn-primary { background: #3b82f6 !important; border-color: #3b82f6 !important; }
+        .table-dark { background: #1e293b !important; }
+        .table-dark td, .table-dark th { border-color: #334155 !important; color: #e2e8f0 !important; }
+    
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="container-fluid py-4">
+    <!-- Insurance Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="h2 text-white mb-2">
+                                <i class="fas fa-shield-alt me-2"></i>Insurance Services
+                            </h1>
+                            <p class="text-light mb-0">Comprehensive insurance products and risk management solutions</p>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-light">New Policy Quote</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insurance Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-primary clickable" data-action="custom-action">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-file-contract fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Active Policies</h4>
+                    <h2 class="text-white">{{ "2,847"|default("0") }}</h2>
+                    <small class="text-light">Total Policies</small>
+                    <div class="mt-2">
+                        <small class="text-light"><i class="fas fa-mouse-pointer me-1"></i>Click for details</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-success clickable" data-action="custom-action">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-dollar-sign fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Premiums</h4>
+                    <h2 class="text-white">${{ "24.7M"|default("0") }}</h2>
+                    <small class="text-light">Annual Premiums</small>
+                    <div class="mt-2">
+                        <small class="text-light"><i class="fas fa-mouse-pointer me-1"></i>Click for analysis</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-warning clickable" data-action="custom-action">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Claims</h4>
+                    <h2 class="text-white">{{ "47"|default("0") }}</h2>
+                    <small class="text-light">Open Claims</small>
+                    <div class="mt-2">
+                        <small class="text-light"><i class="fas fa-mouse-pointer me-1"></i>Click to manage</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-info clickable" data-action="custom-action">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-chart-pie fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Coverage</h4>
+                    <h2 class="text-white">${{ "1.2B"|default("0") }}</h2>
+                    <small class="text-light">Total Coverage</small>
+                    <div class="mt-2">
+                        <small class="text-light"><i class="fas fa-mouse-pointer me-1"></i>Click for details</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level 2: Insurance Type Breakdown -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-layer-group me-2"></i>Insurance Portfolio Breakdown</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row g-3">
+                        <div class="col-xl-2 col-md-4">
+                            <div class="insurance-type-nvc-card" data-insurance-type="life" >
+                                <div class="insurance-icon bg-primary">
+                                    <i class="fas fa-heartbeat"></i>
+                                </div>
+                                <div class="insurance-content">
+                                    <h4>1,247</h4>
+                                    <p>Life Insurance</p>
+                                    <small class="text-success">44% of policies</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <div class="insurance-type-nvc-card" data-insurance-type="auto" >
+                                <div class="insurance-icon bg-success">
+                                    <i class="fas fa-car"></i>
+                                </div>
+                                <div class="insurance-content">
+                                    <h4>892</h4>
+                                    <p>Auto Insurance</p>
+                                    <small class="text-info">31% of policies</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <div class="insurance-type-nvc-card" data-insurance-type="home" >
+                                <div class="insurance-icon bg-warning">
+                                    <i class="fas fa-home"></i>
+                                </div>
+                                <div class="insurance-content">
+                                    <h4>456</h4>
+                                    <p>Home Insurance</p>
+                                    <small class="text-warning">16% of policies</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <div class="insurance-type-nvc-card" data-insurance-type="health" >
+                                <div class="insurance-icon bg-info">
+                                    <i class="fas fa-user-md"></i>
+                                </div>
+                                <div class="insurance-content">
+                                    <h4>178</h4>
+                                    <p>Health Insurance</p>
+                                    <small class="text-primary">6% of policies</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <div class="insurance-type-nvc-card" data-insurance-type="business" >
+                                <div class="insurance-icon bg-secondary">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="insurance-content">
+                                    <h4>52</h4>
+                                    <p>Business Insurance</p>
+                                    <small class="text-secondary">2% of policies</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4">
+                            <div class="insurance-type-nvc-card" data-insurance-type="travel" >
+                                <div class="insurance-icon bg-danger">
+                                    <i class="fas fa-plane"></i>
+                                </div>
+                                <div class="insurance-content">
+                                    <h4>22</h4>
+                                    <p>Travel Insurance</p>
+                                    <small class="text-danger">1% of policies</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level 3: Insurance Policies Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-list me-2"></i>Active Insurance Policies</h5>
+                    <div class="header-actions">
+                        <select id="insurance-type-filter" class="form-select nvc-form-select-sm">
+                            <option value="">All Insurance Types</option>
+                            <option value="life">Life Insurance</option>
+                            <option value="auto">Auto Insurance</option>
+                            <option value="home">Home Insurance</option>
+                            <option value="health">Health Insurance</option>
+                            <option value="business">Business Insurance</option>
+                            <option value="travel">Travel Insurance</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Policy Number</th>
+                                    <th>Type</th>
+                                    <th>Policyholder</th>
+                                    <th>Premium</th>
+                                    <th>Coverage</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="insurance-policies-table">
+                                <tr class="insurance-policy-row" data-policy-id="POL-001" data-insurance-type="life" data-status="active" >
+                                    <td><strong>LIF-2024-001</strong></td>
+                                    <td><span class="badge bg-primary">Life Insurance</span></td>
+                                    <td>John Smith</td>
+                                    <td class="text-success">$2,400/year</td>
+                                    <td class="text-info">$500,000</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Claims</button>
+                                    </td>
+                                </tr>
+                                <tr class="insurance-policy-row" data-policy-id="POL-002" data-insurance-type="auto" data-status="active" >
+                                    <td><strong>AUT-2024-002</strong></td>
+                                    <td><span class="badge bg-success">Auto Insurance</span></td>
+                                    <td>Sarah Johnson</td>
+                                    <td class="text-success">$1,800/year</td>
+                                    <td class="text-info">$100,000</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Claims</button>
+                                    </td>
+                                </tr>
+                                <tr class="insurance-policy-row" data-policy-id="POL-003" data-insurance-type="home" data-status="pending" >
+                                    <td><strong>HOM-2024-003</strong></td>
+                                    <td><span class="badge bg-warning">Home Insurance</span></td>
+                                    <td>Michael Brown</td>
+                                    <td class="text-warning">$3,200/year</td>
+                                    <td class="text-info">$750,000</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Approve</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insurance Products -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-th-large me-2"></i>Insurance Products</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card border-primary h-100">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="nvc-card-title text-primary">Life Insurance</h5>
+                                            <p class="nvc-card-text">Term life and whole life insurance policies with competitive rates.</p>
+                                        </div>
+                                        <i class="fas fa-heartbeat fa-2x text-primary"></i>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-light">Active Policies: {{ "1,247"|default("0") }}</small><br>
+                                        <small class="text-light">Total Coverage: ${{ "450M"|default("0") }}</small>
+                                    </div>
+                                    <div class="mt-3">
+                                        <a href="{{ url_for('insurance.product_details', product_type='life') }}" class="btn nvc-btn nvc-btn-primary btn-sm me-2">View Details</a>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">Get Quote</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card border-success h-100">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="nvc-card-title text-success">Auto Insurance</h5>
+                                            <p class="nvc-card-text">Comprehensive auto insurance with roadside assistance.</p>
+                                        </div>
+                                        <i class="fas fa-car fa-2x text-success"></i>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-light">Active Policies: {{ "856"|default("0") }}</small><br>
+                                        <small class="text-light">Total Coverage: ${{ "180M"|default("0") }}</small>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm me-2">View Details</button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-sm">Get Quote</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card border-warning h-100">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="nvc-card-title text-warning">Home Insurance</h5>
+                                            <p class="nvc-card-text">Homeowners and renters insurance with full protection.</p>
+                                        </div>
+                                        <i class="fas fa-home fa-2x text-warning"></i>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-light">Active Policies: {{ "534"|default("0") }}</small><br>
+                                        <small class="text-light">Total Coverage: ${{ "320M"|default("0") }}</small>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button type="button" class="btn nvc-btn nvc-btn-warning btn-sm me-2">View Details</button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">Get Quote</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card border-info h-100">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="nvc-card-title text-info">Business Insurance</h5>
+                                            <p class="nvc-card-text">Commercial liability and property insurance solutions.</p>
+                                        </div>
+                                        <i class="fas fa-building fa-2x text-info"></i>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-light">Active Policies: {{ "210"|default("0") }}</small><br>
+                                        <small class="text-light">Total Coverage: ${{ "250M"|default("0") }}</small>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-info btn-sm me-2">View Details</button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">Get Quote</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Claims Management -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-clipboard-list me-2"></i>Recent Claims</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Auto Accident - Policy #A847392</h6>
+                                <p class="mb-1 text-light small">Claim Amount: $12,500</p>
+                                <small class="text-light">Submitted: {{ "July 3, 2025"|default("TBD") }}</small>
+                            </div>
+                            <span class="badge bg-warning">Under Review</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Water Damage - Policy #H293847</h6>
+                                <p class="mb-1 text-light small">Claim Amount: $8,750</p>
+                                <small class="text-light">Submitted: {{ "July 1, 2025"|default("TBD") }}</small>
+                            </div>
+                            <span class="badge bg-success">Approved</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Business Liability - Policy #B847293</h6>
+                                <p class="mb-1 text-light small">Claim Amount: $45,000</p>
+                                <small class="text-light">Submitted: {{ "June 28, 2025"|default("TBD") }}</small>
+                            </div>
+                            <span class="badge bg-info">Processing</span>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm w-100">View All Claims</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Assessment -->
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-chart-line me-2"></i>Risk Assessment</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Portfolio Risk Score</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-75">Low Risk (7.2/10)</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Claims Ratio</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" class="progress-bar-35">3.5%</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Customer Satisfaction</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-92">4.6/5.0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy Management -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-file-contract me-2"></i>Policy Management</h5>
+                    <div>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm me-2">Export Data</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">New Policy</button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Policy Number</th>
+                                    <th>Policy Holder</th>
+                                    <th>Product Type</th>
+                                    <th>Premium</th>
+                                    <th>Coverage Amount</th>
+                                    <th>Renewal Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>L-847392</strong></td>
+                                    <td>John Smith</td>
+                                    <td>Term Life</td>
+                                    <td>$2,400/year</td>
+                                    <td>$500,000</td>
+                                    <td>{{ "Dec 15, 2025"|default("TBD") }}</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>A-293847</strong></td>
+                                    <td>Sarah Johnson</td>
+                                    <td>Auto</td>
+                                    <td>$1,800/year</td>
+                                    <td>$100,000</td>
+                                    <td>{{ "Oct 22, 2025"|default("TBD") }}</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>H-758392</strong></td>
+                                    <td>Mike Davis</td>
+                                    <td>Homeowners</td>
+                                    <td>$3,200/year</td>
+                                    <td>$750,000</td>
+                                    <td>{{ "Sep 8, 2025"|default("TBD") }}</td>
+                                    <td><span class="badge bg-warning">Pending Renewal</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning">Renew</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>B-483927</strong></td>
+                                    <td>Tech Solutions Inc.</td>
+                                    <td>Business Liability</td>
+                                    <td>$15,000/year</td>
+                                    <td>$2,000,000</td>
+                                    <td>{{ "Nov 30, 2025"|default("TBD") }}</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Multi-Level Insurance Dashboard Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Insurance dashboard loaded');
+
+    // Level 2: Insurance Type Cards
+    const insuranceTypeCards = document.querySelectorAll('.insurance-type-card');
+    insuranceTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const insuranceType = this.getAttribute('data-insurance-type');
+            handleInsuranceTypeDrilldown(insuranceType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: Insurance Policy Rows
+    const policyRows = document.querySelectorAll('.insurance-policy-row');
+    policyRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const policyId = this.getAttribute('data-policy-id');
+            viewPolicyDetails(policyId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Insurance type filter
+    const insuranceTypeFilter = document.getElementById('insurance-type-filter');
+    if (insuranceTypeFilter) {
+        insuranceTypeFilter.addEventListener('change', function() {
+            filterPoliciesByType(this.value);
+        });
+    }
+
+    // Add click handlers for quote buttons
+    const quoteButtons = document.querySelectorAll('button[class*="btn-outline-"]');
+    quoteButtons.forEach(button => {
+        if (button.textContent.includes('Get Quote')) {
+            button.addEventListener('click', function() {
+                alert('Insurance quote request initiated. Our team will contact you within 24 hours.');
+            });
+        }
+    });
+});
+
+// Level 2: Insurance Type Drilldown
+function handleInsuranceTypeDrilldown(insuranceType) {
+    // Filter the insurance policies table by type
+    filterPoliciesByType(insuranceType);
+
+    // Update the filter dropdown
+    const insuranceTypeFilter = document.getElementById('insurance-type-filter');
+    if (insuranceTypeFilter) {
+        insuranceTypeFilter.value = insuranceType;
+    }
+
+    // Scroll to policies table
+    document.querySelector('#insurance-policies-table').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter policies by type
+function filterPoliciesByType(insuranceType) {
+    const rows = document.querySelectorAll('.insurance-policy-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowType = row.getAttribute('data-insurance-type');
+        if (!insuranceType || rowType === insuranceType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updatePolicyCounts(insuranceType, visibleCount);
+}
+
+// Update policy counts
+function updatePolicyCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.insurance-policy-row').length;
+    const header = document.querySelector('.card-header h5');
+    if (header) {
+        if (!activeFilter) {
+            header.innerHTML = `<i class="fas fa-list me-2"></i>Active Insurance Policies (${totalRows} policies)`;
+        } else {
+            const filterName = activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
+            header.innerHTML = `<i class="fas fa-list me-2"></i>${filterName} Insurance Policies (${visibleCount} policies)`;
+        }
+    }
+}
+
+// Level 4: View individual policy details (Level 4 → Level 5 drilldown)
+function viewPolicyDetails(policyId) {
+    // Navigate to detailed policy view with comprehensive information
+    const detailsUrl = "{{ url_for('insurance.policy_details', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = detailsUrl + '?view=comprehensive&include=coverage,claims,payments';
+}
+
+// Level 5: Specialized insurance functions
+function managePolicyClaims(policyId) {
+    // Navigate to policy claims management
+    const claimsUrl = "{{ url_for('insurance.policy_claims', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = claimsUrl + '?view=active&history=true';
+}
+
+function approvePolicyApplication(policyId) {
+    if (confirm('Are you sure you want to approve this policy application? This will activate the policy and begin coverage.')) {
+        // Secure policy approval
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/insurance/approve_policy';
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        form.appendChild(csrfToken);
+
+        const policyIdInput = document.createElement('input');
+        policyIdInput.type = 'hidden';
+        policyIdInput.name = 'policy_id';
+        policyIdInput.value = policyId;
+        form.appendChild(policyIdInput);
+
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'approve';
+        form.appendChild(action);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}
+
+function renewPolicy(policyId) {
+    // Navigate to policy renewal
+    const renewalUrl = "{{ url_for('insurance.policy_renewal', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = renewalUrl + '?action=renew&calculate_premium=true';
+}
+
+function modifyPolicyCoverage(policyId) {
+    // Navigate to policy modification
+    const modificationUrl = "{{ url_for('insurance.policy_modification', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = modificationUrl + '?view=coverage&calculate_adjustment=true';
+}
+
+function viewPolicyHistory(policyId) {
+    // Navigate to policy history
+    const historyUrl = "{{ url_for('insurance.policy_history', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = historyUrl + '?view=detailed&include=payments,claims,modifications';
+}
+
+function generatePolicyReport(policyId) {
+    // Navigate to policy report generation
+    const reportUrl = "{{ url_for('insurance.policy_report', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = reportUrl + '?format=comprehensive&export=pdf&period=ytd';
+}
+
+function cancelPolicy(policyId) {
+    if (confirm('Are you sure you want to cancel this policy? This action may have financial implications and cannot be easily undone.')) {
+        // Navigate to policy cancellation
+        const cancellationUrl = "{{ url_for('insurance.policy_cancellation', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+        window.location.href = cancellationUrl + '?reason=customer_request&calculate_refund=true';
+    }
+}
+
+function fileClaim(policyId) {
+    // Navigate to claim filing
+    const claimUrl = "{{ url_for('insurance.file_claim') }}";
+    window.location.href = claimUrl + `?policy_id=${encodeURIComponent(policyId)}&prefill=true`;
+}
+
+function viewRiskAssessment(policyId) {
+    // Navigate to risk assessment
+    const riskUrl = "{{ url_for('insurance.risk_assessment', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = riskUrl + '?view=detailed&update_premium=false';
+}
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+// Multi-Level Insurance Dashboard Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Insurance dashboard loaded');
+
+    // Level 2: Insurance Type Cards
+    const insuranceTypeCards = document.querySelectorAll('.insurance-type-card');
+    insuranceTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const insuranceType = this.getAttribute('data-insurance-type');
+            handleInsuranceTypeDrilldown(insuranceType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: Insurance Policy Rows
+    const policyRows = document.querySelectorAll('.insurance-policy-row');
+    policyRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const policyId = this.getAttribute('data-policy-id');
+            viewPolicyDetails(policyId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Insurance type filter
+    const insuranceTypeFilter = document.getElementById('insurance-type-filter');
+    if (insuranceTypeFilter) {
+        insuranceTypeFilter.addEventListener('change', function() {
+            filterPoliciesByType(this.value);
+        });
+    }
+
+    // Add click handlers for quote buttons
+    const quoteButtons = document.querySelectorAll('button[class*="btn-outline-"]');
+    quoteButtons.forEach(button => {
+        if (button.textContent.includes('Get Quote')) {
+            button.addEventListener('click', function() {
+                alert('Insurance quote request initiated. Our team will contact you within 24 hours.');
+            });
+        }
+    });
+});
+
+// Level 2: Insurance Type Drilldown
+function handleInsuranceTypeDrilldown(insuranceType) {
+    // Filter the insurance policies table by type
+    filterPoliciesByType(insuranceType);
+
+    // Update the filter dropdown
+    const insuranceTypeFilter = document.getElementById('insurance-type-filter');
+    if (insuranceTypeFilter) {
+        insuranceTypeFilter.value = insuranceType;
+    }
+
+    // Scroll to policies table
+    document.querySelector('#insurance-policies-table').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter policies by type
+function filterPoliciesByType(insuranceType) {
+    const rows = document.querySelectorAll('.insurance-policy-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowType = row.getAttribute('data-insurance-type');
+        if (!insuranceType || rowType === insuranceType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updatePolicyCounts(insuranceType, visibleCount);
+}
+
+// Update policy counts
+function updatePolicyCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.insurance-policy-row').length;
+    const header = document.querySelector('.card-header h5');
+    if (header) {
+        if (!activeFilter) {
+            header.innerHTML = `<i class="fas fa-list me-2"></i>Active Insurance Policies (${totalRows} policies)`;
+        } else {
+            const filterName = activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
+            header.innerHTML = `<i class="fas fa-list me-2"></i>${filterName} Insurance Policies (${visibleCount} policies)`;
+        }
+    }
+}
+
+// Level 4: View individual policy details (Level 4 → Level 5 drilldown)
+function viewPolicyDetails(policyId) {
+    // Navigate to detailed policy view with comprehensive information
+    const detailsUrl = "{{ url_for('insurance.policy_details', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = detailsUrl + '?view=comprehensive&include=coverage,claims,payments';
+}
+
+// Level 5: Specialized insurance functions
+function managePolicyClaims(policyId) {
+    // Navigate to policy claims management
+    const claimsUrl = "{{ url_for('insurance.policy_claims', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = claimsUrl + '?view=active&history=true';
+}
+
+function approvePolicyApplication(policyId) {
+    if (confirm('Are you sure you want to approve this policy application? This will activate the policy and begin coverage.')) {
+        // Secure policy approval
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/insurance/approve_policy';
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        form.appendChild(csrfToken);
+
+        const policyIdInput = document.createElement('input');
+        policyIdInput.type = 'hidden';
+        policyIdInput.name = 'policy_id';
+        policyIdInput.value = policyId;
+        form.appendChild(policyIdInput);
+
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'approve';
+        form.appendChild(action);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}
+
+function renewPolicy(policyId) {
+    // Navigate to policy renewal
+    const renewalUrl = "{{ url_for('insurance.policy_renewal', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = renewalUrl + '?action=renew&calculate_premium=true';
+}
+
+function modifyPolicyCoverage(policyId) {
+    // Navigate to policy modification
+    const modificationUrl = "{{ url_for('insurance.policy_modification', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = modificationUrl + '?view=coverage&calculate_adjustment=true';
+}
+
+function viewPolicyHistory(policyId) {
+    // Navigate to policy history
+    const historyUrl = "{{ url_for('insurance.policy_history', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = historyUrl + '?view=detailed&include=payments,claims,modifications';
+}
+
+function generatePolicyReport(policyId) {
+    // Navigate to policy report generation
+    const reportUrl = "{{ url_for('insurance.policy_report', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = reportUrl + '?format=comprehensive&export=pdf&period=ytd';
+}
+
+function cancelPolicy(policyId) {
+    if (confirm('Are you sure you want to cancel this policy? This action may have financial implications and cannot be easily undone.')) {
+        // Navigate to policy cancellation
+        const cancellationUrl = "{{ url_for('insurance.policy_cancellation', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+        window.location.href = cancellationUrl + '?reason=customer_request&calculate_refund=true';
+    }
+}
+
+function fileClaim(policyId) {
+    // Navigate to claim filing
+    const claimUrl = "{{ url_for('insurance.file_claim') }}";
+    window.location.href = claimUrl + `?policy_id=${encodeURIComponent(policyId)}&prefill=true`;
+}
+
+function viewRiskAssessment(policyId) {
+    // Navigate to risk assessment
+    const riskUrl = "{{ url_for('insurance.risk_assessment', policy_id='POLICY_ID') }}".replace('POLICY_ID', encodeURIComponent(policyId));
+    window.location.href = riskUrl + '?view=detailed&update_premium=false';
+}
+
+{% endblock %}

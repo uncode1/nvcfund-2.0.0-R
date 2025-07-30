@@ -1,0 +1,284 @@
+<!-- Role-Based Dynamic Enterprise Sidebar -->
+<div class="enterprise-sidebar" id="enterpriseSidebar">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <i class="fas fa-university"></i>
+            </div>
+            <span class="logo-text">NVC Banking</span>
+        </div>
+        <button type="button" class="sidebar-toggle" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="sidebar-search">
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search..." id="sidebarSearch">
+            <kbd class="search-kbd">⌘K</kbd>
+        </div>
+    </div>
+
+    <!-- Navigation Menu - Role-Based Content -->
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-label">Navigate</div>
+            
+            <!-- Dashboard - Available to all roles -->
+            <a href="{{ url_for('dashboard.main_dashboard') }}" class="nav-item" data-tooltip="Dashboard">
+                <i class="fas fa-tachometer-alt nav-icon"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+
+            <!-- Core Banking - Available to banking roles -->
+            {% if current_user.role in ['super_admin', 'admin', 'banking_officer', 'operations_officer', 'relationship_manager'] %}
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Core Banking">
+                    <i class="fas fa-university nav-icon"></i>
+                    <span class="nav-text">Core Banking</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('banking.banking_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Banking Home</span>
+                    </a>
+                    <a href="{{ url_for('accounts.accounts_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Accounts</span>
+                    </a>
+                    <a href="{{ url_for('accounts.create_account') }}" class="nav-subitem">
+                        <span class="nav-text">Create Account</span>
+                    </a>
+                    {% if current_user.role in ['super_admin', 'admin', 'treasury_officer'] %}
+                    <a href="{{ url_for('treasury.treasury_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Treasury</span>
+                    </a>
+                    <a href="{{ url_for('settlement.settlement_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Settlement</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Financial Services - Available to investment roles -->
+            {% if current_user.role in ['super_admin', 'admin', 'banking_officer', 'investment_officer'] %}
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Financial Services">
+                    <i class="fas fa-chart-line nav-icon"></i>
+                    <span class="nav-text">Financial Services</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('trading.trading_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Trading</span>
+                    </a>
+                    <a href="{{ url_for('investments.investments_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Investments</span>
+                    </a>
+                    <a href="{{ url_for('insurance.insurance_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Insurance</span>
+                    </a>
+                    <a href="{{ url_for('exchange.exchange_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Exchange</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Payments & Cards - Available to all banking roles -->
+            {% if current_user.role in ['super_admin', 'admin', 'banking_officer', 'operations_officer'] %}
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Payments & Cards">
+                    <i class="fas fa-credit-nvc-card nav-icon"></i>
+                    <span class="nav-text">Payments & Cards</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('cards_payments.cards_payments_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Cards</span>
+                    </a>
+                    <a href="{{ url_for('banking.send_transfer') }}" class="nav-subitem">
+                        <span class="nav-text">Send Transfer</span>
+                    </a>
+                    <a href="{{ url_for('banking.transaction_history') }}" class="nav-subitem">
+                        <span class="nav-text">Transfer History</span>
+                    </a>
+                    <a href="{{ url_for('banking.bill_payment') }}" class="nav-subitem">
+                        <span class="nav-text">Bill Payments</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Blockchain & NVCT - Available to treasury and admin roles -->
+            {% if current_user.role in ['super_admin', 'admin', 'treasury_officer'] %}
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Blockchain & NVCT">
+                    <i class="fas fa-coins nav-icon"></i>
+                    <span class="nav-text">Blockchain & NVCT</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('nvct_stablecoin.nvct_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">NVCT Stablecoin</span>
+                    </a>
+                    <a href="{{ url_for('smart_contracts.smart_contracts_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Smart Contracts</span>
+                    </a>
+                    <a href="{{ url_for('blockchain.blockchain_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Blockchain Analytics</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Compliance & Security - Available to compliance and security roles -->
+            {% if current_user.role in ['super_admin', 'admin', 'compliance_officer', 'risk_manager'] %}
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Compliance & Security">
+                    <i class="fas fa-shield-alt nav-icon"></i>
+                    <span class="nav-text">Compliance & Security</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('compliance.compliance_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Compliance</span>
+                    </a>
+                    {% if current_user.role in ['super_admin', 'admin'] %}
+                    <a href="{{ url_for('security_center.security_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Security Center</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Analytics & Reporting - Available to all admin roles -->
+            {% if current_user.role in ['super_admin', 'admin', 'compliance_officer', 'risk_manager', 'treasury_officer'] %}
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Analytics & Reporting">
+                    <i class="fas fa-chart-bar nav-icon"></i>
+                    <span class="nav-text">Analytics & Reporting</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('analytics.analytics_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Analytics</span>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Admin Section - Only for admin roles -->
+        {% if current_user.role in ['super_admin', 'admin'] %}
+        <div class="nav-section">
+            <div class="nav-section-label">Administration</div>
+            
+            <!-- Admin Management -->
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Admin Management">
+                    <i class="fas fa-cogs nav-icon"></i>
+                    <span class="nav-text">Admin Management</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('admin_management.admin_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Admin Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('admin_management.branches') }}" class="nav-subitem">
+                        <span class="nav-text">Branches</span>
+                    </a>
+                    <a href="{{ url_for('admin_management.teller_operations') }}" class="nav-subitem">
+                        <span class="nav-text">Teller Operations</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- System Management -->
+            <a href="{{ url_for('system_management.system_dashboard') }}" class="nav-item" data-tooltip="System Management">
+                <i class="fas fa-server nav-icon"></i>
+                <span class="nav-text">System Management</span>
+            </a>
+
+            <!-- Integrations -->
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Integrations">
+                    <i class="fas fa-plug nav-icon"></i>
+                    <span class="nav-text">Integrations</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('binance_integration.connect') }}" class="nav-subitem">
+                        <span class="nav-text">Binance Integration</span>
+                    </a>
+                    <a href="{{ url_for('institutional.institutional_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Institutional</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Specialized Banking - Only for specific roles -->
+        {% if current_user.role in ['super_admin', 'admin', 'sovereign_banker', 'islamic_banking_officer'] %}
+        <div class="nav-section">
+            <div class="nav-section-label">Specialized Banking</div>
+            
+            {% if current_user.role in ['super_admin', 'admin', 'islamic_banking_officer'] %}
+            <a href="{{ url_for('islamic_banking.main_dashboard') }}" class="nav-item" data-tooltip="Islamic Banking">
+                <i class="fas fa-mosque nav-icon"></i>
+                <span class="nav-text">Islamic Banking</span>
+            </a>
+            {% endif %}
+
+            {% if current_user.role in ['super_admin', 'admin', 'sovereign_banker'] %}
+            <a href="{{ url_for('sovereign.dashboard') }}" class="nav-item" data-tooltip="Sovereign Banking">
+                <i class="fas fa-flag nav-icon"></i>
+                <span class="nav-text">Sovereign Banking</span>
+            </a>
+            {% endif %}
+
+            {% if current_user.role in ['super_admin', 'admin', 'treasury_officer'] %}
+            <a href="{{ url_for('interest_rate_management.dashboard') }}" class="nav-item" data-tooltip="Interest Rate Management">
+                <i class="fas fa-percentage nav-icon"></i>
+                <span class="nav-text">Interest Rate Mgmt</span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+        <div class="user-profile">
+            <div class="user-avatar">
+                {% if current_user.role == 'super_admin' %}
+                    <img src="https://via.placeholder.com/32x32/0066cc/ffffff?text=SA" alt="Super Admin">
+                {% elif current_user.role == 'admin' %}
+                    <img src="https://via.placeholder.com/32x32/28a745/ffffff?text=AD" alt="Admin">
+                {% elif current_user.role == 'banking_officer' %}
+                    <img src="https://via.placeholder.com/32x32/007bff/ffffff?text=BO" alt="Banking Officer">
+                {% elif current_user.role == 'treasury_officer' %}
+                    <img src="https://via.placeholder.com/32x32/ffc107/ffffff?text=TO" alt="Treasury Officer">
+                {% elif current_user.role == 'compliance_officer' %}
+                    <img src="https://via.placeholder.com/32x32/dc3545/ffffff?text=CO" alt="Compliance Officer">
+                {% elif current_user.role == 'risk_manager' %}
+                    <img src="https://via.placeholder.com/32x32/6f42c1/ffffff?text=RM" alt="Risk Manager">
+                {% else %}
+                    <img src="https://via.placeholder.com/32x32/6c757d/ffffff?text={{ current_user.username[0].upper() }}" alt="{{ current_user.username }}">
+                {% endif %}
+            </div>
+            <div class="user-info">
+                <div class="user-name">{{ current_user.username }}</div>
+                <div class="user-role">{{ current_user.role|replace('_', ' ')|title }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar Overlay for Mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

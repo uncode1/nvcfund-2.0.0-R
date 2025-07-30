@@ -1,0 +1,426 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Loan Management - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Loan Management{% endblock %}
+{% block page_description %}Comprehensive loan portfolio management and administration{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="btn btn-outline-primary">
+    <i class="fas fa-download"></i>
+    Export Portfolio
+</button>
+<button type="button" class="btn btn-secondary">
+    <i class="fas fa-plus"></i>
+    New Loan Application
+</button>
+<button type="button" class="btn btn-primary">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Data
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Loan Portfolio Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Total Portfolio</h6>
+                            <h3 class="mb-0">${{ loan_stats.total_portfolio or '890M' }}</h3>
+                            <small class="text-light">{{ loan_stats.total_loans or '3,247' }} active loans</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-hand-holding-usd fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Monthly Disbursements</h6>
+                            <h3 class="mb-0">${{ loan_stats.monthly_disbursements or '45.2M' }}</h3>
+                            <small class="text-light">{{ loan_stats.new_loans or '247' }} new loans</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Pending Applications</h6>
+                            <h3 class="mb-0">{{ loan_stats.pending_applications or '89' }}</h3>
+                            <small class="text-light">Awaiting approval</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Overdue Loans</h6>
+                            <h3 class="mb-0">${{ loan_stats.overdue_amount or '2.3M' }}</h3>
+                            <small class="text-light">{{ loan_stats.overdue_count or '23' }} loans overdue</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loan Types Distribution -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Loan Portfolio by Type
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for loan_type in loan_types or [
+                            {'name': 'Personal Loans', 'count': '1,247', 'amount': '$234M', 'percentage': '38.2', 'color': 'primary'},
+                            {'name': 'Mortgage', 'count': '892', 'amount': '$456M', 'percentage': '27.5', 'color': 'success'},
+                            {'name': 'Business Loans', 'count': '567', 'amount': '$123M', 'percentage': '17.5', 'color': 'warning'},
+                            {'name': 'Auto Loans', 'count': '423', 'amount': '$67M', 'percentage': '13.0', 'color': 'info'},
+                            {'name': 'Student Loans', 'count': '118', 'amount': '$10M', 'percentage': '3.8', 'color': 'secondary'}
+                        ] %}
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="card border-{{ loan_type.color }}">
+                                <div class="card-body text-center">
+                                    <h5 class="text-{{ loan_type.color }}">{{ loan_type.name }}</h5>
+                                    <h4>{{ loan_type.count }}</h4>
+                                    <p class="text-muted mb-2">{{ loan_type.amount }}</p>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-{{ loan_type.color }}" style="width: {{ loan_type.percentage }}%"></div>
+                                    </div>
+                                    <small class="text-muted">{{ loan_type.percentage }}% of portfolio</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loan Performance Metrics -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Performance Metrics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Portfolio Quality</span>
+                            <span class="text-success">{{ performance_metrics.portfolio_quality or '96.8%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-97"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Collection Rate</span>
+                            <span class="text-info">{{ performance_metrics.collection_rate or '94.2%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" class="progress-bar-94"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Default Rate</span>
+                            <span class="text-warning">{{ performance_metrics.default_rate or '2.1%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" class="progress-bar-2"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Approval Rate</span>
+                            <span class="text-primary">{{ performance_metrics.approval_rate or '78.5%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" class="progress-bar-79"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6>Key Insights:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Low default rate</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Strong collection performance</li>
+                            <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Monitor overdue accounts</li>
+                            <li><i class="fas fa-info text-info me-2"></i>Seasonal trends observed</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loan Applications Management -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Pending Loan Applications ({{ loan_stats.pending_applications or '89' }} applications)
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                        <button type="button" class="btn btn-outline-success">
+                            <i class="fas fa-check"></i>
+                            Bulk Approve
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Filter Options -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="Search applicant...">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option value="">All Types</option>
+                                <option value="personal">Personal</option>
+                                <option value="mortgage">Mortgage</option>
+                                <option value="business">Business</option>
+                                <option value="auto">Auto</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending Review</option>
+                                <option value="underwriting">Underwriting</option>
+                                <option value="verification">Verification</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option value="">All Amounts</option>
+                                <option value="small">< $10,000</option>
+                                <option value="medium">$10,000 - $100,000</option>
+                                <option value="large">> $100,000</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" class="form-check-input">
+                                    </th>
+                                    <th>Application ID</th>
+                                    <th>Applicant</th>
+                                    <th>Loan Type</th>
+                                    <th>Amount</th>
+                                    <th>Credit Score</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in loan_applications or [
+                                    {'id': 'LOAN-001234', 'applicant': 'John Doe', 'email': 'john.doe@email.com', 'type': 'Personal', 'amount': '$25,000', 'credit_score': '750', 'status': 'Pending Review', 'submitted': '2024-01-15'},
+                                    {'id': 'LOAN-001235', 'applicant': 'Jane Smith', 'email': 'jane.smith@email.com', 'type': 'Mortgage', 'amount': '$350,000', 'credit_score': '720', 'status': 'Underwriting', 'submitted': '2024-01-14'},
+                                    {'id': 'LOAN-001236', 'applicant': 'Mike Johnson', 'email': 'mike.j@email.com', 'type': 'Business', 'amount': '$100,000', 'credit_score': '680', 'status': 'Verification', 'submitted': '2024-01-13'},
+                                    {'id': 'LOAN-001237', 'applicant': 'Sarah Wilson', 'email': 'sarah.w@email.com', 'type': 'Auto', 'amount': '$35,000', 'credit_score': '710', 'status': 'Pending Review', 'submitted': '2024-01-12'},
+                                    {'id': 'LOAN-001238', 'applicant': 'David Brown', 'email': 'david.b@email.com', 'type': 'Personal', 'amount': '$15,000', 'credit_score': '650', 'status': 'Underwriting', 'submitted': '2024-01-11'}
+                                ] %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <strong>{{ application.id }}</strong>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ application.applicant }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ application.email }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if application.type == 'Personal' else 'success' if application.type == 'Mortgage' else 'warning' if application.type == 'Business' else 'info' }}">
+                                            {{ application.type }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ application.amount }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if application.credit_score|int >= 700 else 'warning' if application.credit_score|int >= 650 else 'danger' }}">
+                                            {{ application.credit_score }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'warning' if application.status == 'Pending Review' else 'info' if application.status == 'Underwriting' else 'primary' }}">
+                                            {{ application.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ application.submitted }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="Review Application">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-success" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger" title="Reject">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info" title="Request Documents">
+                                                <i class="fas fa-file-alt"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Loans Management -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Active Loans Portfolio
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-filter"></i>
+                            Advanced Filter
+                        </button>
+                        <button type="button" class="btn btn-outline-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Show Overdue
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Borrower</th>
+                                    <th>Type</th>
+                                    <th>Principal</th>
+                                    <th>Outstanding</th>
+                                    <th>Interest Rate</th>
+                                    <th>Next Payment</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for loan in active_loans or [
+                                    {'id': 'LOAN-ACT-001', 'borrower': 'John Doe', 'type': 'Personal', 'principal': '$25,000', 'outstanding': '$18,450', 'rate': '8.5%', 'next_payment': '2024-02-15', 'status': 'Current'},
+                                    {'id': 'LOAN-ACT-002', 'borrower': 'Jane Smith', 'type': 'Mortgage', 'principal': '$350,000', 'outstanding': '$342,150', 'rate': '4.2%', 'next_payment': '2024-02-01', 'status': 'Current'},
+                                    {'id': 'LOAN-ACT-003', 'borrower': 'Mike Johnson', 'type': 'Business', 'principal': '$100,000', 'outstanding': '$87,500', 'rate': '6.8%', 'next_payment': '2024-01-20', 'status': 'Overdue'},
+                                    {'id': 'LOAN-ACT-004', 'borrower': 'Sarah Wilson', 'type': 'Auto', 'principal': '$35,000', 'outstanding': '$28,900', 'rate': '5.9%', 'next_payment': '2024-02-10', 'status': 'Current'},
+                                    {'id': 'LOAN-ACT-005', 'borrower': 'David Brown', 'type': 'Personal', 'principal': '$15,000', 'outstanding': '$12,300', 'rate': '9.2%', 'next_payment': '2024-01-25', 'status': 'Late'}
+                                ] %}
+                                <tr class="{{ 'table-danger' if loan.status == 'Overdue' else 'table-warning' if loan.status == 'Late' else '' }}">
+                                    <td>
+                                        <strong>{{ loan.id }}</strong>
+                                    </td>
+                                    <td>{{ loan.borrower }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if loan.type == 'Personal' else 'success' if loan.type == 'Mortgage' else 'warning' if loan.type == 'Business' else 'info' }}">
+                                            {{ loan.type }}
+                                        </span>
+                                    </td>
+                                    <td>{{ loan.principal }}</td>
+                                    <td>
+                                        <strong>{{ loan.outstanding }}</strong>
+                                    </td>
+                                    <td>{{ loan.rate }}</td>
+                                    <td>{{ loan.next_payment }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if loan.status == 'Current' else 'warning' if loan.status == 'Late' else 'danger' }}">
+                                            <i class="fas fa-{{ 'check' if loan.status == 'Current' else 'clock' if loan.status == 'Late' else 'exclamation-triangle' }} me-1"></i>
+                                            {{ loan.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info" title="Payment History">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                            {% if loan.status == 'Overdue' or loan.status == 'Late' %}
+                                            <button type="button" class="btn btn-outline-warning" title="Send Reminder">
+                                                <i class="fas fa-envelope"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

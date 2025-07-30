@@ -1,0 +1,431 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Smart Payee Management - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Payee Management{% endblock %}
+{% block page_description %}Manage traditional and crypto payment recipients with advanced security{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-upload"></i>
+    Import Payees
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export List
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Add Payee
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Smart Payee Management -->
+<div class="row g-4">
+    <!-- Payee Overview -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="payee-stat-nvc-card bg-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Total Payees</h6>
+                                <h3>{{ total_payees or '47' }}</h3>
+                                <small>Saved recipients</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="payee-stat-nvc-card bg-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Bank Payees</h6>
+                                <h3>{{ bank_payees or '32' }}</h3>
+                                <small>Traditional banking</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="payee-stat-nvc-card bg-warning">
+                            <div class="stat-icon">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Crypto Payees</h6>
+                                <h3>{{ crypto_payees or '15' }}</h3>
+                                <small>Digital wallets</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="payee-stat-nvc-card bg-info">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Recent Payments</h6>
+                                <h3>{{ recent_payments or '12' }}</h3>
+                                <small>This month</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payee Categories -->
+    <div class="col-xl-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-layer-group text-primary me-2"></i>
+                    Saved Payees
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <!-- Payee Tabs -->
+                <ul class="nav nav-pills mb-4" id="payeeTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="all-tab" data-bs-toggle="pill"
+                                data-bs-target="#all" type="button" role="tab">
+                            <i class="fas fa-list me-1"></i>
+                            All Payees
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="banking-tab" data-bs-toggle="pill"
+                                data-bs-target="#banking" type="button" role="tab">
+                            <i class="fas fa-university me-1"></i>
+                            Banking
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="crypto-tab" data-bs-toggle="pill"
+                                data-bs-target="#crypto" type="button" role="tab">
+                            <i class="fab fa-bitcoin me-1"></i>
+                            Crypto
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="frequent-tab" data-bs-toggle="pill"
+                                data-bs-target="#frequent" type="button" role="tab">
+                            <i class="fas fa-star me-1"></i>
+                            Frequent
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Payee Content -->
+                <div class="tab-content" id="payeeTabsContent">
+                    <!-- All Payees -->
+                    <div class="tab-pane fade show active" id="all" role="tabpanel">
+                        <div class="payee-search mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input type="text" class="nvc-form-input" placeholder="Search payees..."
+                                       id="payeeSearch" onkeyup="filterPayees()">
+                            </div>
+                        </div>
+
+                        <div class="payee-list">
+                            <!-- Banking Payee -->
+                            <div class="payee-item" data-type="banking">
+                                <div class="payee-avatar">
+                                    <div class="avatar-circle bg-primary">
+                                        <i class="fas fa-university"></i>
+                                    </div>
+                                </div>
+                                <div class="payee-info">
+                                    <h6>John Smith</h6>
+                                    <p class="text-muted small">Chase Bank • ****4567</p>
+                                    <div class="payee-tags">
+                                        <span class="badge bg-primary">Banking</span>
+                                        <span class="badge bg-success">Verified</span>
+                                    </div>
+                                </div>
+                                <div class="payee-stats">
+                                    <small class="text-muted">Last payment: 3 days ago</small>
+                                    <div class="text-success">$2,450.00 total</div>
+                                </div>
+                                <div class="payee-actions">
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger" data-action="custom-action">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Crypto Payee -->
+                            <div class="payee-item" data-type="crypto">
+                                <div class="payee-avatar">
+                                    <div class="avatar-circle bg-warning">
+                                        <i class="fab fa-bitcoin"></i>
+                                    </div>
+                                </div>
+                                <div class="payee-info">
+                                    <h6>Alice Crypto</h6>
+                                    <p class="text-muted small">Bitcoin Wallet • 1A1z...Nx2B</p>
+                                    <div class="payee-tags">
+                                        <span class="badge bg-warning">Crypto</span>
+                                        <span class="badge bg-info">Multi-sig</span>
+                                    </div>
+                                </div>
+                                <div class="payee-stats">
+                                    <small class="text-muted">Last payment: 1 week ago</small>
+                                    <div class="text-warning">0.5 BTC total</div>
+                                </div>
+                                <div class="payee-actions">
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">
+                                        <i class="fab fa-bitcoin"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger" data-action="custom-action">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- NVCT Payee -->
+                            <div class="payee-item" data-type="crypto">
+                                <div class="payee-avatar">
+                                    <div class="avatar-circle bg-info">
+                                        <i class="fas fa-coins"></i>
+                                    </div>
+                                </div>
+                                <div class="payee-info">
+                                    <h6>Business Partner LLC</h6>
+                                    <p class="text-muted small">NVCT Wallet • nvct...7890</p>
+                                    <div class="payee-tags">
+                                        <span class="badge bg-info">NVCT</span>
+                                        <span class="badge bg-success">Business</span>
+                                    </div>
+                                </div>
+                                <div class="payee-stats">
+                                    <small class="text-muted">Last payment: Yesterday</small>
+                                    <div class="text-info">15,000 NVCT total</div>
+                                </div>
+                                <div class="payee-actions">
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                        <i class="fas fa-coins"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger" data-action="custom-action">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            <a href="{{ url_for('banking.bill_payment') }}" class="btn nvc-btn nvc-btn-outline-primary me-2">
+                <i class="fas fa-arrow-left me-2"></i>Back to Bill Payment
+            </a>
+            <button type="button" class="btn nvc-btn nvc-btn-primary" data-bs-toggle="modal" data-bs-target="#addPayeeModal">
+                <i class="fas fa-plus me-2"></i>Add Payee
+            </button>
+        </div>
+    </div>
+
+    <!-- Saved Payees List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-list me-2"></i>Your Saved Payees
+                    </h5>
+                    <span class="badge bg-primary">{{ payees|length }} payees</span>
+                </div>
+                
+                {% if payees %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Payee Name</th>
+                                    <th>Category</th>
+                                    <th>Account Number</th>
+                                    <th>Last Payment</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payee in payees %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ payee.name }}</div>
+                                        <small class="text-light">{{ payee.nickname or 'No nickname' }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ payee.category }}</span>
+                                    </td>
+                                    <td>
+                                        <code class="text-info">{{ payee.account_number }}</code>
+                                    </td>
+                                    <td>
+                                        {% if payee.last_payment_date %}
+                                            <div>${{ payee.last_payment_amount }}</div>
+                                            <small class="text-light">{{ payee.last_payment_date.strftime('%b %d, %Y') }}</small>
+                                        {% else %}
+                                            <span class="text-light">No payments yet</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-primary" 
+                                                    data-action="custom-action">
+                                                <i class="fas fa-credit-nvc-card me-1"></i>Pay Now
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" 
+                                                    data-action="custom-action">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger" 
+                                                    data-action="custom-action">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-4x text-light mb-3"></i>
+                        <h4 class="text-light">No Saved Payees</h4>
+                        <p class="text-light">Add payees to make bill payments faster and easier</p>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary" data-bs-toggle="modal" data-bs-target="#addPayeeModal">
+                            <i class="fas fa-plus me-2"></i>Add Your First Payee
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Payee Management Functions
+function importPayees() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            alert('Import functionality will process: ' + file.name);
+        }
+    };
+    input.click();
+}
+
+function exportPayees() {
+    const csvData = 'Name,Account,Type,Last Payment\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'payees_export.csv';
+    a.click();
+}
+
+function addPayee() {
+    window.location.href = "{{ url_for('banking.add_payee') }}";
+}
+
+function payPayee(payeeId) {
+    window.location.href = "{{ url_for('banking.bill_payment') }}?payee=" + payeeId;
+}
+
+function editPayee(payeeId) {
+    window.location.href = "{{ url_for('banking.edit_payee') }}?id=" + payeeId;
+}
+
+function deletePayee(payeeId) {
+    if (confirm('Are you sure you want to delete this payee?')) {
+        fetch('/banking/payees/' + payeeId, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error deleting payee');
+            }
+        });
+    }
+}
+
+function filterPayees() {
+    const searchTerm = document.getElementById('payeeSearch').value.toLowerCase();
+    const payeeItems = document.querySelectorAll('.payee-item');
+
+    payeeItems.forEach(item => {
+        const name = item.querySelector('h6').textContent.toLowerCase();
+        const account = item.querySelector('.text-muted').textContent.toLowerCase();
+
+        if (name.includes(searchTerm) || account.includes(searchTerm)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function payNow(payeeName, accountNumber, category) {
+    const params = new URLSearchParams({
+        payee_name: payeeName,
+        account_number: accountNumber,
+        category: category
+    });
+    window.location.href = '{{ url_for("banking.bill_payment") }}?' + params.toString();
+}
+
+// Add drilldown functionality for stat cards
+document.addEventListener('DOMContentLoaded', function() {
+    const statCards = document.querySelectorAll('.payee-stat-card');
+    statCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardType = this.querySelector('h6').textContent;
+            if (cardType.includes('Total Payees')) {
+                document.getElementById('all-tab').click();
+            } else if (cardType.includes('Bank Payees')) {
+                document.getElementById('banking-tab').click();
+            } else if (cardType.includes('Crypto Payees')) {
+                document.getElementById('crypto-tab').click();
+            } else if (cardType.includes('Recent Payments')) {
+                window.location.href = "{{ url_for('banking.transfer_history') }}";
+            }
+        });
+    });
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

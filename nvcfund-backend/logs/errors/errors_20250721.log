@@ -1,0 +1,38 @@
+2025-07-21T05:11:57.635551 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-21T05:12:07.184269 - ANALYTICS_ERROR: 'analytics_data' is undefined
+Details: {'user_id': 1}
+---
+2025-07-21T05:12:07.193273 - DASHBOARD_ERROR: 'metric_card_standard' is undefined
+Details: {'user_id': 1}
+---
+2025-07-21T05:49:55.629619 - Banking dashboard error: 'metric_card_standard' is undefined: 1
+---
+2025-07-21T11:25:05.917568 - DASHBOARD_ERROR: 'dashboard_data' is undefined
+Details: {'user_id': 1}
+---
+2025-07-21T13:04:32.102386 - DASHBOARD_ERROR: 'dashboard_data' is undefined
+Details: {'user_id': 1}
+---
+2025-07-21T13:05:11.085574 - DASHBOARD_ERROR: 'dashboard_data' is undefined
+Details: {'user_id': 1}
+---
+2025-07-21T13:05:54.137702 - DASHBOARD_ERROR: Could not build url for endpoint 'auth.logout'. Did you mean 'public.about' instead?
+Details: {'user_id': 1}
+---
+2025-07-21T14:54:37.440242 - template_render_error: Failed to render homepage: Could not build url for endpoint 'banking.banking_dashboard'. Did you mean 'insurance.main_dashboard' instead?
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-21T14:56:08.608580 - template_render_error: Failed to render homepage: Could not build url for endpoint 'banking.banking_dashboard'. Did you mean 'insurance.main_dashboard' instead?
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-21T16:31:47.669792 - template_render_error: Failed to render homepage: Could not build url for endpoint 'banking.banking_dashboard'. Did you mean 'insurance.main_dashboard' instead?
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-21T16:56:05.151135 - template_render_error: Failed to render homepage: Could not build url for endpoint 'banking.banking_dashboard'. Did you mean 'insurance.main_dashboard' instead?
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-21T17:40:52.700201 - template_render_error: Failed to render homepage: Could not build url for endpoint 'security_center.main_dashboard'. Did you mean 'security_center.security_dashboard' instead?
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---

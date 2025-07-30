@@ -1,0 +1,579 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Module Overview - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Module Overview{% endblock %}
+{% block page_description %}Comprehensive system module management and monitoring{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Overview
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-line"></i>
+    Analyze Modules
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-cogs"></i>
+    Manage Modules
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Module Overview Functions
+function exportModuleOverview() {
+    const csvData = 'Module,Category,Status,Version,Dependencies,Health\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'module_overview.csv';
+    a.click();
+}
+
+function analyzeModules() {
+    alert('Module analysis functionality will be implemented');
+}
+
+function manageModules() {
+    window.location.href = "{{ url_for('core.module_categorization_dashboard') }}";
+}
+
+function viewModuleDetails(moduleId) {
+    window.location.href = "{{ url_for('core.module_details') }}?id=" + moduleId;
+}
+
+function toggleModuleStatus(moduleId) {
+    if (confirm('Are you sure you want to toggle this module status?')) {
+        fetch('/core/modules/' + moduleId + '/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error toggling module status');
+            }
+        });
+    }
+}
+
+function filterModules(category) {
+    const moduleCards = document.querySelectorAll('.module-card');
+    moduleCards.forEach(card => {
+        const cardCategory = card.dataset.category;
+        if (category === 'all' || cardCategory === category) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Add interactive functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Make module cards clickable
+    const moduleCards = document.querySelectorAll('.module-card');
+    moduleCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const moduleId = this.dataset.moduleId;
+            if (moduleId) {
+                viewModuleDetails(moduleId);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+        .text-warning { color: #f59e0b !important; }
+        .text-danger { color: #ef4444 !important; }
+        .text-info { color: #06b6d4 !important; }
+        .text-primary { color: #3b82f6 !important; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-body">
+                    <h1 class="mb-3">
+                        <i class="fas fa-sitemap me-3"></i>NVC Banking Platform Module Organization
+                    </h1>
+                    <p class="text-light mb-0">Comprehensive categorization of 30+ banking modules into logical product and service groups</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Overview Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-layer-group fa-2x text-primary mb-2"></i>
+                    <h3 class="mb-1">8</h3>
+                    <p class="text-light mb-0">Module Categories</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-cubes fa-2x text-success mb-2"></i>
+                    <h3 class="mb-1">31+</h3>
+                    <p class="text-light mb-0">Total Modules</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-users fa-2x text-warning mb-2"></i>
+                    <h3 class="mb-1">12</h3>
+                    <p class="text-light mb-0">User Role Types</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-star fa-2x text-info mb-2"></i>
+                    <h3 class="mb-1">95%</h3>
+                    <p class="text-light mb-0">Module Coverage</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Banking Services -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-landmark me-2 text-primary"></i>Core Banking Services
+                        <span class="badge bg-primary ms-2">4 Modules</span>
+                    </h4>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-university fa-2x text-primary mb-2"></i>
+                                <h6>Account Management</h6>
+                                <p class="text-light small">Account Services</p>
+                                <span class="badge bg-success">Priority 1</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-landmark fa-2x text-primary mb-2"></i>
+                                <h6>Banking Operations</h6>
+                                <p class="text-light small">Core Operations</p>
+                                <span class="badge bg-success">Priority 1</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-coins fa-2x text-warning mb-2"></i>
+                                <h6>Treasury Management</h6>
+                                <p class="text-light small">Treasury Services</p>
+                                <span class="badge bg-warning">Priority 2</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-balance-scale fa-2x text-info mb-2"></i>
+                                <h6>Settlement Operations</h6>
+                                <p class="text-light small">Settlement Services</p>
+                                <span class="badge bg-info">Priority 3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Digital Services -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-mobile-alt me-2 text-success"></i>Digital Services
+                        <span class="badge bg-success ms-2">4 Modules</span>
+                    </h4>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-credit-nvc-card fa-2x text-success mb-2"></i>
+                                <h6>Cards & Payments</h6>
+                                <p class="text-light small">Payment Services</p>
+                                <span class="badge bg-success">Priority 1</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-gateway fa-2x text-warning mb-2"></i>
+                                <h6>Payment Gateways</h6>
+                                <p class="text-light small">Payment Infrastructure</p>
+                                <span class="badge bg-warning">Priority 2</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-exchange-alt fa-2x text-warning mb-2"></i>
+                                <h6>Currency Exchange</h6>
+                                <p class="text-light small">Foreign Exchange</p>
+                                <span class="badge bg-warning">Priority 2</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-comments fa-2x text-info mb-2"></i>
+                                <h6>Customer Support</h6>
+                                <p class="text-light small">Communication</p>
+                                <span class="badge bg-info">Priority 3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Institutional Banking -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-building me-2 text-warning"></i>Institutional Banking
+                        <span class="badge bg-warning ms-2">3 Modules</span>
+                    </h4>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-building fa-2x text-warning mb-2"></i>
+                                <h6>Institutional Banking</h6>
+                                <p class="text-light small">Corporate Banking</p>
+                                <span class="badge bg-warning">Priority 2</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-flag fa-2x text-info mb-2"></i>
+                                <h6>Sovereign Banking</h6>
+                                <p class="text-light small">Government Banking</p>
+                                <span class="badge bg-info">Priority 3</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-mosque fa-2x text-info mb-2"></i>
+                                <h6>Islamic Banking</h6>
+                                <p class="text-light small">Sharia-Compliant</p>
+                                <span class="badge bg-info">Priority 3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance & Security -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shield-alt me-2 text-danger"></i>Compliance & Security
+                        <span class="badge bg-danger ms-2">3 Modules</span>
+                    </h4>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-shield-check fa-2x text-danger mb-2"></i>
+                                <h6>Compliance & Risk</h6>
+                                <p class="text-light small">Regulatory Compliance</p>
+                                <span class="badge bg-success">Priority 1</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-shield-alt fa-2x text-danger mb-2"></i>
+                                <h6>Security Center</h6>
+                                <p class="text-light small">Cybersecurity</p>
+                                <span class="badge bg-success">Priority 1</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-key fa-2x text-danger mb-2"></i>
+                                <h6>Multi-Factor Auth</h6>
+                                <p class="text-light small">Authentication</p>
+                                <span class="badge bg-success">Priority 1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trading & Investments -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line me-2 text-info"></i>Trading & Investments
+                        <span class="badge bg-info ms-2">3 Modules</span>
+                    </h4>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                                <h6>Trading Platform</h6>
+                                <p class="text-light small">Securities Trading</p>
+                                <span class="badge bg-warning">Priority 2</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-chart-pie fa-2x text-info mb-2"></i>
+                                <h6>Investment Management</h6>
+                                <p class="text-light small">Portfolio Management</p>
+                                <span class="badge bg-warning">Priority 2</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-umbrella fa-2x text-info mb-2"></i>
+                                <h6>Insurance Services</h6>
+                                <p class="text-light small">Insurance Products</p>
+                                <span class="badge bg-info">Priority 3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blockchain & Cryptocurrency -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-header">
+                    <h4 class="mb-0">
+                        <i class="fab fa-bitcoin me-2 text-warning"></i>Blockchain & Cryptocurrency
+                        <span class="badge bg-warning ms-2">3 Modules</span>
+                    </h4>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-coins fa-2x text-warning mb-2"></i>
+                                <h6>NVCT Stablecoin</h6>
+                                <p class="text-light small">Digital Currency</p>
+                                <span class="badge bg-warning">Priority 2</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-file-contract fa-2x text-info mb-2"></i>
+                                <h6>Smart Contracts</h6>
+                                <p class="text-light small">Blockchain Infrastructure</p>
+                                <span class="badge bg-info">Priority 3</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-cube fa-2x text-info mb-2"></i>
+                                <h6>Blockchain Analytics</h6>
+                                <p class="text-light small">Blockchain Intelligence</p>
+                                <span class="badge bg-info">Priority 3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin & Operations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-cogs me-2 text-secondary"></i>Admin & Operations
+                        <span class="badge bg-secondary ms-2">4 Modules</span>
+                    </h4>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-cogs fa-2x text-secondary mb-2"></i>
+                                <h6>Admin Management</h6>
+                                <p class="text-light small">System Administration</p>
+                                <span class="badge bg-success">Priority 1</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-server fa-2x text-secondary mb-2"></i>
+                                <h6>System Management</h6>
+                                <p class="text-light small">Infrastructure</p>
+                                <span class="badge bg-warning">Priority 2</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-users fa-2x text-secondary mb-2"></i>
+                                <h6>User Management</h6>
+                                <p class="text-light small">User Administration</p>
+                                <span class="badge bg-warning">Priority 2</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-chart-bar fa-2x text-secondary mb-2"></i>
+                                <h6>Business Analytics</h6>
+                                <p class="text-light small">Business Intelligence</p>
+                                <span class="badge bg-warning">Priority 2</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- External Integrations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plug me-2 text-primary"></i>External Integrations
+                        <span class="badge bg-primary ms-2">2 Modules</span>
+                    </h4>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fas fa-plug fa-2x text-primary mb-2"></i>
+                                <h6>External Integrations</h6>
+                                <p class="text-light small">Third-Party Services</p>
+                                <span class="badge bg-info">Priority 3</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="module-nvc-card p-3 border rounded">
+                                <i class="fab fa-bitcoin fa-2x text-warning mb-2"></i>
+                                <h6>Binance Integration</h6>
+                                <p class="text-light small">Crypto Exchange</p>
+                                <span class="badge bg-info">Priority 3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Benefits -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark">
+                <div class="nvc-nvc-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-lightbulb me-2 text-success"></i>Module Organization Benefits
+                    </h4>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-search fa-2x text-success mb-2"></i>
+                                <h6>Improved Navigation</h6>
+                                <p class="text-light small">Logical grouping makes modules easier to find</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-users-cog fa-2x text-info mb-2"></i>
+                                <h6>Role-Based Access</h6>
+                                <p class="text-light small">Clear mapping of modules to user roles</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-tasks fa-2x text-warning mb-2"></i>
+                                <h6>Priority Management</h6>
+                                <p class="text-light small">Clear prioritization for development</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-expand-arrows-alt fa-2x text-primary mb-2"></i>
+                                <h6>Scalable Architecture</h6>
+                                <p class="text-light small">Easy to add new modules to categories</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.module-card {
+    border-color: #334155 !important;
+    background-color: #1e293b;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.module-card:hover {
+    border-color: #3b82f6 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.badge {
+    font-size: 0.7rem;
+}
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

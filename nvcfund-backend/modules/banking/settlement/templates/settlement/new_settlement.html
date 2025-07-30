@@ -1,0 +1,328 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}New Settlement - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h2><i class="fas fa-plus-circle text-primary"></i> Create New Settlement</h2>
+                    <div class="d-flex gap-2">
+                        <a href="/settlement/dashboard" class="btn nvc-btn nvc-btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm" data-action="custom-action">
+                            <i class="fas fa-save"></i> Save as Draft
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settlement Form -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Settlement Details</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="settlementForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="settlementType">Settlement Type <span class="text-danger">*</span></label>
+                                    <select class="nvc-form-input" id="settlementType" name="settlementType" required>
+                                        <option value="">Select Settlement Type</option>
+                                        {% for type in form_data.settlement_types %}
+                                        <option value="{{ type.code }}">{{ type.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="network">Payment Network <span class="text-danger">*</span></label>
+                                    <select class="nvc-form-input" id="network" name="network" required>
+                                        <option value="">Select Network</option>
+                                        {% for network in form_data.networks %}
+                                        <option value="{{ network.code }}">{{ network.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="fromBank">From Bank <span class="text-danger">*</span></label>
+                                    <select class="nvc-form-input" id="fromBank" name="fromBank" required>
+                                        <option value="NVC">NVC Bank (Default)</option>
+                                        {% for bank in form_data.banks %}
+                                        <option value="{{ bank.code }}">{{ bank.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="toBank">To Bank <span class="text-danger">*</span></label>
+                                    <select class="nvc-form-input" id="toBank" name="toBank" required>
+                                        <option value="">Select Destination Bank</option>
+                                        {% for bank in form_data.banks %}
+                                        <option value="{{ bank.code }}">{{ bank.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="amount">Settlement Amount ($) <span class="text-danger">*</span></label>
+                                    <input type="number" class="nvc-form-input" id="amount" name="amount" 
+                                           placeholder="0.00" step="0.01" min="0.01" required>
+                                    <small class="form-text text-light">Minimum amount: $0.01</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="priority">Priority Level</label>
+                                    <select class="nvc-form-input" id="priority" name="priority">
+                                        <option value="normal">Normal</option>
+                                        <option value="high">High Priority</option>
+                                        <option value="urgent">Urgent</option>
+                                        <option value="critical">Critical</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="scheduledDate">Scheduled Date</label>
+                                    <input type="datetime-local" class="nvc-form-input" id="scheduledDate" name="scheduledDate">
+                                    <small class="form-text text-light">Leave empty for immediate processing</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="reference">Reference Number</label>
+                                    <input type="text" class="nvc-form-input" id="reference" name="reference" 
+                                           placeholder="Optional reference number">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="nvc-form-input" id="description" name="description" rows="3" 
+                                      placeholder="Optional settlement description"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmDetails">
+                                <label class="form-check-label" for="confirmDetails">
+                                    I confirm that all settlement details are accurate
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settlement Summary -->
+        <div class="col-md-4">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Settlement Summary</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div id="settlementSummary">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Type:</strong></td>
+                                <td id="summaryType">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Network:</strong></td>
+                                <td id="summaryNetwork">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>From:</strong></td>
+                                <td id="summaryFrom">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>To:</strong></td>
+                                <td id="summaryTo">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Amount:</strong></td>
+                                <td id="summaryAmount" class="text-success font-weight-bold">$0.00</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Priority:</strong></td>
+                                <td id="summaryPriority">Normal</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estimated Fee:</strong></td>
+                                <td id="estimatedFee" class="text-info">$0.00</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-success btn-lg" data-action="custom-action">
+                            <i class="fas fa-paper-plane"></i> Submit Settlement
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-warning" data-action="custom-action">
+                            <i class="fas fa-check-circle"></i> Validate Details
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-secondary" data-action="custom-action">
+                            <i class="fas fa-undo"></i> Reset Form
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Templates -->
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Templates</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action" data-action="custom-action">
+                            <i class="fas fa-university text-primary"></i> Fedwire Transfer Template
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" data-action="custom-action">
+                            <i class="fas fa-exchange-alt text-success"></i> ACH Settlement Template
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" data-action="custom-action">
+                            <i class="fas fa-globe text-info"></i> SWIFT Payment Template
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update summary when form changes
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('settlementForm');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('change', updateSummary);
+        input.addEventListener('input', updateSummary);
+    });
+});
+
+function updateSummary() {
+    const type = document.getElementById('settlementType');
+    const network = document.getElementById('network');
+    const fromBank = document.getElementById('fromBank');
+    const toBank = document.getElementById('toBank');
+    const amount = document.getElementById('amount');
+    const priority = document.getElementById('priority');
+    
+    document.getElementById('summaryType').textContent = type.options[type.selectedIndex].text || '-';
+    document.getElementById('summaryNetwork').textContent = network.options[network.selectedIndex].text || '-';
+    document.getElementById('summaryFrom').textContent = fromBank.options[fromBank.selectedIndex].text || '-';
+    document.getElementById('summaryTo').textContent = toBank.options[toBank.selectedIndex].text || '-';
+    document.getElementById('summaryAmount').textContent = amount.value ? '$' + parseFloat(amount.value).toFixed(2) : '$0.00';
+    document.getElementById('summaryPriority').textContent = priority.options[priority.selectedIndex].text || 'Normal';
+    
+    // Calculate estimated fee
+    let fee = 0;
+    if (amount.value) {
+        const amt = parseFloat(amount.value);
+        if (network.value === 'FEDWIRE') fee = Math.max(25, amt * 0.001);
+        else if (network.value === 'ACH') fee = Math.max(5, amt * 0.0005);
+        else if (network.value === 'SWIFT') fee = Math.max(50, amt * 0.002);
+        else if (network.value === 'BLOCKCHAIN') fee = Math.max(10, amt * 0.0001);
+    }
+    document.getElementById('estimatedFee').textContent = '$' + fee.toFixed(2);
+}
+
+function submitSettlement() {
+    if (!document.getElementById('confirmDetails').checked) {
+        alert('Please confirm that all settlement details are accurate.');
+        return;
+    }
+    
+    if (!validateForm()) {
+        return;
+    }
+    
+    if (confirm('Submit this settlement for processing?')) {
+        alert('Settlement submitted successfully! ID: SET-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'));
+        window.location.href = '/settlement/dashboard';
+    }
+}
+
+function validateForm() {
+    const requiredFields = ['settlementType', 'network', 'fromBank', 'toBank', 'amount'];
+    for (let field of requiredFields) {
+        if (!document.getElementById(field).value) {
+            alert('Please fill in all required fields.');
+            document.getElementById(field).focus();
+            return false;
+        }
+    }
+    return true;
+}
+
+function validateSettlement() {
+    if (validateForm()) {
+        alert('✓ All settlement details are valid and ready for submission.');
+    }
+}
+
+function resetForm() {
+    if (confirm('Reset all form data? This action cannot be undone.')) {
+        document.getElementById('settlementForm').reset();
+        updateSummary();
+    }
+}
+
+function saveAsDraft() {
+    alert('Settlement saved as draft.');
+}
+
+function loadTemplate(type) {
+    if (type === 'fedwire') {
+        document.getElementById('settlementType').value = 'WIRE';
+        document.getElementById('network').value = 'FEDWIRE';
+        document.getElementById('priority').value = 'high';
+    } else if (type === 'ach') {
+        document.getElementById('settlementType').value = 'ACH_CREDIT';
+        document.getElementById('network').value = 'ACH';
+        document.getElementById('priority').value = 'normal';
+    } else if (type === 'swift') {
+        document.getElementById('settlementType').value = 'WIRE';
+        document.getElementById('network').value = 'SWIFT';
+        document.getElementById('priority').value = 'high';
+    }
+    updateSummary();
+    alert('Template loaded: ' + type.toUpperCase());
+}
+</script>
+</div>
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Crypto Portfolio - NVC Banking{% endblock %}
+
+{% block page_title %}Cryptocurrency Portfolio{% endblock %}
+{% block page_description %}Manage your digital assets and cryptocurrency investments{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <!-- Portfolio Overview -->
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fab fa-bitcoin me-2"></i>Portfolio Overview
+                    </h5>
+                    <div>
+                        <span class="badge bg-{% if crypto_data.portfolio_change_24h > 0 %}success{% else %}danger{% endif %} me-2">
+                            {% if crypto_data.portfolio_change_24h > 0 %}+{% endif %}{{ crypto_data.portfolio_change_24h }}%
+                        </span>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Buy Crypto
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center">
+                            <h3 class="text-primary">${{ "{:,.2f}".format(crypto_data.total_portfolio_value) }}</h3>
+                            <p class="text-muted">Total Portfolio Value</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3 class="text-info">{{ crypto_data.total_holdings }}</h3>
+                            <p class="text-muted">Total Holdings</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3 class="text-{% if crypto_data.portfolio_change_24h > 0 %}success{% else %}danger{% endif %}">
+                                {% if crypto_data.portfolio_change_24h > 0 %}+{% endif %}{{ crypto_data.portfolio_change_24h }}%
+                            </h3>
+                            <p class="text-muted">24h Change</p>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Holdings</th>
+                                    <th>Value</th>
+                                    <th>24h Change</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for holding in crypto_data.holdings %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fab fa-{{ holding.symbol.lower() }} me-2 text-warning"></i>
+                                            <div>
+                                                <strong>{{ holding.symbol }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ holding.name }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ holding.amount }}</td>
+                                    <td>${{ "{:,.2f}".format(holding.value) }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if holding.change_24h > 0 %}success{% else %}danger{% endif %}">
+                                            {% if holding.change_24h > 0 %}+{% endif %}{{ holding.change_24h }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-success" title="Buy">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-danger" title="Sell">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-info" title="Details">
+                                                <i class="fas fa-chart-line"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions & Market -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-success">
+                            <i class="fas fa-shopping-cart me-2"></i>Buy Cryptocurrency
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-danger">
+                            <i class="fas fa-money-bill-wave me-2"></i>Sell Cryptocurrency
+                        </button>
+                        <button type="button" class="btn btn-info">
+                            <i class="fas fa-exchange-alt me-2"></i>Convert Assets
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-warning">
+                            <i class="fas fa-paper-plane me-2"></i>Send Crypto
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Market Highlights</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Bitcoin (BTC)</span>
+                            <span class="text-success">+2.1%</span>
+                        </div>
+                        <small class="text-muted">$35,000.00</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Ethereum (ETH)</span>
+                            <span class="text-success">+4.5%</span>
+                        </div>
+                        <small class="text-muted">$2,000.00</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>NVCT Stablecoin</span>
+                            <span class="text-muted">0.0%</span>
+                        </div>
+                        <small class="text-muted">$1.00</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,445 @@
+{% extends "public/public_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+{% block title %}Sign In - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<!-- Modern NVC Login Hero Section -->
+<section class="nvc-auth-hero">
+    <div class="nvc-auth-container">
+        <div class="nvc-auth-layout">
+            <div class="nvc-auth-content">
+                <div class="nvc-auth-grid">
+                    <!-- Welcome Section -->
+                    <div class="nvc-auth-welcome">
+                        <div class="nvc-welcome-content">
+                            <div class="nvc-welcome-header">
+                                <div class="nvc-brand-icon">
+                                    <i class="fas fa-university" aria-hidden="true"></i>
+                                </div>
+                                <h1 class="nvc-welcome-title nvc-wcag-high-contrast">Welcome Back</h1>
+                                <p class="nvc-welcome-subtitle nvc-wcag-medium-contrast">
+                                    Sign in to access your professional banking dashboard with enterprise-grade security and real-time analytics.
+                                </p>
+                            </div>
+
+                            <!-- Trust Features Grid -->
+                            <div class="nvc-trust-features">
+                                <div class="nvc-features-grid">
+                                    <div class="nvc-feature-item">
+                                        <div class="nvc-feature-icon nvc-feature-security">
+                                            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="nvc-feature-content">
+                                            <h3 class="nvc-feature-title nvc-wcag-high-contrast">Bank-Grade Security</h3>
+                                            <p class="nvc-feature-description nvc-wcag-medium-contrast">256-bit SSL encryption</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-feature-item">
+                                        <div class="nvc-feature-icon nvc-feature-analytics">
+                                            <i class="fas fa-chart-line" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="nvc-feature-content">
+                                            <h3 class="nvc-feature-title nvc-wcag-high-contrast">Real-Time Analytics</h3>
+                                            <p class="nvc-feature-description nvc-wcag-medium-contrast">Advanced portfolio tools</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-feature-item">
+                                        <div class="nvc-feature-icon nvc-feature-support">
+                                            <i class="fas fa-headset" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="nvc-feature-content">
+                                            <h3 class="nvc-feature-title nvc-wcag-high-contrast">24/7 Support</h3>
+                                            <p class="nvc-feature-description nvc-wcag-medium-contrast">Expert assistance</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modern Login Form -->
+                    <div class="nvc-auth-form">
+                        <div class="nvc-login-card">
+                            <!-- Form Header -->
+                            <div class="nvc-form-header">
+                                <div class="nvc-form-icon">
+                                    <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                                </div>
+                                <h2 class="nvc-form-title nvc-wcag-high-contrast">Sign In</h2>
+                                <p class="nvc-form-subtitle nvc-wcag-medium-contrast">Access your secure banking dashboard</p>
+                            </div>
+
+                            <!-- Login Form -->
+                            <form method="POST" action="{{ url_for('auth.login') if url_for else '#' }}" class="nvc-auth-form-container" novalidate>
+                                {{ form.hidden_tag() if form else '' }}
+
+                                <!-- Username Field -->
+                                <div class="nvc-form-group">
+                                    <label for="username" class="nvc-form-label nvc-wcag-high-contrast">
+                                        <i class="fas fa-user" aria-hidden="true"></i>
+                                        Email or Username
+                                    </label>
+                                    <div class="nvc-input-container">
+                                        <input type="text"
+                                               class="nvc-form-control nvc-wcag-focus"
+                                               id="username"
+                                               name="username"
+                                               required
+                                               placeholder="Enter your email or username"
+                                               aria-describedby="username-help username-error"
+                                               autocomplete="username">
+                                        <div class="nvc-input-icon">
+                                            <i class="fas fa-user" aria-hidden="true"></i>
+                                        </div>
+                                    </div>
+                                    <div id="username-help" class="nvc-form-help nvc-wcag-medium-contrast">Enter your registered email address or username</div>
+                                    <div id="username-error" class="nvc-form-error" role="alert" aria-live="polite"></div>
+                                </div>
+
+                                <!-- Password Field -->
+                                <div class="nvc-form-group">
+                                    <label for="password" class="nvc-form-label nvc-wcag-high-contrast">
+                                        <i class="fas fa-lock" aria-hidden="true"></i>
+                                        Password
+                                    </label>
+                                    <div class="nvc-input-container">
+                                        <input type="password"
+                                               class="nvc-form-control nvc-wcag-focus"
+                                               id="password"
+                                               name="password"
+                                               required
+                                               placeholder="Enter your password"
+                                               aria-describedby="password-help password-error"
+                                               autocomplete="current-password">
+                                        <div class="nvc-input-icon">
+                                            <i class="fas fa-lock" aria-hidden="true"></i>
+                                        </div>
+                                        <button type="button" class="nvc-password-toggle nvc-wcag-focus" aria-label="Toggle password visibility">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <div id="password-help" class="nvc-form-help nvc-wcag-medium-contrast">Enter your account password</div>
+                                    <div id="password-error" class="nvc-form-error" role="alert" aria-live="polite"></div>
+                                </div>
+
+                                <!-- Remember Me & Forgot Password -->
+                                <div class="nvc-form-options">
+                                    <div class="nvc-checkbox-group">
+                                        <input type="checkbox"
+                                               class="nvc-checkbox nvc-wcag-focus"
+                                               id="remember"
+                                               name="remember">
+                                        <label class="nvc-checkbox-label nvc-wcag-high-contrast" for="remember">
+                                            Remember me for 30 days
+                                        </label>
+                                    </div>
+                                    <a href="{{ url_for('auth.forgot_password') if url_for else '#' }}"
+                                       class="nvc-forgot-link nvc-wcag-focus"
+                                       aria-label="Reset your password">
+                                        Forgot password?
+                                    </a>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <button type="submit"
+                                        class="nvc-btn nvc-btn-primary nvc-btn-lg nvc-btn-full nvc-wcag-focus"
+                                        aria-describedby="login-status">
+                                    <span class="nvc-btn-content">
+                                        <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                                        Sign In to Your Account
+                                    </span>
+                                    <span class="nvc-btn-loading" style="display: none;">
+                                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                                        Signing In...
+                                    </span>
+                                </button>
+                                <div id="login-status" class="nvc-form-status" role="status" aria-live="polite"></div>
+
+                                <!-- Form Footer -->
+                                <div class="nvc-form-footer">
+                                    <div class="nvc-divider">
+                                        <span class="nvc-divider-text nvc-wcag-medium-contrast">or</span>
+                                    </div>
+
+                                    <!-- Create Account -->
+                                    <div class="nvc-signup-section">
+                                        <p class="nvc-signup-text nvc-wcag-medium-contrast">Don't have an account yet?</p>
+                                        <a href="{{ url_for('auth.register') if url_for else '#' }}"
+                                           class="nvc-btn nvc-btn-outline nvc-btn-full nvc-wcag-focus"
+                                           aria-label="Create a new NVC Banking account">
+                                            <i class="fas fa-user-plus" aria-hidden="true"></i>
+                                            Create New Account
+                                        </a>
+                                    </div>
+
+                                    <!-- Support Link -->
+                                    <div class="nvc-support-section">
+                                        <a href="{{ url_for('public.contact') if url_for else '#' }}"
+                                           class="nvc-support-link nvc-wcag-focus"
+                                           aria-label="Contact customer support for assistance">
+                                            <i class="fas fa-question-circle" aria-hidden="true"></i>
+                                            Need help? Contact Support
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FINRA Compliance & Security Information -->
+<section class="nvc-compliance-section">
+    <div class="nvc-compliance-container">
+        <div class="nvc-compliance-content">
+            <div class="nvc-compliance-grid">
+                <!-- FINRA Compliance -->
+                <div class="nvc-compliance-item">
+                    <div class="nvc-compliance-icon nvc-compliance-success">
+                        <i class="fas fa-shield-check" aria-hidden="true"></i>
+                    </div>
+                    <div class="nvc-compliance-details">
+                        <h3 class="nvc-compliance-label nvc-wcag-medium-contrast">FINRA Regulated</h3>
+                        <p class="nvc-compliance-value nvc-wcag-high-contrast">Member SIPC</p>
+                    </div>
+                </div>
+
+                <!-- Security Certification -->
+                <div class="nvc-compliance-item">
+                    <div class="nvc-compliance-icon nvc-compliance-primary">
+                        <i class="fas fa-lock" aria-hidden="true"></i>
+                    </div>
+                    <div class="nvc-compliance-details">
+                        <h3 class="nvc-compliance-label nvc-wcag-medium-contrast">Bank-Grade Security</h3>
+                        <p class="nvc-compliance-value nvc-wcag-high-contrast">256-bit Encryption</p>
+                    </div>
+                </div>
+
+                <!-- FDIC Insured -->
+                <div class="nvc-compliance-item">
+                    <div class="nvc-compliance-icon nvc-compliance-info">
+                        <i class="fas fa-university" aria-hidden="true"></i>
+                    </div>
+                    <div class="nvc-compliance-details">
+                        <h3 class="nvc-compliance-label nvc-wcag-medium-contrast">FDIC Insured</h3>
+                        <p class="nvc-compliance-value nvc-wcag-high-contrast">Up to $250,000</p>
+                    </div>
+                </div>
+
+                <!-- 24/7 Monitoring -->
+                <div class="nvc-compliance-item">
+                    <div class="nvc-compliance-icon nvc-compliance-warning">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
+                    </div>
+                    <div class="nvc-compliance-details">
+                        <h3 class="nvc-compliance-label nvc-wcag-medium-contrast">24/7 Monitoring</h3>
+                        <p class="nvc-compliance-value nvc-wcag-high-contrast">Fraud Protection</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Login Form Enhancements
+
+    const form = document.querySelector('.nvc-auth-form-container');
+    const submitBtn = form?.querySelector('button[type="submit"]');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const passwordToggle = document.querySelector('.nvc-password-toggle');
+    const loginStatus = document.getElementById('login-status');
+
+    // Password visibility toggle
+    if (passwordToggle && passwordInput) {
+        passwordToggle.addEventListener('click', function() {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+
+            const icon = this.querySelector('i');
+            icon.className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+
+            this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+        });
+    }
+
+    // Real-time form validation
+    function validateField(input, errorElementId) {
+        const errorElement = document.getElementById(errorElementId);
+        if (!errorElement) return true;
+
+        let isValid = true;
+        let errorMessage = '';
+
+        if (!input.value.trim()) {
+            isValid = false;
+            errorMessage = `${input.labels[0]?.textContent || 'Field'} is required`;
+        } else if (input.id === 'username') {
+            // Basic email/username validation
+            const value = input.value.trim();
+            if (value.includes('@')) {
+                // Email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid email address';
+                }
+            } else if (value.length < 3) {
+                isValid = false;
+                errorMessage = 'Username must be at least 3 characters';
+            }
+        } else if (input.id === 'password') {
+            if (input.value.length < 6) {
+                isValid = false;
+                errorMessage = 'Password must be at least 6 characters';
+            }
+        }
+
+        // Update UI
+        if (isValid) {
+            input.classList.remove('nvc-form-error');
+            input.classList.add('nvc-form-success');
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
+        } else {
+            input.classList.remove('nvc-form-success');
+            input.classList.add('nvc-form-error');
+            errorElement.textContent = errorMessage;
+            errorElement.style.display = 'block';
+        }
+
+        return isValid;
+    }
+
+    // Add validation listeners
+    if (usernameInput) {
+        usernameInput.addEventListener('blur', () => validateField(usernameInput, 'username-error'));
+        usernameInput.addEventListener('input', () => {
+            if (usernameInput.classList.contains('nvc-form-error')) {
+                validateField(usernameInput, 'username-error');
+            }
+        });
+    }
+
+    if (passwordInput) {
+        passwordInput.addEventListener('blur', () => validateField(passwordInput, 'password-error'));
+        passwordInput.addEventListener('input', () => {
+            if (passwordInput.classList.contains('nvc-form-error')) {
+                validateField(passwordInput, 'password-error');
+            }
+        });
+    }
+
+    // Form submission with enhanced loading state
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            // Validate all fields before submission
+            const usernameValid = usernameInput ? validateField(usernameInput, 'username-error') : true;
+            const passwordValid = passwordInput ? validateField(passwordInput, 'password-error') : true;
+
+            if (!usernameValid || !passwordValid) {
+                e.preventDefault();
+                if (loginStatus) {
+                    loginStatus.textContent = 'Please correct the errors above';
+                    loginStatus.className = 'nvc-form-status nvc-form-status-error';
+                }
+                return;
+            }
+
+            // Show loading state
+            const btnContent = submitBtn.querySelector('.nvc-btn-content');
+            const btnLoading = submitBtn.querySelector('.nvc-btn-loading');
+
+            if (btnContent && btnLoading) {
+                btnContent.style.display = 'none';
+                btnLoading.style.display = 'inline-flex';
+            } else {
+                // Fallback for simpler button structure
+                const originalContent = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Signing In...';
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.setAttribute('aria-busy', 'true');
+
+            if (loginStatus) {
+                loginStatus.textContent = 'Authenticating your credentials...';
+                loginStatus.className = 'nvc-form-status nvc-form-status-info';
+            }
+
+            // Reset if form submission fails (fallback)
+            setTimeout(() => {
+                if (btnContent && btnLoading) {
+                    btnContent.style.display = 'inline-flex';
+                    btnLoading.style.display = 'none';
+                } else {
+                    submitBtn.innerHTML = originalContent;
+                }
+                submitBtn.disabled = false;
+                submitBtn.removeAttribute('aria-busy');
+
+                if (loginStatus) {
+                    loginStatus.textContent = 'Login attempt timed out. Please try again.';
+                    loginStatus.className = 'nvc-form-status nvc-form-status-error';
+                }
+            }, 15000);
+        });
+    }
+
+    // Feature item hover effects
+    const featureItems = document.querySelectorAll('.nvc-feature-item');
+    featureItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Compliance item hover effects
+    const complianceItems = document.querySelectorAll('.nvc-compliance-item');
+    complianceItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.02)';
+        });
+
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+
+    // Auto-focus username field on page load
+    if (usernameInput && !usernameInput.value) {
+        setTimeout(() => {
+            usernameInput.focus();
+        }, 100);
+    }
+});
+</script>
+{% endblock %}

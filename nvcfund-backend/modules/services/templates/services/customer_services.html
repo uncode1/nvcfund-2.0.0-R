@@ -1,0 +1,154 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Customer Services - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Customer Services{% endblock %}
+{% block page_description %}24/7 customer support and relationship management services{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-bar"></i>
+    Analytics
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-comments"></i>
+    Live Chat
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-users me-2"></i>{{ category_name }}
+                    </h6>
+                    <p class="text-light mb-0">{{ category_description }}</p>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="nvc-card border-left-primary shadow h-100 py-2">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Total Services</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_modules }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="nvc-card border-left-success shadow h-100 py-2">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Active Services</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_modules }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="nvc-card border-left-info shadow h-100 py-2">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Daily Interactions</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ daily_interactions | int | round | string }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="nvc-card border-left-warning shadow h-100 py-2">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Success Rate</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ success_rate }}%</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Customer Services Grid -->
+                    <div class="row">
+                        {% for module in modules %}
+                        <div class="col-lg-6 col-md-12 mb-4">
+                            <div class="nvc-card shadow h-100">
+                                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="m-0 font-weight-bold text-{{ module.color }}">
+                                        <i class="{{ module.icon }} me-2"></i>{{ module.name }}
+                                    </h6>
+                                    <span class="badge badge-{{ module.color }}">{{ module.status }}</span>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <p class="text-light">{{ module.description }}</p>
+                                    <div class="mb-3">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <strong>{{ module.daily_chats or module.daily_operations or module.daily_messages }}</strong>
+                                                <small class="text-light d-block">Daily Operations</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <strong>{{ module.success_rate }}%</strong>
+                                                <small class="text-light d-block">Success Rate</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <strong>{{ module.last_activity }}</strong>
+                                                <small class="text-light d-block">Last Activity</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-light">Status: {{ module.status }}</small>
+                                        <a href="{{ module.url }}" class="btn btn-sm btn-{{ module.color }}">
+                                            <i class="fas fa-arrow-right me-1"></i>Access Service
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

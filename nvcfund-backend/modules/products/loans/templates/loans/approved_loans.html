@@ -1,0 +1,441 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+
+{% block title %}Approved Loans - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Approved Loans{% endblock %}
+{% block page_description %}Manage and monitor approved loan portfolio with comprehensive tracking tools{% endblock %}
+
+{% block page_actions %}
+{% if check_permission('can_export_loans') %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-wcag-focus nvc-touch-target" data-action="export-loans" aria-label="Export approved loans data">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    <span>Export Loans</span>
+</button>
+{% endif %}
+{% if check_permission('can_view_portfolio') %}
+<a href="{{ url_for('loans.portfolio_overview') }}" class="nvc-btn nvc-btn-primary nvc-wcag-focus nvc-touch-target" aria-label="View loan portfolio overview">
+    <i class="fas fa-chart-line" aria-hidden="true"></i>
+    <span>Portfolio Overview</span>
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="enterprise-dashboard-container">
+    <!-- Loans Summary Cards with Drilldown -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-metric-card loans-drilldown-nvc-card" data-drilldown="approved-count" data-filter="status:approved">
+                <div class="metric-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>{{ approved_data.approved_count if approved_data else '0' }}</h3>
+                    <p>Approved Loans</p>
+                    <small class="text-muted"><i class="fas fa-search"></i> View details</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="enterprise-metric-nvc-card">
+                <div class="metric-icon bg-primary">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>${{ "{:,.0f}".format(approved_data.total_amount) if approved_data else '0' }}</h3>
+                    <p>Total Portfolio</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="enterprise-metric-nvc-card">
+                <div class="metric-icon bg-info">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>{{ "{:.1f}%".format(approved_data.avg_interest_rate) if approved_data else '0.0%' }}</h3>
+                    <p>Avg Interest Rate</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="enterprise-metric-nvc-card">
+                <div class="metric-icon bg-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>{{ "{:.1f}%".format(approved_data.delinquency_rate) if approved_data else '0.0%' }}</h3>
+                    <p>Delinquency Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level 2 Drilldown: Loan Category Breakdown -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-metric-card category-drilldown-nvc-card" data-category="personal" >
+                <div class="metric-icon bg-info">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>{{ approved_data.personal_loans_count if approved_data else '45' }}</h3>
+                    <p>Personal Loans</p>
+                    <small class="text-muted"><i class="fas fa-filter"></i> Filter by type</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-metric-card category-drilldown-nvc-card" data-category="business" >
+                <div class="metric-icon bg-warning">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>{{ approved_data.business_loans_count if approved_data else '23' }}</h3>
+                    <p>Business Loans</p>
+                    <small class="text-muted"><i class="fas fa-filter"></i> Filter by type</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-metric-card category-drilldown-nvc-card" data-category="mortgage" >
+                <div class="metric-icon bg-success">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>{{ approved_data.mortgage_loans_count if approved_data else '12' }}</h3>
+                    <p>Mortgage Loans</p>
+                    <small class="text-muted"><i class="fas fa-filter"></i> Filter by type</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-metric-card category-drilldown-nvc-card" data-category="auto" >
+                <div class="metric-icon bg-danger">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>{{ approved_data.auto_loans_count if approved_data else '18' }}</h3>
+                    <p>Auto Loans</p>
+                    <small class="text-muted"><i class="fas fa-filter"></i> Filter by type</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approved Loans Table -->
+    <div class="enterprise-nvc-card">
+        <div class="nvc-nvc-card-header">
+            <h5><i class="fas fa-list"></i> Approved Loans Portfolio</h5>
+            <div class="header-actions">
+                <label for="loan-type-filter" class="nvc-sr-only">Filter loans by type</label>
+                <select
+                  id="loan-type-filter"
+                  class="nvc-form-control nvc-wcag-focus"
+                  aria-label="Filter loans by type"
+                  title="Filter loans by type"
+                >
+                    <option value="">All Loan Types</option>
+                    <option value="personal">Personal Loans</option>
+                    <option value="business">Business Loans</option>
+                    <option value="mortgage">Mortgage Loans</option>
+                    <option value="auto">Auto Loans</option>
+                </select>
+            </div>
+        </div>
+        <div class="nvc-nvc-card-body">
+            <div class="table-responsive">
+                <table class="table table-hover enterprise-table">
+                    <thead>
+                        <tr>
+                            <th>Loan ID</th>
+                            <th>Borrower</th>
+                            <th>Loan Type</th>
+                            <th>Principal</th>
+                            <th>Interest Rate</th>
+                            <th>Term</th>
+                            <th>Monthly Payment</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if approved_data and approved_data.loans %}
+                            {% for loan in approved_data.loans %}
+                            <tr class="loan-row" data-loan-id="{{ loan.id }}">
+                                <td><strong>{{ loan.id }}</strong></td>
+                                <td>{{ loan.borrower }}</td>
+                                <td>{{ loan.type }}</td>
+                                <td>${{ "{:,.2f}".format(loan.principal) }}</td>
+                                <td>{{ "{:.2f}%".format(loan.interest_rate) }}</td>
+                                <td>{{ loan.term }} months</td>
+                                <td>${{ "{:,.2f}".format(loan.monthly_payment) }}</td>
+                                <td>
+                                    <span class="badge badge-success">{{ loan.status }}</span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-primary" data-action="custom-action">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-info" data-action="custom-action">
+                                        <i class="fas fa-file-pdf"></i> Statement
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center">No approved loans found</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enhanced Loans Drilldown Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add drilldown functionality for loan metric cards
+    const loanCards = document.querySelectorAll('.loans-drilldown-card');
+    loanCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const drilldownType = this.getAttribute('data-drilldown');
+            const filter = this.getAttribute('data-filter');
+            handleLoansDrilldown(drilldownType, filter);
+        });
+    });
+
+    // Add Level 2 drilldown functionality for category cards
+    const categoryCards = document.querySelectorAll('.category-drilldown-card');
+    categoryCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
+            handleCategoryDrilldown(category);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Add row click functionality for loan table
+    const loanRows = document.querySelectorAll('.loan-row');
+    loanRows.forEach(row => {
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', function() {
+            const loanId = this.getAttribute('data-loan-id');
+            if (loanId) {
+                viewLoanDetails(loanId);
+            }
+        });
+    });
+
+    // Add filter functionality
+    const typeFilter = document.getElementById('loan-type-filter');
+    if (typeFilter) {
+        typeFilter.addEventListener('change', function() {
+            filterLoansByCategory(this.value);
+        });
+    }
+});
+
+function handleLoansDrilldown(type, filter) {
+    const baseUrl = "{{ url_for('loans.approved_loans') }}";
+    let url = baseUrl;
+
+    switch(type) {
+        case 'approved-count':
+            url += '?view=detailed&filter=status:approved';
+            break;
+        case 'total-portfolio':
+            url += '?view=portfolio&sort=amount:desc';
+            break;
+        case 'avg-interest':
+            url += '?view=rates&sort=interest_rate:asc';
+            break;
+        case 'delinquency':
+            url += '?view=risk&filter=delinquent:true';
+            break;
+        default:
+            if (filter) {
+                url += `?filter=${encodeURIComponent(filter)}`;
+            }
+    }
+
+    window.location.href = url;
+}
+
+function exportLoansData() {
+    // Enhanced export with CSRF protection
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ url_for('loans.export_loans') }}";
+
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = 'csrf_token';
+    csrfToken.value = "{{ csrf_token() }}";
+    form.appendChild(csrfToken);
+
+    const exportType = document.createElement('input');
+    exportType.type = 'hidden';
+    exportType.name = 'export_type';
+    exportType.value = 'approved_loans';
+    form.appendChild(exportType);
+
+    const timestamp = document.createElement('input');
+    timestamp.type = 'hidden';
+    timestamp.name = 'timestamp';
+    timestamp.value = new Date().toISOString();
+    form.appendChild(timestamp);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function viewLoanDetails(loanId) {
+    // Navigate to detailed loan view with security validation
+    window.location.href = `{{ url_for('loans.loan_details') }}/${encodeURIComponent(loanId)}?view=comprehensive`;
+}
+
+function generateStatement(loanId) {
+    // Secure statement generation
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ url_for('loans.generate_statement') }}";
+
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = 'csrf_token';
+    csrfToken.value = "{{ csrf_token() }}";
+    form.appendChild(csrfToken);
+
+    const loanIdInput = document.createElement('input');
+    loanIdInput.type = 'hidden';
+    loanIdInput.name = 'loan_id';
+    loanIdInput.value = loanId;
+    form.appendChild(loanIdInput);
+
+    const statementType = document.createElement('input');
+    statementType.type = 'hidden';
+    statementType.name = 'statement_type';
+    statementType.value = 'comprehensive';
+    form.appendChild(statementType);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+// Additional drilldown functions
+function filterLoansByType(loanType) {
+    window.location.href = `{{ url_for('loans.approved_loans') }}?filter=type:${encodeURIComponent(loanType)}`;
+}
+
+function filterLoansByRisk(riskLevel) {
+    window.location.href = `{{ url_for('loans.approved_loans') }}?filter=risk:${encodeURIComponent(riskLevel)}`;
+}
+
+function sortLoansByAmount() {
+    window.location.href = `{{ url_for('loans.approved_loans') }}?sort=amount:desc`;
+}
+
+function viewPaymentHistory(loanId) {
+    window.location.href = `{{ url_for('loans.payment_history') }}/${encodeURIComponent(loanId)}`;
+}
+
+// Level 2 Drilldown Functions
+function handleCategoryDrilldown(category) {
+    // Filter the current table by category
+    filterLoansByCategory(category);
+
+    // Update the filter dropdown
+    const typeFilter = document.getElementById('loan-type-filter');
+    if (typeFilter) {
+        typeFilter.value = category;
+    }
+
+    // Scroll to table
+    document.querySelector('.enterprise-card').scrollIntoView({ behavior: 'smooth' });
+}
+
+function filterLoansByCategory(category) {
+    const rows = document.querySelectorAll('.loan-row');
+    rows.forEach(row => {
+        if (!category || category === '') {
+            row.style.display = '';
+        } else {
+            const loanType = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase();
+            if (loanType && loanType.includes(category.toLowerCase())) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+
+    // Update visible count
+    updateVisibleLoanCount();
+}
+
+function updateVisibleLoanCount() {
+    const visibleRows = document.querySelectorAll('.loan-row[], .loan-row:not([style])');
+    const totalRows = document.querySelectorAll('.loan-row');
+
+    // Update header if exists
+    const header = document.querySelector('.card-header h5');
+    if (header) {
+        header.innerHTML = `<i class="fas fa-list"></i> Approved Loans Portfolio (${visibleRows.length} of ${totalRows.length})`;
+    }
+}
+</script>
+
+<style>
+.loans-drilldown-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.loans-drilldown-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.loan-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.loan-row:hover {
+    background-color: rgba(0,123,255,0.05);
+}
+
+.enterprise-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+</style>
+</div>
+{% endblock %}

@@ -1,0 +1,524 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}User Management - NVC Banking Platform{% endblock %}
+
+{% block page_title %}User Management{% endblock %}
+{% block page_description %}Comprehensive user account management, roles, and permissions{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        Administration
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-users" aria-hidden="true"></i>
+    User Management
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export user list">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Users
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Add new user">
+    <i class="fas fa-user-plus" aria-hidden="true"></i>
+    Add User
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh user data">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- User Management Overview -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-users" aria-hidden="true"></i>
+                    User Statistics
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">
+                        <i class="fas fa-clock" aria-hidden="true"></i>
+                        Last updated: {{ now.strftime('%b %d, %Y %H:%M') if now else 'Just now' }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- User Management Metrics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-primary">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-primary">
+                                    <i class="fas fa-users" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+127</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ user_stats.total or '1,247' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Users</p>
+                                <p class="nvc-metric-subtitle">All registered users</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-user-check" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>{{ user_stats.online or '89' }}</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ user_stats.active or '1,189' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Active Users</p>
+                                <p class="nvc-metric-subtitle">{{ user_stats.online or '89' }} online now</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-user-clock" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-minus" aria-hidden="true"></i>
+                                    <span>Review</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ user_stats.pending or '23' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Pending Approval</p>
+                                <p class="nvc-metric-subtitle">Awaiting verification</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-danger">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-danger">
+                                    <i class="fas fa-user-slash" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-negative">
+                                    <i class="fas fa-exclamation" aria-hidden="true"></i>
+                                    <span>Action</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ user_stats.suspended or '35' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Suspended</p>
+                                <p class="nvc-metric-subtitle">Temporarily disabled</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Search and Filters Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    User Search & Filters
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Reset all filters">
+                        <i class="fas fa-undo" aria-hidden="true"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-search-filters">
+                    <form class="nvc-filter-form" role="search" aria-label="User search and filter form">
+                        <div class="nvc-filter-row">
+                            <div class="nvc-filter-group">
+                                <label for="user-search" class="nvc-filter-label nvc-wcag-high-contrast">Search Users</label>
+                                <input type="text" id="user-search" class="nvc-filter-input nvc-wcag-focus" placeholder="Name, email, or ID" aria-describedby="search-help">
+                                <small id="search-help" class="nvc-filter-help nvc-wcag-medium-contrast">Search by name, email, or user ID</small>
+                            </div>
+
+                            <div class="nvc-filter-group">
+                                <label for="status-filter" class="nvc-filter-label nvc-wcag-high-contrast">Status</label>
+                                <select id="status-filter" class="nvc-filter-select nvc-wcag-focus">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="suspended">Suspended</option>
+                                    <option value="pending">Pending</option>
+                                </select>
+                            </div>
+
+                            <div class="nvc-filter-group">
+                                <label for="role-filter" class="nvc-filter-label nvc-wcag-high-contrast">Role</label>
+                                <select id="role-filter" class="nvc-filter-select nvc-wcag-focus">
+                                    <option value="">All Roles</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="manager">Manager</option>
+                                    <option value="teller">Teller</option>
+                                    <option value="customer">Customer</option>
+                                </select>
+                            </div>
+
+                            <div class="nvc-filter-group">
+                                <label for="branch-filter" class="nvc-filter-label nvc-wcag-high-contrast">Branch</label>
+                                <select id="branch-filter" class="nvc-filter-select nvc-wcag-focus">
+                                    <option value="">All Branches</option>
+                                    <option value="downtown">Downtown</option>
+                                    <option value="uptown">Uptown</option>
+                                    <option value="westside">Westside</option>
+                                </select>
+                            </div>
+
+                            <div class="nvc-filter-group">
+                                <label for="date-filter" class="nvc-filter-label nvc-wcag-high-contrast">Registration Date</label>
+                                <select id="date-filter" class="nvc-filter-select nvc-wcag-focus">
+                                    <option value="">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                </select>
+                            </div>
+
+                            <div class="nvc-filter-actions">
+                                <button type="submit" class="nvc-btn nvc-btn-primary nvc-wcag-focus" aria-label="Apply search filters">
+                                    <i class="fas fa-search" aria-hidden="true"></i>
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant User Management Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-table" aria-hidden="true"></i>
+                    User Directory ({{ user_stats.total or '1,247' }} users)
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Customize table columns">
+                        <i class="fas fa-columns" aria-hidden="true"></i>
+                        Columns
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Advanced filter options">
+                        <i class="fas fa-filter" aria-hidden="true"></i>
+                        Advanced Filter
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- FINRA-Compliant User Management Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="User directory and management">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-table-checkbox">
+                                    <input type="checkbox" class="nvc-checkbox nvc-wcag-focus" aria-label="Select all users">
+                                </th>
+                                <th scope="col" class="nvc-wcag-high-contrast">User ID</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Name</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Email</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Role</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Branch</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Last Login</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users or [
+                                {'id': 'USR-001234', 'name': 'John Doe', 'email': 'john.doe@nvcbank.com', 'role': 'Manager', 'branch': 'Downtown', 'status': 'Active', 'last_login': '2024-01-15 14:30'},
+                                {'id': 'USR-001235', 'name': 'Jane Smith', 'email': 'jane.smith@nvcbank.com', 'role': 'Teller', 'branch': 'Uptown', 'status': 'Active', 'last_login': '2024-01-15 13:45'},
+                                {'id': 'USR-001236', 'name': 'Mike Johnson', 'email': 'mike.j@nvcbank.com', 'role': 'Admin', 'branch': 'All', 'status': 'Active', 'last_login': '2024-01-15 15:20'},
+                                {'id': 'USR-001237', 'name': 'Sarah Wilson', 'email': 'sarah.w@email.com', 'role': 'Customer', 'branch': 'Online', 'status': 'Pending', 'last_login': 'Never'},
+                                {'id': 'USR-001238', 'name': 'David Brown', 'email': 'david.b@email.com', 'role': 'Customer', 'branch': 'Westside', 'status': 'Suspended', 'last_login': '2024-01-10 09:15'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td>
+                                    <input type="checkbox" class="nvc-checkbox nvc-wcag-focus" aria-label="Select user {{ user.name }}">
+                                </td>
+                                <td class="nvc-wcag-high-contrast">{{ user.id }}</td>
+                                <td>
+                                    <div class="nvc-user-profile">
+                                        <div class="nvc-user-avatar">
+                                            <span class="nvc-avatar-initials">{{ user.name.split()[0][0] }}{{ user.name.split()[1][0] if user.name.split()|length > 1 else '' }}</span>
+                                        </div>
+                                        <div class="nvc-user-info">
+                                            <span class="nvc-user-name nvc-wcag-high-contrast">{{ user.name }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ user.email }}</td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-{{ 'danger' if user.role == 'Admin' else 'warning' if user.role == 'Manager' else 'info' if user.role == 'Teller' else 'secondary' }}">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ user.branch }}</td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'success' if user.status == 'Active' else 'warning' if user.status == 'Pending' else 'danger' }}">
+                                        {{ user.status }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ user.last_login }}</td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View profile for {{ user.name }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-xs nvc-wcag-focus" aria-label="Edit user {{ user.name }}">
+                                            <i class="fas fa-edit" aria-hidden="true"></i>
+                                        </button>
+                                        <div class="nvc-dropdown">
+                                            <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-dropdown-toggle nvc-wcag-focus" aria-label="More actions for {{ user.name }}">
+                                                <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+                                            </button>
+                                            <div class="nvc-dropdown-menu">
+                                                <a href="#" class="nvc-dropdown-item nvc-wcag-focus">
+                                                    <i class="fas fa-key" aria-hidden="true"></i>
+                                                    Reset Password
+                                                </a>
+                                                <a href="#" class="nvc-dropdown-item nvc-wcag-focus">
+                                                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                                    Permissions
+                                                </a>
+                                                <a href="#" class="nvc-dropdown-item nvc-wcag-focus">
+                                                    <i class="fas fa-history" aria-hidden="true"></i>
+                                                    Activity Log
+                                                </a>
+                                                <div class="nvc-dropdown-divider"></div>
+                                                <a href="#" class="nvc-dropdown-item nvc-dropdown-warning nvc-wcag-focus">
+                                                    <i class="fas fa-pause" aria-hidden="true"></i>
+                                                    Suspend User
+                                                </a>
+                                                <a href="#" class="nvc-dropdown-item nvc-dropdown-danger nvc-wcag-focus">
+                                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                                    Delete User
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                    
+                <!-- Pagination and Bulk Actions -->
+                <div class="nvc-table-footer">
+                    <div class="nvc-pagination-info">
+                        <span class="nvc-pagination-text nvc-wcag-medium-contrast">
+                            Showing 1-10 of {{ user_stats.total or '1,247' }} users
+                        </span>
+                    </div>
+                    <nav class="nvc-pagination" aria-label="User directory pagination">
+                        <ul class="nvc-pagination-list">
+                            <li class="nvc-pagination-item nvc-pagination-disabled">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-label="Previous page">
+                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                            <li class="nvc-pagination-item nvc-pagination-active">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-current="page">1</a>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus">2</a>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus">3</a>
+                            </li>
+                            <li class="nvc-pagination-item nvc-pagination-ellipsis">
+                                <span class="nvc-pagination-link">...</span>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus">125</a>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-label="Next page">
+                                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-quaternary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-tasks" aria-hidden="true"></i>
+                    Bulk Actions
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-selection-count nvc-wcag-medium-contrast">0 users selected</span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-bulk-actions">
+                    <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-disabled nvc-wcag-focus" disabled aria-label="Send email to selected users">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        Send Email
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-disabled nvc-wcag-focus" disabled aria-label="Export selected users">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        Export Selected
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-disabled nvc-wcag-focus" disabled aria-label="Suspend selected users">
+                        <i class="fas fa-pause" aria-hidden="true"></i>
+                        Bulk Suspend
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-disabled nvc-wcag-focus" disabled aria-label="Delete selected users">
+                        <i class="fas fa-trash" aria-hidden="true"></i>
+                        Bulk Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional User Management Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Checkbox selection functionality
+    const selectAllCheckbox = document.querySelector('input[aria-label="Select all users"]');
+    const userCheckboxes = document.querySelectorAll('input[aria-label^="Select user"]');
+    const selectionCount = document.querySelector('.nvc-selection-count');
+    const bulkActionButtons = document.querySelectorAll('.nvc-bulk-actions .nvc-btn');
+
+    function updateBulkActions() {
+        const selectedCount = document.querySelectorAll('input[aria-label^="Select user"]:checked').length;
+        selectionCount.textContent = `${selectedCount} users selected`;
+
+        bulkActionButtons.forEach(button => {
+            if (selectedCount > 0) {
+                button.disabled = false;
+                button.classList.remove('nvc-btn-disabled');
+            } else {
+                button.disabled = true;
+                button.classList.add('nvc-btn-disabled');
+            }
+        });
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            userCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+
+    userCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateBulkActions();
+
+            // Update select all checkbox state
+            if (selectAllCheckbox) {
+                const checkedCount = document.querySelectorAll('input[aria-label^="Select user"]:checked').length;
+                selectAllCheckbox.checked = checkedCount === userCheckboxes.length;
+                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < userCheckboxes.length;
+            }
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        if (header.textContent.trim() && !header.classList.contains('nvc-table-checkbox')) {
+            header.style.cursor = 'pointer';
+            header.addEventListener('click', function() {
+                console.log('Sorting by:', this.textContent);
+                // Add actual sorting logic here
+            });
+        }
+    });
+
+    // Dropdown functionality
+    const dropdownToggles = document.querySelectorAll('.nvc-dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const dropdown = this.parentElement;
+            const menu = dropdown.querySelector('.nvc-dropdown-menu');
+
+            // Close other dropdowns
+            document.querySelectorAll('.nvc-dropdown-menu').forEach(otherMenu => {
+                if (otherMenu !== menu) {
+                    otherMenu.style.display = 'none';
+                }
+            });
+
+            // Toggle current dropdown
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nvc-dropdown')) {
+            document.querySelectorAll('.nvc-dropdown-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

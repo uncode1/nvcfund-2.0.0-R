@@ -1,0 +1,423 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Performance Metrics - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Account Performance Metrics{% endblock %}
+{% block page_description %}Detailed performance analysis and key metrics for account management{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('accounts.main_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        Accounts
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-chart-line" aria-hidden="true"></i>
+    Performance Metrics
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export performance report">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Select custom time period">
+    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+    Custom Period
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh performance metrics">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh Metrics
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Performance Metrics Overview -->
+        <div class="nvc-dashboard-grid">
+            <div class="nvc-metrics-row">
+                <div class="nvc-metric-card nvc-metric-primary">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-primary">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+18.5%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">+{{ metrics.growth_rate or '18.5' }}%</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Account Growth Rate</p>
+                        <p class="nvc-metric-subtitle">Year over year</p>
+                    </div>
+                </div>
+                <div class="nvc-metric-card nvc-metric-success">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-success">
+                            <i class="fas fa-users" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+2.1%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ metrics.retention_rate or '94.2' }}%</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Customer Retention</p>
+                        <p class="nvc-metric-subtitle">Last 12 months</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-warning">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-warning">
+                            <i class="fas fa-wallet" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+8.3%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">${{ metrics.avg_balance or '67.8K' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Average Balance</p>
+                        <p class="nvc-metric-subtitle">Per account</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-info">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-info">
+                            <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+15.7%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ metrics.transaction_volume or '2.4M' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Transaction Volume</p>
+                        <p class="nvc-metric-subtitle">This month</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Analytics Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-area" aria-hidden="true"></i>
+                    Performance Analytics
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="View detailed analytics">
+                        <i class="fas fa-expand" aria-hidden="true"></i>
+                        View Details
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-performance-grid">
+                    <div class="nvc-performance-chart">
+                        <div class="nvc-chart-header">
+                            <h3 class="nvc-chart-title nvc-wcag-high-contrast">Account Growth Trend</h3>
+                            <span class="nvc-chart-period nvc-wcag-medium-contrast">12 Months</span>
+                        </div>
+                        <div class="nvc-chart-container">
+                            <div class="nvc-chart-placeholder" aria-label="Account growth trend chart showing 12 months of data">
+                                <i class="fas fa-chart-area nvc-chart-icon" aria-hidden="true"></i>
+                                <span class="nvc-chart-text">Growth Trend Chart</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-performance-breakdown">
+                        <div class="nvc-breakdown-header">
+                            <h3 class="nvc-breakdown-title nvc-wcag-high-contrast">Performance Breakdown</h3>
+                        </div>
+                        <div class="nvc-breakdown-content">
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">New Accounts</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">{{ metrics.new_accounts or '1,247' }}</div>
+                                <div class="nvc-breakdown-change nvc-amount-positive">+18.5%</div>
+                            </div>
+
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">Account Closures</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">{{ metrics.closures or '89' }}</div>
+                                <div class="nvc-breakdown-change nvc-amount-negative">-12.3%</div>
+                            </div>
+
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">Net Growth</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">{{ metrics.net_growth or '1,158' }}</div>
+                                <div class="nvc-breakdown-change nvc-amount-positive">+22.1%</div>
+                            </div>
+
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">Revenue Growth</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">${{ metrics.revenue_growth or '2.4M' }}</div>
+                                <div class="nvc-breakdown-change nvc-amount-positive">+15.8%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- FINRA-Compliant Performance Metrics Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-table" aria-hidden="true"></i>
+                    Detailed Performance Metrics
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export performance data">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-performance-tables">
+                    <!-- Account Type Performance -->
+                    <div class="nvc-performance-table">
+                        <div class="nvc-table-header">
+                            <h3 class="nvc-table-title nvc-wcag-high-contrast">Performance by Account Type</h3>
+                        </div>
+                        <div class="nvc-account-type-performance">
+                            <div class="nvc-type-performance-item">
+                                <div class="nvc-type-info">
+                                    <span class="nvc-type-name nvc-wcag-high-contrast">Checking Accounts</span>
+                                    <span class="nvc-type-growth nvc-amount-positive">+15.2%</span>
+                                </div>
+                                <div class="nvc-type-details">
+                                    <span class="nvc-type-count nvc-wcag-medium-contrast">{{ metrics.checking_count or '547' }} accounts</span>
+                                    <span class="nvc-type-avg nvc-wcag-medium-contrast">Avg: ${{ metrics.checking_avg or '12.5K' }}</span>
+                                </div>
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-primary nvc-progress-85" aria-label="Checking accounts performance: 85%"></div>
+                                </div>
+                            </div>
+
+                            <div class="nvc-type-performance-item">
+                                <div class="nvc-type-info">
+                                    <span class="nvc-type-name nvc-wcag-high-contrast">Savings Accounts</span>
+                                    <span class="nvc-type-growth nvc-amount-positive">+22.8%</span>
+                                </div>
+                                <div class="nvc-type-details">
+                                    <span class="nvc-type-count nvc-wcag-medium-contrast">{{ metrics.savings_count or '389' }} accounts</span>
+                                    <span class="nvc-type-avg nvc-wcag-medium-contrast">Avg: ${{ metrics.savings_avg or '45.2K' }}</span>
+                                </div>
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-success nvc-progress-92" aria-label="Savings accounts performance: 92%"></div>
+                                </div>
+                            </div>
+
+                            <div class="nvc-type-performance-item">
+                                <div class="nvc-type-info">
+                                    <span class="nvc-type-name nvc-wcag-high-contrast">Investment Accounts</span>
+                                    <span class="nvc-type-growth nvc-amount-positive">+28.4%</span>
+                                </div>
+                                <div class="nvc-type-details">
+                                    <span class="nvc-type-count nvc-wcag-medium-contrast">{{ metrics.investment_count or '156' }} accounts</span>
+                                    <span class="nvc-type-avg nvc-wcag-medium-contrast">Avg: ${{ metrics.investment_avg or '125.8K' }}</span>
+                                </div>
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-info nvc-progress-95" aria-label="Investment accounts performance: 95%"></div>
+                                </div>
+                            </div>
+
+                            <div class="nvc-type-performance-item">
+                                <div class="nvc-type-info">
+                                    <span class="nvc-type-name nvc-wcag-high-contrast">Business Accounts</span>
+                                    <span class="nvc-type-growth nvc-amount-warning">+12.1%</span>
+                                </div>
+                                <div class="nvc-type-details">
+                                    <span class="nvc-type-count nvc-wcag-medium-contrast">{{ metrics.business_count or '89' }} accounts</span>
+                                    <span class="nvc-type-avg nvc-wcag-medium-contrast">Avg: ${{ metrics.business_avg or '89.3K' }}</span>
+                                </div>
+                                <div class="nvc-progress-container">
+                                    <div class="nvc-progress-bar nvc-progress-warning nvc-progress-78" aria-label="Business accounts performance: 78%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Metrics Comparison -->
+                    <div class="nvc-finra-table-container">
+                        <table class="nvc-finra-table" role="table" aria-label="Key performance metrics comparison">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Metric</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Current Period</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Previous Period</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Change</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="nvc-finra-row">
+                                    <td class="nvc-wcag-high-contrast">New Accounts</td>
+                                    <td class="nvc-wcag-medium-contrast">{{ metrics.new_accounts_current or '47' }}</td>
+                                    <td class="nvc-wcag-medium-contrast">{{ metrics.new_accounts_previous or '39' }}</td>
+                                    <td class="nvc-amount-positive">+20.5%</td>
+                                    <td><span class="nvc-status nvc-status-success">Excellent</span></td>
+                                </tr>
+                                <tr class="nvc-finra-row">
+                                    <td class="nvc-wcag-high-contrast">Account Closures</td>
+                                    <td class="nvc-wcag-medium-contrast">{{ metrics.closures_current or '8' }}</td>
+                                    <td class="nvc-wcag-medium-contrast">{{ metrics.closures_previous or '12' }}</td>
+                                    <td class="nvc-amount-positive">-33.3%</td>
+                                    <td><span class="nvc-status nvc-status-success">Excellent</span></td>
+                                </tr>
+                                <tr class="nvc-finra-row">
+                                    <td class="nvc-wcag-high-contrast">Total Deposits</td>
+                                    <td class="nvc-wcag-medium-contrast">${{ metrics.deposits_current or '2.4M' }}</td>
+                                    <td class="nvc-wcag-medium-contrast">${{ metrics.deposits_previous or '2.1M' }}</td>
+                                    <td class="nvc-amount-positive">+14.3%</td>
+                                    <td><span class="nvc-status nvc-status-success">Good</span></td>
+                                </tr>
+                                <tr class="nvc-finra-row">
+                                    <td class="nvc-wcag-high-contrast">Total Withdrawals</td>
+                                    <td class="nvc-wcag-medium-contrast">${{ metrics.withdrawals_current or '1.8M' }}</td>
+                                    <td class="nvc-wcag-medium-contrast">${{ metrics.withdrawals_previous or '1.9M' }}</td>
+                                    <td class="nvc-amount-positive">-5.3%</td>
+                                    <td><span class="nvc-status nvc-status-success">Good</span></td>
+                                </tr>
+                                <tr class="nvc-finra-row">
+                                    <td class="nvc-wcag-high-contrast">Net Flow</td>
+                                    <td class="nvc-wcag-medium-contrast">${{ metrics.net_flow_current or '600K' }}</td>
+                                    <td class="nvc-wcag-medium-contrast">${{ metrics.net_flow_previous or '200K' }}</td>
+                                    <td class="nvc-amount-positive">+200%</td>
+                                    <td><span class="nvc-status nvc-status-success">Excellent</span></td>
+                                </tr>
+                                <tr class="nvc-finra-row">
+                                    <td class="nvc-wcag-high-contrast">Active Users</td>
+                                    <td class="nvc-wcag-medium-contrast">{{ metrics.active_users_current or '1,189' }}</td>
+                                    <td class="nvc-wcag-medium-contrast">{{ metrics.active_users_previous or '1,156' }}</td>
+                                    <td class="nvc-amount-positive">+2.9%</td>
+                                    <td><span class="nvc-status nvc-status-primary">Average</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Performance Insights -->
+                    <div class="nvc-insights-grid">
+                        <div class="nvc-insight-card nvc-insight-success">
+                            <div class="nvc-insight-icon">
+                                <i class="fas fa-thumbs-up" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-insight-content">
+                                <h4 class="nvc-insight-title nvc-wcag-high-contrast">Excellent Growth</h4>
+                                <p class="nvc-insight-text nvc-wcag-medium-contrast">Account growth is 18.5% above target for this quarter.</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-insight-card nvc-insight-info">
+                            <div class="nvc-insight-icon">
+                                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-insight-content">
+                                <h4 class="nvc-insight-title nvc-wcag-high-contrast">Investment Surge</h4>
+                                <p class="nvc-insight-text nvc-wcag-medium-contrast">Investment accounts showing 28.4% growth, highest performance.</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-insight-card nvc-insight-warning">
+                            <div class="nvc-insight-icon">
+                                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-insight-content">
+                                <h4 class="nvc-insight-title nvc-wcag-high-contrast">Business Focus</h4>
+                                <p class="nvc-insight-text nvc-wcag-medium-contrast">Business accounts need attention - growth below average at 12.1%.</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-insight-card nvc-insight-primary">
+                            <div class="nvc-insight-icon">
+                                <i class="fas fa-users" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-insight-content">
+                                <h4 class="nvc-insight-title nvc-wcag-high-contrast">High Retention</h4>
+                                <p class="nvc-insight-text nvc-wcag-medium-contrast">Customer retention at 94.2% exceeds industry standards.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Performance Metrics Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            // Add sorting functionality here
+            console.log('Sorting by:', this.textContent);
+        });
+    });
+
+    // Performance insights interactions
+    const insightCards = document.querySelectorAll('.nvc-insight-card');
+    insightCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

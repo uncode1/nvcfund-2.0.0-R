@@ -1,0 +1,301 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Compliance Violations - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Compliance Violations{% endblock %}
+{% block page_description %}Monitor and manage regulatory compliance violations and incidents{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Violations
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Create Incident
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-check"></i>
+    Resolve Selected
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Compliance Violations Functions
+function exportViolations() {
+    const csvData = 'Date,Type,Severity,Status,Description,Assigned To\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'compliance_violations.csv';
+    a.click();
+}
+
+function createIncident() {
+    window.location.href = "{{ url_for('compliance.new_incident') }}";
+}
+
+function resolveSelected() {
+    const selected = document.querySelectorAll('input[name="violation_ids"]:checked');
+    if (selected.length === 0) {
+        alert('Please select violations to resolve');
+        return;
+    }
+
+    if (confirm('Are you sure you want to resolve the selected violations?')) {
+        const ids = Array.from(selected).map(cb => cb.value);
+        fetch('/compliance/violations/resolve', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: JSON.stringify({ violation_ids: ids })
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error resolving violations');
+            }
+        });
+    }
+}
+
+function viewViolation(violationId) {
+    window.location.href = "{{ url_for('compliance.violation_details') }}?id=" + violationId;
+}
+
+function assignViolation(violationId) {
+    const assignee = prompt('Enter assignee email:');
+    if (assignee) {
+        fetch('/compliance/violations/' + violationId + '/assign', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: JSON.stringify({ assignee: assignee })
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error assigning violation');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Compliance Violations Management -->
+<div class="row g-4">
+    </div>
+
+    <!-- Violations Summary -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">Open Violations</h6>
+                            <h3 class="text-danger mb-0">3</h3>
+                        </div>
+                        <div class="metric-icon bg-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">In Progress</h6>
+                            <h3 class="text-warning mb-0">7</h3>
+                        </div>
+                        <div class="metric-icon bg-warning">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">Resolved (30 days)</h6>
+                            <h3 class="text-success mb-0">24</h3>
+                        </div>
+                        <div class="metric-icon bg-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">Avg Resolution</h6>
+                            <h3 class="text-info mb-0">5.2 days</h3>
+                        </div>
+                        <div class="metric-icon bg-info">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Violations Table -->
+    <div class="nvc-card">
+        <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+            <h5 class="nvc-card-title mb-0">
+                <i class="fas fa-list me-2"></i>
+                Active Violations
+            </h5>
+            <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">
+                <i class="fas fa-plus me-2"></i>
+                Report Violation
+            </button>
+        </div>
+        <div class="nvc-nvc-card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Severity</th>
+                            <th>Description</th>
+                            <th>Assigned To</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>V-2025-001</strong></td>
+                            <td>GDPR</td>
+                            <td><span class="badge bg-danger">Critical</span></td>
+                            <td>Data retention policy violation - customer data retained beyond 36 months</td>
+                            <td>Sarah Mitchell</td>
+                            <td>July 10, 2025</td>
+                            <td><span class="badge bg-warning">In Progress</span></td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary me-1">View</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success">Update</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>V-2025-002</strong></td>
+                            <td>PCI DSS</td>
+                            <td><span class="badge bg-warning">High</span></td>
+                            <td>Insufficient access controls on cardholder data environment</td>
+                            <td>Michael Chen</td>
+                            <td>July 15, 2025</td>
+                            <td><span class="badge bg-info">Open</span></td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary me-1">View</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success">Assign</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>V-2025-003</strong></td>
+                            <td>SOX</td>
+                            <td><span class="badge bg-warning">High</span></td>
+                            <td>Missing approval documentation for financial transactions</td>
+                            <td>Lisa Rodriguez</td>
+                            <td>July 12, 2025</td>
+                            <td><span class="badge bg-warning">In Progress</span></td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary me-1">View</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success">Update</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>V-2025-004</strong></td>
+                            <td>FFIEC</td>
+                            <td><span class="badge bg-secondary">Medium</span></td>
+                            <td>Incomplete cybersecurity assessment documentation</td>
+                            <td>David Park</td>
+                            <td>July 20, 2025</td>
+                            <td><span class="badge bg-warning">In Progress</span></td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary me-1">View</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success">Update</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>V-2025-005</strong></td>
+                            <td>ISO 27001</td>
+                            <td><span class="badge bg-secondary">Medium</span></td>
+                            <td>Risk assessment documentation needs updating</td>
+                            <td>Emma Wilson</td>
+                            <td>July 25, 2025</td>
+                            <td><span class="badge bg-info">Open</span></td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary me-1">View</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success">Assign</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.compliance-violations-container {
+    padding: 2rem 0;
+}
+
+.metric-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+}
+
+.metric-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

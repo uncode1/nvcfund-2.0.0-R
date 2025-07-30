@@ -1,0 +1,345 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Compliance Assessment - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Compliance Assessment{% endblock %}
+{% block page_description %}Comprehensive regulatory compliance evaluation and risk assessment{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-calendar-alt"></i>
+    Schedule Assessment
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-play"></i>
+    Start Assessment
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Compliance Assessment Functions
+function exportAssessment() {
+    const csvData = 'Category,Score,Status,Risk Level,Last Updated\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'compliance_assessment.csv';
+    a.click();
+}
+
+function scheduleAssessment() {
+    alert('Schedule assessment functionality will be implemented');
+}
+
+function startNewAssessment() {
+    window.location.href = "{{ url_for('compliance.new_assessment') }}";
+}
+
+function viewAssessmentDetails(assessmentId) {
+    window.location.href = "{{ url_for('compliance.assessment_details') }}?id=" + assessmentId;
+}
+
+function updateAssessmentStatus(assessmentId, status) {
+    fetch('/compliance/assessments/' + assessmentId + '/status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+        },
+        body: JSON.stringify({ status: status })
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Error updating assessment status');
+        }
+    });
+}
+
+// Add drilldown functionality for metric cards
+document.addEventListener('DOMContentLoaded', function() {
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardType = this.querySelector('.metric-title')?.textContent;
+            if (cardType?.includes('Overall Score')) {
+                window.location.href = "{{ url_for('compliance.compliance_overview') }}";
+            } else if (cardType?.includes('Risk Level')) {
+                window.location.href = "{{ url_for('compliance.risk_management') }}";
+            } else if (cardType?.includes('Violations')) {
+                window.location.href = "{{ url_for('compliance.compliance_violations') }}";
+            } else if (cardType?.includes('Last Assessment')) {
+                startNewAssessment();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Compliance Assessment Dashboard -->
+<div class="row g-4">
+        <p class="page-subtitle">Comprehensive compliance evaluation and risk assessment</p>
+    </div>
+
+    <!-- Assessment Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">Overall Score</h6>
+                            <h3 class="text-success mb-0">94.7%</h3>
+                        </div>
+                        <div class="metric-icon bg-success">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">Open Issues</h6>
+                            <h3 class="text-warning mb-0">7</h3>
+                        </div>
+                        <div class="metric-icon bg-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">Last Assessment</h6>
+                            <h3 class="text-info mb-0">July 1</h3>
+                        </div>
+                        <div class="metric-icon bg-info">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">Due Date</h6>
+                            <h3 class="text-primary mb-0">July 15</h3>
+                        </div>
+                        <div class="metric-icon bg-primary">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assessment Categories -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-list-check me-2"></i>
+                        Assessment Categories
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="assessment-categories">
+                        <div class="assessment-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="category-name">PCI DSS Compliance</span>
+                                <span class="badge bg-success">98.5%</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" style="width: 98.5%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="assessment-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="category-name">SOX Compliance</span>
+                                <span class="badge bg-success">95.2%</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" style="width: 95.2%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="assessment-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="category-name">GDPR Compliance</span>
+                                <span class="badge bg-warning">87.3%</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-warning" style="width: 87.3%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="assessment-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="category-name">FFIEC Guidelines</span>
+                                <span class="badge bg-success">96.8%</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" style="width: 96.8%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="assessment-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="category-name">ISO 27001</span>
+                                <span class="badge bg-success">93.7%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width: 93.7%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-primary">
+                            <i class="fas fa-play me-2"></i>
+                            Start New Assessment
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">
+                            <i class="fas fa-download me-2"></i>
+                            Download Report
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary">
+                            <i class="fas fa-history me-2"></i>
+                            View Assessment History
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Priority Issues
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="issue-list">
+                        <div class="issue-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="issue-text">GDPR Data Retention</span>
+                                <span class="badge bg-warning">High</span>
+                            </div>
+                            <small class="text-light">Due: July 10, 2025</small>
+                        </div>
+                        <div class="issue-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="issue-text">Access Control Review</span>
+                                <span class="badge bg-info">Medium</span>
+                            </div>
+                            <small class="text-light">Due: July 15, 2025</small>
+                        </div>
+                        <div class="issue-item">
+                            <div class="d-flex justify-content-between">
+                                <span class="issue-text">Vendor Assessment</span>
+                                <span class="badge bg-secondary">Low</span>
+                            </div>
+                            <small class="text-light">Due: July 20, 2025</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.compliance-assessment-container {
+    padding: 2rem 0;
+}
+
+.metric-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+}
+
+.metric-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.assessment-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.assessment-item:last-child {
+    border-bottom: none;
+}
+
+.category-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.issue-item {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.issue-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0 !important;
+}
+
+.issue-text {
+    font-weight: 500;
+    color: #333;
+}
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

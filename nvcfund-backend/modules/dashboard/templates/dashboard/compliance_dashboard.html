@@ -1,0 +1,402 @@
+
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Compliance Officer Dashboard - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Compliance Officer Dashboard{% endblock %}
+{% block page_description %}Real-time compliance monitoring and regulatory oversight{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-file-alt"></i>
+    Generate Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-shield-alt"></i>
+    Run Check
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportComplianceData() {
+    const csvData = 'Date,Category,Status,Risk Level,Score\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'compliance_dashboard.csv';
+    a.click();
+}
+
+function generateComplianceReport() {
+    window.location.href = "{{ url_for('compliance.compliance_reports') }}";
+}
+
+function runComplianceCheck() {
+    alert('Running compliance check...');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const dashboardCards = document.querySelectorAll('.dashboard-stat-card');
+    dashboardCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Compliance Score')) {
+                window.location.href = "{{ url_for('compliance.compliance_assessment') }}";
+            } else if (cardTitle?.includes('Risk Level')) {
+                window.location.href = "{{ url_for('compliance.risk_management') }}";
+            } else if (cardTitle?.includes('Violations')) {
+                window.location.href = "{{ url_for('compliance.compliance_violations') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+    </style>
+</head>
+<body>
+<div class="container-fluid mt-3">
+    <!-- Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-balance-scale text-warning me-2"></i>
+                        Compliance Officer Dashboard
+                    </h2>
+                    <p class="text-light mb-0">Regulatory Oversight & Risk Management</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#alertModal">
+                        <i class="fas fa-exclamation-triangle me-1"></i> Risk Alerts
+                    </button>
+                    <a href="{{ url_for('admin_compliance.reports') }}" class="btn nvc-btn nvc-btn-warning btn-sm">
+                        <i class="fas fa-file-alt me-1"></i> Generate Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Metrics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-danger h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title text-danger">High Risk Alerts</h6>
+                            <h4 class="text-danger mb-0">{{ data.risk_alerts.high or '3' }}</h4>
+                            <small class="text-light">Requiring immediate action</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x text-danger opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-warning h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title text-warning">Pending Reviews</h6>
+                            <h4 class="text-warning mb-0">{{ data.pending_reviews or '18' }}</h4>
+                            <small class="text-light">AML/KYC cases</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-search fa-2x text-warning opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-success h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title text-success">Compliance Score</h6>
+                            <h4 class="text-success mb-0">{{ data.compliance_score or '94.2%' }}</h4>
+                            <small class="text-success">+2.1% this month</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shield-alt fa-2x text-success opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-info h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title text-info">Regulatory Reports</h6>
+                            <h4 class="text-info mb-0">{{ data.reports_due or '5' }}</h4>
+                            <small class="text-light">Due this week</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-invoice fa-2x text-info opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Compliance Functions -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gavel text-warning me-2"></i>
+                        Compliance Functions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('admin_compliance.audit') }}" class="btn nvc-btn nvc-btn-outline-danger w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-search fa-2x mb-2"></i>
+                                <span>AML Investigation</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('specialized_compliance.kyc_verification') }}" class="btn nvc-btn nvc-btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-user-check fa-2x mb-2"></i>
+                                <span>KYC Reviews</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('admin_compliance.reporting') }}" class="btn nvc-btn nvc-btn-outline-info w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                                <span>Regulatory Reports</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('specialized_risk.assessment') }}" class="btn nvc-btn nvc-btn-outline-success w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                                <span>Risk Assessment</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('admin_compliance.audit') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-list-alt fa-2x mb-2"></i>
+                                <span>Audit Trails</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <a href="{{ url_for('specialized_sanctions.screening') }}" class="btn nvc-btn nvc-btn-outline-dark w-100 h-100 d-flex flex-column justify-content-center py-3">
+                                <i class="fas fa-ban fa-2x mb-2"></i>
+                                <span>Sanctions Screening</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Cases -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                        High Priority Cases
+                    </h5>
+                    <a href="{{ url_for('admin_compliance.dashboard') }}" class="btn btn-sm nvc-btn nvc-btn-outline-danger">View All Cases</a>
+                </div>
+                <div class="nvc-nvc-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Case ID</th>
+                                    <th>Client</th>
+                                    <th>Risk Level</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>CMP-2025-001</td>
+                                    <td>Global Trade Corp</td>
+                                    <td><span class="badge bg-danger">Critical</span></td>
+                                    <td>Suspicious Activity</td>
+                                    <td><span class="badge bg-warning">Under Review</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger me-1">Investigate</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Details</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>CMP-2025-002</td>
+                                    <td>International Holdings</td>
+                                    <td><span class="badge bg-warning">High</span></td>
+                                    <td>Enhanced Due Diligence</td>
+                                    <td><span class="badge bg-info">In Progress</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-warning me-1">Review</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Details</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>CMP-2025-003</td>
+                                    <td>Tech Solutions Ltd</td>
+                                    <td><span class="badge bg-info">Medium</span></td>
+                                    <td>Transaction Monitoring</td>
+                                    <td><span class="badge bg-success">Cleared</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Approve</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Details</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Regulatory Updates -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bell text-warning me-2"></i>
+                        Regulatory Updates
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="alert nvc-alert-warning nvc-alert-sm" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        New AML guidelines effective next month
+                    </div>
+                    <div class="alert nvc-alert-info nvc-alert-sm" role="alert">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Q2 regulatory report due in 15 days
+                    </div>
+                    <div class="alert nvc-alert-success nvc-alert-sm" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Compliance training completed
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Assessment Summary -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-pie text-info me-2"></i>
+                        Risk Distribution
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>Low Risk</small>
+                            <small>65%</small>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-success" class="progress-bar-65"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>Medium Risk</small>
+                            <small>25%</small>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-warning" class="progress-bar-25"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>High Risk</small>
+                            <small>10%</small>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-danger" class="progress-bar-10"></div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('specialized_risk.dashboard') }}" class="btn btn-sm nvc-btn nvc-btn-outline-info w-100">Detailed Analysis</a>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt text-warning me-2"></i>
+                        Quick Actions
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-danger btn-sm">
+                            <i class="fas fa-flag me-2"></i>Flag Transaction
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                            <i class="fas fa-user-times me-2"></i>Block Account
+                        </button>
+                        <a href="{{ url_for('admin_compliance.reports') }}" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                            <i class="fas fa-file-pdf me-2"></i>Generate Report
+                        </a>
+                        <a href="{{ url_for('specialized_help.compliance') }}" class="btn nvc-btn nvc-btn-outline-secondary btn-sm">
+                            <i class="fas fa-question-circle me-2"></i>Compliance Guide
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Risk Alert Modal -->
+<div class="modal fade" id="alertModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">High Risk Alerts</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert nvc-nvc-alert-danger" role="alert">
+                    <strong>Critical:</strong> Suspicious wire transfer pattern detected
+                </div>
+                <div class="alert nvc-nvc-alert-warning" role="alert">
+                    <strong>High:</strong> Multiple failed KYC verifications
+                </div>
+                <div class="alert nvc-nvc-alert-info" role="alert">
+                    <strong>Medium:</strong> Unusual transaction volume spike
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn nvc-btn nvc-btn-danger">Investigate All</button>
+            </div>
+        </div>
+    </div>
+</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

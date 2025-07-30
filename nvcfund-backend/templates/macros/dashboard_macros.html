@@ -1,0 +1,199 @@
+{% macro metric_card_standard(title, value, subtitle="", icon="chart-line", color="primary", trend="", trend_color="success") %}
+<div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-{{ color }} shadow h-100 py-2">
+        <div class="card-body">
+            <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-{{ color }} text-uppercase mb-1">
+                        {{ title }}
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ value }}</div>
+                    {% if subtitle %}
+                    <div class="text-xs text-muted">{{ subtitle }}</div>
+                    {% endif %}
+                    {% if trend %}
+                    <div class="text-xs text-{{ trend_color }}">{{ trend }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-auto">
+                    <i class="fas fa-{{ icon }} fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro metric_card_animated(title, value, subtitle="", icon="chart-line", color="primary", animation_class="") %}
+<div class="col-xl-3 col-md-6 mb-4">
+    <div class="card bg-{{ color }} text-white shadow {{ animation_class }}">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="card-title mb-1">{{ title }}</h6>
+                    <h3 class="mb-0">{{ value }}</h3>
+                    {% if subtitle %}
+                    <small class="text-light">{{ subtitle }}</small>
+                    {% endif %}
+                </div>
+                <div class="text-white-50">
+                    <i class="fas fa-{{ icon }} fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro progress_card(title, current, target, color="primary", icon="target") %}
+<div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-{{ color }} shadow h-100">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-{{ color }}">{{ title }}</h6>
+                <i class="fas fa-{{ icon }} text-{{ color }}"></i>
+            </div>
+            <div class="progress mb-2">
+                <div class="progress-bar bg-{{ color }}" style="width: {{ (current / target * 100) if target > 0 else 0 }}%"></div>
+            </div>
+            <div class="d-flex justify-content-between">
+                <small class="text-muted">{{ current }}</small>
+                <small class="text-muted">{{ target }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro alert_card(title, message, type="info", icon="info-circle", dismissible=true) %}
+<div class="alert alert-{{ type }} {% if dismissible %}alert-dismissible{% endif %} fade show" role="alert">
+    <i class="fas fa-{{ icon }} me-2"></i>
+    <strong>{{ title }}</strong> {{ message }}
+    {% if dismissible %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro data_table(headers, rows, table_id="dataTable", searchable=true, sortable=true) %}
+<div class="table-responsive">
+    <table class="table table-bordered table-hover" id="{{ table_id }}">
+        <thead class="table-dark">
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                {% for cell in row %}
+                <td>{{ cell }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if searchable or sortable %}
+<script>
+$(document).ready(function() {
+    $('#{{ table_id }}').DataTable({
+        "searching": {{ 'true' if searchable else 'false' }},
+        "ordering": {{ 'true' if sortable else 'false' }},
+        "responsive": true,
+        "pageLength": 25
+    });
+});
+</script>
+{% endif %}
+{% endmacro %}
+
+{# ===== WORLD-CLASS VISUALIZATION COMPONENTS ===== #}
+{# Advanced Chart and Data Visualization Macros #}
+
+{# Interactive Chart Card with Multiple Chart Types #}
+{% macro chart_card_premium(title, chart_type="line", chart_data=None, height="300px", actions=[], card_id="") %}
+<div class="nvc-dashboard-card-premium nvc-chart-card"
+     {% if card_id %}id="{{ card_id }}"{% endif %}
+     role="region"
+     aria-labelledby="chart-title-{{ title|replace(' ', '-')|lower }}"
+     aria-describedby="chart-desc-{{ title|replace(' ', '-')|lower }}">
+
+  <div class="nvc-card-header-premium">
+    <h3 id="chart-title-{{ title|replace(' ', '-')|lower }}" class="nvc-card-title-premium">
+      <i class="fas fa-chart-{{ chart_type }} nvc-title-icon" aria-hidden="true"></i>
+      {{ title }}
+    </h3>
+
+    <div class="nvc-card-actions" role="group" aria-label="Chart actions">
+      <button type="button" class="nvc-action-btn nvc-wcag-focus" onclick="refreshChart('{{ card_id }}')" aria-label="Refresh chart data">
+        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="nvc-action-btn nvc-wcag-focus" onclick="exportChart('{{ card_id }}')" aria-label="Export chart">
+        <i class="fas fa-download" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="nvc-action-btn nvc-wcag-focus" onclick="fullscreenChart('{{ card_id }}')" aria-label="View chart in fullscreen">
+        <i class="fas fa-expand" aria-hidden="true"></i>
+      </button>
+      {% for action in actions %}
+      <button type="button" class="nvc-action-btn nvc-wcag-focus" onclick="{{ action.onclick }}" aria-label="{{ action.label }}">
+        <i class="{{ action.icon }}" aria-hidden="true"></i>
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="nvc-card-body-premium">
+    <div class="nvc-chart-container" data-height="{{ height }}">
+      <p id="chart-desc-{{ title|replace(' ', '-')|lower }}" class="nvc-sr-only">
+        Interactive chart showing {{ title }}. Use arrow keys to navigate data points.
+      </p>
+      <canvas id="chart-canvas-{{ card_id or title|replace(' ', '-')|lower }}"
+              aria-label="{{ title }} chart visualization"
+              role="img">
+        <!-- Fallback content for accessibility -->
+        <p>Chart showing {{ title }}. Data visualization not available in this browser.</p>
+      </canvas>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{# Financial KPI Dashboard Grid #}
+{% macro financial_kpi_grid(kpis) %}
+<div class="nvc-grid nvc-grid-auto nvc-gap-lg nvc-mb-section">
+  {% for kpi in kpis %}
+  <div class="nvc-kpi-card-premium" role="article" aria-labelledby="kpi-{{ kpi.title|replace(' ', '-')|lower }}">
+    <div class="nvc-kpi-header">
+      <div class="nvc-kpi-icon nvc-kpi-{{ kpi.color or 'primary' }}">
+        <i class="{{ kpi.icon or 'fas fa-chart-line' }}" aria-hidden="true"></i>
+      </div>
+      <div class="nvc-kpi-trend nvc-trend-{{ kpi.trend or 'neutral' }}">
+        {% if kpi.change %}
+        <span aria-label="Change: {{ kpi.change }}">{{ kpi.change }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="nvc-kpi-content">
+      <h4 id="kpi-{{ kpi.title|replace(' ', '-')|lower }}" class="nvc-kpi-title">{{ kpi.title }}</h4>
+      <div class="nvc-kpi-value" aria-label="{{ kpi.title }}: {{ kpi.value }}">
+        {% if kpi.currency %}${% endif %}{{ kpi.value }}{% if kpi.percentage %}%{% endif %}
+      </div>
+      {% if kpi.subtitle %}
+      <p class="nvc-kpi-subtitle">{{ kpi.subtitle }}</p>
+      {% endif %}
+    </div>
+
+    {% if kpi.sparkline_data %}
+    <div class="nvc-kpi-sparkline" aria-label="Trend visualization for {{ kpi.title }}">
+      <div class="nvc-mini-chart" data-values="{{ kpi.sparkline_data|join(',') }}"></div>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}

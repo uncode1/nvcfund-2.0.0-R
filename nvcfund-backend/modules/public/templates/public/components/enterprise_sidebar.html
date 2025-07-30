@@ -1,0 +1,244 @@
+<!-- Enterprise Sidebar Component - shadcn Style -->
+<div class="enterprise-sidebar" id="enterpriseSidebar">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <i class="fas fa-university"></i>
+            </div>
+            <span class="logo-text">NVC Banking</span>
+        </div>
+        <button type="button" class="sidebar-toggle" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="sidebar-search">
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search..." id="sidebarSearch">
+            <kbd class="search-kbd">⌘K</kbd>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-label">Navigate</div>
+            
+            <!-- Dashboard -->
+            <a href="{{ url_for('dashboard.main_dashboard') }}" class="nav-item" data-tooltip="Dashboard">
+                <i class="fas fa-tachometer-alt nav-icon"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+
+            <!-- Core Banking -->
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Core Banking">
+                    <i class="fas fa-university nav-icon"></i>
+                    <span class="nav-text">Core Banking</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('banking.banking_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Banking Home</span>
+                    </a>
+                    <a href="{{ url_for('accounts.accounts_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Accounts</span>
+                    </a>
+                    <a href="{{ url_for('accounts.create_account') }}" class="nav-subitem">
+                        <span class="nav-text">Create Account</span>
+                    </a>
+                    <a href="{{ url_for('treasury.treasury_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Treasury</span>
+                    </a>
+                    <a href="{{ url_for('settlement.settlement_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Settlement</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Financial Services -->
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Financial Services">
+                    <i class="fas fa-chart-line nav-icon"></i>
+                    <span class="nav-text">Financial Services</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('trading.trading_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Trading</span>
+                    </a>
+                    <a href="{{ url_for('investments.investments_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Investments</span>
+                    </a>
+                    <a href="{{ url_for('insurance.insurance_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Insurance</span>
+                    </a>
+                    <a href="{{ url_for('exchange.exchange_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Exchange</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Payments & Cards -->
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Payments & Cards">
+                    <i class="fas fa-credit-nvc-card nav-icon"></i>
+                    <span class="nav-text">Payments & Cards</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('cards_payments.cards_payments_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Cards</span>
+                    </a>
+                    <a href="{{ url_for('banking.send_transfer') }}" class="nav-subitem">
+                        <span class="nav-text">Send Transfer</span>
+                    </a>
+                    <a href="{{ url_for('banking.transfers') }}" class="nav-subitem">
+                        <span class="nav-text">Transfer History</span>
+                    </a>
+                    <a href="{{ url_for('banking.bill_payment') }}" class="nav-subitem">
+                        <span class="nav-text">Bill Payments</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Blockchain & NVCT -->
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Blockchain & NVCT">
+                    <i class="fas fa-coins nav-icon"></i>
+                    <span class="nav-text">Blockchain & NVCT</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('nvct_stablecoin.nvct_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">NVCT Stablecoin</span>
+                    </a>
+                    <a href="{{ url_for('smart_contracts.smart_contracts_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Smart Contracts</span>
+                    </a>
+                    <a href="{{ url_for('blockchain.blockchain_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Blockchain Analytics</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Compliance & Security -->
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Compliance & Security">
+                    <i class="fas fa-shield-alt nav-icon"></i>
+                    <span class="nav-text">Compliance & Security</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('compliance.compliance_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Compliance</span>
+                    </a>
+                    <a href="{{ url_for('security_center.security_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Security Center</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Analytics & Reporting -->
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Analytics & Reporting">
+                    <i class="fas fa-chart-bar nav-icon"></i>
+                    <span class="nav-text">Analytics & Reporting</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('analytics.analytics_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Analytics</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Section -->
+        <div class="nav-section">
+            <div class="nav-section-label">Administration</div>
+            
+            <!-- Admin Management -->
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Admin Management">
+                    <i class="fas fa-cogs nav-icon"></i>
+                    <span class="nav-text">Admin Management</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('admin_management.admin_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Admin Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('admin_management.branches') }}" class="nav-subitem">
+                        <span class="nav-text">Branches</span>
+                    </a>
+                    <a href="{{ url_for('admin_management.teller_operations') }}" class="nav-subitem">
+                        <span class="nav-text">Teller Operations</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- System Management -->
+            <a href="{{ url_for('system_management.system_dashboard') }}" class="nav-item" data-tooltip="System Management">
+                <i class="fas fa-server nav-icon"></i>
+                <span class="nav-text">System Management</span>
+            </a>
+
+            <!-- Integrations -->
+            <div class="nav-group">
+                <button type="button" class="nav-group-trigger" data-tooltip="Integrations">
+                    <i class="fas fa-plug nav-icon"></i>
+                    <span class="nav-text">Integrations</span>
+                    <i class="fas fa-chevron-right nav-chevron"></i>
+                </button>
+                <div class="nav-group-content">
+                    <a href="{{ url_for('binance_integration.connect') }}" class="nav-subitem">
+                        <span class="nav-text">Binance Integration</span>
+                    </a>
+                    <a href="{{ url_for('institutional.institutional_dashboard') }}" class="nav-subitem">
+                        <span class="nav-text">Institutional</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Specialized Banking -->
+        <div class="nav-section">
+            <div class="nav-section-label">Specialized Banking</div>
+            
+            <a href="{{ url_for('islamic_banking.main_dashboard') }}" class="nav-item" data-tooltip="Islamic Banking">
+                <i class="fas fa-mosque nav-icon"></i>
+                <span class="nav-text">Islamic Banking</span>
+            </a>
+
+            <a href="{{ url_for('sovereign.dashboard') }}" class="nav-item" data-tooltip="Sovereign Banking">
+                <i class="fas fa-flag nav-icon"></i>
+                <span class="nav-text">Sovereign Banking</span>
+            </a>
+
+            <a href="{{ url_for('interest_rate_management.dashboard') }}" class="nav-item" data-tooltip="Interest Rate Management">
+                <i class="fas fa-percentage nav-icon"></i>
+                <span class="nav-text">Interest Rate Mgmt</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+        <div class="user-profile">
+            <div class="user-avatar">
+                <img src="https://via.placeholder.com/32x32/0066cc/ffffff?text=SA" alt="Super Admin">
+            </div>
+            <div class="user-info">
+                <div class="user-name">Super Admin</div>
+                <div class="user-role">Administrator</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar Overlay for Mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

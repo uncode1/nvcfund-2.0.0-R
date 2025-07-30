@@ -1,0 +1,170 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Verify Your NVC Banking Account{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .verification-code {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 25px 0;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 4px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 15px 35px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .button:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 30px;
+            padding: 20px;
+        }
+        .security-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .expiry-notice {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #721c24;
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="header">
+        <h1>🔐 Verify Your Email Address</h1>
+        <p>Complete your NVC Banking registration</p>
+    </div>
+    
+    <div class="content">
+        <h2>Hello {{ first_name }}!</h2>
+        
+        <p>Thank you for creating an account with NVC Banking Platform. To complete your registration and activate your account, please verify your email address.</p>
+        
+        <div class="security-notice">
+            <strong>🔒 Security Verification Required</strong><br>
+            To ensure the security of your account, we need to verify that this email address belongs to you.
+        </div>
+        
+        <h3>Your Verification Code:</h3>
+        <div class="verification-code">
+            {{ verification_code }}
+        </div>
+        
+        <p><strong>How to verify your email:</strong></p>
+        <ol>
+            <li>Copy the 6-digit verification code above</li>
+            <li>Return to the NVC Banking signup page</li>
+            <li>Enter the verification code in the provided field</li>
+            <li>Click "Verify Email" to complete your registration</li>
+        </ol>
+        
+        <div class="text-center">
+            <a href="{{ verification_url }}" class="button">Verify Email Address</a>
+        </div>
+        
+        <div class="expiry-notice">
+            <strong>⏰ Important:</strong> This verification code will expire in {{ expiry_minutes }} minutes for your security. If you don't verify within this time, you'll need to request a new code.
+        </div>
+        
+        <h3>Account Details:</h3>
+        <div class="nvc-bg-spaced-bordered-dafa46">
+            <strong>Registration Information:</strong><br>
+            Name: {{ first_name }} {{ last_name }}<br>
+            Email: {{ email }}<br>
+            Registration Date: {{ signup_date }}<br>
+            Account Type: {{ account_type }}<br>
+            Registration IP: {{ registration_ip }}
+        </div>
+        
+        <h3>Next Steps After Verification:</h3>
+        <ul>
+            <li>Set up Multi-Factor Authentication (MFA) for enhanced security</li>
+            <li>Complete your banking profile and KYC verification</li>
+            <li>Add your payment methods and funding sources</li>
+            <li>Explore our secure banking features and services</li>
+        </ul>
+        
+        <div class="security-notice">
+            <strong>🛡️ Security Tips:</strong>
+            <ul class="m-3">
+                <li>Never share your verification code with anyone</li>
+                <li>NVC Banking will never ask for your password via email</li>
+                <li>If you didn't create this account, please ignore this email</li>
+                <li>Contact our security team immediately if you suspect fraud</li>
+            </ul>
+        </div>
+        
+        <p>If you're having trouble with the verification process or didn't receive this email in your inbox, please check your spam folder or contact our support team.</p>
+        
+        <p><strong>Need Help?</strong><br>
+        If you have any questions or need assistance, please contact us at:<br>
+        📧 <a href="mailto:{{ support_email }}">{{ support_email }}</a><br>
+        📞 {{ support_phone }}<br>
+        💬 Live Chat: <a href="{{ support_chat_url }}">Available 24/7</a></p>
+        
+        <p>Welcome to the future of secure digital banking!</p>
+        
+        <p>Best regards,<br>
+        <strong>The NVC Banking Security Team</strong></p>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; {{ current_year }} NVC Banking Platform. All rights reserved.</p>
+        <p>This verification email was sent to {{ email }} on {{ send_date }}</p>
+        <p><strong>This is an automated security email. Please do not reply.</strong></p>
+        <p>NVC Banking Platform | Secure Digital Banking Solutions</p>
+        <p>If you did not create an account with us, please ignore this email or <a href="mailto:{{ security_email }}">report it here</a></p>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

@@ -1,0 +1,433 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Backup & Recovery - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Backup & Recovery{% endblock %}
+{% block page_description %}Comprehensive backup management and disaster recovery operations{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        Administration
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-save" aria-hidden="true"></i>
+    Backup & Recovery
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Download latest backup">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Download Backup
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Configure backup schedule">
+    <i class="fas fa-cog" aria-hidden="true"></i>
+    Configure Schedule
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Run backup immediately">
+    <i class="fas fa-play" aria-hidden="true"></i>
+    Run Backup Now
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Backup & Recovery Overview -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-save" aria-hidden="true"></i>
+                    Backup Status Overview
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-success">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        All Systems Operational
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Backup Status Metrics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    <span>Success</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ backup_status.last_backup or 'Success' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Last Backup</p>
+                                <p class="nvc-metric-subtitle">{{ backup_status.last_backup_time or '2 hours ago' }}</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-database" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+12</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ backup_status.total_backups or '247' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Backups</p>
+                                <p class="nvc-metric-subtitle">{{ backup_status.retention_days or '30' }} days retention</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-hdd" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-minus" aria-hidden="true"></i>
+                                    <span>24%</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ backup_status.storage_used or '2.4' }}TB</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Storage Used</p>
+                                <p class="nvc-metric-subtitle">{{ backup_status.storage_available or '7.6' }}TB available</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-primary">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-primary">
+                                    <i class="fas fa-clock" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    <span>Target</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ backup_status.rto or '< 4h' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Recovery Time</p>
+                                <p class="nvc-metric-subtitle">RTO Target</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backup Operations Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-bolt" aria-hidden="true"></i>
+                    Backup Operations
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="View backup history">
+                        <i class="fas fa-history" aria-hidden="true"></i>
+                        History
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-backup-operations">
+                    <div class="nvc-quick-actions">
+                        <h3 class="nvc-subsection-title nvc-wcag-high-contrast">Quick Actions</h3>
+                        <div class="nvc-action-buttons-grid">
+                            <button type="button" class="nvc-btn nvc-btn-primary nvc-wcag-focus" aria-label="Run full system backup">
+                                <i class="fas fa-play" aria-hidden="true"></i>
+                                Full System Backup
+                            </button>
+                            <button type="button" class="nvc-btn nvc-btn-info nvc-wcag-focus" aria-label="Run database backup only">
+                                <i class="fas fa-database" aria-hidden="true"></i>
+                                Database Backup Only
+                            </button>
+                            <button type="button" class="nvc-btn nvc-btn-secondary nvc-wcag-focus" aria-label="Run configuration backup">
+                                <i class="fas fa-file-archive" aria-hidden="true"></i>
+                                Configuration Backup
+                            </button>
+                            <button type="button" class="nvc-btn nvc-btn-warning nvc-wcag-focus" aria-label="Restore from backup">
+                                <i class="fas fa-undo" aria-hidden="true"></i>
+                                Restore from Backup
+                            </button>
+                            <button type="button" class="nvc-btn nvc-btn-success nvc-wcag-focus" aria-label="Verify backup integrity">
+                                <i class="fas fa-check" aria-hidden="true"></i>
+                                Verify Backup Integrity
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- FINRA-Compliant Backup Schedule Table -->
+                    <div class="nvc-backup-schedule">
+                        <h3 class="nvc-subsection-title nvc-wcag-high-contrast">Backup Schedule</h3>
+                        <div class="nvc-finra-table-container">
+                            <table class="nvc-finra-table" role="table" aria-label="Backup schedule and status">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="nvc-wcag-high-contrast">Backup Type</th>
+                                        <th scope="col" class="nvc-wcag-high-contrast">Schedule</th>
+                                        <th scope="col" class="nvc-wcag-high-contrast">Next Run</th>
+                                        <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                        <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for schedule in backup_schedules or [
+                                        {'type': 'Full System', 'schedule': 'Daily at 2:00 AM', 'next_run': '2024-01-16 02:00', 'status': 'Active'},
+                                        {'type': 'Database', 'schedule': 'Every 6 hours', 'next_run': '2024-01-15 20:00', 'status': 'Active'},
+                                        {'type': 'Configuration', 'schedule': 'Weekly (Sunday)', 'next_run': '2024-01-21 03:00', 'status': 'Active'},
+                                        {'type': 'Transaction Logs', 'schedule': 'Every 15 minutes', 'next_run': '2024-01-15 15:00', 'status': 'Active'},
+                                        {'type': 'User Data', 'schedule': 'Daily at 1:00 AM', 'next_run': '2024-01-16 01:00', 'status': 'Paused'}
+                                    ] %}
+                                    <tr class="nvc-finra-row">
+                                        <td class="nvc-wcag-high-contrast">{{ schedule.type }}</td>
+                                        <td class="nvc-wcag-medium-contrast">{{ schedule.schedule }}</td>
+                                        <td class="nvc-wcag-medium-contrast">{{ schedule.next_run }}</td>
+                                        <td>
+                                            <span class="nvc-status nvc-status-{{ 'success' if schedule.status == 'Active' else 'warning' }}">
+                                                {{ schedule.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="nvc-action-buttons">
+                                                <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-xs nvc-wcag-focus" aria-label="Run {{ schedule.type }} backup now">
+                                                    <i class="fas fa-play" aria-hidden="true"></i>
+                                                </button>
+                                                <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-xs nvc-wcag-focus" aria-label="Edit {{ schedule.type }} schedule">
+                                                    <i class="fas fa-edit" aria-hidden="true"></i>
+                                                </button>
+                                                <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-xs nvc-wcag-focus" aria-label="Pause {{ schedule.type }} backup">
+                                                    <i class="fas fa-pause" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Backup History Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-history" aria-hidden="true"></i>
+                    Backup History
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Filter backup history">
+                        <i class="fas fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Export backup list">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        Export List
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- FINRA-Compliant Backup History Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="Backup history and details">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">Backup ID</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Type</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Date/Time</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Size</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Duration</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Location</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for backup in backup_history or [
+                                {'id': 'BKP-20240115-001', 'type': 'Full System', 'datetime': '2024-01-15 02:00:00', 'size': '2.4 GB', 'duration': '45 min', 'status': 'Success', 'location': 'Local Storage'},
+                                {'id': 'BKP-20240115-002', 'type': 'Database', 'datetime': '2024-01-15 08:00:00', 'size': '890 MB', 'duration': '12 min', 'status': 'Success', 'location': 'AWS S3'},
+                                {'id': 'BKP-20240115-003', 'type': 'Database', 'datetime': '2024-01-15 14:00:00', 'size': '892 MB', 'duration': '13 min', 'status': 'Success', 'location': 'AWS S3'},
+                                {'id': 'BKP-20240114-001', 'type': 'Full System', 'datetime': '2024-01-14 02:00:00', 'size': '2.3 GB', 'duration': '43 min', 'status': 'Success', 'location': 'Local Storage'},
+                                {'id': 'BKP-20240114-002', 'type': 'Configuration', 'datetime': '2024-01-14 03:00:00', 'size': '45 MB', 'duration': '2 min', 'status': 'Success', 'location': 'Local Storage'},
+                                {'id': 'BKP-20240113-001', 'type': 'Full System', 'datetime': '2024-01-13 02:00:00', 'size': '2.2 GB', 'duration': '48 min', 'status': 'Failed', 'location': 'Local Storage'},
+                                {'id': 'BKP-20240113-002', 'type': 'Database', 'datetime': '2024-01-13 08:00:00', 'size': '885 MB', 'duration': '11 min', 'status': 'Success', 'location': 'AWS S3'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td class="nvc-wcag-high-contrast">{{ backup.id }}</td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-{{ 'primary' if backup.type == 'Full System' else 'info' if backup.type == 'Database' else 'secondary' }}">
+                                        {{ backup.type }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ backup.datetime }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ backup.size }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ backup.duration }}</td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'success' if backup.status == 'Success' else 'danger' }}">
+                                        <i class="fas fa-{{ 'check' if backup.status == 'Success' else 'times' }}" aria-hidden="true"></i>
+                                        {{ backup.status }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ backup.location }}</td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-xs nvc-wcag-focus" aria-label="Download backup {{ backup.id }}">
+                                            <i class="fas fa-download" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-info nvc-btn-xs nvc-wcag-focus" aria-label="View details for backup {{ backup.id }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-xs nvc-wcag-focus" aria-label="Restore from backup {{ backup.id }}">
+                                            <i class="fas fa-undo" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-xs nvc-wcag-focus" aria-label="Delete backup {{ backup.id }}">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="nvc-table-footer">
+                    <div class="nvc-pagination-info">
+                        <span class="nvc-pagination-text nvc-wcag-medium-contrast">
+                            Showing 1-10 of {{ backup_status.total_backups or '247' }} backups
+                        </span>
+                    </div>
+                    <nav class="nvc-pagination" aria-label="Backup history pagination">
+                        <ul class="nvc-pagination-list">
+                            <li class="nvc-pagination-item nvc-pagination-disabled">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-label="Previous page">
+                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                            <li class="nvc-pagination-item nvc-pagination-active">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-current="page">1</a>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus">2</a>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus">3</a>
+                            </li>
+                            <li class="nvc-pagination-item nvc-pagination-ellipsis">
+                                <span class="nvc-pagination-link">...</span>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus">25</a>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-label="Next page">
+                                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Backup & Recovery Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Backup action buttons functionality
+    const backupButtons = document.querySelectorAll('.nvc-action-buttons-grid .nvc-btn');
+    backupButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.textContent.trim();
+            console.log(`Executing backup action: ${action}`);
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Processing...';
+            this.disabled = true;
+
+            // Simulate backup operation
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                console.log(`${action} completed`);
+            }, 3000);
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            console.log('Sorting by:', this.textContent);
+            // Add actual sorting logic here
+        });
+    });
+
+    // Real-time backup status updates (simulated)
+    function updateBackupStatus() {
+        const statusBadge = document.querySelector('.nvc-badge-success');
+        if (statusBadge) {
+            // Simulate status check
+            console.log('Checking backup status...');
+        }
+    }
+
+    // Check backup status every 60 seconds
+    setInterval(updateBackupStatus, 60000);
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

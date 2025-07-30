@@ -1,0 +1,479 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Role & Permissions - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Role & Permissions Management{% endblock %}
+{% block page_description %}Configure user roles, permissions, and access control policies{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        Administration
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-user-tag" aria-hidden="true"></i>
+    Role & Permissions
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export roles and permissions">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Roles
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Create new role">
+    <i class="fas fa-plus" aria-hidden="true"></i>
+    Create Role
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh role data">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Role & Permissions Overview -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-user-tag" aria-hidden="true"></i>
+                    Role & Permissions Overview
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        RBAC Enabled
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Role & Permissions Metrics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-primary">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-primary">
+                                    <i class="fas fa-user-tag" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-cog" aria-hidden="true"></i>
+                                    <span>{{ role_stats.custom or '5' }}</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ role_stats.total or '12' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Roles</p>
+                                <p class="nvc-metric-subtitle">System & Custom</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-key" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    <span>Active</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ role_stats.permissions or '89' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Active Permissions</p>
+                                <p class="nvc-metric-subtitle">Across all modules</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-users" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+23</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ role_stats.users_assigned or '1,247' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Users Assigned</p>
+                                <p class="nvc-metric-subtitle">With role assignments</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-cog" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-wrench" aria-hidden="true"></i>
+                                    <span>Custom</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ role_stats.custom or '5' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Custom Roles</p>
+                                <p class="nvc-metric-subtitle">Organization specific</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Role Management Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-list" aria-hidden="true"></i>
+                    Role Management
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Filter roles">
+                        <i class="fas fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Add new role">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Add Role
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- FINRA-Compliant Role Management Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="Role and permissions management">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">Role Name</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Description</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Users</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Permissions</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Type</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for role in system_roles or [
+                                {'name': 'Super Admin', 'description': 'Full system access and control', 'users': '3', 'permissions': '89', 'type': 'System', 'editable': False, 'status': 'Active'},
+                                {'name': 'Bank Manager', 'description': 'Branch management and oversight', 'users': '12', 'permissions': '67', 'type': 'System', 'editable': True, 'status': 'Active'},
+                                {'name': 'Teller', 'description': 'Customer service and transactions', 'users': '45', 'permissions': '23', 'type': 'System', 'editable': True, 'status': 'Active'},
+                                {'name': 'Compliance Officer', 'description': 'Regulatory compliance and monitoring', 'users': '8', 'permissions': '34', 'type': 'System', 'editable': True, 'status': 'Active'},
+                                {'name': 'Customer Support', 'description': 'Customer assistance and support', 'users': '23', 'permissions': '18', 'type': 'Custom', 'editable': True, 'status': 'Active'},
+                                {'name': 'Auditor', 'description': 'Read-only access for auditing', 'users': '5', 'permissions': '45', 'type': 'Custom', 'editable': True, 'status': 'Active'},
+                                {'name': 'IT Administrator', 'description': 'System maintenance and support', 'users': '7', 'permissions': '56', 'type': 'Custom', 'editable': True, 'status': 'Active'},
+                                {'name': 'Guest User', 'description': 'Limited read-only access', 'users': '15', 'permissions': '8', 'type': 'Custom', 'editable': True, 'status': 'Inactive'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td>
+                                    <div class="nvc-role-info">
+                                        <h4 class="nvc-role-name nvc-wcag-high-contrast">{{ role.name }}</h4>
+                                        {% if not role.editable %}
+                                        <span class="nvc-role-indicator">
+                                            <i class="fas fa-lock" aria-hidden="true" title="System Role"></i>
+                                            System Protected
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ role.description }}</td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-primary">
+                                        <i class="fas fa-users" aria-hidden="true"></i>
+                                        {{ role.users }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-info">
+                                        <i class="fas fa-key" aria-hidden="true"></i>
+                                        {{ role.permissions }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-{{ 'secondary' if role.type == 'System' else 'success' }}">
+                                        {{ role.type }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'success' if role.status == 'Active' else 'warning' if role.status == 'Inactive' else 'danger' }}">
+                                        {{ role.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View permissions for {{ role.name }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                        {% if role.editable %}
+                                        <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-xs nvc-wcag-focus" aria-label="Edit {{ role.name }}">
+                                            <i class="fas fa-edit" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-info nvc-btn-xs nvc-wcag-focus" aria-label="Assign users to {{ role.name }}">
+                                            <i class="fas fa-users" aria-hidden="true"></i>
+                                        </button>
+                                        {% if role.type == 'Custom' %}
+                                        <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-xs nvc-wcag-focus" aria-label="Delete {{ role.name }}">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>
+                                        </button>
+                                        {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="nvc-table-footer">
+                    <div class="nvc-pagination-info">
+                        <span class="nvc-pagination-text nvc-wcag-medium-contrast">
+                            Showing 1-8 of {{ role_stats.total or '12' }} roles
+                        </span>
+                    </div>
+                    <nav class="nvc-pagination" aria-label="Role management pagination">
+                        <ul class="nvc-pagination-list">
+                            <li class="nvc-pagination-item nvc-pagination-disabled">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-label="Previous page">
+                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                            <li class="nvc-pagination-item nvc-pagination-active">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-current="page">1</a>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus">2</a>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-label="Next page">
+                                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Permission Categories Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-key" aria-hidden="true"></i>
+                    Permission Categories
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Manage permission categories">
+                        <i class="fas fa-cog" aria-hidden="true"></i>
+                        Manage
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-permission-categories">
+                    <div class="nvc-categories-grid">
+                        {% for category in permission_categories or [
+                            {'name': 'Account Management', 'permissions': '15', 'color': 'primary', 'description': 'Customer account operations'},
+                            {'name': 'Transaction Processing', 'permissions': '12', 'color': 'success', 'description': 'Payment and transfer operations'},
+                            {'name': 'User Administration', 'permissions': '18', 'color': 'warning', 'description': 'User and role management'},
+                            {'name': 'System Configuration', 'permissions': '22', 'color': 'info', 'description': 'System settings and configuration'},
+                            {'name': 'Reporting & Analytics', 'permissions': '14', 'color': 'secondary', 'description': 'Reports and data analysis'},
+                            {'name': 'Security & Compliance', 'permissions': '8', 'color': 'danger', 'description': 'Security and regulatory compliance'}
+                        ] %}
+                        <div class="nvc-category-card nvc-category-{{ category.color }}">
+                            <div class="nvc-category-header">
+                                <h3 class="nvc-category-name nvc-wcag-high-contrast">{{ category.name }}</h3>
+                                <span class="nvc-category-count nvc-badge nvc-badge-{{ category.color }}">
+                                    {{ category.permissions }}
+                                </span>
+                            </div>
+                            <div class="nvc-category-content">
+                                <p class="nvc-category-description nvc-wcag-medium-contrast">{{ category.description }}</p>
+                                <div class="nvc-category-actions">
+                                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View {{ category.name }} permissions">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                        View
+                                    </button>
+                                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-xs nvc-wcag-focus" aria-label="Edit {{ category.name }} permissions">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
+                                        Edit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Recent Role Changes Activity Feed -->
+                <div class="nvc-activity-feed">
+                    <div class="nvc-activity-header">
+                        <h3 class="nvc-activity-title nvc-wcag-high-contrast">
+                            <i class="fas fa-history" aria-hidden="true"></i>
+                            Recent Changes
+                        </h3>
+                    </div>
+                    <div class="nvc-activity-content">
+                        {% for change in recent_changes or [
+                            {'action': 'Role Created', 'role': 'Customer Support', 'user': 'admin@nvcbank.com', 'time': '2 hours ago', 'type': 'create'},
+                            {'action': 'Permission Added', 'role': 'Teller', 'user': 'manager@nvcbank.com', 'time': '1 day ago', 'type': 'permission'},
+                            {'action': 'User Assigned', 'role': 'Auditor', 'user': 'admin@nvcbank.com', 'time': '2 days ago', 'type': 'assign'},
+                            {'action': 'Role Modified', 'role': 'IT Administrator', 'user': 'admin@nvcbank.com', 'time': '3 days ago', 'type': 'edit'}
+                        ] %}
+                        <div class="nvc-activity-item">
+                            <div class="nvc-activity-icon nvc-activity-icon-{{ change.type }}">
+                                <i class="fas fa-{{ 'plus' if change.type == 'create' else 'key' if change.type == 'permission' else 'user' if change.type == 'assign' else 'edit' }}" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-activity-details">
+                                <h4 class="nvc-activity-action nvc-wcag-high-contrast">{{ change.action }}</h4>
+                                <p class="nvc-activity-role nvc-wcag-medium-contrast">Role: <strong>{{ change.role }}</strong></p>
+                                <span class="nvc-activity-meta nvc-wcag-medium-contrast">by {{ change.user }} • {{ change.time }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Role & Permissions Management Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            console.log('Sorting by:', this.textContent);
+            // Add actual sorting logic here
+        });
+    });
+
+    // Role action buttons functionality
+    const actionButtons = document.querySelectorAll('.nvc-action-buttons .nvc-btn');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.getAttribute('aria-label');
+            console.log(`Executing role action: ${action}`);
+
+            // Show loading state for edit/delete actions
+            if (action.includes('Edit') || action.includes('Delete')) {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>';
+                this.disabled = true;
+
+                // Simulate action
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    console.log(`${action} completed`);
+                }, 2000);
+            }
+        });
+    });
+
+    // Permission category card interactions
+    const categoryCards = document.querySelectorAll('.nvc-category-card');
+    categoryCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Activity feed interactions
+    const activityItems = document.querySelectorAll('.nvc-activity-item');
+    activityItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+        });
+
+        item.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Role creation functionality
+    const createRoleButtons = document.querySelectorAll('[aria-label*="Create"], [aria-label*="Add new role"]');
+    createRoleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Opening role creation dialog...');
+            // Add actual role creation logic here
+        });
+    });
+
+    // Permission management functionality
+    const managePermissionButtons = document.querySelectorAll('[aria-label*="Manage permission"]');
+    managePermissionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Opening permission management dialog...');
+            // Add actual permission management logic here
+        });
+    });
+
+    // Real-time role updates simulation
+    function updateRoleStats() {
+        const badges = document.querySelectorAll('.nvc-badge-info');
+        badges.forEach(badge => {
+            if (badge.textContent.includes('RBAC')) {
+                // Simulate real-time status check
+                console.log('Checking RBAC status...');
+            }
+        });
+    }
+
+    // Check role status every 60 seconds
+    setInterval(updateRoleStats, 60000);
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

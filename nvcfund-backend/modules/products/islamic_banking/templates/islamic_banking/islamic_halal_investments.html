@@ -1,0 +1,398 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Halal Investments{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-white">Halal Investment Screening & Portfolio</h2>
+                <div>
+                    <button type="button" class="btn nvc-btn nvc-btn-primary">Add Investment</button>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-light">Sharia Review</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Portfolio Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Total Portfolio Value
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">$45.8M</h3>
+                <p class="text-light small mb-0">Halal investments</p>
+                <div class="mt-2">
+                    <span class="badge bg-success">+14.8%</span>
+                    <small class="text-light ms-2">vs last quarter</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Sharia Compliance
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">100%</h3>
+                <p class="text-light small mb-0">All investments</p>
+                <div class="mt-2">
+                    <span class="badge bg-success">Verified</span>
+                    <small class="text-light ms-2">by scholars</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-percentage me-2"></i>
+                        Average Return
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">11.4%</h3>
+                <p class="text-light small mb-0">Annual return</p>
+                <div class="mt-2">
+                    <span class="badge bg-info">+2.8%</span>
+                    <small class="text-light ms-2">vs market</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-building me-2"></i>
+                        Screened Companies
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">1,247</h3>
+                <p class="text-light small mb-0">Approved for investment</p>
+                <div class="mt-2">
+                    <span class="badge bg-warning">+127</span>
+                    <small class="text-light ms-2">new this month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Categories and Performance -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-list me-2"></i>
+                    Halal Investment Holdings
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Investment</th>
+                                <th>Sector</th>
+                                <th>Value</th>
+                                <th>Return</th>
+                                <th>Sharia Status</th>
+                                <th>ESG Rating</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Halal Food Industries ETF</td>
+                                <td>Consumer Goods</td>
+                                <td>$8.7M</td>
+                                <td>+15.2%</td>
+                                <td><span class="badge bg-success">Compliant</span></td>
+                                <td>A+</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success">Invest</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Islamic Technology Fund</td>
+                                <td>Technology</td>
+                                <td>$12.4M</td>
+                                <td>+22.8%</td>
+                                <td><span class="badge bg-success">Compliant</span></td>
+                                <td>A</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning">Monitor</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Healthcare & Pharma Index</td>
+                                <td>Healthcare</td>
+                                <td>$6.8M</td>
+                                <td>+9.7%</td>
+                                <td><span class="badge bg-success">Compliant</span></td>
+                                <td>A+</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info">Research</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Renewable Energy Sukuk</td>
+                                <td>Energy</td>
+                                <td>$9.2M</td>
+                                <td>+6.4%</td>
+                                <td><span class="badge bg-success">Compliant</span></td>
+                                <td>A+</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success">Expand</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Islamic Real Estate REIT</td>
+                                <td>Real Estate</td>
+                                <td>$8.7M</td>
+                                <td>+8.9%</td>
+                                <td><span class="badge bg-warning">Under Review</span></td>
+                                <td>A</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary">Hold</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Sector Allocation
+                </h5>
+                <canvas id="sectorAllocationChart" height="200"></canvas>
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-success me-2"></i>Technology</span>
+                        <span>27%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-info me-2"></i>Energy</span>
+                        <span>20%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-warning me-2"></i>Real Estate</span>
+                        <span>19%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-primary me-2"></i>Consumer Goods</span>
+                        <span>19%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light">
+                        <span><i class="fas fa-circle text-danger me-2"></i>Healthcare</span>
+                        <span>15%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sharia Screening and Performance Analytics -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-search me-2"></i>
+                    Sharia Screening Criteria
+                </h5>
+                <div class="screening-criteria">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-light">Interest-based Income</span>
+                            <span class="badge bg-success">< 5%</span>
+                        </div>
+                        <div class="progress mt-2" class="nvc-h-8">
+                            <div class="progress-bar bg-success" class="progress-bar-95"></div>
+                        </div>
+                        <small class="text-light">95% of portfolio meets criteria</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-light">Debt-to-Market Cap Ratio</span>
+                            <span class="badge bg-success">< 33%</span>
+                        </div>
+                        <div class="progress mt-2" class="nvc-h-8">
+                            <div class="progress-bar bg-success" class="progress-bar-88"></div>
+                        </div>
+                        <small class="text-light">88% of holdings compliant</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-light">Prohibited Activities</span>
+                            <span class="badge bg-success">0%</span>
+                        </div>
+                        <div class="progress mt-2" class="nvc-h-8">
+                            <div class="progress-bar bg-success" class="w-100"></div>
+                        </div>
+                        <small class="text-light">No alcohol, gambling, or haram activities</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-light">Cash-to-Market Cap Ratio</span>
+                            <span class="badge bg-success">< 33%</span>
+                        </div>
+                        <div class="progress mt-2" class="nvc-h-8">
+                            <div class="progress-bar bg-success" class="progress-bar-92"></div>
+                        </div>
+                        <small class="text-light">92% meet liquidity requirements</small>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-3 nvc-bg-bordered-7b86b8" >
+                    <h6 class="text-success mb-2">Overall Compliance Score</h6>
+                    <h4 class="text-success mb-0">94.8%</h4>
+                    <small class="text-light">Excellent Sharia compliance</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Portfolio Performance vs Islamic Index
+                </h5>
+                <canvas id="performanceComparisonChart" height="200"></canvas>
+                
+                <div class="mt-4">
+                    <h6 class="text-white mb-3">Recent Sharia Board Reviews</h6>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Investment</th>
+                                    <th>Decision</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-07-05</td>
+                                    <td>Tech Company XYZ</td>
+                                    <td><span class="badge bg-success">Approved</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-03</td>
+                                    <td>Financial Services ABC</td>
+                                    <td><span class="badge bg-danger">Rejected</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-01</td>
+                                    <td>Healthcare Corp</td>
+                                    <td><span class="badge bg-success">Approved</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2025-06-28</td>
+                                    <td>Energy Solutions Ltd</td>
+                                    <td><span class="badge bg-warning">Under Review</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Sector Allocation Chart
+if (document.getElementById('sectorAllocationChart')) {
+    const ctx = document.getElementById('sectorAllocationChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Technology', 'Energy', 'Real Estate', 'Consumer Goods', 'Healthcare'],
+            datasets: [{
+                data: [27, 20, 19, 19, 15],
+                backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#007bff', '#dc3545'],
+                borderWidth: 2,
+                borderColor: '#1e293b'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+// Performance Comparison Chart
+if (document.getElementById('performanceComparisonChart')) {
+    const ctx = document.getElementById('performanceComparisonChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Our Portfolio',
+                data: [100, 104, 108, 112, 115, 118],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                fill: false,
+                tension: 0.4
+            }, {
+                label: 'Islamic Index',
+                data: [100, 102, 105, 107, 109, 112],
+                borderColor: '#17a2b8',
+                backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                fill: false,
+                tension: 0.4
+            }, {
+                label: 'Conventional Index',
+                data: [100, 103, 106, 108, 110, 114],
+                borderColor: '#ffc107',
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                fill: false,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#e2e8f0' }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#e2e8f0' }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#e2e8f0' } }
+            }
+        }
+    });
+}
+</script>
+</div>
+{% endblock %}

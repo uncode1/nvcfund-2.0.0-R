@@ -1,0 +1,70 @@
+<!-- Treasury Risk Settings Form -->
+<div class="nvc-card mb-4">
+    <div class="nvc-nvc-card-header">
+        <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Risk Management Settings</h5>
+    </div>
+    <div class="nvc-nvc-card-body">
+        <form method="POST" action="{{ url_for('treasury.settings') }}">
+            {{ csrf_token }}
+            <input type="hidden" name="form_section" value="risk_settings">
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="var_limit">Value at Risk (VaR) Limit (%)</label>
+                        <input type="number" class="nvc-form-input" id="var_limit" name="var_limit" 
+                               value="2.5" step="0.1" min="0" max="10" required>
+                        <small class="form-text text-light">Maximum daily VaR as percentage of portfolio</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="stress_test_threshold">Stress Test Threshold (%)</label>
+                        <input type="number" class="nvc-form-input" id="stress_test_threshold" name="stress_test_threshold" 
+                               value="15.0" step="0.5" min="5" max="50" required>
+                        <small class="form-text text-light">Maximum loss threshold for stress testing</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="concentration_limit">Concentration Limit (%)</label>
+                        <input type="number" class="nvc-form-input" id="concentration_limit" name="concentration_limit" 
+                               value="10.0" step="0.5" min="1" max="25" required>
+                        <small class="form-text text-light">Maximum exposure to single counterparty</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="credit_rating_floor">Minimum Credit Rating</label>
+                        <select class="nvc-form-input" id="credit_rating_floor" name="credit_rating_floor" required>
+                            <option value="AAA">AAA</option>
+                            <option value="AA+" selected>AA+</option>
+                            <option value="AA">AA</option>
+                            <option value="AA-">AA-</option>
+                            <option value="A+">A+</option>
+                            <option value="A">A</option>
+                        </select>
+                        <small class="form-text text-light">Minimum acceptable credit rating for investments</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="auto_hedging" name="auto_hedging" checked>
+                    <label class="form-check-label" for="auto_hedging">
+                        Enable Automatic Hedging
+                    </label>
+                    <small class="form-text text-light d-block">Automatically hedge currency and interest rate risks</small>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn nvc-btn nvc-btn-primary">
+                <i class="fas fa-save"></i> Update Risk Settings
+            </button>
+        </form>
+    </div>
+</div>

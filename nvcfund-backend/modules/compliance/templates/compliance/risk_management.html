@@ -1,0 +1,263 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Risk Management - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Risk Management{% endblock %}
+{% block page_description %}Comprehensive risk assessment and mitigation strategies{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Risk Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-search"></i>
+    Risk Assessment
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Create Risk Profile
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Risk Management Functions
+function exportRiskData() {
+    const csvData = 'Risk Type,Severity,Probability,Impact,Mitigation Status\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'risk_management.csv';
+    a.click();
+}
+
+function runRiskAssessment() {
+    alert('Running comprehensive risk assessment...');
+}
+
+function createRiskProfile() {
+    window.location.href = "{{ url_for('compliance.new_risk_profile') }}";
+}
+
+function viewRiskDetails(riskId) {
+    window.location.href = "{{ url_for('compliance.risk_details') }}?id=" + riskId;
+}
+
+function mitigateRisk(riskId) {
+    window.location.href = "{{ url_for('compliance.risk_mitigation') }}?id=" + riskId;
+}
+</script>
+{% endblock %}
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-content {
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .compliance-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1a365d 100%);
+            color: white;
+            padding: 1.5rem;
+            border: none;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .risk-metric {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .risk-level-low { border-left: 5px solid #28a745; }
+        .risk-level-medium { border-left: 5px solid #ffc107; }
+        .risk-level-high { border-left: 5px solid #dc3545; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 25px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include navbar from layout -->
+    {% include 'public/navbars/role_based_navbar.html' %}
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="text-center mb-4">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Compliance Risk Management
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Risk Overview -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="compliance-nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Overall Risk Score</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="risk-metric risk-level-low">
+                                <h2 class="text-success">7.2/10</h2>
+                                <p class="mb-0">Low Risk Profile</p>
+                                <small class="text-light">Last Updated: Today</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="compliance-nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Compliance Coverage</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="risk-metric risk-level-low">
+                                <h2 class="text-success">94.8%</h2>
+                                <p class="mb-0">Controls Active</p>
+                                <small class="text-light">PCI DSS, SOX, FFIEC</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="compliance-nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Active Alerts</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="risk-metric risk-level-medium">
+                                <h2 class="text-warning">3</h2>
+                                <p class="mb-0">Medium Priority</p>
+                                <small class="text-light">Requires Review</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Categories -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="compliance-nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Risk Categories Assessment</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="risk-metric risk-level-low">
+                                        <h5><i class="fas fa-credit-nvc-card me-2"></i>Credit Risk</h5>
+                                        <p class="text-success mb-0">Low - 6.8/10</p>
+                                        <small class="text-light">Portfolio quality: Excellent</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="risk-metric risk-level-low">
+                                        <h5><i class="fas fa-chart-area me-2"></i>Market Risk</h5>
+                                        <p class="text-success mb-0">Low - 7.1/10</p>
+                                        <small class="text-light">VaR within limits</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="risk-metric risk-level-medium">
+                                        <h5><i class="fas fa-cogs me-2"></i>Operational Risk</h5>
+                                        <p class="text-warning mb-0">Medium - 6.2/10</p>
+                                        <small class="text-light">System upgrades pending</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="risk-metric risk-level-low">
+                                        <h5><i class="fas fa-balance-scale me-2"></i>Regulatory Risk</h5>
+                                        <p class="text-success mb-0">Low - 8.9/10</p>
+                                        <small class="text-light">Full compliance maintained</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Center -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="compliance-nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Risk Management Actions</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <button type="button" class="btn nvc-btn nvc-btn-primary w-100 mb-2">
+                                        <i class="fas fa-file-alt me-1"></i> Generate Risk Report
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="button" class="btn nvc-btn nvc-btn-primary w-100 mb-2">
+                                        <i class="fas fa-search me-1"></i> Risk Assessment
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="button" class="btn nvc-btn nvc-btn-primary w-100 mb-2">
+                                        <i class="fas fa-cog me-1"></i> Control Settings
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="button" class="btn nvc-btn nvc-btn-primary w-100 mb-2">
+                                        <i class="fas fa-bell me-1"></i> Alert Configuration
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,430 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Banking Overview - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Banking Overview{% endblock %}
+{% block page_description %}Comprehensive banking operations and financial services management{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary">
+    <i class="fas fa-plus"></i>
+    New Transaction
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Data
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <!-- Banking Overview Section -->
+    <div class="nvc-content-section" id="overview">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-university"></i> Banking Operations Overview
+            </h3>
+            <div class="nvc-content-section-actions">
+                <span class="nvc-badge nvc-badge-success">Real-time data</span>
+            </div>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-success">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">${{ banking_stats.total_deposits or '2.4B' }}</div>
+                                    <div class="nvc-metric-label">Total Deposits</div>
+                                    <div class="nvc-metric-status nvc-status-success">+{{ banking_stats.deposit_growth or '5.2' }}% this month</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-primary">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">{{ banking_stats.daily_transactions or '47,892' }}</div>
+                                    <div class="nvc-metric-label">Daily Transactions</div>
+                            <small class="text-light">${{ banking_stats.daily_volume or '12.4M' }} volume</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-exchange-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Pending Operations</h6>
+                            <h3 class="mb-0">{{ banking_stats.pending_operations or '247' }}</h3>
+                            <small class="text-light">Require approval</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Active Loans</h6>
+                            <h3 class="mb-0">${{ banking_stats.active_loans or '890M' }}</h3>
+                            <small class="text-light">{{ banking_stats.loan_count or '3,247' }} loans</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-hand-holding-usd fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banking Services -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-university me-2"></i>
+                        Banking Services
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-primary h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-exchange-alt fa-3x text-primary mb-3"></i>
+                                    <h5>Transfers</h5>
+                                    <p class="text-muted">Internal & external transfers</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-success">{{ service_stats.transfers_today or '12,847' }} today</span>
+                                    </div>
+                                    <button type="button" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-arrow-right me-1"></i>
+                                        Manage
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-success h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-credit-card fa-3x text-success mb-3"></i>
+                                    <h5>Cards</h5>
+                                    <p class="text-muted">Debit & credit card management</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-success">{{ service_stats.active_cards or '8,923' }} active</span>
+                                    </div>
+                                    <button type="button" class="btn btn-success btn-sm">
+                                        <i class="fas fa-arrow-right me-1"></i>
+                                        Manage
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-warning h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-invoice-dollar fa-3x text-warning mb-3"></i>
+                                    <h5>Bill Payments</h5>
+                                    <p class="text-muted">Utility & service payments</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-warning">{{ service_stats.bill_payments or '3,456' }} this month</span>
+                                    </div>
+                                    <button type="button" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-arrow-right me-1"></i>
+                                        Manage
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-info h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-hand-holding-usd fa-3x text-info mb-3"></i>
+                                    <h5>Loans</h5>
+                                    <p class="text-muted">Personal & business loans</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-info">{{ service_stats.loan_applications or '89' }} pending</span>
+                                    </div>
+                                    <button type="button" class="btn btn-info btn-sm">
+                                        <i class="fas fa-arrow-right me-1"></i>
+                                        Manage
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Analytics -->
+    <div class="row mb-4">
+        <!-- Transaction Volume Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-area me-2"></i>
+                        Transaction Volume (30 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container nvc-style-54c806" >
+                        <canvas id="transactionVolumeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Usage -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Service Usage
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Transfers</span>
+                            <span class="text-primary">{{ service_usage.transfers or '42%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" class="progress-bar-42"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Card Transactions</span>
+                            <span class="text-success">{{ service_usage.cards or '31%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-31"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Bill Payments</span>
+                            <span class="text-warning">{{ service_usage.bills or '18%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" class="progress-bar-18"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Loan Services</span>
+                            <span class="text-info">{{ service_usage.loans or '9%' }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" class="progress-bar-9"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities and Alerts -->
+    <div class="row">
+        <!-- Recent Banking Activities -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Recent Banking Activities
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Activity</th>
+                                    <th>Account</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activities or [
+                                    {'time': '14:30', 'activity': 'Wire Transfer', 'account': 'ACC-001234', 'amount': '$50,000.00', 'status': 'Completed'},
+                                    {'time': '14:28', 'activity': 'Card Payment', 'account': 'ACC-001235', 'amount': '$89.99', 'status': 'Completed'},
+                                    {'time': '14:25', 'activity': 'Bill Payment', 'account': 'ACC-001236', 'amount': '$234.56', 'status': 'Completed'},
+                                    {'time': '14:22', 'activity': 'Internal Transfer', 'account': 'ACC-001237', 'amount': '$2,500.00', 'status': 'Pending'},
+                                    {'time': '14:20', 'activity': 'Loan Payment', 'account': 'ACC-001238', 'amount': '$1,200.00', 'status': 'Completed'},
+                                    {'time': '14:18', 'activity': 'ATM Withdrawal', 'account': 'ACC-001239', 'amount': '$500.00', 'status': 'Completed'},
+                                    {'time': '14:15', 'activity': 'Check Deposit', 'account': 'ACC-001240', 'amount': '$3,456.78', 'status': 'Processing'}
+                                ] %}
+                                <tr>
+                                    <td>{{ activity.time }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if 'Transfer' in activity.activity else 'success' if 'Payment' in activity.activity else 'info' if 'Deposit' in activity.activity else 'warning' }}">
+                                            {{ activity.activity }}
+                                        </span>
+                                    </td>
+                                    <td><code>{{ activity.account }}</code></td>
+                                    <td>
+                                        <strong class="text-{{ 'success' if 'Deposit' in activity.activity else 'danger' if 'Withdrawal' in activity.activity else 'primary' }}">
+                                            {{ activity.amount }}
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if activity.status == 'Completed' else 'warning' if activity.status == 'Pending' else 'info' }}">
+                                            {{ activity.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Banking Alerts -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Banking Alerts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for alert in banking_alerts or [
+                        {'type': 'warning', 'title': 'High Volume Detected', 'message': 'Unusual transaction volume in the last hour', 'time': '5 min ago'},
+                        {'type': 'info', 'title': 'System Maintenance', 'message': 'Scheduled maintenance tonight 2:00-4:00 AM', 'time': '1 hour ago'},
+                        {'type': 'success', 'title': 'Daily Reconciliation', 'message': 'All accounts reconciled successfully', 'time': '2 hours ago'},
+                        {'type': 'danger', 'title': 'Failed Transactions', 'message': '23 transactions failed due to insufficient funds', 'time': '3 hours ago'}
+                    ] %}
+                    <div class="alert alert-{{ alert.type }} alert-sm">
+                        <h6 class="alert-heading">{{ alert.title }}</h6>
+                        <p class="mb-1">{{ alert.message }}</p>
+                        <small class="text-muted">{{ alert.time }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            New Transfer
+                        </button>
+                        <button type="button" class="btn btn-success">
+                            <i class="fas fa-credit-card me-2"></i>
+                            Issue Card
+                        </button>
+                        <button type="button" class="btn btn-warning">
+                            <i class="fas fa-file-invoice me-2"></i>
+                            Process Bill Payment
+                        </button>
+                        <button type="button" class="btn btn-info">
+                            <i class="fas fa-hand-holding-usd me-2"></i>
+                            Loan Application
+                        </button>
+                        <button type="button" class="btn btn-secondary">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banking Performance Metrics -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Banking Performance Metrics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-success">{{ performance_metrics.success_rate or '99.7' }}%</h4>
+                                <p class="text-muted mb-0">Transaction Success Rate</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-info">{{ performance_metrics.avg_processing_time or '1.2' }}s</h4>
+                                <p class="text-muted mb-0">Avg Processing Time</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-primary">{{ performance_metrics.uptime or '99.9' }}%</h4>
+                                <p class="text-muted mb-0">System Uptime</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-warning">{{ performance_metrics.customer_satisfaction or '4.8' }}/5</h4>
+                                <p class="text-muted mb-0">Customer Satisfaction</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

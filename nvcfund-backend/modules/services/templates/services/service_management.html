@@ -1,0 +1,256 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Service Management - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Service Management{% endblock %}
+{% block page_description %}Comprehensive customer service operations and support management{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="btn btn-outline-primary">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="btn btn-secondary">
+    <i class="fas fa-plus"></i>
+    New Ticket
+</button>
+<button type="button" class="btn btn-primary">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Data
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Service Metrics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Active Tickets</h6>
+                            <h3 class="mb-0">{{ service_stats.active_tickets or '247' }}</h3>
+                            <small class="text-light">{{ service_stats.new_today or '23' }} new today</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-ticket-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Avg Response Time</h6>
+                            <h3 class="mb-0">{{ service_stats.avg_response_time or '2.3' }}h</h3>
+                            <small class="text-light">Target: {{ service_stats.target_response or '4' }}h</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Resolution Rate</h6>
+                            <h3 class="mb-0">{{ service_stats.resolution_rate or '94.2' }}%</h3>
+                            <small class="text-light">First contact resolution</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Customer Satisfaction</h6>
+                            <h3 class="mb-0">{{ service_stats.satisfaction_score or '4.7' }}/5</h3>
+                            <small class="text-light">{{ service_stats.satisfaction_responses or '1,234' }} responses</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-star fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Channels -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-comments me-2"></i>
+                        Service Channels Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for channel in service_channels or [
+                            {'name': 'Live Chat', 'tickets': '1,234', 'avg_time': '1.2h', 'satisfaction': '4.8', 'agents': '12', 'color': 'primary'},
+                            {'name': 'Phone Support', 'tickets': '2,156', 'avg_time': '3.1h', 'satisfaction': '4.6', 'agents': '18', 'color': 'success'},
+                            {'name': 'Email Support', 'tickets': '3,456', 'avg_time': '6.2h', 'satisfaction': '4.4', 'agents': '8', 'color': 'info'},
+                            {'name': 'In-Branch', 'tickets': '567', 'avg_time': '0.8h', 'satisfaction': '4.9', 'agents': '25', 'color': 'warning'},
+                            {'name': 'Self-Service', 'tickets': '8,923', 'avg_time': '0.1h', 'satisfaction': '4.2', 'agents': 'N/A', 'color': 'secondary'},
+                            {'name': 'Social Media', 'tickets': '234', 'avg_time': '2.8h', 'satisfaction': '4.5', 'agents': '3', 'color': 'dark'}
+                        ] %}
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="card border-{{ channel.color }}">
+                                <div class="card-body text-center">
+                                    <h5 class="text-{{ channel.color }}">{{ channel.name }}</h5>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <h6>{{ channel.tickets }}</h6>
+                                            <small class="text-muted">Tickets</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <h6>{{ channel.avg_time }}</h6>
+                                            <small class="text-muted">Avg Time</small>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>{{ channel.satisfaction }}/5</strong>
+                                            <br>
+                                            <small class="text-muted">Satisfaction</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>{{ channel.agents }}</strong>
+                                            <br>
+                                            <small class="text-muted">Agents</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Tickets -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Active Support Tickets ({{ service_stats.active_tickets or '247' }} tickets)
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                        <button type="button" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i>
+                            New Ticket
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Ticket ID</th>
+                                    <th>Customer</th>
+                                    <th>Subject</th>
+                                    <th>Channel</th>
+                                    <th>Priority</th>
+                                    <th>Assigned To</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticket in active_tickets or [
+                                    {'id': 'TKT-001234', 'customer': 'John Doe', 'email': 'john.doe@email.com', 'subject': 'Account Access Issue', 'channel': 'Live Chat', 'priority': 'High', 'agent': 'Sarah Wilson', 'status': 'In Progress', 'created': '2024-01-15 14:30'},
+                                    {'id': 'TKT-001235', 'customer': 'Jane Smith', 'email': 'jane.smith@email.com', 'subject': 'Transaction Dispute', 'channel': 'Phone', 'priority': 'Medium', 'agent': 'Mike Johnson', 'status': 'Pending', 'created': '2024-01-15 13:45'},
+                                    {'id': 'TKT-001236', 'customer': 'Bob Wilson', 'email': 'bob.w@email.com', 'subject': 'Card Replacement', 'channel': 'Email', 'priority': 'Low', 'agent': 'Lisa Garcia', 'status': 'Resolved', 'created': '2024-01-15 12:20'},
+                                    {'id': 'TKT-001237', 'customer': 'Alice Brown', 'email': 'alice.b@email.com', 'subject': 'Loan Application Status', 'channel': 'In-Branch', 'priority': 'Medium', 'agent': 'David Taylor', 'status': 'In Progress', 'created': '2024-01-15 11:15'},
+                                    {'id': 'TKT-001238', 'customer': 'Tom Davis', 'email': 'tom.d@email.com', 'subject': 'Mobile App Bug', 'channel': 'Social Media', 'priority': 'High', 'agent': 'Emily Chen', 'status': 'Escalated', 'created': '2024-01-15 10:30'}
+                                ] %}
+                                <tr class="{{ 'table-success' if ticket.status == 'Resolved' else 'table-warning' if ticket.status == 'Escalated' else '' }}">
+                                    <td>
+                                        <strong>{{ ticket.id }}</strong>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ ticket.customer }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ ticket.email }}</small>
+                                        </div>
+                                    </td>
+                                    <td>{{ ticket.subject }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if ticket.channel == 'Live Chat' else 'success' if ticket.channel == 'Phone' else 'info' if ticket.channel == 'Email' else 'warning' if ticket.channel == 'In-Branch' else 'dark' }}">
+                                            {{ ticket.channel }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if ticket.priority == 'High' else 'warning' if ticket.priority == 'Medium' else 'success' }}">
+                                            {{ ticket.priority }}
+                                        </span>
+                                    </td>
+                                    <td>{{ ticket.agent }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if ticket.status == 'Resolved' else 'primary' if ticket.status == 'In Progress' else 'warning' if ticket.status == 'Pending' else 'danger' }}">
+                                            {{ ticket.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ ticket.created }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            {% if ticket.status != 'Resolved' %}
+                                            <button type="button" class="btn btn-outline-success" title="Resolve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            {% endif %}
+                                            {% if ticket.priority != 'High' and ticket.status != 'Escalated' %}
+                                            <button type="button" class="btn btn-outline-warning" title="Escalate">
+                                                <i class="fas fa-arrow-up"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

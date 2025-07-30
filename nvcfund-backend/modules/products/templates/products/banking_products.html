@@ -1,0 +1,323 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Banking Products - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Banking Products{% endblock %}
+{% block page_description %}Comprehensive banking product portfolio and service management{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-bar"></i>
+    Analytics
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Add Product
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- Banking Products Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>{{ category_name|default('Banking Products') }}</h3>
+                        <p>{{ category_description|default('Comprehensive banking services and financial products') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Banking Statistics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon primary">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ total_modules|default('12') }}</h3>
+                    <p>Total Products</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-arrow-up"></i> +2 this quarter
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ active_modules|default('10') }}</h3>
+                    <p>Active Products</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-check"></i> 83.3% operational
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon info">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ daily_transactions|default('8,542')|int|round|string }}</h3>
+                    <p>Daily Transactions</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-arrow-up"></i> +15% today
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon warning">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ success_rate|default('99.2') }}%</h3>
+                    <p>Success Rate</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-check"></i> Above target
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Banking Products Grid -->
+<div class="row">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-th-large"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Banking Product Portfolio</h3>
+                        <p>Active banking services and financial products</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="row">
+                    {% for module in modules %}
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="nvc-card product-nvc-card">
+                            <div class="product-header">
+                                <div class="product-icon {{ module.color|default('primary') }}">
+                                    <i class="{{ module.icon|default('fas fa-university') }}"></i>
+                                </div>
+                                <div class="product-info">
+                                    <h4>{{ module.name|default('Banking Service') }}</h4>
+                                    <p>{{ module.description|default('Core banking service description') }}</p>
+                                </div>
+                                <div class="product-status">
+                                    <span class="badge-enterprise {{ module.color|default('primary') }}">
+                                        {{ module.status|default('Active') }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="product-metrics">
+                                <div class="metric-row">
+                                    <div class="metric-item">
+                                        <span class="metric-value">{{ module.daily_transactions|default('1,234') }}</span>
+                                        <span class="metric-label">Daily Transactions</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-value">{{ module.success_rate|default('99.5') }}%</span>
+                                        <span class="metric-label">Success Rate</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-value">{{ module.last_activity|default('2 min ago') }}</span>
+                                        <span class="metric-label">Last Activity</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="product-actions">
+                                <div class="status-indicator">
+                                    <span class="status-dot {{ module.color|default('primary') }}"></span>
+                                    <span class="status-text">{{ module.status|default('Active') }}</span>
+                                </div>
+                                <a href="{{ module.url|default('#') }}" class="nvc-btn nvc-btn-primary-enterprise">
+                                    <i class="fas fa-arrow-right"></i>
+                                    Access Product
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Default banking products if none provided -->
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="nvc-card product-nvc-card">
+                            <div class="product-header">
+                                <div class="product-icon primary">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <div class="product-info">
+                                    <h4>Core Banking</h4>
+                                    <p>Essential banking services and account management</p>
+                                </div>
+                                <div class="product-status">
+                                    <span class="badge-enterprise success">Active</span>
+                                </div>
+                            </div>
+                            <div class="product-metrics">
+                                <div class="metric-row">
+                                    <div class="metric-item">
+                                        <span class="metric-value">2,847</span>
+                                        <span class="metric-label">Daily Transactions</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-value">99.8%</span>
+                                        <span class="metric-label">Success Rate</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-value">1 min ago</span>
+                                        <span class="metric-label">Last Activity</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="product-actions">
+                                <div class="status-indicator">
+                                    <span class="status-dot success"></span>
+                                    <span class="status-text">Active</span>
+                                </div>
+                                <a href="{{ url_for('banking.modular_banking_dashboard') }}" class="nvc-btn nvc-btn-primary-enterprise">
+                                    <i class="fas fa-arrow-right"></i>
+                                    Access Product
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="nvc-card product-nvc-card">
+                            <div class="product-header">
+                                <div class="product-icon info">
+                                    <i class="fas fa-credit-nvc-card"></i>
+                                </div>
+                                <div class="product-info">
+                                    <h4>Cards & Payments</h4>
+                                    <p>Credit cards, debit cards, and payment processing</p>
+                                </div>
+                                <div class="product-status">
+                                    <span class="badge-enterprise success">Active</span>
+                                </div>
+                            </div>
+                            <div class="product-metrics">
+                                <div class="metric-row">
+                                    <div class="metric-item">
+                                        <span class="metric-value">5,623</span>
+                                        <span class="metric-label">Daily Transactions</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-value">99.2%</span>
+                                        <span class="metric-label">Success Rate</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-value">3 min ago</span>
+                                        <span class="metric-label">Last Activity</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="product-actions">
+                                <div class="status-indicator">
+                                    <span class="status-dot success"></span>
+                                    <span class="status-text">Active</span>
+                                </div>
+                                <a href="{{ url_for('banking.modular_banking_cards') }}" class="nvc-btn nvc-btn-primary-enterprise">
+                                    <i class="fas fa-arrow-right"></i>
+                                    Access Product
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Banking Products Functions
+function exportBankingData() {
+    const csvData = 'Product,Status,Daily Transactions,Success Rate,Last Activity\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'banking_products_data.csv';
+    a.click();
+}
+
+function analyzeBankingProducts() {
+    window.location.href = "{{ url_for('products.banking_analytics') }}";
+}
+
+function addBankingProduct() {
+    window.location.href = "{{ url_for('products.add_banking_product') }}";
+}
+
+// Initialize banking products page
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for product cards
+    const productCards = document.querySelectorAll('.product-card');
+    productCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function(e) {
+            if (!e.target.closest('.btn-primary-enterprise')) {
+                const link = this.querySelector('.btn-primary-enterprise');
+                if (link) link.click();
+            }
+        });
+    });
+
+    // Add hover effects for metric cards
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+</div>
+{% endblock %}
+{% endblock %}

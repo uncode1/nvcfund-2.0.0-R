@@ -1,0 +1,472 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Security Score Analysis - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Security Score Analysis{% endblock %}
+{% block page_description %}Comprehensive security analysis and risk assessment for account management{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('accounts.main_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        Accounts
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+    Security Score Analysis
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Download security report">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Security Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Run security scan">
+    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+    Run Security Scan
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh security scores">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh Scores
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Security Score Overview -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                    Security Score Analysis
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-success">{{ security_data.overall_score or '94.2' }}% Score</span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-security-overview">
+                    <div class="nvc-security-score">
+                        <h3 class="nvc-security-total nvc-wcag-high-contrast">{{ security_data.overall_score or '94.2' }}%</h3>
+                        <p class="nvc-security-label nvc-wcag-medium-contrast">Overall Security Score</p>
+                        <div class="nvc-security-status">
+                            <span class="nvc-badge nvc-badge-success">Excellent</span>
+                        </div>
+                        <p class="nvc-security-updated nvc-wcag-medium-contrast">Last assessment: {{ security_data.last_assessment or 'Today at 2:30 PM' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Security Metrics Dashboard -->
+        <div class="nvc-dashboard-grid">
+            <div class="nvc-metrics-row">
+                <div class="nvc-metric-card nvc-metric-success">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-success">
+                            <i class="fas fa-key" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+2.1%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ security_metrics.auth_score or '96.8' }}%</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Authentication Score</p>
+                        <p class="nvc-metric-subtitle">2FA enabled: {{ security_metrics.tfa_enabled or '89%' }}</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-info">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-info">
+                            <i class="fas fa-lock" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+1.8%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ security_metrics.access_score or '92.4' }}%</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Access Control</p>
+                        <p class="nvc-metric-subtitle">Role-based access</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-warning">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-warning">
+                            <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-neutral">
+                            <i class="fas fa-minus" aria-hidden="true"></i>
+                            <span>Stable</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ security_metrics.transaction_score or '88.7' }}%</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Transaction Security</p>
+                        <p class="nvc-metric-subtitle">Fraud detection active</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-primary">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-primary">
+                            <i class="fas fa-database" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+0.5%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ security_metrics.data_score or '97.1' }}%</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Data Protection</p>
+                        <p class="nvc-metric-subtitle">Encryption enabled</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Analysis Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-line" aria-hidden="true"></i>
+                    Security Analysis
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="View detailed analysis">
+                        <i class="fas fa-expand" aria-hidden="true"></i>
+                        View Details
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-security-analysis-grid">
+                    <div class="nvc-security-chart">
+                        <div class="nvc-chart-header">
+                            <h3 class="nvc-chart-title nvc-wcag-high-contrast">Security Trend Analysis</h3>
+                            <span class="nvc-chart-period nvc-wcag-medium-contrast">30 Days</span>
+                        </div>
+                        <div class="nvc-chart-container">
+                            <div class="nvc-chart-placeholder" aria-label="Security trend chart showing 30 days of data">
+                                <i class="fas fa-chart-line nvc-chart-icon" aria-hidden="true"></i>
+                                <span class="nvc-chart-text">Security Trend Chart</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nvc-security-breakdown">
+                        <div class="nvc-breakdown-header">
+                            <h3 class="nvc-breakdown-title nvc-wcag-high-contrast">Risk Level Distribution</h3>
+                        </div>
+                        <div class="nvc-breakdown-content">
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">Low Risk</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">{{ risk_categories.low or '1,089' }}</div>
+                                <div class="nvc-breakdown-change nvc-amount-positive">87%</div>
+                            </div>
+
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">Medium Risk</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">{{ risk_categories.medium or '137' }}</div>
+                                <div class="nvc-breakdown-change nvc-amount-warning">11%</div>
+                            </div>
+
+                            <div class="nvc-breakdown-item">
+                                <div class="nvc-breakdown-label nvc-wcag-medium-contrast">High Risk</div>
+                                <div class="nvc-breakdown-value nvc-wcag-high-contrast">{{ risk_categories.high or '21' }}</div>
+                                <div class="nvc-breakdown-change nvc-amount-negative">2%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Security Components Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                    Security Components Analysis
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export security analysis">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- FINRA-Compliant Security Components Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="Security components analysis">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">Security Component</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Score</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Coverage</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Last Updated</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for component in security_components or [
+                                {'name': 'Multi-Factor Authentication', 'score': '96.8%', 'status': 'Excellent', 'coverage': '89.2%', 'updated': '2024-01-15', 'trend': '+2.1%'},
+                                {'name': 'Password Security', 'score': '91.4%', 'status': 'Good', 'coverage': '94.7%', 'updated': '2024-01-15', 'trend': '+1.8%'},
+                                {'name': 'Session Management', 'score': '94.2%', 'status': 'Excellent', 'coverage': '100%', 'updated': '2024-01-15', 'trend': '+0.5%'},
+                                {'name': 'Fraud Detection', 'score': '88.7%', 'status': 'Good', 'coverage': '87.3%', 'updated': '2024-01-15', 'trend': '+3.2%'},
+                                {'name': 'Data Encryption', 'score': '97.1%', 'status': 'Excellent', 'coverage': '100%', 'updated': '2024-01-15', 'trend': '+0.3%'},
+                                {'name': 'Access Control', 'score': '92.4%', 'status': 'Good', 'coverage': '91.8%', 'updated': '2024-01-15', 'trend': '+1.2%'},
+                                {'name': 'Audit Logging', 'score': '95.6%', 'status': 'Excellent', 'coverage': '98.4%', 'updated': '2024-01-15', 'trend': '+0.8%'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td class="nvc-wcag-high-contrast">{{ component.name }}</td>
+                                <td>
+                                    <div class="nvc-score-display">
+                                        <span class="nvc-score-value nvc-wcag-high-contrast">{{ component.score }}</span>
+                                        <div class="nvc-progress-container">
+                                            <div class="nvc-progress-bar nvc-progress-{{ 'success' if component.score.replace('%', '')|float >= 95 else 'info' if component.score.replace('%', '')|float >= 90 else 'warning' }} nvc-progress-{{ component.score.replace('%', '') }}" aria-label="{{ component.name }} score: {{ component.score }}"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'success' if component.status == 'Excellent' else 'info' if component.status == 'Good' else 'warning' }}">
+                                        {{ component.status }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ component.coverage }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ component.updated }}</td>
+                                <td class="nvc-wcag-high-contrast nvc-amount-positive">{{ component.trend }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Security Alerts and Recommendations -->
+                <div class="nvc-security-insights">
+                    <div class="nvc-security-alerts">
+                        <div class="nvc-alerts-header">
+                            <h3 class="nvc-alerts-title nvc-wcag-high-contrast">Security Alerts</h3>
+                        </div>
+                        <div class="nvc-alerts-content">
+                            <div class="nvc-alert-card nvc-alert-success">
+                                <div class="nvc-alert-icon">
+                                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-alert-content">
+                                    <h4 class="nvc-alert-title nvc-wcag-high-contrast">All Clear</h4>
+                                    <p class="nvc-alert-text nvc-wcag-medium-contrast">No critical security threats detected.</p>
+                                </div>
+                            </div>
+
+                            <div class="nvc-alert-card nvc-alert-warning">
+                                <div class="nvc-alert-icon">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-alert-content">
+                                    <h4 class="nvc-alert-title nvc-wcag-high-contrast">Notice</h4>
+                                    <p class="nvc-alert-text nvc-wcag-medium-contrast">137 accounts without 2FA enabled.</p>
+                                </div>
+                            </div>
+
+                            <div class="nvc-alert-card nvc-alert-info">
+                                <div class="nvc-alert-icon">
+                                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-alert-content">
+                                    <h4 class="nvc-alert-title nvc-wcag-high-contrast">Recommendation</h4>
+                                    <p class="nvc-alert-text nvc-wcag-medium-contrast">Consider implementing biometric authentication.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-security-recommendations">
+                        <div class="nvc-recommendations-header">
+                            <h3 class="nvc-recommendations-title nvc-wcag-high-contrast">Security Recommendations</h3>
+                        </div>
+                        <div class="nvc-recommendations-content">
+                            <div class="nvc-recommendation-item">
+                                <div class="nvc-recommendation-icon">
+                                    <i class="fas fa-mobile-alt" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-recommendation-text">
+                                    <h4 class="nvc-recommendation-title nvc-wcag-high-contrast">Enable 2FA</h4>
+                                    <p class="nvc-recommendation-desc nvc-wcag-medium-contrast">137 accounts still need two-factor authentication</p>
+                                </div>
+                            </div>
+
+                            <div class="nvc-recommendation-item">
+                                <div class="nvc-recommendation-icon">
+                                    <i class="fas fa-key" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-recommendation-text">
+                                    <h4 class="nvc-recommendation-title nvc-wcag-high-contrast">Password Updates</h4>
+                                    <p class="nvc-recommendation-desc nvc-wcag-medium-contrast">89 accounts have passwords older than 90 days</p>
+                                </div>
+                            </div>
+
+                            <div class="nvc-recommendation-item">
+                                <div class="nvc-recommendation-icon">
+                                    <i class="fas fa-fingerprint" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-recommendation-text">
+                                    <h4 class="nvc-recommendation-title nvc-wcag-high-contrast">Biometric Auth</h4>
+                                    <p class="nvc-recommendation-desc nvc-wcag-medium-contrast">Consider implementing for high-value accounts</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- High Risk Accounts Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="High risk accounts requiring attention">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">Account ID</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Account Holder</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Risk Level</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Security Score</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Issues</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Last Login</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in high_risk_accounts or [
+                                {'id': 'ACC-001234', 'holder': 'John Doe', 'risk': 'High', 'score': '45.2%', 'issues': 'No 2FA, Weak Password', 'last_login': '2024-01-10'},
+                                {'id': 'ACC-001235', 'holder': 'Jane Smith', 'risk': 'High', 'score': '52.8%', 'issues': 'Suspicious Activity', 'last_login': '2024-01-12'},
+                                {'id': 'ACC-001236', 'holder': 'Mike Johnson', 'risk': 'Medium', 'score': '67.3%', 'issues': 'Old Password', 'last_login': '2024-01-14'},
+                                {'id': 'ACC-001237', 'holder': 'Sarah Wilson', 'risk': 'High', 'score': '41.9%', 'issues': 'Multiple Failed Logins', 'last_login': '2024-01-08'},
+                                {'id': 'ACC-001238', 'holder': 'David Brown', 'risk': 'Medium', 'score': '72.1%', 'issues': 'Unverified Device', 'last_login': '2024-01-13'}
+                            ] %}
+                            <tr class="nvc-finra-row nvc-row-{{ 'danger' if account.risk == 'High' else 'warning' }}">
+                                <td class="nvc-wcag-high-contrast">{{ account.id }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ account.holder }}</td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'danger' if account.risk == 'High' else 'warning' }}">
+                                        {{ account.risk }} Risk
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="nvc-score-display">
+                                        <span class="nvc-score-value nvc-wcag-high-contrast nvc-amount-{{ 'negative' if account.score.replace('%', '')|float < 60 else 'warning' }}">{{ account.score }}</span>
+                                        <div class="nvc-progress-container">
+                                            <div class="nvc-progress-bar nvc-progress-{{ 'danger' if account.score.replace('%', '')|float < 60 else 'warning' }} nvc-progress-{{ account.score.replace('%', '') }}" aria-label="Security score: {{ account.score }}"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ account.issues }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ account.last_login }}</td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="Review account {{ account.id }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-xs nvc-wcag-focus" aria-label="Force security update for account {{ account.id }}">
+                                            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-xs nvc-wcag-focus" aria-label="Suspend account {{ account.id }}">
+                                            <i class="fas fa-ban" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Security Score Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            // Add sorting functionality here
+            console.log('Sorting by:', this.textContent);
+        });
+    });
+
+    // Alert card interactions
+    const alertCards = document.querySelectorAll('.nvc-alert-card');
+    alertCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Recommendation item interactions
+    const recommendationItems = document.querySelectorAll('.nvc-recommendation-item');
+    recommendationItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

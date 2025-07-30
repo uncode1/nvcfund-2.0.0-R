@@ -1,0 +1,451 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+{% block title %}Securities Trading - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="row">
+    <div class="col-lg-8">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <i class="fas fa-chart-bar me-2"></i>Securities Trading
+            </div>
+            <div class="nvc-nvc-card-body">
+                <form method="POST" action="{{ url_for('trading.submit_equity_order') }}" class="order-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Basic Order Information -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.symbol.label(class="nvc-form-label") }}
+                                {{ form.symbol(class="nvc-form-input", placeholder="e.g., AAPL, GOOGL") }}
+                                {% if form.symbol.errors %}
+                                    <div class="text-danger small">{{ form.symbol.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.order_side.label(class="nvc-form-label") }}
+                                {{ form.order_side(class="nvc-form-select") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.quantity.label(class="nvc-form-label") }}
+                                {{ form.quantity(class="nvc-form-input", min="1") }}
+                                {% if form.quantity.errors %}
+                                    <div class="text-danger small">{{ form.quantity.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.order_type.label(class="nvc-form-label") }}
+                                {{ form.order_type(class="nvc-form-select", id="order_type_select") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conditional Price Fields -->
+                    <div class="row" id="price-fields">
+                        <div class="col-md-6" id="limit-price-field" class="d-none">
+                            <div class="mb-3">
+                                {{ form.limit_price.label(class="nvc-form-label") }}
+                                {{ form.limit_price(class="nvc-form-input", step="0.01") }}
+                                {% if form.limit_price.errors %}
+                                    <div class="text-danger small">{{ form.limit_price.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="stop-price-field" class="d-none">
+                            <div class="mb-3">
+                                {{ form.stop_price.label(class="nvc-form-label") }}
+                                {{ form.stop_price(class="nvc-form-input", step="0.01") }}
+                                {% if form.stop_price.errors %}
+                                    <div class="text-danger small">{{ form.stop_price.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time in Force -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.time_in_force.label(class="nvc-form-label") }}
+                                {{ form.time_in_force(class="nvc-form-select") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="expiry-field" class="d-none">
+                            <div class="mb-3">
+                                {{ form.expiry_date.label(class="nvc-form-label") }}
+                                {{ form.expiry_date(class="nvc-form-input") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Options -->
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Advanced Options</label>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    {{ form.all_or_none(class="form-check-input") }}
+                                    {{ form.all_or_none.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    {{ form.hidden_order(class="form-check-input") }}
+                                    {{ form.hidden_order.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    {{ form.post_only(class="form-check-input") }}
+                                    {{ form.post_only.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    {{ form.reduce_only(class="form-check-input") }}
+                                    {{ form.reduce_only.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Algorithmic Order Options -->
+                    <div id="algo-options" class="d-none">
+                        <div class="row">
+                            <div class="col-md-4" id="iceberg-qty-field">
+                                <div class="mb-3">
+                                    {{ form.iceberg_visible_qty.label(class="nvc-form-label") }}
+                                    {{ form.iceberg_visible_qty(class="nvc-form-input") }}
+                                </div>
+                            </div>
+                            <div class="col-md-4" id="twap-duration-field">
+                                <div class="mb-3">
+                                    {{ form.twap_duration_minutes.label(class="nvc-form-label") }}
+                                    {{ form.twap_duration_minutes(class="nvc-form-input") }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.max_participation_rate.label(class="nvc-form-label") }}
+                                    {{ form.max_participation_rate(class="nvc-form-input", placeholder="e.g., 10") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Notes -->
+                    <div class="mb-3">
+                        {{ form.order_notes.label(class="nvc-form-label") }}
+                        {{ form.order_notes(class="nvc-form-input", rows="3", placeholder="Optional order instructions or notes") }}
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="order-summary p-3 mb-3" class="rounded">
+                        <h6>Order Preview</h6>
+                        <div id="order-preview">
+                            <p><strong>Order:</strong> <span id="preview-side">Buy</span> <span id="preview-quantity">0</span> shares of <span id="preview-symbol">--</span></p>
+                            <p><strong>Type:</strong> <span id="preview-type">Market</span> <span id="preview-price-info"></span></p>
+                            <p><strong>Estimated Value:</strong> <span id="preview-value">--</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn nvc-btn nvc-btn-success flex-fill">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Order
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-secondary" data-action="custom-action">
+                            <i class="fas fa-undo me-2"></i>Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Data & Order Book -->
+    <div class="col-lg-4">
+        <!-- Real-time Quote -->
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <i class="fas fa-chart-line me-2"></i>Real-time Quote
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div id="quote-widget">
+                    <div class="text-center">
+                        <p class="text-light">Enter a symbol to view quote</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Movers -->
+        <div class="nvc-card mt-3">
+            <div class="nvc-nvc-card-header">
+                <i class="fas fa-trending-up me-2"></i>Market Movers
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-sm">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Price</th>
+                                <th>Change</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>AAPL</strong></td>
+                                <td>$175.43</td>
+                                <td class="price-up">+2.15%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>GOOGL</strong></td>
+                                <td>$2,845.20</td>
+                                <td class="price-down">-1.05%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MSFT</strong></td>
+                                <td>$415.78</td>
+                                <td class="price-up">+0.85%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TSLA</strong></td>
+                                <td>$245.67</td>
+                                <td class="price-up">+3.21%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>NVDA</strong></td>
+                                <td>$875.90</td>
+                                <td class="price-down">-0.92%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Types Help -->
+        <div class="nvc-card mt-3">
+            <div class="nvc-nvc-card-header">
+                <i class="fas fa-info-circle me-2"></i>Order Types
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="small">
+                    <p><strong>Market:</strong> Execute immediately at current market price</p>
+                    <p><strong>Limit:</strong> Execute only at specified price or better</p>
+                    <p><strong>Stop:</strong> Trigger market order when stop price is reached</p>
+                    <p><strong>Stop Limit:</strong> Trigger limit order when stop price is reached</p>
+                    <p><strong>TWAP:</strong> Time-weighted average price algorithm</p>
+                    <p><strong>VWAP:</strong> Volume-weighted average price algorithm</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Order type change handler
+    document.getElementById('order_type_select').addEventListener('change', function() {
+        const orderType = this.value;
+        const limitField = document.getElementById('limit-price-field');
+        const stopField = document.getElementById('stop-price-field');
+        const algoOptions = document.getElementById('algo-options');
+        
+        // Hide all fields first
+        limitField.style.display = 'none';
+        stopField.style.display = 'none';
+        algoOptions.style.display = 'none';
+        
+        // Show relevant fields based on order type
+        switch(orderType) {
+            case 'limit':
+                limitField.style.display = 'block';
+                break;
+            case 'stop':
+                stopField.style.display = 'block';
+                break;
+            case 'stop_limit':
+                limitField.style.display = 'block';
+                stopField.style.display = 'block';
+                break;
+            case 'iceberg':
+            case 'twap':
+            case 'vwap':
+                algoOptions.style.display = 'block';
+                if (orderType === 'twap') {
+                    document.getElementById('twap-duration-field').style.display = 'block';
+                }
+                break;
+        }
+        
+        updateOrderPreview();
+    });
+
+    // Time in force change handler
+    document.querySelector('select[name="time_in_force"]').addEventListener('change', function() {
+        const expiryField = document.getElementById('expiry-field');
+        if (this.value === 'GTD') {
+            expiryField.style.display = 'block';
+        } else {
+            expiryField.style.display = 'none';
+        }
+    });
+
+    // Real-time order preview
+    function updateOrderPreview() {
+        const symbol = document.querySelector('input[name="symbol"]').value.toUpperCase();
+        const quantity = document.querySelector('input[name="quantity"]').value;
+        const side = document.querySelector('select[name="order_side"]').value;
+        const orderType = document.querySelector('select[name="order_type"]').value;
+        const limitPrice = document.querySelector('input[name="limit_price"]').value;
+        
+        document.getElementById('preview-symbol').textContent = symbol || '--';
+        document.getElementById('preview-quantity').textContent = quantity || '0';
+        document.getElementById('preview-side').textContent = side.charAt(0).toUpperCase() + side.slice(1);
+        document.getElementById('preview-type').textContent = orderType.replace('_', ' ').toUpperCase();
+        
+        let priceInfo = '';
+        if (orderType === 'limit' && limitPrice) {
+            priceInfo = ` at $${limitPrice}`;
+        } else if (orderType === 'market') {
+            priceInfo = ' at market price';
+        }
+        document.getElementById('preview-price-info').textContent = priceInfo;
+        
+        // Calculate estimated value
+        if (quantity && limitPrice && orderType === 'limit') {
+            const estimatedValue = parseFloat(quantity) * parseFloat(limitPrice);
+            document.getElementById('preview-value').textContent = '$' + estimatedValue.toLocaleString();
+        } else {
+            document.getElementById('preview-value').textContent = '--';
+        }
+    }
+
+    // Add event listeners for real-time preview
+    document.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('input', updateOrderPreview);
+        element.addEventListener('change', updateOrderPreview);
+    });
+
+    // Symbol input handler with quote lookup
+    document.querySelector('input[name="symbol"]').addEventListener('blur', function() {
+        const symbol = this.value.toUpperCase();
+        if (symbol && symbol.length > 0) {
+            fetchQuote(symbol);
+        }
+    });
+
+    // Fetch real-time quote
+    function fetchQuote(symbol) {
+        fetch(`/trading/api/market-data/${symbol}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.current) {
+                    displayQuote(data.current);
+                } else {
+                    displayQuoteError(symbol);
+                }
+            })
+            .catch(error => {
+                console.log('Quote fetch failed:', error);
+                displayQuoteError(symbol);
+            });
+    }
+
+    // Display quote data
+    function displayQuote(quote) {
+        const quoteWidget = document.getElementById('quote-widget');
+        const changeClass = quote.price_change >= 0 ? 'price-up' : 'price-down';
+        const changeIcon = quote.price_change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+        
+        quoteWidget.innerHTML = `
+            <div class="text-center">
+                <h4>${quote.symbol}</h4>
+                <h3 class="${changeClass}">$${quote.current_price.toFixed(2)}</h3>
+                <p class="${changeClass}">
+                    <i class="fas ${changeIcon} me-1"></i>
+                    ${quote.price_change >= 0 ? '+' : ''}${quote.price_change.toFixed(2)} (${quote.price_change_percent.toFixed(2)%})
+                </p>
+                <small class="text-light">
+                    Bid: $${quote.bid_price ? quote.bid_price.toFixed(2) : '--'} | 
+                    Ask: $${quote.ask_price ? quote.ask_price.toFixed(2) : '--'}
+                </small>
+            </div>
+        `;
+    }
+
+    // Display quote error
+    function displayQuoteError(symbol) {
+        document.getElementById('quote-widget').innerHTML = `
+            <div class="text-center">
+                <p class="text-warning">Quote not available for ${symbol}</p>
+            </div>
+        `;
+    }
+
+    // Reset form function
+    function resetForm() {
+        document.querySelector('form').reset();
+        document.getElementById('limit-price-field').style.display = 'none';
+        document.getElementById('stop-price-field').style.display = 'none';
+        document.getElementById('algo-options').style.display = 'none';
+        document.getElementById('expiry-field').style.display = 'none';
+        updateOrderPreview();
+    }
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const symbol = document.querySelector('input[name="symbol"]').value;
+        const quantity = document.querySelector('input[name="quantity"]').value;
+        const orderType = document.querySelector('select[name="order_type"]').value;
+        const limitPrice = document.querySelector('input[name="limit_price"]').value;
+        
+        if (!symbol.match(/^[A-Z]{1,5}$/)) {
+            alert('Please enter a valid symbol (1-5 letters)');
+            e.preventDefault();
+            return;
+        }
+        
+        if (parseFloat(quantity) <= 0) {
+            alert('Quantity must be greater than 0');
+            e.preventDefault();
+            return;
+        }
+        
+        if ((orderType === 'limit' || orderType === 'stop_limit') && !limitPrice) {
+            alert('Limit price is required for limit orders');
+            e.preventDefault();
+            return;
+        }
+        
+        // Confirmation for market orders
+        if (orderType === 'market') {
+            if (!confirm('Market orders execute immediately at current market price. Continue?')) {
+                e.preventDefault();
+                return;
+            }
+        }
+    });
+
+    // Initialize
+    updateOrderPreview();
+</script>
+{% endblock %}

@@ -1,0 +1,656 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}DeFi 2.0 Smart Contracts Dashboard - NVC Banking Platform{% endblock %}
+
+{% block page_title %}DeFi 2.0 Smart Contracts{% endblock %}
+{% block page_description %}Enterprise-grade decentralized finance platform with advanced smart contract features{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-bar"></i>
+    Analytics
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-rocket"></i>
+    Deploy Contract
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* DeFi-specific styling */
+    .defi-feature-card {
+        background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--card-bg) 100%);
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .defi-feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+    }
+
+    .defi-feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--accent-blue-light);
+    }
+
+    .defi-feature-card.premium::before {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .defi-feature-card.advanced::before {
+        background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    }
+
+    .feature-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--border-radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow);
+    }
+
+    .feature-icon.yield-farming {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .feature-icon.flash-loans {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .feature-icon.amm {
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+        color: white;
+    }
+
+    .feature-icon.staking {
+        background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        color: white;
+    }
+
+    .feature-icon.governance {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+    }
+
+    .feature-icon.security {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .feature-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+    }
+
+    .feature-description {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .feature-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: var(--tertiary-bg);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-muted);
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .feature-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn-feature {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid var(--border-color);
+    }
+
+    .btn-feature-primary {
+        background: var(--gradient-primary);
+        color: white;
+        border-color: var(--accent-blue);
+    }
+
+    .btn-feature-primary:hover {
+        background: var(--accent-blue-dark);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-feature-secondary {
+        background: var(--card-bg);
+        color: var(--text-secondary);
+        border-color: var(--border-color);
+    }
+
+    .btn-feature-secondary:hover {
+        background: var(--accent-bg);
+        color: var(--text-primary);
+        border-color: var(--accent-blue);
+    }
+
+    .status-indicator {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.625rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-indicator.live {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .status-indicator.beta {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .defi-overview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .protocol-health {
+        background: var(--secondary-bg);
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .health-indicator {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .health-status {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--accent-emerald);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- DeFi Protocol Health Overview -->
+<div class="protocol-health">
+    <div class="health-indicator">
+        <div class="health-status"></div>
+        <h3 class="text-primary-enterprise mb-0">DeFi Protocol Status: Operational</h3>
+    </div>
+    <p class="text-secondary-enterprise">All smart contracts are functioning normally. Last security audit: January 2024</p>
+</div>
+
+<!-- DeFi Metrics Overview -->
+<div class="metric-grid">
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise blue">
+                <i class="fas fa-coins"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">$2.4M</div>
+        <div class="metric-label-enterprise">Total Value Locked</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+12.5% from last month</span>
+        </div>
+    </div>
+
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise emerald">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">1,247</div>
+        <div class="metric-label-enterprise">Active Transactions</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+8.3% today</span>
+        </div>
+    </div>
+
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise amber">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">892</div>
+        <div class="metric-label-enterprise">Active Users</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+15.2% this week</span>
+        </div>
+    </div>
+
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise purple">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">99.9%</div>
+        <div class="metric-label-enterprise">Security Score</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-check"></i>
+            <span>Excellent</span>
+        </div>
+    </div>
+</div>
+
+<!-- DeFi Features Grid -->
+<div class="defi-overview-grid">
+    <!-- Yield Farming -->
+    <div class="defi-feature-nvc-card premium">
+        <div class="status-indicator live">Live</div>
+        <div class="feature-icon yield-farming">
+            <i class="fas fa-seedling"></i>
+        </div>
+        <h3 class="feature-title">Advanced Yield Farming</h3>
+        <p class="feature-description">
+            Multi-token staking pools with dynamic rewards, compound staking, and validator delegation. 
+            Earn up to 15% APY with our enterprise-grade farming protocols.
+        </p>
+        <div class="feature-stats">
+            <div class="stat-item">
+                <span class="stat-value">$847K</span>
+                <span class="stat-label">TVL</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">12.4%</span>
+                <span class="stat-label">APY</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">156</span>
+                <span class="stat-label">Farmers</span>
+            </div>
+        </div>
+        <div class="feature-actions">
+            <a href="{{ url_for('nvct_stablecoin.yield_farming') }}" class="btn-feature btn-feature-primary">
+                <i class="fas fa-seedling"></i> Start Farming
+            </a>
+            <a href="#" class="btn-feature btn-feature-secondary" data-action="custom-action">
+                <i class="fas fa-chart-line"></i> Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Flash Loans -->
+    <div class="defi-feature-nvc-card advanced">
+        <div class="status-indicator live">Live</div>
+        <div class="feature-icon flash-loans">
+            <i class="fas fa-bolt"></i>
+        </div>
+        <h3 class="feature-title">Flash Loan Protocol</h3>
+        <p class="feature-description">
+            Instant uncollateralized loans with MEV protection. Execute complex arbitrage strategies 
+            with our enterprise-grade flash loan infrastructure.
+        </p>
+        <div class="feature-stats">
+            <div class="stat-item">
+                <span class="stat-value">$10M</span>
+                <span class="stat-label">Max Loan</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">0.09%</span>
+                <span class="stat-label">Fee</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">47</span>
+                <span class="stat-label">Today</span>
+            </div>
+        </div>
+        <div class="feature-actions">
+            <a href="{{ url_for('nvct_stablecoin.flash_loans') }}" class="btn-feature btn-feature-primary">
+                <i class="fas fa-bolt"></i> Get Loan
+            </a>
+            <a href="#" class="btn-feature btn-feature-secondary" data-action="custom-action">
+                <i class="fas fa-history"></i> History
+            </a>
+        </div>
+    </div>
+
+    <!-- AMM Trading -->
+    <div class="defi-feature-nvc-card">
+        <div class="status-indicator live">Live</div>
+        <div class="feature-icon amm">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h3 class="feature-title">Concentrated Liquidity AMM</h3>
+        <p class="feature-description">
+            Uniswap V3-style concentrated liquidity with multiple fee tiers. Maximize capital efficiency 
+            with precise price range positioning.
+        </p>
+        <div class="feature-stats">
+            <div class="stat-item">
+                <span class="stat-value">$1.2M</span>
+                <span class="stat-label">Liquidity</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">0.3%</span>
+                <span class="stat-label">Fee Tier</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">89</span>
+                <span class="stat-label">LPs</span>
+            </div>
+        </div>
+        <div class="feature-actions">
+            <a href="{{ url_for('nvct_stablecoin.amm_trading') }}" class="btn-feature btn-feature-primary">
+                <i class="fas fa-exchange-alt"></i> Trade
+            </a>
+            <a href="#" class="btn-feature btn-feature-secondary" data-action="custom-action">
+                <i class="fas fa-plus"></i> Add Liquidity
+            </a>
+        </div>
+    </div>
+
+    <!-- Advanced Staking -->
+    <div class="defi-feature-nvc-card">
+        <div class="status-indicator live">Live</div>
+        <div class="feature-icon staking">
+            <i class="fas fa-lock"></i>
+        </div>
+        <h3 class="feature-title">Advanced Staking</h3>
+        <p class="feature-description">
+            Multi-tier staking with slashing protection and validator delegation. 
+            Secure the network while earning consistent rewards.
+        </p>
+        <div class="feature-stats">
+            <div class="stat-item">
+                <span class="stat-value">$654K</span>
+                <span class="stat-label">Staked</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">8.7%</span>
+                <span class="stat-label">APY</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">234</span>
+                <span class="stat-label">Stakers</span>
+            </div>
+        </div>
+        <div class="feature-actions">
+            <a href="{{ url_for('nvct_stablecoin.staking') }}" class="btn-feature btn-feature-primary">
+                <i class="fas fa-lock"></i> Stake Now
+            </a>
+            <a href="#" class="btn-feature btn-feature-secondary" data-action="custom-action">
+                <i class="fas fa-info-circle"></i> Validators
+            </a>
+        </div>
+    </div>
+
+    <!-- Governance -->
+    <div class="defi-feature-nvc-card advanced">
+        <div class="status-indicator live">Live</div>
+        <div class="feature-icon governance">
+            <i class="fas fa-vote-yea"></i>
+        </div>
+        <h3 class="feature-title">Quadratic Voting Governance</h3>
+        <p class="feature-description">
+            Democratic governance with quadratic voting to prevent plutocracy. 
+            Shape the future of the protocol with your voice.
+        </p>
+        <div class="feature-stats">
+            <div class="stat-item">
+                <span class="stat-value">12</span>
+                <span class="stat-label">Active Proposals</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">78%</span>
+                <span class="stat-label">Participation</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">456</span>
+                <span class="stat-label">Voters</span>
+            </div>
+        </div>
+        <div class="feature-actions">
+            <a href="{{ url_for('nvct_stablecoin.governance') }}" class="btn-feature btn-feature-primary">
+                <i class="fas fa-vote-yea"></i> Vote
+            </a>
+            <a href="#" class="btn-feature btn-feature-secondary" data-action="custom-action">
+                <i class="fas fa-plus"></i> Propose
+            </a>
+        </div>
+    </div>
+
+    <!-- Security & Compliance -->
+    <div class="defi-feature-nvc-card premium">
+        <div class="status-indicator live">Live</div>
+        <div class="feature-icon security">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <h3 class="feature-title">Security & Compliance</h3>
+        <p class="feature-description">
+            Enterprise-grade security with MEV protection, circuit breakers, and full compliance integration. 
+            Bank-level security for DeFi operations.
+        </p>
+        <div class="feature-stats">
+            <div class="stat-item">
+                <span class="stat-value">99.9%</span>
+                <span class="stat-label">Uptime</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Incidents</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">A+</span>
+                <span class="stat-label">Security</span>
+            </div>
+        </div>
+        <div class="feature-actions">
+            <a href="#" class="btn-feature btn-feature-primary" data-action="custom-action">
+                <i class="fas fa-shield-alt"></i> Security
+            </a>
+            <a href="#" class="btn-feature btn-feature-secondary" data-action="custom-action">
+                <i class="fas fa-file-alt"></i> Audits
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="enterprise-nvc-card">
+    <div class="nvc-nvc-card-header-enterprise">
+        <h3 class="nvc-card-title-enterprise">Recent DeFi Activity</h3>
+        <div class="nvc-card-actions-enterprise">
+            <button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+                <i class="fas fa-external-link-alt"></i>
+                View All
+            </button>
+        </div>
+    </div>
+    
+    <div class="table-enterprise">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>User</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2 min ago</td>
+                    <td><i class="fas fa-seedling text-success me-2"></i>Yield Farming</td>
+                    <td>user_***456</td>
+                    <td>$12,500</td>
+                    <td><span class="status-badge success">Completed</span></td>
+                </tr>
+                <tr>
+                    <td>5 min ago</td>
+                    <td><i class="fas fa-bolt text-warning me-2"></i>Flash Loan</td>
+                    <td>user_***789</td>
+                    <td>$50,000</td>
+                    <td><span class="status-badge success">Repaid</span></td>
+                </tr>
+                <tr>
+                    <td>8 min ago</td>
+                    <td><i class="fas fa-exchange-alt text-info me-2"></i>AMM Swap</td>
+                    <td>user_***123</td>
+                    <td>$3,200</td>
+                    <td><span class="status-badge success">Completed</span></td>
+                </tr>
+                <tr>
+                    <td>12 min ago</td>
+                    <td><i class="fas fa-lock text-primary me-2"></i>Staking</td>
+                    <td>user_***321</td>
+                    <td>$8,750</td>
+                    <td><span class="status-badge success">Active</span></td>
+                </tr>
+                <tr>
+                    <td>15 min ago</td>
+                    <td><i class="fas fa-vote-yea text-secondary me-2"></i>Governance</td>
+                    <td>user_***654</td>
+                    <td>1,000 votes</td>
+                    <td><span class="status-badge info">Voted</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects and drilldown to feature cards
+    const featureCards = document.querySelectorAll('.defi-feature-card');
+    featureCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+            this.style.boxShadow = '0 12px 30px rgba(0,0,0,0.2)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+
+        // Add click handlers for drilldown navigation
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            handleDeFiDrilldown(cardTitle);
+        });
+    });
+
+    // Add drilldown to metric cards
+    const metricCards = document.querySelectorAll('.metric-card, .enterprise-card');
+    metricCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6, .metric-title')?.textContent;
+            handleDeFiDrilldown(cardTitle);
+        });
+    });
+
+    // Simulate real-time updates
+    setInterval(function() {
+        const metrics = document.querySelectorAll('.metric-value-enterprise');
+        metrics.forEach(metric => {
+            metric.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                metric.style.transform = 'scale(1)';
+            }, 200);
+        });
+    }, 30000);
+});
+
+function handleDeFiDrilldown(cardTitle) {
+    if (!cardTitle) return;
+
+    if (cardTitle.includes('Liquidity Pools') || cardTitle.includes('Pools')) {
+        window.location.href = "{{ url_for('defi.liquidity_pools') }}?view=active";
+    } else if (cardTitle.includes('Yield Farming') || cardTitle.includes('Farming')) {
+        window.location.href = "{{ url_for('defi.yield_farming') }}?view=opportunities";
+    } else if (cardTitle.includes('Staking') || cardTitle.includes('Stake')) {
+        window.location.href = "{{ url_for('defi.staking_dashboard') }}?view=rewards";
+    } else if (cardTitle.includes('DEX Trading') || cardTitle.includes('Trading')) {
+        window.location.href = "{{ url_for('defi.dex_trading') }}?view=pairs";
+    } else if (cardTitle.includes('Lending') || cardTitle.includes('Borrowing')) {
+        window.location.href = "{{ url_for('defi.lending_protocol') }}?view=markets";
+    } else if (cardTitle.includes('Governance') || cardTitle.includes('DAO')) {
+        window.location.href = "{{ url_for('defi.governance') }}?view=proposals";
+    } else if (cardTitle.includes('Analytics') || cardTitle.includes('Metrics')) {
+        window.location.href = "{{ url_for('defi.analytics_dashboard') }}?view=comprehensive";
+    }
+}
+</script>
+{% endblock %}

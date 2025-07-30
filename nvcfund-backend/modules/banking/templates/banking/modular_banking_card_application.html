@@ -1,0 +1,523 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Smart Card Application - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Card Application{% endblock %}
+{% block page_description %}Apply for traditional banking cards and innovative crypto cards{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-save"></i>
+    Save Progress
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-eye"></i>
+    Preview Card
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-paper-plane"></i>
+    Submit Application
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- Modern Card Application -->
+<div class="row g-4">
+    <!-- Card Type Selection -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-credit-nvc-card text-primary me-2"></i>
+                    Choose Your Card Type
+                </h5>
+                <small class="text-muted">Select the card that best fits your needs</small>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="row g-4">
+                    <!-- Traditional Banking Cards -->
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-university me-2"></i>
+                            Traditional Banking Cards
+                        </h6>
+
+                        <!-- Debit Card -->
+                        <div class="nvc-card-option mb-3" data-card-type="debit">
+                            <div class="nvc-card-option-header">
+                                <div class="nvc-card-icon bg-primary">
+                                    <i class="fas fa-credit-nvc-card"></i>
+                                </div>
+                                <div class="nvc-card-info">
+                                    <h6>Premium Debit Card</h6>
+                                    <p class="text-muted small">Direct access to your checking account</p>
+                                </div>
+                                <div class="nvc-card-features">
+                                    <span class="badge bg-success">No Annual Fee</span>
+                                    <span class="badge bg-info">Worldwide ATM</span>
+                                </div>
+                            </div>
+                            <div class="nvc-card-benefits">
+                                <ul class="list-unstyled small">
+                                    <li><i class="fas fa-check text-success me-1"></i> No foreign transaction fees</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Contactless payments</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Real-time notifications</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Credit Card -->
+                        <div class="nvc-card-option mb-3" data-card-type="credit">
+                            <div class="nvc-card-option-header">
+                                <div class="nvc-card-icon bg-success">
+                                    <i class="fas fa-credit-nvc-card"></i>
+                                </div>
+                                <div class="nvc-card-info">
+                                    <h6>Platinum Credit Card</h6>
+                                    <p class="text-muted small">Build credit with rewards</p>
+                                </div>
+                                <div class="nvc-card-features">
+                                    <span class="badge bg-warning">2% Cashback</span>
+                                    <span class="badge bg-primary">Travel Benefits</span>
+                                </div>
+                            </div>
+                            <div class="nvc-card-benefits">
+                                <ul class="list-unstyled small">
+                                    <li><i class="fas fa-check text-success me-1"></i> 2% cashback on all purchases</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Travel insurance included</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> 0% intro APR for 12 months</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crypto & Digital Cards -->
+                    <div class="col-md-6">
+                        <h6 class="text-warning mb-3">
+                            <i class="fab fa-bitcoin me-2"></i>
+                            Crypto & Digital Cards
+                        </h6>
+
+                        <!-- Crypto Debit Card -->
+                        <div class="nvc-card-option mb-3" data-card-type="crypto-debit">
+                            <div class="nvc-card-option-header">
+                                <div class="nvc-card-icon bg-warning">
+                                    <i class="fab fa-bitcoin"></i>
+                                </div>
+                                <div class="nvc-card-info">
+                                    <h6>Crypto Debit Card</h6>
+                                    <p class="text-muted small">Spend your crypto anywhere</p>
+                                </div>
+                                <div class="nvc-card-features">
+                                    <span class="badge bg-warning">Crypto Rewards</span>
+                                    <span class="badge bg-info">Real-time Convert</span>
+                                </div>
+                            </div>
+                            <div class="nvc-card-benefits">
+                                <ul class="list-unstyled small">
+                                    <li><i class="fas fa-check text-success me-1"></i> Earn crypto rewards</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Instant crypto-to-fiat conversion</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Support for 50+ cryptocurrencies</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- NVCT Stablecoin Card -->
+                        <div class="nvc-card-option mb-3" data-card-type="nvct-card">
+                            <div class="nvc-card-option-header">
+                                <div class="nvc-card-icon bg-info">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="nvc-card-info">
+                                    <h6>NVCT Stablecoin Card</h6>
+                                    <p class="text-muted small">Powered by our native stablecoin</p>
+                                </div>
+                                <div class="nvc-card-features">
+                                    <span class="badge bg-success">Stable Value</span>
+                                    <span class="badge bg-primary">Low Fees</span>
+                                </div>
+                            </div>
+                            <div class="nvc-card-benefits">
+                                <ul class="list-unstyled small">
+                                    <li><i class="fas fa-check text-success me-1"></i> Price stability guaranteed</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Minimal transaction fees</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Instant settlements</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Virtual Card -->
+                        <div class="nvc-card-option mb-3" data-card-type="virtual">
+                            <div class="nvc-card-option-header">
+                                <div class="nvc-card-icon bg-secondary">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="nvc-card-info">
+                                    <h6>Virtual Card</h6>
+                                    <p class="text-muted small">Instant digital card for online use</p>
+                                </div>
+                                <div class="nvc-card-features">
+                                    <span class="badge bg-success">Instant Issue</span>
+                                    <span class="badge bg-info">Enhanced Security</span>
+                                </div>
+                            </div>
+                            <div class="nvc-card-benefits">
+                                <ul class="list-unstyled small">
+                                    <li><i class="fas fa-check text-success me-1"></i> Available immediately</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Dynamic CVV for security</li>
+                                    <li><i class="fas fa-check text-success me-1"></i> Spending controls & limits</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Progress -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <h6 class="text-white-50 mb-3">Application Progress</h6>
+                    <div class="progress" class="nvc-h-8">
+                        <div class="progress-bar bg-light" role="progressbar" class="progress-bar-50" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <small class="text-white-50">Personal Info</small>
+                        <small class="text-light"><strong>Card Selection</strong></small>
+                        <small class="text-white-50">Review & Submit</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Application Form -->
+    <form method="POST" id="cardApplicationForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+        <div class="row">
+            <!-- Card Type Selection -->
+            <div class="col-md-6 mb-4">
+                <div class="card dashboard-stat-nvc-card h-100">
+                    <div class="nvc-nvc-card-body">
+                        <h6 class="text-white-50 mb-3">
+                            <i class="fas fa-credit-nvc-card me-2"></i>Card Type
+                        </h6>
+                        
+                        <div class="row">
+                            {% for card_type in card_types %}
+                            <div class="col-12 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="card_type" id="card_{{ card_type.lower() }}" value="{{ card_type }}" {% if loop.first %}checked{% endif %}>
+                                    <label class="form-check-label text-light" for="card_{{ card_type.lower() }}">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                {% if card_type == 'Debit' %}
+                                                    <i class="fas fa-university text-primary"></i>
+                                                {% elif card_type == 'Credit' %}
+                                                    <i class="fas fa-credit-nvc-card text-success"></i>
+                                                {% else %}
+                                                    <i class="fas fa-money-bill text-warning"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <strong>{{ card_type }} Card</strong>
+                                                <br>
+                                                <small class="text-white-50">
+                                                    {% if card_type == 'Debit' %}
+                                                        Direct access to your checking account
+                                                    {% elif card_type == 'Credit' %}
+                                                        Build credit with flexible payments
+                                                    {% else %}
+                                                        Load funds for secure spending
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Network -->
+            <div class="col-md-6 mb-4">
+                <div class="card dashboard-stat-nvc-card h-100">
+                    <div class="nvc-nvc-card-body">
+                        <h6 class="text-white-50 mb-3">
+                            <i class="fas fa-globe me-2"></i>Card Network
+                        </h6>
+                        
+                        <div class="row">
+                            {% for network in networks %}
+                            <div class="col-6 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="network" id="network_{{ network.lower().replace(' ', '_') }}" value="{{ network }}" {% if loop.first %}checked{% endif %}>
+                                    <label class="form-check-label text-light" for="network_{{ network.lower().replace(' ', '_') }}">
+                                        <div class="text-center p-3 border border-secondary rounded nvc-card-network-option" >
+                                            {% if network == 'Visa' %}
+                                                <div class="nvc-card-logo visa-logo mb-2" class="p-3">
+                                                    VISA
+                                                </div>
+                                            {% elif network == 'Mastercard' %}
+                                                <div class="card-logo masternvc-card-logo mb-2" class="position-relative">
+                                                    <div class="position-absolute"></div>
+                                                    <div class="position-absolute"></div>
+                                                    <div class="position-absolute"></div>
+                                                </div>
+                                            {% elif network == 'American Express' %}
+                                                <div class="nvc-card-logo amex-logo mb-2" class="p-2">
+                                                    AMERICAN<br>EXPRESS
+                                                </div>
+                                            {% elif network == 'Discover' %}
+                                                <div class="nvc-card-logo discover-logo mb-2" class="p-3">
+                                                    DISCOVER
+                                                </div>
+                                            {% endif %}
+                                            <small class="text-white-50 mt-1">{{ network }}</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Linked Account -->
+            <div class="col-md-6 mb-4">
+                <div class="card dashboard-stat-nvc-card h-100">
+                    <div class="nvc-nvc-card-body">
+                        <h6 class="text-white-50 mb-3">
+                            <i class="fas fa-link me-2"></i>Linked Account
+                        </h6>
+                        
+                        <select class="nvc-form-select" name="linked_account" required>
+                            <option value="">Select Account</option>
+                            {% for account in accounts %}
+                            <option value="{{ account.account_number }}">
+                                {{ account.account_type|title }} - *{{ account.account_number[-4:] }}
+                                (Balance: ${{ "%.2f"|format(account.balance) }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        
+                        <div class="mt-3">
+                            <small class="text-white-50">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Your card will be linked to this account for transactions
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Options -->
+            <div class="col-md-6 mb-4">
+                <div class="card dashboard-stat-nvc-card h-100">
+                    <div class="nvc-nvc-card-body">
+                        <h6 class="text-white-50 mb-3">
+                            <i class="fas fa-shipping-fast me-2"></i>Delivery Options
+                        </h6>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="express_delivery" id="express_delivery">
+                            <label class="form-check-label text-light" for="express_delivery">
+                                <strong>Express Delivery</strong>
+                                <br>
+                                <small class="text-white-50">Receive your card in 2-3 business days (+$15)</small>
+                            </label>
+                        </div>
+                        
+                        <div class="alert nvc-nvc-alert-info border-0">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Standard Delivery:</strong> 7-10 business days (Free)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Benefits -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card dashboard-stat-nvc-card">
+                    <div class="nvc-nvc-card-body">
+                        <h6 class="text-white-50 mb-3">
+                            <i class="fas fa-star me-2"></i>Card Benefits
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-3 text-center mb-3">
+                                <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                                <h6 class="text-light">Fraud Protection</h6>
+                                <small class="text-white-50">24/7 monitoring</small>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <i class="fas fa-mobile-alt fa-2x text-primary mb-2"></i>
+                                <h6 class="text-light">Mobile Payments</h6>
+                                <small class="text-white-50">Apple Pay, Google Pay</small>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <i class="fas fa-globe fa-2x text-info mb-2"></i>
+                                <h6 class="text-light">Global Acceptance</h6>
+                                <small class="text-white-50">Worldwide usage</small>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <i class="fas fa-headset fa-2x text-warning mb-2"></i>
+                                <h6 class="text-light">24/7 Support</h6>
+                                <small class="text-white-50">Always here to help</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card dashboard-stat-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <button type="submit" class="btn btn-light btn-lg px-5">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Application
+                        </button>
+                        <div class="mt-3">
+                            <small class="text-white-50">
+                                <i class="fas fa-lock me-1"></i>
+                                Your application is secure and will be processed within 1-2 business days
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Card network selection styling */
+.card-network-option:hover {
+    border-color: #66ccff !important;
+    background-color: rgba(102, 204, 255, 0.1) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+input[type="radio"]:checked + label .card-network-option {
+    border-color: #66ccff !important;
+    background-color: rgba(102, 204, 255, 0.2) !important;
+    box-shadow: 0 0 0 2px rgba(102, 204, 255, 0.5);
+}
+
+/* Uniform card logo sizing */
+.card-logo {
+    width: 80px !important;
+    height: 50px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+}
+
+/* Mastercard overlapping circles animation */
+.mastercard-logo:hover div {
+    animation: mastercard-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes mastercard-pulse {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-50%) scale(1.05); }
+}
+
+/* Visa gradient enhancement */
+.visa-logo {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* AmEx styling */
+.amex-logo {
+    text-align: center;
+    line-height: 1.1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Discover gradient enhancement */
+.discover-logo {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation and interactivity
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('cardApplicationForm');
+    const expressDelivery = document.getElementById('express_delivery');
+    const networkOptions = document.querySelectorAll('input[name="network"]');
+
+    // Add click handlers for better UX
+    networkOptions.forEach(function(radio) {
+        const label = radio.nextElementSibling;
+        label.addEventListener('click', function() {
+            // Remove active class from all options
+            document.querySelectorAll('.card-network-option').forEach(opt => {
+                opt.style.borderColor = '#6c757d';
+                opt.style.backgroundColor = 'transparent';
+            });
+
+            // Add active styling to selected option
+            const selectedOption = this.querySelector('.card-network-option');
+            selectedOption.style.borderColor = '#66ccff';
+            selectedOption.style.backgroundColor = 'rgba(102, 204, 255, 0.2)';
+        });
+    });
+
+    // Express delivery cost calculation
+    expressDelivery.addEventListener('change', function() {
+        if (this.checked) {
+            console.log('Express delivery selected (+$15)');
+        }
+    });
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        const linkedAccount = document.querySelector('select[name="linked_account"]');
+        if (!linkedAccount.value) {
+            e.preventDefault();
+            alert('Please select a linked account for your card.');
+            linkedAccount.focus();
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing Application...';
+        submitBtn.disabled = true;
+    });
+
+    // Initialize first option as selected
+    if (networkOptions.length > 0) {
+        const firstOption = networkOptions[0].nextElementSibling.querySelector('.card-network-option');
+        firstOption.style.borderColor = '#66ccff';
+        firstOption.style.backgroundColor = 'rgba(102, 204, 255, 0.2)';
+    }
+});
+</script>
+{% endblock %}

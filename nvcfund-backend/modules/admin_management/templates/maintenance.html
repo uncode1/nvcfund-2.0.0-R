@@ -1,0 +1,71 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Maintenance Mode - NVC Banking Platform{% endblock %}
+
+{% block page_title %}System Maintenance{% endblock %}
+{% block page_description %}System maintenance and service status{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}">Administration</a>
+</li>
+<li class="nvc-breadcrumb-item active">Maintenance</li>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <style>
+        .dashboard-stat-card { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 8px !important; padding: 1.5rem; margin-bottom: 1rem; }
+        .card { background: #1e293b !important; border: 1px solid #334155 !important; color: #e2e8f0 !important; }
+        .btn-primary { background: #3b82f6 !important; border-color: #3b82f6 !important; }
+        .table-dark { background: #1e293b !important; }
+        .table-dark td, .table-dark th { border-color: #334155 !important; color: #e2e8f0 !important; }
+    </style>
+</head>
+<body>
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h3 class="nvc-card-title">Maintenance Mode</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-{{ 'danger' if maintenance_data.maintenance_mode else 'success' }}">
+                                    <i class="fas fa-{{ 'exclamation-triangle' if maintenance_data.maintenance_mode else 'check' }}"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">System Status</span>
+                                    <span class="info-box-number">{{ maintenance_data.system_status|title }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h4>Maintenance Information</h4>
+                            <p>Current maintenance mode: <strong>{{ 'Enabled' if maintenance_data.maintenance_mode else 'Disabled' }}</strong></p>
+                            {% if maintenance_data.scheduled_maintenance %}
+                            <h5>Scheduled Maintenance</h5>
+                            <ul>
+                                {% for item in maintenance_data.scheduled_maintenance %}
+                                <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p>No scheduled maintenance.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

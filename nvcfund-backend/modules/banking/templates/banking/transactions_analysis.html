@@ -1,0 +1,764 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Advanced Analytics - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Advanced Transaction Analytics{% endblock %}
+{% block page_description %}AI-powered insights for traditional banking and cryptocurrency transactions{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-calendar-alt"></i>
+    Schedule Reports
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-brain"></i>
+    AI Insights
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Analytics Functions
+function exportAnalytics() {
+    const csvData = 'Date,Type,Amount,Category\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analytics_export.csv';
+    a.click();
+}
+
+function scheduleReport() {
+    alert('Schedule report functionality will be implemented');
+}
+
+function generateInsights() {
+    alert('AI insights generation will be implemented');
+}
+
+// Add drilldown functionality for stat cards
+document.addEventListener('DOMContentLoaded', function() {
+    const statCards = document.querySelectorAll('.analytics-stat-card');
+    statCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardType = this.querySelector('h6').textContent;
+            if (cardType.includes('Total Volume')) {
+                window.location.href = "{{ url_for('banking.transfer_history') }}";
+            } else if (cardType.includes('Transactions')) {
+                window.location.href = "{{ url_for('banking.modular_banking_history') }}";
+            } else if (cardType.includes('Crypto Volume')) {
+                window.location.href = "{{ url_for('banking.transfer_history') }}?type=crypto";
+            } else if (cardType.includes('Avg Transaction')) {
+                window.location.href = "{{ url_for('banking.transactions_analysis') }}";
+            }
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: Category Analysis Cards (if they exist)
+    const categoryCards = document.querySelectorAll('.category-analysis-card');
+    categoryCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
+            handleCategoryAnalysisDrilldown(category);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 4: Transaction Table Rows
+    const transactionRows = document.querySelectorAll('.transaction-analysis-row');
+    transactionRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const transactionId = this.getAttribute('data-transaction-id');
+            viewTransactionDetails(transactionId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+});
+
+// Level 3: Category Analysis Drilldown
+function handleCategoryAnalysisDrilldown(category) {
+    // Navigate to category-specific transaction analysis
+    window.location.href = `/banking/category_analysis/${encodeURIComponent(category)}?view=detailed&period=all&insights=true`;
+}
+
+// Level 4: View individual transaction details (Level 4 → Level 5 drilldown)
+function viewTransactionDetails(transactionId) {
+    // Navigate to detailed transaction view with comprehensive analysis
+    window.location.href = `/banking/transaction_details/${encodeURIComponent(transactionId)}?view=comprehensive&analysis=deep&forensics=true`;
+}
+
+// Level 5: Specialized transaction analysis functions
+function analyzeTransactionPattern(transactionId) {
+    // Navigate to transaction pattern analysis
+    window.location.href = `/banking/transaction_pattern_analysis/${encodeURIComponent(transactionId)}?view=ml_analysis&correlation=true`;
+}
+
+function viewTransactionForensics(transactionId) {
+    // Navigate to transaction forensics
+    window.location.href = `/banking/transaction_forensics/${encodeURIComponent(transactionId)}?view=detailed&chain_analysis=true`;
+}
+
+function compareTransactionTrends(transactionId) {
+    // Navigate to transaction trend comparison
+    window.location.href = `/banking/transaction_trends/${encodeURIComponent(transactionId)}?view=comparison&benchmarks=true`;
+}
+
+function generateTransactionReport(transactionId) {
+    // Navigate to transaction report generation
+    window.location.href = `/banking/transaction_report/${encodeURIComponent(transactionId)}?format=comprehensive&export=pdf`;
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Advanced Transaction Analytics -->
+<div class="row g-4">
+    <!-- Analytics Overview -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="analytics-stat-nvc-card bg-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Total Volume</h6>
+                                <h3>${{ "%.2f"|format(total_volume) if total_volume else '2.4M' }}</h3>
+                                <small>+15.3% vs last month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="analytics-stat-nvc-card bg-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Transactions</h6>
+                                <h3>{{ total_transactions or '18,547' }}</h3>
+                                <small>+8.7% growth</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="analytics-stat-nvc-card bg-warning">
+                            <div class="stat-icon">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Crypto Volume</h6>
+                                <h3>${{ "%.2f"|format(crypto_volume) if crypto_volume else '456K' }}</h3>
+                                <small>+23.1% crypto adoption</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="analytics-stat-nvc-card bg-info">
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Avg Transaction</h6>
+                                <h3>${{ "%.2f"|format(avg_transaction) if avg_transaction else '1,247.50' }}</h3>
+                                <small>+5.2% increase</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Dashboard -->
+    <div class="col-xl-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-chart-area text-primary me-2"></i>
+                    Transaction Trends
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <!-- Chart Tabs -->
+                <ul class="nav nav-pills mb-4" id="chartTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="volume-tab" data-bs-toggle="pill"
+                                data-bs-target="#volume" type="button" role="tab">
+                            <i class="fas fa-chart-area me-1"></i>
+                            Volume Trends
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="category-tab" data-bs-toggle="pill"
+                                data-bs-target="#category" type="button" role="tab">
+                            <i class="fas fa-chart-pie me-1"></i>
+                            Categories
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="crypto-tab" data-bs-toggle="pill"
+                                data-bs-target="#crypto" type="button" role="tab">
+                            <i class="fab fa-bitcoin me-1"></i>
+                            Crypto Analysis
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Chart Content -->
+                <div class="tab-content" id="chartTabsContent">
+                    <!-- Volume Trends -->
+                    <div class="tab-pane fade show active" id="volume" role="tabpanel">
+                        <div class="chart-container">
+                            <canvas id="volumeChart" height="300"></canvas>
+                        </div>
+                        <div class="chart-insights mt-3">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="insight-nvc-card">
+                                        <h6 class="text-success">Peak Day</h6>
+                                        <p class="mb-0">Friday: $89,234</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="insight-nvc-card">
+                                        <h6 class="text-info">Growth Rate</h6>
+                                        <p class="mb-0">+15.3% monthly</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="insight-nvc-card">
+                                        <h6 class="text-warning">Forecast</h6>
+                                        <p class="mb-0">$2.8M next month</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Analysis -->
+                    <div class="tab-pane fade" id="category" role="tabpanel">
+                        <div class="chart-container">
+                            <canvas id="categoryChart" height="300"></canvas>
+                        </div>
+                        <div class="category-breakdown mt-3">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="category-item">
+                                        <div class="category-color bg-primary"></div>
+                                        <div class="category-info">
+                                            <h6>Transfers</h6>
+                                            <span class="text-muted">45.2% • $1.08M</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="category-item">
+                                        <div class="category-color bg-success"></div>
+                                        <div class="category-info">
+                                            <h6>Payments</h6>
+                                            <span class="text-muted">32.1% • $770K</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="category-item">
+                                        <div class="category-color bg-warning"></div>
+                                        <div class="category-info">
+                                            <h6>Crypto</h6>
+                                            <span class="text-muted">18.7% • $449K</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="category-item">
+                                        <div class="category-color bg-info"></div>
+                                        <div class="category-info">
+                                            <h6>Other</h6>
+                                            <span class="text-muted">4.0% • $96K</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crypto Analysis -->
+                    <div class="tab-pane fade" id="crypto" role="tabpanel">
+                        <div class="chart-container">
+                            <canvas id="cryptoChart" height="300"></canvas>
+                        </div>
+                        <div class="crypto-insights mt-3">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="crypto-stat">
+                                        <div class="crypto-icon">
+                                            <i class="fab fa-bitcoin text-warning"></i>
+                                        </div>
+                                        <div class="crypto-data">
+                                            <h6>Bitcoin</h6>
+                                            <span class="text-warning">12.5 BTC</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="crypto-stat">
+                                        <div class="crypto-icon">
+                                            <i class="fab fa-ethereum text-info"></i>
+                                        </div>
+                                        <div class="crypto-data">
+                                            <h6>Ethereum</h6>
+                                            <span class="text-info">89.7 ETH</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="crypto-stat">
+                                        <div class="crypto-icon">
+                                            <i class="fas fa-coins text-success"></i>
+                                        </div>
+                                        <div class="crypto-data">
+                                            <h6>NVCT</h6>
+                                            <span class="text-success">45,000</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="crypto-stat">
+                                        <div class="crypto-icon">
+                                            <i class="fas fa-dollar-sign text-primary"></i>
+                                        </div>
+                                        <div class="crypto-data">
+                                            <h6>USDC</h6>
+                                            <span class="text-primary">25,000</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Transaction Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Today's Volume</h6>
+                        <h3 class="text-success mb-0">$12.4M</h3>
+                        <small class="text-success">+15.7% vs yesterday</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Transaction Count</h6>
+                        <h3 class="text-white mb-0">18,547</h3>
+                        <small class="text-info">Today's total</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-exchange-alt text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Success Rate</h6>
+                        <h3 class="text-success mb-0">99.2%</h3>
+                        <small class="text-success">Excellent performance</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-light mb-1">Average Value</h6>
+                        <h3 class="text-white mb-0">$668</h3>
+                        <small class="text-warning">Per transaction</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-bar text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Analysis Charts -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="text-white mb-0">Transaction Volume Trends</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm active">24H</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">7D</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">30D</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">90D</button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="volumeTrendsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="text-white mb-0">Transaction Types</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="transactionTypesChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Transaction Analysis -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="text-white mb-0">Channel Performance</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="channel-item d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="channel-icon bg-primary me-3">
+                                <i class="fas fa-desktop text-white"></i>
+                            </div>
+                            <div>
+                                <div class="text-white fw-bold">Online Banking</div>
+                                <div class="text-light small">Web platform</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-primary fw-bold">$8.7M</div>
+                            <div class="text-light small">70.2%</div>
+                        </div>
+                    </div>
+                    <div class="channel-item d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="channel-icon bg-success me-3">
+                                <i class="fas fa-mobile-alt text-white"></i>
+                            </div>
+                            <div>
+                                <div class="text-white fw-bold">Mobile App</div>
+                                <div class="text-light small">iOS & Android</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-success fw-bold">$2.8M</div>
+                            <div class="text-light small">22.6%</div>
+                        </div>
+                    </div>
+                    <div class="channel-item d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="channel-icon bg-warning me-3">
+                                <i class="fas fa-building text-white"></i>
+                            </div>
+                            <div>
+                                <div class="text-white fw-bold">Branch</div>
+                                <div class="text-light small">In-person</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-warning fw-bold">$0.6M</div>
+                            <div class="text-light small">4.8%</div>
+                        </div>
+                    </div>
+                    <div class="channel-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="channel-icon bg-info me-3">
+                                <i class="fas fa-credit-nvc-card text-white"></i>
+                            </div>
+                            <div>
+                                <div class="text-white fw-bold">ATM</div>
+                                <div class="text-light small">Automated teller</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-info fw-bold">$0.3M</div>
+                            <div class="text-light small">2.4%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="text-white mb-0">Transaction Status</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="status-item d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="status-icon bg-success me-3">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <div>
+                                <div class="text-white fw-bold">Completed</div>
+                                <div class="text-light small">Successfully processed</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-success fw-bold">18,399</div>
+                            <div class="text-light small">99.2%</div>
+                        </div>
+                    </div>
+                    <div class="status-item d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="status-icon bg-warning me-3">
+                                <i class="fas fa-clock text-white"></i>
+                            </div>
+                            <div>
+                                <div class="text-white fw-bold">Pending</div>
+                                <div class="text-light small">Awaiting processing</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-warning fw-bold">97</div>
+                            <div class="text-light small">0.5%</div>
+                        </div>
+                    </div>
+                    <div class="status-item d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="status-icon bg-danger me-3">
+                                <i class="fas fa-times text-white"></i>
+                            </div>
+                            <div>
+                                <div class="text-white fw-bold">Failed</div>
+                                <div class="text-light small">Processing errors</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-danger fw-bold">51</div>
+                            <div class="text-light small">0.3%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="text-white mb-0">Recent Transactions</h5>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                            <i class="fas fa-filter me-2"></i>Filter
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Account</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Channel</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="transaction-analysis-row" data-transaction-id="TXN-847592" data-type="transfer" data-category="retail" >
+                                    <td><span class="text-info">TXN-847592</span></td>
+                                    <td>****2847</td>
+                                    <td><span class="badge bg-primary">Transfer</span></td>
+                                    <td class="text-success">$2,500.00</td>
+                                    <td><span class="badge bg-secondary">Online</span></td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td class="text-light">2 min ago</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" title="View Details" data-action="custom-action">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="transaction-analysis-row" data-transaction-id="TXN-847591" data-type="deposit" data-category="income" >
+                                    <td><span class="text-info">TXN-847591</span></td>
+                                    <td>****5921</td>
+                                    <td><span class="badge bg-success">Deposit</span></td>
+                                    <td class="text-success">$10,000.00</td>
+                                    <td><span class="badge bg-primary">Mobile</span></td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td class="text-light">15 min ago</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" title="View Details" data-action="custom-action">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="transaction-analysis-row" data-transaction-id="TXN-847590" data-type="withdrawal" data-category="cash" >
+                                    <td><span class="text-info">TXN-847590</span></td>
+                                    <td>****7364</td>
+                                    <td><span class="badge bg-warning">Withdrawal</span></td>
+                                    <td class="text-danger">-$750.00</td>
+                                    <td><span class="badge bg-info">ATM</span></td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td class="text-light">1 hour ago</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" title="View Details" data-action="custom-action">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Volume Trends Chart
+    const volumeCtx = document.getElementById('volumeTrendsChart').getContext('2d');
+    new Chart(volumeCtx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+            datasets: [{
+                label: 'Transaction Volume',
+                data: [0.8, 0.6, 1.2, 2.8, 3.5, 2.1, 1.4, 0.9],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#e2e8f0'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#e2e8f0'
+                    },
+                    grid: {
+                        color: 'rgba(226, 232, 240, 0.1)'
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: '#e2e8f0',
+                        callback: function(value) {
+                            return '$' + value + 'M';
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(226, 232, 240, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Transaction Types Chart
+    const typesCtx = document.getElementById('transactionTypesChart').getContext('2d');
+    new Chart(typesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Transfers', 'Deposits', 'Withdrawals', 'Payments'],
+            datasets: [{
+                data: [45, 28, 18, 9],
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#e2e8f0',
+                        padding: 10
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,776 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Blockchain Integration Dashboard - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Blockchain Integration{% endblock %}
+{% block page_description %}Multi-chain blockchain services and infrastructure management for banking and cryptocurrency operations{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-network-wired"></i>
+    Network Status
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-link"></i>
+    Manage Integrations
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Blockchain Integration Specific Styles */
+    .blockchain-metric-card {
+        background: linear-gradient(135deg, var(--warning-bg) 0%, var(--warning-hover) 100%);
+        border: 2px solid var(--warning-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .blockchain-metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+    }
+
+    .network-status-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+    }
+
+    .network-online {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .network-offline {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+    }
+
+    .blockchain-network-card {
+        background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+        border-left: 4px solid var(--warning-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .blockchain-network-card:hover {
+        border-left-width: 6px;
+        transform: translateX(3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+<!-- Blockchain Integration Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Blockchain Infrastructure Center</h3>
+                        <p>Multi-chain blockchain services and infrastructure management</p>
+                    </div>
+                </div>
+                <div class="header-status">
+                    <span class="network-status-indicator network-online">
+                        <i class="fas fa-check-circle"></i>
+                        {{ service_status|default('ONLINE')|upper }}
+                    </span>
+                    <div class="status-detail">{{ networks_supported|default('8') }} networks supported</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Blockchain Metrics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card blockchain-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon primary">
+                    <i class="fas fa-network-wired"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ networks_supported|default('8') }}</h3>
+                    <p>Active Networks</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-plus"></i> +2 new networks
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card blockchain-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon success">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ "{:,}".format(total_transactions) if total_transactions else "1,247,893" }}</h3>
+                    <p>Total Transactions</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-arrow-up"></i> +5.2% today
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card blockchain-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon info">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ network_health|default('99.8') }}%</h3>
+                    <p>Network Health</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-check"></i> Excellent
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card blockchain-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon warning">
+                    <i class="fas fa-gas-pump"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ gas_price|default('25') }} Gwei</h3>
+                    <p>Current Gas Price</p>
+                    <span class="metric-trend neutral">
+                        <i class="fas fa-minus"></i> Stable
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Level 2: Blockchain Network Categories -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-layer-group"></i> Blockchain Networks</h4>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="row g-3">
+                    <div class="col-xl-2 col-md-4">
+                        <div class="blockchain-network-nvc-card" data-network-type="ethereum" >
+                            <div class="network-icon bg-primary">
+                                <i class="fab fa-ethereum"></i>
+                            </div>
+                            <div class="network-content">
+                                <h4>Ethereum</h4>
+                                <p>Layer 1</p>
+                                <small class="text-success">25 Gwei</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="blockchain-network-nvc-card" data-network-type="bitcoin" >
+                            <div class="network-icon bg-warning">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="network-content">
+                                <h4>Bitcoin</h4>
+                                <p>Layer 1</p>
+                                <small class="text-info">15 sat/vB</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="blockchain-network-nvc-card" data-network-type="polygon" >
+                            <div class="network-icon bg-success">
+                                <i class="fas fa-gem"></i>
+                            </div>
+                            <div class="network-content">
+                                <h4>Polygon</h4>
+                                <p>Layer 2</p>
+                                <small class="text-success">0.1 MATIC</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="blockchain-network-nvc-card" data-network-type="binance" >
+                            <div class="network-icon bg-info">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="network-content">
+                                <h4>BSC</h4>
+                                <p>Layer 1</p>
+                                <small class="text-primary">5 Gwei</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="blockchain-network-nvc-card" data-network-type="solana" >
+                            <div class="network-icon bg-secondary">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <div class="network-content">
+                                <h4>Solana</h4>
+                                <p>Layer 1</p>
+                                <small class="text-secondary">0.00025 SOL</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="blockchain-network-nvc-card" data-network-type="cardano" >
+                            <div class="network-icon bg-danger">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="network-content">
+                                <h4>Cardano</h4>
+                                <p>Layer 1</p>
+                                <small class="text-danger">0.17 ADA</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Level 3: Blockchain Transactions Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-cubes"></i> Recent Blockchain Transactions</h4>
+                <div class="header-actions">
+                    <select id="blockchain-network-filter" class="form-select nvc-form-select-sm">
+                        <option value="">All Networks</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="bitcoin">Bitcoin</option>
+                        <option value="polygon">Polygon</option>
+                        <option value="binance">BSC</option>
+                        <option value="solana">Solana</option>
+                        <option value="cardano">Cardano</option>
+                    </select>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table enterprise-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction Hash</th>
+                                <th>Network</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Gas Fee</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="blockchain-transactions-table">
+                            <tr class="blockchain-transaction-row" data-tx-id="0x1234...abcd" data-network-type="ethereum" data-status="confirmed" >
+                                <td><strong>0x1234...abcd</strong></td>
+                                <td><span class="badge bg-primary">Ethereum</span></td>
+                                <td>Transfer</td>
+                                <td class="text-success">2.5 ETH</td>
+                                <td><span class="badge bg-success">Confirmed</span></td>
+                                <td class="text-info">0.0025 ETH</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Explorer</button>
+                                </td>
+                            </tr>
+                            <tr class="blockchain-transaction-row" data-tx-id="bc1q...xyz789" data-network-type="bitcoin" data-status="confirmed" >
+                                <td><strong>bc1q...xyz789</strong></td>
+                                <td><span class="badge bg-warning">Bitcoin</span></td>
+                                <td>Payment</td>
+                                <td class="text-success">0.5 BTC</td>
+                                <td><span class="badge bg-success">Confirmed</span></td>
+                                <td class="text-info">0.0001 BTC</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Explorer</button>
+                                </td>
+                            </tr>
+                            <tr class="blockchain-transaction-row" data-tx-id="0x5678...efgh" data-network-type="polygon" data-status="pending" >
+                                <td><strong>0x5678...efgh</strong></td>
+                                <td><span class="badge bg-success">Polygon</span></td>
+                                <td>Smart Contract</td>
+                                <td class="text-warning">100 MATIC</td>
+                                <td><span class="badge bg-warning">Pending</span></td>
+                                <td class="text-info">0.01 MATIC</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Speed Up</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Supported Networks -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Supported Networks</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Network</th>
+                                    <th>Symbol</th>
+                                    <th>Status</th>
+                                    <th>Block Height</th>
+                                    <th>Gas Price</th>
+                                    <th>TPS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for network in supported_networks %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ network.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ network.symbol }}</span>
+                                    </td>
+                                    <td>
+                                        {% if network.status == 'operational' %}
+                                            <span class="badge bg-success">Operational</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ network.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "{:,}".format(network.block_height) }}</td>
+                                    <td>{{ network.gas_price }}</td>
+                                    <td>{{ network.tps }} TPS</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities & Integration Services -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Recent Blockchain Activities</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Activity Type</th>
+                                    <th>Network</th>
+                                    <th>Transaction Hash</th>
+                                    <th>Status</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activities %}
+                                <tr>
+                                    <td>{{ activity.type }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ activity.network }}</span>
+                                    </td>
+                                    <td><code>{{ activity.hash }}</code></td>
+                                    <td>
+                                        {% if activity.status == 'confirmed' %}
+                                            <span class="badge bg-success">Confirmed</span>
+                                        {% elif activity.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ activity.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ activity.timestamp }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Integration Services</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% for service in integration_services %}
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>{{ service }}</span>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="mt-4">
+                        <button type="button" class="btn nvc-btn nvc-btn-warning me-2">
+                            <i class="fas fa-cog me-1"></i>
+                            Network Config
+                        </button>
+<!-- Blockchain Networks -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Blockchain Networks</h3>
+                        <p>Connected blockchain networks and their status</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="blockchain-networks-list">
+                    {% for network in blockchain_networks|default([
+                        {'name': 'Ethereum', 'status': 'online', 'block_height': '18,500,123', 'gas_price': '25 Gwei'},
+                        {'name': 'Bitcoin', 'status': 'online', 'block_height': '815,234', 'gas_price': 'N/A'},
+                        {'name': 'Binance Smart Chain', 'status': 'online', 'block_height': '32,847,291', 'gas_price': '5 Gwei'},
+                        {'name': 'Polygon', 'status': 'online', 'block_height': '49,123,456', 'gas_price': '30 Gwei'},
+                        {'name': 'Avalanche', 'status': 'online', 'block_height': '38,567,890', 'gas_price': '25 nAVAX'}
+                    ]) %}
+                    <div class="blockchain-network-nvc-card">
+                        <div class="network-header">
+                            <div class="network-icon primary">
+                                <i class="fab fa-{{ 'ethereum' if network.name == 'Ethereum' else 'bitcoin' if network.name == 'Bitcoin' else 'ethereum' }}"></i>
+                            </div>
+                            <div class="network-details">
+                                <h5>{{ network.name }}</h5>
+                                <p>Block Height: {{ network.block_height }}</p>
+                                <span class="network-status-indicator {{ 'network-online' if network.status == 'online' else 'network-offline' }}">
+                                    <i class="fas fa-{{ 'check-circle' if network.status == 'online' else 'times-circle' }}"></i>
+                                    {{ network.status|title }}
+                                </span>
+                            </div>
+                            <div class="network-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Gas Price</span>
+                                    <span class="stat-value">{{ network.gas_price }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Integration Status</h3>
+                        <p>Blockchain service health</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="integration-status-list">
+                    <div class="status-item">
+                        <div class="status-icon success">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="status-content">
+                            <h6>Node Connectivity</h6>
+                            <p>All nodes operational</p>
+                        </div>
+                    </div>
+
+                    <div class="status-item">
+                        <div class="status-icon success">
+                            <i class="fas fa-sync"></i>
+                        </div>
+                        <div class="status-content">
+                            <h6>Synchronization</h6>
+                            <p>Fully synchronized</p>
+                        </div>
+                    </div>
+
+                    <div class="status-item">
+                        <div class="status-icon warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="status-content">
+                            <h6>Gas Optimization</h6>
+                            <p>Monitoring high fees</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="button" class="nvc-btn nvc-btn-primary-enterprise w-100" data-action="custom-action">
+                        <i class="fas fa-cog"></i>
+                        Configure Networks
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Blockchain Integration Functions
+function exportBlockchainData() {
+    const csvData = 'Network,Status,Block Height,Gas Price,Health\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'blockchain_integration_data.csv';
+    a.click();
+}
+
+function viewNetworkStatus() {
+    window.location.href = "{{ url_for('blockchain.network_status') }}";
+}
+
+function manageIntegrations() {
+    window.location.href = "{{ url_for('blockchain.manage_integrations') }}";
+}
+
+function configureNetworks() {
+    window.location.href = "{{ url_for('blockchain.network_config') }}";
+}
+
+// Multi-Level Blockchain Dashboard Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 1: Metric cards with drilldown navigation (existing functionality enhanced)
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+
+        // Enhanced click handlers for drilldown navigation
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6, .metric-title')?.textContent;
+            handleBlockchainDrilldown(cardTitle);
+        });
+    });
+
+    // Level 2: Blockchain Network Cards
+    const networkCards = document.querySelectorAll('.blockchain-network-card');
+    networkCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const networkType = this.getAttribute('data-network-type');
+            handleBlockchainNetworkDrilldown(networkType);
+        });
+
+        // Enhanced hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: Blockchain Transaction Rows
+    const transactionRows = document.querySelectorAll('.blockchain-transaction-row');
+    transactionRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const txId = this.getAttribute('data-tx-id');
+            viewTransactionDetails(txId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Blockchain network filter
+    const networkFilter = document.getElementById('blockchain-network-filter');
+    if (networkFilter) {
+        networkFilter.addEventListener('change', function() {
+            filterTransactionsByNetwork(this.value);
+        });
+    }
+});
+
+// Level 2: Blockchain Network Drilldown
+function handleBlockchainNetworkDrilldown(networkType) {
+    // Filter the transactions table by network type
+    filterTransactionsByNetwork(networkType);
+
+    // Update the filter dropdown
+    const networkFilter = document.getElementById('blockchain-network-filter');
+    if (networkFilter) {
+        networkFilter.value = networkType;
+    }
+
+    // Scroll to transactions table
+    document.querySelector('#blockchain-transactions-table').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter transactions by network
+function filterTransactionsByNetwork(networkType) {
+    const rows = document.querySelectorAll('.blockchain-transaction-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowNetwork = row.getAttribute('data-network-type');
+        if (!networkType || rowNetwork === networkType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updateTransactionCounts(networkType, visibleCount);
+}
+
+// Update transaction counts
+function updateTransactionCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.blockchain-transaction-row').length;
+    const header = document.querySelector('.card-header-enterprise h4');
+    if (header) {
+        if (!activeFilter) {
+            header.innerHTML = `<i class="fas fa-cubes"></i> Recent Blockchain Transactions (${totalRows} transactions)`;
+        } else {
+            const filterName = activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
+            header.innerHTML = `<i class="fas fa-cubes"></i> ${filterName} Transactions (${visibleCount} transactions)`;
+        }
+    }
+}
+
+// Level 4: View individual transaction details (Level 4 → Level 5 drilldown)
+function viewTransactionDetails(txId) {
+    // Navigate to detailed transaction view with comprehensive blockchain analysis
+    window.location.href = `/blockchain/transaction_details/${encodeURIComponent(txId)}?view=comprehensive&include=trace,logs,events`;
+}
+
+// Level 5: Specialized blockchain functions
+function viewOnExplorer(txId) {
+    // Navigate to blockchain explorer
+    window.location.href = `/blockchain/explorer/${encodeURIComponent(txId)}?view=detailed&external=true`;
+}
+
+function speedUpTransaction(txId) {
+    if (confirm('Are you sure you want to speed up this transaction? This will increase the gas fee.')) {
+        // Navigate to transaction speed up
+        window.location.href = `/blockchain/speed_up_transaction/${encodeURIComponent(txId)}?action=increase_gas`;
+    }
+}
+
+function analyzeTransactionTrace(txId) {
+    // Navigate to transaction trace analysis
+    window.location.href = `/blockchain/transaction_trace/${encodeURIComponent(txId)}?view=detailed&debug=true`;
+}
+
+function viewTransactionEvents(txId) {
+    // Navigate to transaction events
+    window.location.href = `/blockchain/transaction_events/${encodeURIComponent(txId)}?view=decoded&logs=true`;
+}
+
+function monitorTransactionStatus(txId) {
+    // Navigate to transaction monitoring
+    window.location.href = `/blockchain/transaction_monitor/${encodeURIComponent(txId)}?alerts=true&realtime=true`;
+}
+
+function generateTransactionReport(txId) {
+    // Navigate to transaction report generation
+    window.location.href = `/blockchain/transaction_report/${encodeURIComponent(txId)}?format=comprehensive&export=pdf&forensics=true`;
+}
+
+function viewNetworkAnalytics(networkType) {
+    // Navigate to network analytics
+    window.location.href = `/blockchain/network_analytics/${encodeURIComponent(networkType)}?view=comprehensive&metrics=all`;
+}
+
+function viewGasAnalytics(networkType) {
+    // Navigate to gas analytics
+    window.location.href = `/blockchain/gas_analytics/${encodeURIComponent(networkType)}?view=trends&predictions=true`;
+}
+
+function handleBlockchainDrilldown(cardTitle) {
+    if (!cardTitle) return;
+
+    if (cardTitle.includes('Active Networks') || cardTitle.includes('Networks')) {
+        window.location.href = "{{ url_for('blockchain.network_management') }}?filter=active";
+    } else if (cardTitle.includes('Total Transactions') || cardTitle.includes('Transactions')) {
+        window.location.href = "{{ url_for('blockchain.transaction_explorer') }}?view=recent";
+    } else if (cardTitle.includes('Block Height') || cardTitle.includes('Blocks')) {
+        window.location.href = "{{ url_for('blockchain.block_explorer') }}?view=latest";
+    } else if (cardTitle.includes('Gas Price') || cardTitle.includes('Gas')) {
+        window.location.href = "{{ url_for('blockchain.gas_analytics') }}?view=trends";
+    } else if (cardTitle.includes('Network Health') || cardTitle.includes('Health')) {
+        window.location.href = "{{ url_for('blockchain.network_monitoring') }}?view=health";
+    } else if (cardTitle.includes('Validators') || cardTitle.includes('Nodes')) {
+        window.location.href = "{{ url_for('blockchain.validator_monitoring') }}?view=active";
+    } else if (cardTitle.includes('Smart Contracts') || cardTitle.includes('Contracts')) {
+        window.location.href = "{{ url_for('blockchain.contract_analytics') }}?view=deployed";
+    }
+}
+</script>
+</div>
+{% endblock %}
+{% endblock %}

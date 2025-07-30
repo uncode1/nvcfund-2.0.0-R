@@ -1,0 +1,782 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Smart Contracts - Real-Time Monitoring - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Real-time Smart Contracts Monitor{% endblock %}
+{% block page_description %}Live monitoring dashboard with real-time contract analytics and alerts{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-pause"></i>
+    Pause Monitor
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-bell"></i>
+    Configure Alerts
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let monitoringActive = true;
+let realTimeChart;
+
+function exportRealTimeData() {
+    const csvData = 'Timestamp,Contract,Event,Gas,Value,Status\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'realtime_monitor.csv';
+    a.click();
+}
+
+function pauseMonitoring() {
+    monitoringActive = !monitoringActive;
+    const button = document.querySelector('.btn-secondary-enterprise');
+    if (monitoringActive) {
+        button.innerHTML = '<i class="fas fa-pause"></i> Pause Monitor';
+        startRealTimeUpdates();
+    } else {
+        button.innerHTML = '<i class="fas fa-play"></i> Resume Monitor';
+        stopRealTimeUpdates();
+    }
+}
+
+function configureAlerts() {
+    const gasThreshold = prompt('Enter gas threshold for alerts:');
+    const valueThreshold = prompt('Enter value threshold for alerts:');
+
+    if (gasThreshold && valueThreshold) {
+        fetch('/smart-contracts/configure-alerts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: JSON.stringify({
+                gas_threshold: gasThreshold,
+                value_threshold: valueThreshold
+            })
+        }).then(response => {
+            if (response.ok) {
+                alert('Alerts configured successfully');
+            } else {
+                alert('Error configuring alerts');
+            }
+        });
+    }
+}
+
+function startRealTimeUpdates() {
+    if (monitoringActive) {
+        fetch('/smart-contracts/realtime-data')
+            .then(response => response.json())
+            .then(data => {
+                updateRealTimeChart(data);
+                updateContractStatus(data);
+            })
+            .catch(error => console.error('Error fetching real-time data:', error));
+
+        setTimeout(startRealTimeUpdates, 5000); // Update every 5 seconds
+    }
+}
+
+function stopRealTimeUpdates() {
+    // Stop the real-time updates
+}
+
+function updateRealTimeChart(data) {
+    // Update the real-time chart with new data
+    if (realTimeChart) {
+        realTimeChart.data.labels.push(new Date().toLocaleTimeString());
+        realTimeChart.data.datasets[0].data.push(data.gasUsage || 0);
+        realTimeChart.data.datasets[1].data.push(data.transactions || 0);
+
+        // Keep only last 20 data points
+        if (realTimeChart.data.labels.length > 20) {
+            realTimeChart.data.labels.shift();
+            realTimeChart.data.datasets[0].data.shift();
+            realTimeChart.data.datasets[1].data.shift();
+        }
+
+        realTimeChart.update();
+    }
+}
+
+function updateContractStatus(data) {
+    // Update contract status indicators
+    const statusElements = document.querySelectorAll('.contract-status');
+    statusElements.forEach(element => {
+        const contractId = element.dataset.contractId;
+        if (data.contracts && data.contracts[contractId]) {
+            element.textContent = data.contracts[contractId].status;
+            element.className = `contract-status ${data.contracts[contractId].status.toLowerCase()}`;
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize real-time chart
+    const ctx = document.getElementById('realTimeChart');
+    if (ctx) {
+        realTimeChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Gas Usage',
+                    data: [],
+                    borderColor: 'rgb(59, 130, 246)',
+                    tension: 0.1
+                }, {
+                    label: 'Transactions',
+                    data: [],
+                    borderColor: 'rgb(16, 185, 129)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Start real-time monitoring
+    startRealTimeUpdates();
+
+    // Add click handlers for real-time cards
+    const realtimeCards = document.querySelectorAll('.card, .realtime-card');
+    realtimeCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Live Transactions')) {
+                window.location.href = "{{ url_for('smart_contracts.live_transactions') }}";
+            } else if (cardTitle?.includes('Gas Monitor')) {
+                window.location.href = "{{ url_for('smart_contracts.gas_monitor') }}";
+            } else if (cardTitle?.includes('Event Log')) {
+                window.location.href = "{{ url_for('smart_contracts.event_log') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header bg-gradient-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="nvc-card-title mb-0">
+                                <i class="fas fa-broadcast-tower me-2"></i>Real-Time Smart Contracts Monitor
+                            </h2>
+                            <p class="nvc-card-text mb-0">Live blockchain events and contract interactions</p>
+                        </div>
+                        <div>
+                            <span id="connectionStatus" class="badge bg-warning">Connecting...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-Time Metrics Dashboard -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-success">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Live Transactions</h6>
+                            <h4 id="liveTransactions">--</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exchange-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-info">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Gas Price (Gwei)</h6>
+                            <h4 id="currentGasPrice">--</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-fire fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-warning">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Active Contracts</h6>
+                            <h4 id="activeContracts">--</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-code fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-danger">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Network Health</h6>
+                            <h4 id="networkHealth">--</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-heartbeat fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contract Subscription Panel -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-bell me-2"></i>Contract Subscriptions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label for="contractAddress" class="nvc-form-label">Contract Address</label>
+                        <div class="input-group">
+                            <input type="text" class="nvc-form-input" id="contractAddress" 
+                                   placeholder="0x..." style="font-family: monospace;">
+                            <button type="button" class="btn nvc-btn nvc-btn-primary" data-action="custom-action">
+                                <i class="fas fa-plus"></i> Subscribe
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Quick Select</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                NVCT Stablecoin
+                            </button>
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                Treasury Multi-Sig
+                            </button>
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">
+                                Government Bond
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="subscriptionsList">
+                        <h6>Active Subscriptions:</h6>
+                        <div id="activeSubscriptions" class="mt-2">
+                            <p class="text-light">No active subscriptions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Live Gas Prices
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div id="gasPriceChart">
+                        <canvas id="gasChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Event Stream -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-stream me-2"></i>Live Event Stream
+                    </h5>
+                    <div>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger" data-action="custom-action">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                            <i class="fas fa-pause" id="pauseIcon"></i> <span id="pauseText">Pause</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body nvc-style-f4d939" >
+                    <div id="eventStream">
+                        <p class="text-light">Waiting for events...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Status Grid -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fab fa-ethereum me-2"></i>Ethereum
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Block Height:</strong><br>
+                            <span id="ethBlockHeight" class="text-primary">--</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Block Time:</strong><br>
+                            <span id="ethBlockTime" class="text-info">--</span>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <strong>Pending Transactions:</strong><br>
+                            <span id="ethPendingTx" class="text-warning">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-polygon me-2"></i>Polygon
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Block Height:</strong><br>
+                            <span id="polyBlockHeight" class="text-primary">--</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Block Time:</strong><br>
+                            <span id="polyBlockTime" class="text-info">--</span>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <strong>Pending Transactions:</strong><br>
+                            <span id="polyPendingTx" class="text-warning">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-coins me-2"></i>BSC
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Block Height:</strong><br>
+                            <span id="bscBlockHeight" class="text-primary">--</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Block Time:</strong><br>
+                            <span id="bscBlockTime" class="text-info">--</span>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <strong>Pending Transactions:</strong><br>
+                            <span id="bscPendingTx" class="text-warning">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Socket.IO -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let socket;
+let streamPaused = false;
+let eventCount = 0;
+let gasChart;
+let contractAddresses = {
+    'nvct': '0x1234567890abcdef1234567890abcdef12345678',
+    'multisig': '0xabcdef1234567890abcdef1234567890abcdef12',
+    'bond': '0x9876543210fedcba9876543210fedcba98765432'
+};
+
+// Initialize Socket.IO connection
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSocket();
+    initializeGasChart();
+});
+
+function initializeSocket() {
+    // Connect to Smart Contracts namespace
+    socket = io('/smart_contracts');
+    
+    // Connection status
+    socket.on('connect', function() {
+        updateConnectionStatus('Connected', 'success');
+        console.log('Connected to Smart Contracts real-time stream');
+    });
+    
+    socket.on('disconnect', function() {
+        updateConnectionStatus('Disconnected', 'danger');
+        console.log('Disconnected from Smart Contracts stream');
+    });
+    
+    socket.on('connection_status', function(data) {
+        console.log('Connection status:', data);
+        if (data.status === 'connected') {
+            updateConnectionStatus('Connected', 'success');
+        }
+    });
+    
+    // Contract overview data
+    socket.on('contract_overview', function(data) {
+        updateOverviewMetrics(data);
+    });
+    
+    // Recent transactions
+    socket.on('recent_transactions', function(data) {
+        if (!streamPaused) {
+            data.forEach(tx => addEventToStream(tx, 'transaction'));
+        }
+    });
+    
+    // Gas price updates
+    socket.on('gas_price_update', function(data) {
+        updateGasPrices(data);
+    });
+    
+    // Network status updates
+    socket.on('network_status_update', function(data) {
+        updateNetworkStatus(data);
+    });
+    
+    // Contract events
+    socket.on('contract_event', function(data) {
+        if (!streamPaused) {
+            addEventToStream(data, 'contract_event');
+        }
+    });
+    
+    // Subscription confirmations
+    socket.on('subscription_confirmed', function(data) {
+        addActiveSubscription(data.contract_address);
+        showNotification(`Subscribed to contract: ${data.contract_address}`, 'success');
+    });
+    
+    socket.on('unsubscription_confirmed', function(data) {
+        removeActiveSubscription(data.contract_address);
+        showNotification(`Unsubscribed from contract: ${data.contract_address}`, 'info');
+    });
+    
+    // Error handling
+    socket.on('error', function(data) {
+        showNotification(data.message, 'danger');
+    });
+}
+
+function updateConnectionStatus(status, type) {
+    const statusElement = document.getElementById('connectionStatus');
+    statusElement.textContent = status;
+    statusElement.className = `badge bg-${type}`;
+}
+
+function updateOverviewMetrics(data) {
+    document.getElementById('liveTransactions').textContent = data.total_transactions_today || '--';
+    document.getElementById('currentGasPrice').textContent = data.average_gas_price || '--';
+    document.getElementById('activeContracts').textContent = data.active_contracts || '--';
+    document.getElementById('networkHealth').textContent = `${data.network_health || '--'%}`;
+}
+
+function updateGasPrices(data) {
+    if (gasChart && data.ethereum) {
+        const gasData = data.ethereum;
+        gasChart.data.datasets[0].data = [gasData.slow, gasData.standard, gasData.fast];
+        gasChart.update();
+    }
+}
+
+function updateNetworkStatus(data) {
+    // Update Ethereum
+    if (data.ethereum) {
+        document.getElementById('ethBlockHeight').textContent = data.ethereum.block_height?.toLocaleString() || '--';
+        document.getElementById('ethBlockTime').textContent = `${data.ethereum.block_time || '--'}s`;
+        document.getElementById('ethPendingTx').textContent = data.ethereum.pending_transactions?.toLocaleString() || '--';
+    }
+    
+    // Update Polygon
+    if (data.polygon) {
+        document.getElementById('polyBlockHeight').textContent = data.polygon.block_height?.toLocaleString() || '--';
+        document.getElementById('polyBlockTime').textContent = `${data.polygon.block_time || '--'}s`;
+        document.getElementById('polyPendingTx').textContent = data.polygon.pending_transactions?.toLocaleString() || '--';
+    }
+    
+    // Update BSC
+    if (data.bsc) {
+        document.getElementById('bscBlockHeight').textContent = data.bsc.block_height?.toLocaleString() || '--';
+        document.getElementById('bscBlockTime').textContent = `${data.bsc.block_time || '--'}s`;
+        document.getElementById('bscPendingTx').textContent = data.bsc.pending_transactions?.toLocaleString() || '--';
+    }
+}
+
+function initializeGasChart() {
+    const ctx = document.getElementById('gasChart').getContext('2d');
+    gasChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Slow', 'Standard', 'Fast'],
+            datasets: [{
+                label: 'Gas Price (Gwei)',
+                data: [0, 0, 0],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(220, 53, 69, 0.8)'
+                ],
+                borderColor: [
+                    'rgb(40, 167, 69)',
+                    'rgb(255, 193, 7)',
+                    'rgb(220, 53, 69)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function subscribeToContract() {
+    const address = document.getElementById('contractAddress').value.trim();
+    if (!address) {
+        showNotification('Please enter a contract address', 'warning');
+        return;
+    }
+    
+    if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
+        showNotification('Invalid contract address format', 'warning');
+        return;
+    }
+    
+    socket.emit('subscribe_contract', {
+        contract_address: address,
+        event_types: ['all']
+    });
+    
+    document.getElementById('contractAddress').value = '';
+}
+
+function selectContract(type) {
+    const address = contractAddresses[type];
+    if (address) {
+        document.getElementById('contractAddress').value = address;
+        subscribeToContract();
+    }
+}
+
+function addActiveSubscription(address) {
+    const container = document.getElementById('activeSubscriptions');
+    const shortAddress = `${address.substring(0, 6)}...${address.substring(38)}`;
+    
+    const subscriptionDiv = document.createElement('div');
+    subscriptionDiv.className = 'badge bg-primary me-2 mb-2';
+    subscriptionDiv.innerHTML = `
+        ${shortAddress}
+        <button type="button" class="btn-close btn-close-white ms-2" data-action="custom-action" style="font-size: 0.7em;"></button>
+    `;
+    subscriptionDiv.id = `sub-${address}`;
+    
+    if (container.querySelector('.text-light')) {
+        container.innerHTML = '';
+    }
+    
+    container.appendChild(subscriptionDiv);
+}
+
+function removeActiveSubscription(address) {
+    const element = document.getElementById(`sub-${address}`);
+    if (element) {
+        element.remove();
+    }
+    
+    const container = document.getElementById('activeSubscriptions');
+    if (container.children.length === 0) {
+        container.innerHTML = '<p class="text-light">No active subscriptions</p>';
+    }
+}
+
+function unsubscribeFromContract(address) {
+    socket.emit('unsubscribe_contract', {
+        contract_address: address
+    });
+}
+
+function addEventToStream(eventData, eventType) {
+    const stream = document.getElementById('eventStream');
+    eventCount++;
+    
+    // Remove "waiting for events" message
+    if (stream.querySelector('.text-light')) {
+        stream.innerHTML = '';
+    }
+    
+    const eventDiv = document.createElement('div');
+    eventDiv.className = 'border-bottom pb-2 mb-2';
+    
+    const timestamp = new Date(eventData.timestamp || Date.now()).toLocaleTimeString();
+    let eventContent = '';
+    
+    if (eventType === 'transaction') {
+        eventContent = `
+            <div class="d-flex justify-content-between">
+                <div>
+                    <strong class="text-primary">Transaction</strong>
+                    <br><small>Function: <code>${eventData.function}</code></small>
+                    <br><small>Hash: <code>${eventData.hash}</code></small>
+                    <br><small>Gas: ${eventData.gas_used?.toLocaleString()}</small>
+                </div>
+                <div class="text-end">
+                    <small class="text-light">${timestamp}</small>
+                    <br><span class="badge bg-${eventData.status === 'success' ? 'success' : 'warning'}">${eventData.status}</span>
+                </div>
+            </div>
+        `;
+    } else if (eventType === 'contract_event') {
+        eventContent = `
+            <div class="d-flex justify-content-between">
+                <div>
+                    <strong class="text-info">Contract Event</strong>
+                    <br><small>Type: <code>${eventData.event_type}</code></small>
+                    <br><small>Contract: <code>${eventData.contract_address?.substring(0, 10)}...</code></small>
+                    <br><small>Block: ${eventData.block_number}</small>
+                </div>
+                <div class="text-end">
+                    <small class="text-light">${timestamp}</small>
+                    <br><span class="badge bg-info">Event</span>
+                </div>
+            </div>
+        `;
+    }
+    
+    eventDiv.innerHTML = eventContent;
+    stream.insertBefore(eventDiv, stream.firstChild);
+    
+    // Limit to 50 events
+    while (stream.children.length > 50) {
+        stream.removeChild(stream.lastChild);
+    }
+}
+
+function clearEventStream() {
+    document.getElementById('eventStream').innerHTML = '<p class="text-light">Event stream cleared</p>';
+    eventCount = 0;
+}
+
+function pauseStream() {
+    streamPaused = !streamPaused;
+    const pauseIcon = document.getElementById('pauseIcon');
+    const pauseText = document.getElementById('pauseText');
+    
+    if (streamPaused) {
+        pauseIcon.className = 'fas fa-play';
+        pauseText.textContent = 'Resume';
+    } else {
+        pauseIcon.className = 'fas fa-pause';
+        pauseText.textContent = 'Pause';
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible position-fixed`;
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.zIndex = '9999';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-action="dismiss-notification"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    }, 5000);
+}
+
+// Auto-request updates every 10 seconds
+setInterval(() => {
+    if (socket && socket.connected) {
+        socket.emit('request_gas_price');
+        socket.emit('request_network_status');
+    }
+}, 10000);
+</script>
+</div>
+{% endblock %}

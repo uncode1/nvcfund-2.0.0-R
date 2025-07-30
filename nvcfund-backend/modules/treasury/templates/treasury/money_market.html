@@ -1,0 +1,257 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Money Market Operations{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0">
+                                <i class="fas fa-coins me-2"></i>Money Market Operations
+                            </h3>
+                            <small class="text-light">Interbank lending, repo operations, and short-term funding</small>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{{ url_for('treasury.main_dashboard') }}" class="btn nvc-btn nvc-btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Treasury
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Money Market Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-primary">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-handshake fa-3x text-primary mb-3"></i>
+                    <h5 class="text-light">Interbank Lending</h5>
+                    <h3 class="text-primary">$75.0M</h3>
+                    <small class="text-light">Outstanding</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-university fa-3x text-warning mb-3"></i>
+                    <h5 class="text-light">Interbank Borrowing</h5>
+                    <h3 class="text-warning">$50.0M</h3>
+                    <small class="text-light">Current Debt</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-exchange-alt fa-3x text-info mb-3"></i>
+                    <h5 class="text-light">Repo Operations</h5>
+                    <h3 class="text-info">$25.0M</h3>
+                    <small class="text-light">Active Repos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-certificate fa-3x text-success mb-3"></i>
+                    <h5 class="text-light">CD Portfolio</h5>
+                    <h3 class="text-success">$180M</h3>
+                    <small class="text-light">Total Value</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interest Rates & Market Data -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-percentage me-2"></i>Current Market Rates
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <h6 class="text-warning">Federal Funds Rate</h6>
+                            <h4 class="text-danger">5.25%</h4>
+                            <small class="text-success">↑ +0.25% this month</small>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-warning">LIBOR (3M)</h6>
+                            <h4 class="text-info">5.45%</h4>
+                            <small class="text-warning">↑ +0.15% this month</small>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <h6 class="text-warning">SOFR (Overnight)</h6>
+                            <h4 class="text-success">5.18%</h4>
+                            <small class="text-success">↑ +0.20% this month</small>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-warning">Treasury Bill (3M)</h6>
+                            <h4 class="text-primary">5.12%</h4>
+                            <small class="text-info">↑ +0.18% this month</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Portfolio Composition
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <h6 class="text-info">Commercial Paper</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" class="progress-bar-25"></div>
+                        </div>
+                        <small class="text-light">$45M (25%)</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-info">Certificates of Deposit</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" class="progress-bar-60"></div>
+                        </div>
+                        <small class="text-light">$180M (60%)</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-info">Reverse Repo</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" role="progressbar" class="progress-bar-15"></div>
+                        </div>
+                        <small class="text-light">$15M (15%)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Transactions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-list me-2"></i>Active Money Market Transactions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Transaction Type</th>
+                                    <th>Counterparty</th>
+                                    <th>Amount</th>
+                                    <th>Rate</th>
+                                    <th>Maturity</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Interbank Loan</td>
+                                    <td>First National Bank</td>
+                                    <td class="text-success">$25.0M</td>
+                                    <td class="text-info">5.35%</td>
+                                    <td>30 days</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Repo Agreement</td>
+                                    <td>Federal Reserve</td>
+                                    <td class="text-warning">$15.0M</td>
+                                    <td class="text-info">5.20%</td>
+                                    <td>7 days</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Commercial Paper</td>
+                                    <td>Corporate Issuer A</td>
+                                    <td class="text-primary">$10.0M</td>
+                                    <td class="text-info">5.45%</td>
+                                    <td>90 days</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Certificate of Deposit</td>
+                                    <td>Regional Bank XYZ</td>
+                                    <td class="text-info">$50.0M</td>
+                                    <td class="text-info">5.55%</td>
+                                    <td>6 months</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Money Market Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-primary">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-tools me-2"></i>Money Market Operations
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn nvc-btn nvc-btn-success">
+                                    <i class="fas fa-plus me-2"></i>New Transaction
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn nvc-btn nvc-btn-primary">
+                                    <i class="fas fa-handshake me-2"></i>Interbank Deal
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn nvc-btn nvc-btn-warning">
+                                    <i class="fas fa-exchange-alt me-2"></i>Repo Operation
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-info">
+                                    <i class="fas fa-chart-bar me-2"></i>Market Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

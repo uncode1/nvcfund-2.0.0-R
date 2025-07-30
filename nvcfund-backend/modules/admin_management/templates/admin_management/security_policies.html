@@ -1,0 +1,559 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Security Policies - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Security Policies{% endblock %}
+{% block page_description %}Configure and manage security policies, access controls, and compliance settings{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        Administration
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-file-shield" aria-hidden="true"></i>
+    Security Policies
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export security policies">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Policies
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Create new policy">
+    <i class="fas fa-plus" aria-hidden="true"></i>
+    Create Policy
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Save policy changes">
+    <i class="fas fa-save" aria-hidden="true"></i>
+    Save Changes
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Security Policies Overview -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                    Security Status Overview
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-success">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        All Systems Secure
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Security Policies Metrics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+2.1%</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ security_status.score or '94.2' }}%</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Security Score</p>
+                                <p class="nvc-metric-subtitle">Excellent rating</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-primary">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-primary">
+                                    <i class="fas fa-file-shield" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    <span>{{ security_status.total_policies or '25' }}</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ security_status.active_policies or '23' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Active Policies</p>
+                                <p class="nvc-metric-subtitle">{{ security_status.total_policies or '25' }} total</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-negative">
+                                    <i class="fas fa-arrow-down" aria-hidden="true"></i>
+                                    <span>-3</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ security_status.violations or '12' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Policy Violations</p>
+                                <p class="nvc-metric-subtitle">Last 30 days</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-chart-line" aria-hidden="true"></i>
+                                    <span>Target</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ security_status.compliance_rate or '98.7' }}%</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Compliance Rate</p>
+                                <p class="nvc-metric-subtitle">Above target</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Policy Categories Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-layer-group" aria-hidden="true"></i>
+                    Security Policy Categories
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Refresh policy status">
+                        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Modern NVC Tabbed Interface -->
+                <div class="nvc-tabs-container">
+                    <div class="nvc-tabs-nav" role="tablist" aria-label="Security policy categories">
+                        <button class="nvc-tab-button nvc-tab-active nvc-wcag-focus" id="authentication-tab" role="tab" aria-controls="authentication" aria-selected="true">
+                            <i class="fas fa-key" aria-hidden="true"></i>
+                            Authentication
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" id="access-control-tab" role="tab" aria-controls="access-control" aria-selected="false">
+                            <i class="fas fa-lock" aria-hidden="true"></i>
+                            Access Control
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" id="data-protection-tab" role="tab" aria-controls="data-protection" aria-selected="false">
+                            <i class="fas fa-database" aria-hidden="true"></i>
+                            Data Protection
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" id="network-security-tab" role="tab" aria-controls="network-security" aria-selected="false">
+                            <i class="fas fa-network-wired" aria-hidden="true"></i>
+                            Network Security
+                        </button>
+                        <button class="nvc-tab-button nvc-wcag-focus" id="compliance-tab" role="tab" aria-controls="compliance" aria-selected="false">
+                            <i class="fas fa-balance-scale" aria-hidden="true"></i>
+                            Compliance
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Policy Configuration Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-cogs" aria-hidden="true"></i>
+                    Policy Configuration
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Reset to defaults">
+                        <i class="fas fa-undo" aria-hidden="true"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Save policy changes">
+                        <i class="fas fa-save" aria-hidden="true"></i>
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Tab Content Container -->
+                <div class="nvc-tab-content">
+                    <!-- Authentication Policies Tab -->
+                    <div class="nvc-tab-panel nvc-tab-panel-active" id="authentication" role="tabpanel" aria-labelledby="authentication-tab">
+                        <div class="nvc-policy-configuration">
+                            <div class="nvc-policy-header">
+                                <h3 class="nvc-policy-title nvc-wcag-high-contrast">Authentication & Password Policies</h3>
+                                <p class="nvc-policy-description nvc-wcag-medium-contrast">Configure authentication requirements and password security policies</p>
+                            </div>
+
+                            <div class="nvc-policy-content">
+                                <div class="nvc-policy-grid">
+                                    <div class="nvc-policy-section">
+                                        <h4 class="nvc-policy-section-title nvc-wcag-high-contrast">Password Requirements</h4>
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="min-password-length">Minimum Password Length</label>
+                                            <input type="number" id="min-password-length" class="nvc-form-input nvc-wcag-focus" value="{{ auth_policies.min_password_length or '8' }}" min="6" max="32">
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast">Password Complexity Requirements</label>
+                                            <div class="nvc-checkbox-group">
+                                                <div class="nvc-checkbox-item">
+                                                    <input type="checkbox" id="require-uppercase" class="nvc-checkbox nvc-wcag-focus" checked>
+                                                    <label for="require-uppercase" class="nvc-checkbox-label nvc-wcag-medium-contrast">Require uppercase letters</label>
+                                                </div>
+                                                <div class="nvc-checkbox-item">
+                                                    <input type="checkbox" id="require-lowercase" class="nvc-checkbox nvc-wcag-focus" checked>
+                                                    <label for="require-lowercase" class="nvc-checkbox-label nvc-wcag-medium-contrast">Require lowercase letters</label>
+                                                </div>
+                                                <div class="nvc-checkbox-item">
+                                                    <input type="checkbox" id="require-numbers" class="nvc-checkbox nvc-wcag-focus" checked>
+                                                    <label for="require-numbers" class="nvc-checkbox-label nvc-wcag-medium-contrast">Require numbers</label>
+                                                </div>
+                                                <div class="nvc-checkbox-item">
+                                                    <input type="checkbox" id="require-special" class="nvc-checkbox nvc-wcag-focus" checked>
+                                                    <label for="require-special" class="nvc-checkbox-label nvc-wcag-medium-contrast">Require special characters</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="password-expiry">Password Expiry (days)</label>
+                                            <input type="number" id="password-expiry" class="nvc-form-input nvc-wcag-focus" value="{{ auth_policies.password_expiry or '90' }}" min="30" max="365">
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="password-history">Password History</label>
+                                            <input type="number" id="password-history" class="nvc-form-input nvc-wcag-focus" value="{{ auth_policies.password_history or '5' }}" min="1" max="24">
+                                            <span class="nvc-form-help nvc-wcag-medium-contrast">Number of previous passwords to remember</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-policy-section">
+                                        <h4 class="nvc-policy-section-title nvc-wcag-high-contrast">Access Control</h4>
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="max-login-attempts">Maximum Login Attempts</label>
+                                            <input type="number" id="max-login-attempts" class="nvc-form-input nvc-wcag-focus" value="{{ auth_policies.max_login_attempts or '5' }}" min="3" max="10">
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="lockout-duration">Account Lockout Duration (minutes)</label>
+                                            <input type="number" id="lockout-duration" class="nvc-form-input nvc-wcag-focus" value="{{ auth_policies.lockout_duration or '30' }}" min="5" max="1440">
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <div class="nvc-switch-group">
+                                                <div class="nvc-switch-item">
+                                                    <input type="checkbox" id="require-2fa" class="nvc-switch nvc-wcag-focus" checked>
+                                                    <label for="require-2fa" class="nvc-switch-label nvc-wcag-high-contrast">Require Two-Factor Authentication</label>
+                                                </div>
+                                                <div class="nvc-switch-item">
+                                                    <input type="checkbox" id="enable-biometric" class="nvc-switch nvc-wcag-focus" checked>
+                                                    <label for="enable-biometric" class="nvc-switch-label nvc-wcag-high-contrast">Enable Biometric Authentication</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="nvc-form-group">
+                                            <label class="nvc-form-label nvc-wcag-high-contrast" for="session-timeout">Session Timeout (minutes)</label>
+                                            <input type="number" id="session-timeout" class="nvc-form-input nvc-wcag-focus" value="{{ auth_policies.session_timeout or '30' }}" min="5" max="480">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Tab Panels (Hidden by default) -->
+                    <div class="nvc-tab-panel" id="access-control" role="tabpanel" aria-labelledby="access-control-tab">
+                        <div class="nvc-policy-configuration">
+                            <div class="nvc-policy-header">
+                                <h3 class="nvc-policy-title nvc-wcag-high-contrast">Access Control Policies</h3>
+                                <p class="nvc-policy-description nvc-wcag-medium-contrast">Configure role-based access control and permission policies</p>
+                            </div>
+                            <div class="nvc-policy-content">
+                                <div class="nvc-policy-placeholder">
+                                    <i class="fas fa-lock fa-3x nvc-wcag-medium-contrast"></i>
+                                    <h4 class="nvc-wcag-high-contrast">Access Control Configuration</h4>
+                                    <p class="nvc-wcag-medium-contrast">Configure role-based access control settings and permissions</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-tab-panel" id="data-protection" role="tabpanel" aria-labelledby="data-protection-tab">
+                        <div class="nvc-policy-configuration">
+                            <div class="nvc-policy-header">
+                                <h3 class="nvc-policy-title nvc-wcag-high-contrast">Data Protection Policies</h3>
+                                <p class="nvc-policy-description nvc-wcag-medium-contrast">Configure data encryption, backup, and privacy policies</p>
+                            </div>
+                            <div class="nvc-policy-content">
+                                <div class="nvc-policy-placeholder">
+                                    <i class="fas fa-database fa-3x nvc-wcag-medium-contrast"></i>
+                                    <h4 class="nvc-wcag-high-contrast">Data Protection Configuration</h4>
+                                    <p class="nvc-wcag-medium-contrast">Configure data encryption, backup, and privacy settings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-tab-panel" id="network-security" role="tabpanel" aria-labelledby="network-security-tab">
+                        <div class="nvc-policy-configuration">
+                            <div class="nvc-policy-header">
+                                <h3 class="nvc-policy-title nvc-wcag-high-contrast">Network Security Policies</h3>
+                                <p class="nvc-policy-description nvc-wcag-medium-contrast">Configure firewall, VPN, and network access policies</p>
+                            </div>
+                            <div class="nvc-policy-content">
+                                <div class="nvc-policy-placeholder">
+                                    <i class="fas fa-network-wired fa-3x nvc-wcag-medium-contrast"></i>
+                                    <h4 class="nvc-wcag-high-contrast">Network Security Configuration</h4>
+                                    <p class="nvc-wcag-medium-contrast">Configure firewall, VPN, and network access settings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-tab-panel" id="compliance" role="tabpanel" aria-labelledby="compliance-tab">
+                        <div class="nvc-policy-configuration">
+                            <div class="nvc-policy-header">
+                                <h3 class="nvc-policy-title nvc-wcag-high-contrast">Compliance Policies</h3>
+                                <p class="nvc-policy-description nvc-wcag-medium-contrast">Configure regulatory compliance and audit policies</p>
+                            </div>
+                            <div class="nvc-policy-content">
+                                <div class="nvc-policy-placeholder">
+                                    <i class="fas fa-balance-scale fa-3x nvc-wcag-medium-contrast"></i>
+                                    <h4 class="nvc-wcag-high-contrast">Compliance Configuration</h4>
+                                    <p class="nvc-wcag-medium-contrast">Configure regulatory compliance and audit settings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Security Policies Management Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Tab functionality
+    const tabButtons = document.querySelectorAll('.nvc-tab-button');
+    const tabPanels = document.querySelectorAll('.nvc-tab-panel');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.id.replace('-tab', '');
+
+            // Remove active class from all tabs and panels
+            tabButtons.forEach(btn => {
+                btn.classList.remove('nvc-tab-active');
+                btn.setAttribute('aria-selected', 'false');
+            });
+            tabPanels.forEach(panel => {
+                panel.classList.remove('nvc-tab-panel-active');
+            });
+
+            // Add active class to clicked tab and corresponding panel
+            this.classList.add('nvc-tab-active');
+            this.setAttribute('aria-selected', 'true');
+
+            const targetPanel = document.getElementById(targetId);
+            if (targetPanel) {
+                targetPanel.classList.add('nvc-tab-panel-active');
+            }
+        });
+    });
+
+    // Form input validation and real-time feedback
+    const formInputs = document.querySelectorAll('.nvc-form-input');
+    formInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            validateInput(this);
+        });
+
+        input.addEventListener('blur', function() {
+            validateInput(this);
+        });
+    });
+
+    function validateInput(input) {
+        const value = input.value;
+        const type = input.type;
+
+        // Remove existing validation classes
+        input.classList.remove('nvc-input-valid', 'nvc-input-invalid');
+
+        // Basic validation
+        if (type === 'number') {
+            const min = parseInt(input.getAttribute('min')) || 0;
+            const max = parseInt(input.getAttribute('max')) || Infinity;
+            const numValue = parseInt(value);
+
+            if (numValue >= min && numValue <= max) {
+                input.classList.add('nvc-input-valid');
+            } else {
+                input.classList.add('nvc-input-invalid');
+            }
+        } else if (value.trim() !== '') {
+            input.classList.add('nvc-input-valid');
+        }
+    }
+
+    // Checkbox and switch interactions
+    const checkboxes = document.querySelectorAll('.nvc-checkbox, .nvc-switch');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            console.log(`Policy setting changed: ${this.id} = ${this.checked}`);
+
+            // Show visual feedback
+            const label = document.querySelector(`label[for="${this.id}"]`);
+            if (label) {
+                if (this.checked) {
+                    label.style.fontWeight = 'bold';
+                } else {
+                    label.style.fontWeight = 'normal';
+                }
+            }
+        });
+    });
+
+    // Save changes functionality
+    const saveButtons = document.querySelectorAll('[aria-label*="Save"]');
+    saveButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Saving security policy changes...');
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Saving...';
+            this.disabled = true;
+
+            // Simulate save operation
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+
+                // Show success notification
+                showNotification('Security policies saved successfully!', 'success');
+            }, 2000);
+        });
+    });
+
+    // Reset functionality
+    const resetButtons = document.querySelectorAll('[aria-label*="Reset"]');
+    resetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all policies to default values?')) {
+                console.log('Resetting security policies to defaults...');
+
+                // Reset form inputs to default values
+                formInputs.forEach(input => {
+                    if (input.type === 'number') {
+                        input.value = input.getAttribute('min') || '0';
+                    } else {
+                        input.value = '';
+                    }
+                    input.classList.remove('nvc-input-valid', 'nvc-input-invalid');
+                });
+
+                // Reset checkboxes
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+
+                showNotification('Security policies reset to defaults', 'info');
+            }
+        });
+    });
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `nvc-notification nvc-notification-${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" aria-hidden="true"></i>
+            <span>${message}</span>
+            <button type="button" class="nvc-notification-close" aria-label="Close notification">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 5000);
+
+        // Close button functionality
+        const closeButton = notification.querySelector('.nvc-notification-close');
+        closeButton.addEventListener('click', function() {
+            notification.parentNode.removeChild(notification);
+        });
+    }
+
+    // Real-time security score updates
+    function updateSecurityScore() {
+        const scoreElement = document.querySelector('.nvc-metric-value');
+        if (scoreElement && scoreElement.textContent.includes('%')) {
+            // Simulate real-time security score calculation
+            console.log('Updating security score...');
+        }
+    }
+
+    // Update security score every 30 seconds
+    setInterval(updateSecurityScore, 30000);
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,371 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}ACH Transfer - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}ACH Transfer{% endblock %}
+{% block page_description %}Automated Clearing House transfers for secure domestic banking{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-history"></i>
+    ACH History
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-save"></i>
+    Save Template
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-university"></i>
+    Process ACH
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.ach-gradient {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.ach-card {
+    border: 2px solid #059669;
+    background: rgba(5, 150, 105, 0.1);
+}
+
+.ach-badge {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+}
+
+.ach-button {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.ach-button:hover {
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(5, 150, 105, 0.3);
+}
+
+.ach-icon {
+    color: #059669;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- ACH Transfer Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card ach-nvc-card">
+                <div class="nvc-nvc-card-body text-center py-4">
+                    <div class="ach-logo d-inline-flex align-items-center justify-content-center mb-3" 
+                         class="nvc-h-60">
+                        <img src="{{ url_for('static', filename='images/logos/ach-logo.svg') }}" 
+                             alt="ACH Logo" 
+                             class="nvc-style-ce791c"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="nvc-style-ef27e2">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #059669 0%, #047857 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-university nvc-colored-2effc2" ></i>
+                            </div>
+                            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 700; font-size: 18px; color: #059669;">
+                                ACH Network
+                            </div>
+                        </div>
+                    </div>
+                    <h2 class="mb-2" style="color: #059669; font-weight: 600;">{{ channel_config.title }}</h2>
+                    <p class="text-light mb-3">{{ channel_config.description }}</p>
+                    <div class="row justify-content-center">
+                        {% for feature in channel_config.features %}
+                        <div class="col-auto">
+                            <span class="badge ach-badge me-2 mb-2">{{ feature }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Form -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header ach-gradient text-white">
+                    <h5 class="mb-0"><i class="fas fa-university me-2"></i>ACH Transfer Details</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('banking.process_send_transfer') }}">
+                        <input type="hidden" name="transfer_channel" value="ach_transfer">
+                        
+                        <!-- Bank Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="recipient_bank" class="nvc-form-label">
+                                    <i class="fas fa-university ach-icon me-2"></i>Recipient Bank Name
+                                </label>
+                                <input type="text" class="nvc-form-input" id="recipient_bank" name="recipient_bank" 
+                                       placeholder="Chase Bank" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="from_account" class="nvc-form-label">From Account</label>
+                                <select class="nvc-form-select" name="from_account" required>
+                                    <option value="">Select source account</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.account_number }}">
+                                        {{ account.account_type.title() }} - ****{{ account.account_number[-4:] }} 
+                                        (${{ "%.2f"|format(account.balance) }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Account Details -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="routing_number" class="nvc-form-label">Routing Number</label>
+                                <input type="text" class="nvc-form-input" id="routing_number" name="routing_number" 
+                                       placeholder="021000021" maxlength="9" required>
+                                <div class="form-text">9-digit ABA routing number</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="account_number" class="nvc-form-label">Account Number</label>
+                                <input type="text" class="nvc-form-input" id="account_number" name="account_number" 
+                                       placeholder="1234567890" required>
+                            </div>
+                        </div>
+
+                        <!-- Recipient Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="recipient_name" class="nvc-form-label">Account Holder Name</label>
+                                <input type="text" class="nvc-form-input" id="recipient_name" name="recipient_name" 
+                                       placeholder="John Doe" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="account_type" class="nvc-form-label">Account Type</label>
+                                <select class="nvc-form-select" name="account_type" required>
+                                    <option value="">Select account type</option>
+                                    <option value="checking">Checking</option>
+                                    <option value="savings">Savings</option>
+                                    <option value="business">Business</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Amount and Timing -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="amount" class="nvc-form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" id="amount" name="amount" 
+                                           min="{{ channel_config.limits.min }}" 
+                                           max="{{ channel_config.limits.max }}" 
+                                           step="0.01" placeholder="0.00" required>
+                                </div>
+                                <div class="form-text">
+                                    Limits: ${{ channel_config.limits.min }} - ${{ "{:,}".format(channel_config.limits.max) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="processing_speed" class="nvc-form-label">Processing Speed</label>
+                                <select class="nvc-form-select" name="processing_speed" required>
+                                    <option value="standard">Standard (1-3 business days) - $0.50</option>
+                                    <option value="next_day">Next Business Day - $2.50</option>
+                                    <option value="same_day">Same Day - $10.00</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Transfer Type -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="transfer_class" class="nvc-form-label">Transfer Class</label>
+                                <select class="nvc-form-select" name="transfer_class" required>
+                                    <option value="PPD">PPD - Prearranged Payment & Deposit</option>
+                                    <option value="CCD">CCD - Corporate Credit or Debit</option>
+                                    <option value="WEB">WEB - Internet-Initiated Entry</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="effective_date" class="nvc-form-label">Effective Date</label>
+                                <input type="date" class="nvc-form-input" id="effective_date" name="effective_date" required>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="nvc-form-label">Payment Description</label>
+                            <input type="text" class="nvc-form-input" id="description" name="description" 
+                                   placeholder="Payment for services" maxlength="80" required>
+                            <div class="form-text">This will appear on both bank statements (max 80 characters)</div>
+                        </div>
+
+                        <!-- Fee Information -->
+                        <div class="alert nvc-nvc-alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>ACH Transfer Information</h6>
+                            <ul class="mb-0">
+                                <li><strong>Fee:</strong> ${{ "%.2f"|format(channel_config.fee) }} for standard processing</li>
+                                <li><strong>Processing Time:</strong> {{ channel_config.processing_time }}</li>
+                                <li><strong>Cut-off Time:</strong> 6:00 PM EST for next business day</li>
+                                <li><strong>Returns:</strong> ACH returns possible up to 60 days</li>
+                                <li><strong>Limits:</strong> Daily limit of ${{ "{:,}".format(channel_config.limits.max) }}</li>
+                            </ul>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Transfers
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn ach-button w-100">
+                                    <i class="fas fa-university me-2"></i>Send via ACH
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACH Benefits -->
+    <div class="row mt-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <h6 class="nvc-card-title"><i class="fas fa-shield-alt ach-icon me-2"></i>Why Choose ACH?</h6>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-dollar-sign ach-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Low Cost</h6>
+                            <p class="text-light small">Only $0.50 for standard transfers</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-lock ach-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Secure</h6>
+                            <p class="text-light small">NACHA-regulated network</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-clock ach-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Reliable</h6>
+                            <p class="text-light small">Proven banking infrastructure</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const routingInput = document.getElementById('routing_number');
+    const accountInput = document.getElementById('account_number');
+    const amountInput = document.getElementById('amount');
+    const processingSelect = document.querySelector('select[name="processing_speed"]');
+    const effectiveDateInput = document.getElementById('effective_date');
+    
+    // Set minimum effective date to today
+    const today = new Date().toISOString().split('T')[0];
+    effectiveDateInput.min = today;
+    effectiveDateInput.value = today;
+    
+    // Validate routing number
+    routingInput.addEventListener('input', function() {
+        // Remove non-digits
+        this.value = this.value.replace(/\D/g, '');
+        
+        if (this.value.length === 9) {
+            // Simple routing number validation (checksum)
+            const routing = this.value;
+            const checksum = (3 * (parseInt(routing[0]) + parseInt(routing[3]) + parseInt(routing[6])) +
+                            7 * (parseInt(routing[1]) + parseInt(routing[4]) + parseInt(routing[7])) +
+                            (parseInt(routing[2]) + parseInt(routing[5]) + parseInt(routing[8]))) % 10;
+            
+            if (checksum !== 0) {
+                this.setCustomValidity('Invalid routing number');
+            } else {
+                this.setCustomValidity('');
+            }
+        } else if (this.value.length > 0) {
+            this.setCustomValidity('Routing number must be 9 digits');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Format account number
+    accountInput.addEventListener('input', function() {
+        // Remove non-digits
+        this.value = this.value.replace(/\D/g, '');
+    });
+    
+    // Calculate fees based on processing speed
+    function updateFees() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const speed = processingSelect.value;
+        
+        let fee = 0.50; // Default standard fee
+        if (speed === 'next_day') fee = 2.50;
+        else if (speed === 'same_day') fee = 10.00;
+        
+        let feeDisplay = document.getElementById('fee-display');
+        if (!feeDisplay) {
+            feeDisplay = document.createElement('div');
+            feeDisplay.id = 'fee-display';
+            feeDisplay.className = 'form-text';
+            amountInput.parentElement.appendChild(feeDisplay);
+        }
+        
+        if (amount > 0) {
+            const total = amount + fee;
+            feeDisplay.innerHTML = `ACH fee: $${fee.toFixed(2)} | Total debit: $${total.toFixed(2)}`;
+        } else {
+            feeDisplay.innerHTML = '';
+        }
+    }
+    
+    amountInput.addEventListener('input', updateFees);
+    processingSelect.addEventListener('change', updateFees);
+    
+    // Bank lookup based on routing number
+    routingInput.addEventListener('blur', function() {
+        if (this.value.length === 9) {
+            // Mock bank lookup (in production, use actual routing number database)
+            const bankNames = {
+                '021000021': 'JPMorgan Chase Bank',
+                '026009593': 'Bank of America',
+                '121000248': 'Wells Fargo Bank',
+                '111000025': 'Citibank',
+                '036001808': 'Fifth Third Bank'
+            };
+            
+            const bankName = bankNames[this.value];
+            if (bankName) {
+                document.getElementById('recipient_bank').value = bankName;
+            }
+        }
+    });
+});
+</script>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Additional ACH-specific JavaScript can go here
+</script>
+{% endblock %}

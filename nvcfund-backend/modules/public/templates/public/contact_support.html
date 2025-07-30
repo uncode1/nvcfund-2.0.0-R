@@ -1,0 +1,114 @@
+{% extends "public/public_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Contact Support - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-4 text-primary">Contact Support</h1>
+                <p class="lead text-light">Get help from our expert support team</p>
+            </div>
+
+            <!-- Support Options -->
+            <div class="row mb-5">
+                <div class="col-md-4">
+                    <div class="nvc-card h-100 border-primary">
+                        <div class="nvc-nvc-card-body text-center">
+                            <i class="fas fa-phone fa-3x text-primary mb-3"></i>
+                            <h5>Phone Support</h5>
+                            <p>Available 24/7 for urgent issues</p>
+                            <p><strong>+1 (555) 123-4567</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="nvc-card h-100 border-success">
+                        <div class="nvc-nvc-card-body text-center">
+                            <i class="fas fa-envelope fa-3x text-success mb-3"></i>
+                            <h5>Email Support</h5>
+                            <p>Response within 4 hours</p>
+                            <p><strong>support@nvcfund.com</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="nvc-card h-100 border-info">
+                        <div class="nvc-nvc-card-body text-center">
+                            <i class="fas fa-comments fa-3x text-info mb-3"></i>
+                            <h5>Live Chat</h5>
+                            <p>Real-time assistance</p>
+                            <p><strong>Click to start chat</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Send Message</h3>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('public.submit_contact') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="nvc-form-label">Full Name</label>
+                                    <input type="text" class="nvc-form-input" id="name" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="nvc-form-label">Email Address</label>
+                                    <input type="email" class="nvc-form-input" id="email" name="email" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="nvc-form-label">Subject</label>
+                            <select class="nvc-form-select" id="subject" name="subject" required>
+                                <option value="">Select a topic</option>
+                                <option value="account_issue">Account Issue</option>
+                                <option value="transaction_support">Transaction Support</option>
+                                <option value="technical_problem">Technical Problem</option>
+                                <option value="api_integration">Service Integration</option>
+                                <option value="nvct_questions">NVCT Questions</option>
+                                <option value="general_inquiry">General Inquiry</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="nvc-form-label">Message</label>
+                            <textarea class="nvc-form-input" id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="priority" class="nvc-form-label">Priority Level</label>
+                            <select class="nvc-form-select" id="priority" name="priority">
+                                <option value="low">Low - General question</option>
+                                <option value="medium" selected>Medium - Need assistance</option>
+                                <option value="high">High - Urgent issue</option>
+                                <option value="critical">Critical - Account security</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn nvc-btn nvc-btn-primary">Send Message</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="mt-5">
+                <h3>Frequently Asked Questions</h3>
+                <p>Check our <a href="{{ url_for('public.faq') }}">FAQ section</a> for answers to common questions.</p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

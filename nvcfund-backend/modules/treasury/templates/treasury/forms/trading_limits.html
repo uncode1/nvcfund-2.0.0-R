@@ -1,0 +1,88 @@
+<!-- Trading Limits Form -->
+<div class="nvc-card mb-4">
+    <div class="nvc-nvc-card-header">
+        <h5 class="mb-0"><i class="fas fa-chart-line"></i> Trading Limits & Controls</h5>
+    </div>
+    <div class="nvc-nvc-card-body">
+        <form method="POST" action="{{ url_for('treasury.settings') }}">
+            {{ csrf_token }}
+            <input type="hidden" name="form_section" value="trading_limits">
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="daily_trading_limit">Daily Trading Limit ($M)</label>
+                        <input type="number" class="nvc-form-input" id="daily_trading_limit" name="daily_trading_limit" 
+                               value="100.0" step="1.0" min="1" max="1000" required>
+                        <small class="form-text text-light">Maximum daily trading volume in millions USD</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="position_limit">Single Position Limit ($M)</label>
+                        <input type="number" class="nvc-form-input" id="position_limit" name="position_limit" 
+                               value="25.0" step="1.0" min="1" max="250" required>
+                        <small class="form-text text-light">Maximum single position size in millions USD</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="stop_loss_threshold">Stop Loss Threshold (%)</label>
+                        <input type="number" class="nvc-form-input" id="stop_loss_threshold" name="stop_loss_threshold" 
+                               value="5.0" step="0.1" min="1" max="20" required>
+                        <small class="form-text text-light">Automatic stop loss trigger percentage</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="sector_concentration">Max Sector Concentration (%)</label>
+                        <input type="number" class="nvc-form-input" id="sector_concentration" name="sector_concentration" 
+                               value="15.0" step="1.0" min="5" max="50" required>
+                        <small class="form-text text-light">Maximum exposure to any single sector</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="approved_instruments">Approved Trading Instruments</label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="government_bonds" name="approved_instruments" value="government_bonds" checked>
+                            <label class="form-check-label" for="government_bonds">Government Bonds</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="corporate_bonds" name="approved_instruments" value="corporate_bonds" checked>
+                            <label class="form-check-label" for="corporate_bonds">Corporate Bonds</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="money_market" name="approved_instruments" value="money_market" checked>
+                            <label class="form-check-label" for="money_market">Money Market Instruments</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="fx_forwards" name="approved_instruments" value="fx_forwards" checked>
+                            <label class="form-check-label" for="fx_forwards">FX Forwards</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="interest_swaps" name="approved_instruments" value="interest_swaps">
+                            <label class="form-check-label" for="interest_swaps">Interest Rate Swaps</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="credit_derivatives" name="approved_instruments" value="credit_derivatives">
+                            <label class="form-check-label" for="credit_derivatives">Credit Derivatives</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn nvc-btn nvc-btn-primary">
+                <i class="fas fa-save"></i> Update Trading Limits
+            </button>
+        </form>
+    </div>
+</div>

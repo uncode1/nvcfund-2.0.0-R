@@ -1,0 +1,545 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Support Chat - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            background-color: #0a2447;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .chat-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 100%);
+            border-bottom: 1px solid #66ccff;
+            padding: 15px 20px;
+            color: #66ccff;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        .chat-input-area {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 100%);
+            border-top: 1px solid #66ccff;
+            padding: 15px 20px;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .message-user {
+            justify-content: flex-end;
+        }
+        .message-agent {
+            justify-content: flex-start;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        .message-user .message-content {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            color: #0a2447;
+            border-bottom-right-radius: 6px;
+        }
+        .message-agent .message-content {
+            background: rgba(30, 60, 114, 0.8);
+            color: #ffffff;
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-bottom-left-radius: 6px;
+        }
+        .message-time {
+            font-size: 0.7em;
+            color: #ccc;
+            margin-top: 5px;
+        }
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        .avatar-user {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            color: #0a2447;
+        }
+        .avatar-agent {
+            background: rgba(40, 167, 69, 0.8);
+            color: #ffffff;
+        }
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background: rgba(30, 60, 114, 0.8);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
+            max-width: 70%;
+            margin-bottom: 15px;
+        }
+        .typing-dots {
+            display: flex;
+            align-items: center;
+        }
+        .typing-dots span {
+            height: 8px;
+            width: 8px;
+            border-radius: 50%;
+            background: #66ccff;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+        .form-control {
+            background: #1e3c72;
+            border: 1px solid #66ccff;
+            color: #ffffff;
+            border-radius: 20px;
+            padding: 10px 20px;
+        }
+        .form-control:focus {
+            background: #1e3c72;
+            border-color: #66ccff;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+        }
+        .btn-send {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            color: #0a2447;
+            margin-left: 10px;
+        }
+        .quick-actions {
+            margin-bottom: 15px;
+        }
+        .quick-action-btn {
+            background: rgba(102, 204, 255, 0.2);
+            border: 1px solid #66ccff;
+            color: #66ccff;
+            border-radius: 15px;
+            padding: 6px 12px;
+            margin: 2px;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+        }
+        .quick-action-btn:hover {
+            background: #66ccff;
+            color: #0a2447;
+        }
+        .chat-status {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+        }
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-online { background: #28a745; }
+        .status-away { background: #ffc107; }
+        .status-offline { background: #dc3545; }
+        .file-upload-area {
+            background: rgba(30, 60, 114, 0.3);
+            border: 2px dashed rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .rating-section {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .star-rating {
+            color: #ffc107;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        .star-rating i {
+            margin: 0 2px;
+        }
+        .star-rating i:hover,
+        .star-rating i.active {
+            color: #ffeb3b;
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-headset me-2"></i>
+                    <h5 class="mb-0">Customer Support</h5>
+                    <div class="chat-status">
+                        <div class="status-indicator status-online"></div>
+                        <small>Agent Available</small>
+                    </div>
+                </div>
+                <div>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm me-2">
+                        <i class="fas fa-paperclip"></i> Attach
+                    </button>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                        <i class="fas fa-times"></i> End Chat
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- Agent Welcome Message -->
+            <div class="message message-agent">
+                <div class="avatar avatar-agent">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div>
+                    <div class="message-content">
+                        <strong>Sarah Johnson - Support Agent</strong><br>
+                        Hello! I'm Sarah, your personal banking support agent. How can I help you today?
+                    </div>
+                    <div class="message-time">2:34 PM</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions text-center">
+                <button type="button" class="btn quick-action-btn" data-action="custom-action">
+                    <i class="fas fa-wallet"></i> Check Balance
+                </button>
+                <button type="button" class="btn quick-action-btn" data-action="custom-action">
+                    <i class="fas fa-history"></i> Transaction History
+                </button>
+                <button type="button" class="btn quick-action-btn" data-action="custom-action">
+                    <i class="fas fa-credit-nvc-card"></i> Card Issues
+                </button>
+                <button type="button" class="btn quick-action-btn" data-action="custom-action">
+                    <i class="fas fa-key"></i> Password Reset
+                </button>
+                <button type="button" class="btn quick-action-btn" data-action="custom-action">
+                    <i class="fas fa-tools"></i> Technical Support
+                </button>
+            </div>
+
+            <!-- User Message Example -->
+            <div class="message message-user">
+                <div>
+                    <div class="message-content">
+                        Hi Sarah! I need help checking my account balance. I'm having trouble accessing my account through the mobile app.
+                    </div>
+                    <div class="message-time text-end">2:35 PM</div>
+                </div>
+                <div class="avatar avatar-user">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="avatar avatar-agent">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- Agent Response -->
+            <div class="message message-agent">
+                <div class="avatar avatar-agent">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div>
+                    <div class="message-content">
+                        I'd be happy to help you with that! For security purposes, I'll need to verify your identity first. Can you please provide me with:
+                        <br><br>
+                        1. Your full name as it appears on the account<br>
+                        2. The last 4 digits of your phone number<br>
+                        3. Your date of birth
+                        <br><br>
+                        Regarding the mobile app issue, are you receiving any specific error messages?
+                    </div>
+                    <div class="message-time">2:36 PM</div>
+                </div>
+            </div>
+
+            <!-- User Response -->
+            <div class="message message-user">
+                <div>
+                    <div class="message-content">
+                        Sure! My name is John Anderson, phone ends in 4567, and my DOB is March 15, 1985. 
+                        
+                        The app shows "Connection Error" when I try to log in, but my internet is working fine.
+                    </div>
+                    <div class="message-time text-end">2:37 PM</div>
+                </div>
+                <div class="avatar avatar-user">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+
+            <!-- Agent Resolution -->
+            <div class="message message-agent">
+                <div class="avatar avatar-agent">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div>
+                    <div class="message-content">
+                        Thank you for the verification, John! I can see your account here:
+                        <br><br>
+                        <strong>Account Summary:</strong><br>
+                        • Checking Account (****1234): $3,247.89<br>
+                        • Savings Account (****5678): $12,456.32<br>
+                        • Total Available Balance: $15,704.21
+                        <br><br>
+                        For the mobile app issue, I see there was a recent update that may be causing compatibility problems. Please try:
+                        <br>
+                        1. Force close the app completely<br>
+                        2. Clear the app cache (Android) or delete/reinstall (iOS)<br>
+                        3. Ensure you have the latest version from the app store
+                        <br><br>
+                        If the issue persists, you can always use our web portal at nvcbanking.com
+                    </div>
+                    <div class="message-time">2:38 PM</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Upload Area -->
+        <div class="file-upload-area" id="fileUploadArea">
+            <i class="fas fa-cloud-upload-alt text-primary" style="font-size: 2em;"></i>
+            <p class="mt-2 mb-0">Drop files here or click to upload</p>
+            <small class="text-light">Supported formats: PDF, JPG, PNG (max 10MB)</small>
+            <input type="file" id="fileInput" class="d-none" multiple accept=".pdf,.jpg,.jpeg,.png">
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input-area">
+            <div class="d-flex align-items-center">
+                <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm me-2" data-action="custom-action">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <input type="text" class="nvc-form-input" id="messageInput" 
+                       placeholder="Type your message..." 
+                       onkeypress="handleKeyPress(event)">
+                <button type="button" class="btn btn-send" data-action="custom-action">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+
+            <!-- Rating Section -->
+            <div class="rating-section" class="d-none" id="ratingSection">
+                <h6>How was your support experience?</h6>
+                <div class="star-rating" id="starRating">
+                    <i class="far fa-star" data-rating="1"></i>
+                    <i class="far fa-star" data-rating="2"></i>
+                    <i class="far fa-star" data-rating="3"></i>
+                    <i class="far fa-star" data-rating="4"></i>
+                    <i class="far fa-star" data-rating="5"></i>
+                </div>
+                <div class="mt-2">
+                    <textarea class="nvc-form-input" rows="2" placeholder="Optional feedback..."></textarea>
+                </div>
+                <div class="mt-2">
+                    <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">Submit Rating</button>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-secondary btn-sm">Skip</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addUserMessage(message);
+                input.value = '';
+                
+                // Show typing indicator
+                showTypingIndicator();
+                
+                // Simulate agent response
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addAgentMessage("Thank you for your message. I'm processing your request and will respond shortly.");
+                }, 2000);
+            }
+        }
+
+        function sendQuickMessage(action) {
+            addUserMessage(`I need help with: ${action}`);
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Simulate specific responses
+            setTimeout(() => {
+                hideTypingIndicator();
+                let response = "";
+                
+                switch(action) {
+                    case 'Account Balance':
+                        response = "I can help you check your account balance. For security, I'll need to verify your identity first.";
+                        break;
+                    case 'Transaction History':
+                        response = "I can provide your transaction history. What time period would you like to review?";
+                        break;
+                    case 'Card Issues':
+                        response = "I'm here to help with your card issues. Can you describe what problem you're experiencing?";
+                        break;
+                    case 'Password Reset':
+                        response = "I can assist with resetting your password. For security, I'll need to verify your identity first.";
+                        break;
+                    case 'Technical Support':
+                        response = "I'm here to help with technical issues. What specific problem are you experiencing?";
+                        break;
+                    default:
+                        response = "I'm here to help! Can you provide more details about what you need assistance with?";
+                }
+                
+                addAgentMessage(response);
+            }, 1500);
+        }
+
+        function addUserMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message message-user';
+            messageDiv.innerHTML = `
+                <div>
+                    <div class="message-content">${message}</div>
+                    <div class="message-time text-end">${time}</div>
+                </div>
+                <div class="avatar avatar-user">
+                    <i class="fas fa-user"></i>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addAgentMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message message-agent';
+            messageDiv.innerHTML = `
+                <div class="avatar avatar-agent">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div>
+                    <div class="message-content">${message}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'flex';
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function toggleFileUpload() {
+            const fileArea = document.getElementById('fileUploadArea');
+            fileArea.style.display = fileArea.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // File upload handling
+        document.getElementById('fileUploadArea').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                addUserMessage(`📎 Uploaded ${files.length} file(s): ${Array.from(files).map(f => f.name).join(', ')}`);
+                toggleFileUpload();
+            }
+        });
+
+        // Star rating functionality
+        document.querySelectorAll('#starRating i').forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.getAttribute('data-rating');
+                const stars = document.querySelectorAll('#starRating i');
+                
+                stars.forEach((s, index) => {
+                    if (index < rating) {
+                        s.className = 'fas fa-star active';
+                    } else {
+                        s.className = 'far fa-star';
+                    }
+                });
+            });
+        });
+
+        // Auto-scroll to bottom on page load
+        window.addEventListener('load', scrollToBottom);
+    </script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

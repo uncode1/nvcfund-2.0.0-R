@@ -1,0 +1,691 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Trading Platform | NVC Banking{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="trading-dashboard">
+    <!-- Trading Platform Header -->
+    <div class="dashboard-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="page-title">
+                    <i class="fas fa-chart-line text-primary"></i>
+                    Advanced Trading Platform
+                </h2>
+                <p class="text-light">Multi-asset trading with real-time market data and risk management</p>
+            </div>
+            <div class="col-md-4 text-right">
+                <div class="market-status">
+                    <span class="badge badge-success">
+                        <i class="fas fa-circle text-success"></i> Markets Open
+                    </span>
+                    <small class="text-light d-block">
+                        Last Update: <span id="market-time">{{ current_time }}</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-nvc-card">
+                <div class="stat-icon bg-primary">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>${{ portfolio_value|default('0.00') }}</h3>
+                    <p>Portfolio Value</p>
+                    <small class="text-success">
+                        <i class="fas fa-arrow-up"></i> +2.4% Today
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-nvc-card">
+                <div class="stat-icon bg-success">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ active_positions|default(0) }}</h3>
+                    <p>Active Positions</p>
+                    <small class="text-info">
+                        Across {{ asset_classes|default(4) }} asset classes
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-nvc-card">
+                <div class="stat-icon bg-warning">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ pending_orders|default(0) }}</h3>
+                    <p>Pending Orders</p>
+                    <small class="text-light">
+                        {{ executed_today|default(0) }} executed today
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-nvc-card">
+                <div class="stat-icon bg-danger">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ risk_score|default('Low') }}</h3>
+                    <p>Risk Level</p>
+                    <small class="text-success">
+                        Within limits
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Trading Interface -->
+    <div class="row">
+        <!-- Left Column: Order Entry & Watchlist -->
+        <div class="col-md-4">
+            <!-- Quick Order Form -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-plus-circle"></i> Quick Order</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="quick-order-form">
+                        <div class="form-group">
+                            <label>Symbol</label>
+                            <input type="text" class="nvc-form-input" id="symbol" placeholder="e.g., AAPL, MSFT" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="col">
+                                <label>Side</label>
+                                <select class="nvc-form-input" id="order-side">
+                                    <option value="BUY">Buy</option>
+                                    <option value="SELL">Sell</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label>Type</label>
+                                <select class="nvc-form-input" id="order-type">
+                                    <option value="MARKET">Market</option>
+                                    <option value="LIMIT">Limit</option>
+                                    <option value="STOP">Stop</option>
+                                    <option value="STOP_LIMIT">Stop Limit</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="col">
+                                <label>Quantity</label>
+                                <input type="number" class="nvc-form-input" id="quantity" min="1" required>
+                            </div>
+                            <div class="col" id="price-field" class="d-none">
+                                <label>Price</label>
+                                <input type="number" class="nvc-form-input" id="price" step="0.01">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn nvc-btn nvc-btn-primary btn-block mt-3">
+                            <i class="fas fa-paper-plane"></i> Submit Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Watchlist -->
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-star"></i> Watchlist</h5>
+                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary float-right" data-toggle="modal" data-target="#addSymbolModal">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+                <div class="nvc-nvc-card-body p-0">
+                    <div class="watchlist-container">
+                        {% if watchlist_symbols %}
+                            {% for symbol in watchlist_symbols %}
+                            <div class="watchlist-item">
+                                <div class="symbol-info">
+                                    <strong>{{ symbol.symbol }}</strong>
+                                    <small class="text-light d-block">{{ symbol.name }}</small>
+                                </div>
+                                <div class="symbol-price text-right">
+                                    <span class="price">${{ symbol.price|default('0.00') }}</span>
+                                    <small class="change {{ 'text-success' if symbol.change >= 0 else 'text-danger' }}">
+                                        {{ symbol.change|default('+0.00') }%}
+                                    </small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center p-3 text-light">
+                                <i class="fas fa-star-o fa-2x mb-2"></i>
+                                <p>Add symbols to your watchlist</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Column: Portfolio & Recent Activity -->
+        <div class="col-md-4">
+            <!-- Portfolio Overview -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-pie-chart"></i> Portfolio Allocation</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="portfolio-chart">
+                        <canvas id="portfolioChart" width="300" height="300"></canvas>
+                    </div>
+                    <div class="allocation-list mt-3">
+                        <div class="allocation-item">
+                            <span class="asset-class">Equities</span>
+                            <span class="percentage">65%</span>
+                        </div>
+                        <div class="allocation-item">
+                            <span class="asset-class">Fixed Income</span>
+                            <span class="percentage">25%</span>
+                        </div>
+                        <div class="allocation-item">
+                            <span class="asset-class">Commodities</span>
+                            <span class="percentage">7%</span>
+                        </div>
+                        <div class="allocation-item">
+                            <span class="asset-class">Cash</span>
+                            <span class="percentage">3%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-history"></i> Recent Orders</h5>
+                    <a href="{{ url_for('trading.order_history') }}" class="btn btn-sm nvc-btn nvc-btn-outline-primary float-right">
+                        View All
+                    </a>
+                </div>
+                <div class="nvc-nvc-card-body p-0">
+                    <div class="recent-orders">
+                        {% if recent_orders %}
+                            {% for order in recent_orders %}
+                            <div class="order-item">
+                                <div class="order-info">
+                                    <strong>{{ order.symbol }}</strong>
+                                    <span class="badge badge-{{ 'success' if order.side == 'BUY' else 'danger' }}">
+                                        {{ order.side }}
+                                    </span>
+                                    <small class="text-light d-block">
+                                        {{ order.quantity }} @ ${{ order.price }}
+                                    </small>
+                                </div>
+                                <div class="order-status text-right">
+                                    <span class="badge badge-{{ order.status_class }}">
+                                        {{ order.status }}
+                                    </span>
+                                    <small class="text-light d-block">
+                                        {{ order.timestamp }}
+                                    </small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center p-3 text-light">
+                                <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                                <p>No recent orders</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Market Data & Analytics -->
+        <div class="col-md-4">
+            <!-- Market Overview -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-globe"></i> Market Overview</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="market-indicators">
+                        <div class="indicator">
+                            <span class="indicator-name">S&P 500</span>
+                            <span class="indicator-value text-success">4,567.89 (+0.8%)</span>
+                        </div>
+                        <div class="indicator">
+                            <span class="indicator-name">NASDAQ</span>
+                            <span class="indicator-value text-success">15,234.56 (+1.2%)</span>
+                        </div>
+                        <div class="indicator">
+                            <span class="indicator-name">DOW JONES</span>
+                            <span class="indicator-value text-danger">34,123.45 (-0.3%)</span>
+                        </div>
+                        <div class="indicator">
+                            <span class="indicator-name">VIX</span>
+                            <span class="indicator-value text-warning">18.45 (+2.1%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Analytics -->
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-analytics"></i> Performance</h5>
+                    <div class="btn-group btn-group-sm float-right" role="group">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary active">1D</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary">1W</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary">1M</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary">1Y</button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="performance-chart">
+                        <canvas id="performanceChart" width="300" height="200"></canvas>
+                    </div>
+                    <div class="performance-metrics mt-3">
+                        <div class="metric">
+                            <span class="metric-name">Total Return</span>
+                            <span class="metric-value text-success">+12.5%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-name">Sharpe Ratio</span>
+                            <span class="metric-value">1.48</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-name">Max Drawdown</span>
+                            <span class="metric-value text-danger">-3.2%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-name">Beta</span>
+                            <span class="metric-value">0.95</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trading Actions Row -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-tools"></i> Trading Tools</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('trading.order_entry') }}" class="trading-tool-nvc-card">
+                                <i class="fas fa-plus-circle"></i>
+                                <h6>Advanced Order Entry</h6>
+                                <p>Complex order types and strategies</p>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('trading.portfolio_management') }}" class="trading-tool-nvc-card">
+                                <i class="fas fa-briefcase"></i>
+                                <h6>Portfolio Management</h6>
+                                <p>Rebalancing and optimization</p>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('trading.risk_management') }}" class="trading-tool-nvc-card">
+                                <i class="fas fa-shield-alt"></i>
+                                <h6>Risk Management</h6>
+                                <p>Risk metrics and controls</p>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('trading.algorithmic_trading') }}" class="trading-tool-nvc-card">
+                                <i class="fas fa-robot"></i>
+                                <h6>Algorithmic Trading</h6>
+                                <p>Automated strategies and backtesting</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Symbol Modal -->
+<div class="modal fade" id="addSymbolModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Symbol to Watchlist</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="add-symbol-form">
+                    <div class="form-group">
+                        <label>Symbol</label>
+                        <input type="text" class="nvc-form-input" id="new-symbol" placeholder="e.g., AAPL" required>
+                        <small class="form-text text-light">Enter the trading symbol for the asset</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn nvc-btn nvc-btn-primary" data-action="custom-action">Add Symbol</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.trading-dashboard {
+    min-height: 100vh;
+    padding: 20px 0;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    height: 100%;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    color: white;
+    font-size: 24px;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.stat-content p {
+    margin: 5px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.watchlist-item, .order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.watchlist-item:last-child, .order-item:last-child {
+    border-bottom: none;
+}
+
+.allocation-item, .metric, .indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.trading-tool-card {
+    display: block;
+    padding: 20px;
+    text-align: center;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s;
+}
+
+.trading-tool-card:hover {
+    border-color: #007bff;
+    text-decoration: none;
+    color: #007bff;
+    transform: translateY(-3px);
+}
+
+.trading-tool-card i {
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: #007bff;
+}
+
+.trading-tool-card h6 {
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+.trading-tool-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.market-status {
+    text-align: right;
+}
+
+.badge {
+    margin-right: 5px;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.form-control {
+    border-radius: 5px;
+}
+
+.btn {
+    border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 15px;
+    }
+    
+    .trading-tool-card {
+        margin-bottom: 15px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Quick Order Form Handler
+document.getElementById('quick-order-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        symbol: document.getElementById('symbol').value.toUpperCase(),
+        order_side: document.getElementById('order-side').value,
+        order_type: document.getElementById('order-type').value,
+        quantity: document.getElementById('quantity').value,
+        price: document.getElementById('price').value
+    };
+    
+    // Submit order via API
+    fetch('/trading/api/orders', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Order submitted successfully!');
+            this.reset();
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to submit order');
+    });
+});
+
+// Order Type Change Handler
+document.getElementById('order-type').addEventListener('change', function() {
+    const priceField = document.getElementById('price-field');
+    if (this.value === 'LIMIT' || this.value === 'STOP_LIMIT') {
+        priceField.style.display = 'block';
+        document.getElementById('price').required = true;
+    } else {
+        priceField.style.display = 'none';
+        document.getElementById('price').required = false;
+    }
+});
+
+// Add Symbol to Watchlist
+function addSymbolToWatchlist() {
+    const symbol = document.getElementById('new-symbol').value.toUpperCase();
+    
+    if (!symbol) {
+        alert('Please enter a symbol');
+        return;
+    }
+    
+    fetch('/trading/api/watchlist', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>'
+        },
+        body: JSON.stringify({ symbol: symbol })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Symbol added to watchlist!');
+            $('#addSymbolModal').modal('hide');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to add symbol');
+    });
+}
+
+// Initialize Charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Portfolio Allocation Chart
+    const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
+    new Chart(portfolioCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Equities', 'Fixed Income', 'Commodities', 'Cash'],
+            datasets: [{
+                data: [65, 25, 7, 3],
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#6c757d'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Performance Chart
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(performanceCtx, {
+        type: 'line',
+        data: {
+            labels: ['9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM'],
+            datasets: [{
+                label: 'Portfolio Value',
+                data: [100000, 101200, 100800, 102500, 103100, 102900, 104200, 104567],
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+// Real-time updates
+setInterval(function() {
+    document.getElementById('market-time').textContent = new Date().toLocaleTimeString();
+}, 1000);
+</script>
+{% endblock %}

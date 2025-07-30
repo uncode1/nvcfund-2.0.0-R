@@ -1,0 +1,590 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Binance Trading Interface - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            background-color: #0a2447;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .main-content {
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid #66ccff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.3);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 100%);
+            border-bottom: 1px solid #66ccff;
+            color: #66ccff;
+            font-weight: bold;
+        }
+        .trading-pair {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .trading-pair:hover {
+            background: rgba(30, 60, 114, 0.5);
+            transform: translateY(-1px);
+        }
+        .trading-pair.selected {
+            border-color: #66ccff;
+            background: rgba(102, 204, 255, 0.2);
+        }
+        .price-positive { color: #28a745; }
+        .price-negative { color: #dc3545; }
+        .price-neutral { color: #6c757d; }
+        .order-form {
+            background: rgba(30, 60, 114, 0.2);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-control, .form-select {
+            background: #1e3c72;
+            border: 1px solid #66ccff;
+            color: #ffffff;
+        }
+        .form-control:focus, .form-select:focus {
+            background: #1e3c72;
+            border-color: #66ccff;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+        }
+        .btn-buy {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .btn-sell {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            border: none;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            border: none;
+            color: #0a2447;
+            font-weight: bold;
+        }
+        .order-book {
+            background: rgba(30, 60, 114, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .order-book-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            font-size: 0.9em;
+        }
+        .order-buy { background: rgba(40, 167, 69, 0.1); }
+        .order-sell { background: rgba(220, 53, 69, 0.1); }
+        .balance-item {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        .chart-container {
+            background: rgba(30, 60, 114, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            height: 400px;
+        }
+        .status-connected { color: #28a745; }
+        .status-disconnected { color: #dc3545; }
+        .status-pending { color: #ffc107; }
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1><i class="fab fa-bitcoin"></i> Binance Trading Interface</h1>
+                            <p class="mb-0">Professional cryptocurrency trading through Binance integration</p>
+                        </div>
+                        <div>
+                            <span class="badge bg-success me-2">
+                                <i class="fas fa-circle"></i> Connected
+                            </span>
+                            <span class="text-light">API Status: <span class="status-connected">Active</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Trading Pairs & Order Book -->
+                <div class="col-md-3">
+                    <div class="nvc-card mb-4">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-chart-line"></i> Trading Pairs</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body nvc-style-f4d939" >
+                            <div class="trading-pair selected" data-action="custom-action">
+                                <div class="d-flex justify-content-between">
+                                    <strong>BTC/USDT</strong>
+                                    <span class="price-positive">+2.4%</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Bitcoin</span>
+                                    <span>$43,250.50</span>
+                                </div>
+                            </div>
+
+                            <div class="trading-pair" data-action="custom-action">
+                                <div class="d-flex justify-content-between">
+                                    <strong>ETH/USDT</strong>
+                                    <span class="price-negative">-1.2%</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Ethereum</span>
+                                    <span>$2,584.75</span>
+                                </div>
+                            </div>
+
+                            <div class="trading-pair" data-action="custom-action">
+                                <div class="d-flex justify-content-between">
+                                    <strong>BNB/USDT</strong>
+                                    <span class="price-positive">+0.8%</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Binance Coin</span>
+                                    <span>$312.45</span>
+                                </div>
+                            </div>
+
+                            <div class="trading-pair" data-action="custom-action">
+                                <div class="d-flex justify-content-between">
+                                    <strong>ADA/USDT</strong>
+                                    <span class="price-positive">+3.1%</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Cardano</span>
+                                    <span>$0.4875</span>
+                                </div>
+                            </div>
+
+                            <div class="trading-pair" data-action="custom-action">
+                                <div class="d-flex justify-content-between">
+                                    <strong>SOL/USDT</strong>
+                                    <span class="price-negative">-0.5%</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Solana</span>
+                                    <span>$98.75</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Book -->
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-list"></i> Order Book</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="order-book">
+                                <div class="text-center mb-2"><strong>Asks (Sell Orders)</strong></div>
+                                <div class="order-book-item order-sell">
+                                    <span>43,275.50</span>
+                                    <span>0.1250</span>
+                                </div>
+                                <div class="order-book-item order-sell">
+                                    <span>43,270.25</span>
+                                    <span>0.2340</span>
+                                </div>
+                                <div class="order-book-item order-sell">
+                                    <span>43,265.75</span>
+                                    <span>0.0890</span>
+                                </div>
+                                <div class="order-book-item order-sell">
+                                    <span>43,260.00</span>
+                                    <span>0.5670</span>
+                                </div>
+                                
+                                <div class="text-center my-3">
+                                    <strong class="text-warning">Spread: $15.50</strong>
+                                </div>
+                                
+                                <div class="text-center mb-2"><strong>Bids (Buy Orders)</strong></div>
+                                <div class="order-book-item order-buy">
+                                    <span>43,250.50</span>
+                                    <span>0.3450</span>
+                                </div>
+                                <div class="order-book-item order-buy">
+                                    <span>43,245.25</span>
+                                    <span>0.1230</span>
+                                </div>
+                                <div class="order-book-item order-buy">
+                                    <span>43,240.75</span>
+                                    <span>0.6780</span>
+                                </div>
+                                <div class="order-book-item order-buy">
+                                    <span>43,235.00</span>
+                                    <span>0.2340</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart & Trading Interface -->
+                <div class="col-md-6">
+                    <!-- Price Chart -->
+                    <div class="nvc-card mb-4">
+                        <div class="nvc-nvc-card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5><i class="fas fa-chart-candlestick"></i> BTC/USDT Chart</h5>
+                                <div>
+                                    <select class="form-select nvc-form-select-sm" style="width: auto;">
+                                        <option>1m</option>
+                                        <option>5m</option>
+                                        <option selected>15m</option>
+                                        <option>1h</option>
+                                        <option>4h</option>
+                                        <option>1d</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="chart-container">
+                                <canvas id="priceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trading Form -->
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-exchange-alt"></i> Place Order</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="order-form">
+                                        <h6 class="text-success mb-3"><i class="fas fa-arrow-up"></i> Buy BTC</h6>
+                                        
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Order Type</label>
+                                            <select class="nvc-form-select">
+                                                <option>Market</option>
+                                                <option selected>Limit</option>
+                                                <option>Stop Loss</option>
+                                                <option>Take Profit</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Price (USDT)</label>
+                                            <input type="number" class="nvc-form-input" value="43250.50" step="0.01">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Quantity (BTC)</label>
+                                            <input type="number" class="nvc-form-input" placeholder="0.00000000" step="0.00000001">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Total (USDT)</label>
+                                            <input type="number" class="nvc-form-input" placeholder="0.00" readonly>
+                                        </div>
+
+                                        <div class="d-grid">
+                                            <button type="button" class="btn btn-buy">
+                                                <i class="fas fa-shopping-cart"></i> Buy BTC
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="order-form">
+                                        <h6 class="text-danger mb-3"><i class="fas fa-arrow-down"></i> Sell BTC</h6>
+                                        
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Order Type</label>
+                                            <select class="nvc-form-select">
+                                                <option>Market</option>
+                                                <option selected>Limit</option>
+                                                <option>Stop Loss</option>
+                                                <option>Take Profit</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Price (USDT)</label>
+                                            <input type="number" class="nvc-form-input" value="43250.50" step="0.01">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Quantity (BTC)</label>
+                                            <input type="number" class="nvc-form-input" placeholder="0.00000000" step="0.00000001">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label">Total (USDT)</label>
+                                            <input type="number" class="nvc-form-input" placeholder="0.00" readonly>
+                                        </div>
+
+                                        <div class="d-grid">
+                                            <button type="button" class="btn btn-sell">
+                                                <i class="fas fa-chart-line-down"></i> Sell BTC
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Info & Orders -->
+                <div class="col-md-3">
+                    <!-- Account Balances -->
+                    <div class="nvc-card mb-4">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-wallet"></i> Account Balances</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="balance-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>USDT</strong>
+                                    <span>12,450.75</span>
+                                </div>
+                                <div class="text-light small">≈ $12,450.75</div>
+                            </div>
+
+                            <div class="balance-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>BTC</strong>
+                                    <span>0.28750000</span>
+                                </div>
+                                <div class="text-light small">≈ $12,434.27</div>
+                            </div>
+
+                            <div class="balance-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>ETH</strong>
+                                    <span>1.45600000</span>
+                                </div>
+                                <div class="text-light small">≈ $3,763.41</div>
+                            </div>
+
+                            <div class="balance-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>BNB</strong>
+                                    <span>15.23000000</span>
+                                </div>
+                                <div class="text-light small">≈ $4,759.44</div>
+                            </div>
+
+                            <hr>
+                            <div class="text-center">
+                                <strong>Total Portfolio Value</strong>
+                                <div class="h4 text-primary">$33,407.87</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Open Orders -->
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-clock"></i> Open Orders</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="balance-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong class="text-success">Buy ETH</strong>
+                                        <div class="text-light small">Limit @ $2,580.00</div>
+                                        <div class="text-light small">Qty: 0.5 ETH</div>
+                                    </div>
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-danger btn-sm">Cancel</button>
+                                </div>
+                            </div>
+
+                            <div class="balance-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong class="text-danger">Sell BNB</strong>
+                                        <div class="text-light small">Limit @ $315.00</div>
+                                        <div class="text-light small">Qty: 5 BNB</div>
+                                    </div>
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-danger btn-sm">Cancel</button>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i> View All Orders
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Trades -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-history"></i> Recent Trade History</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Pair</th>
+                                            <th>Side</th>
+                                            <th>Price</th>
+                                            <th>Quantity</th>
+                                            <th>Total</th>
+                                            <th>Fee</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>14:32:15</td>
+                                            <td>BTC/USDT</td>
+                                            <td><span class="text-success">Buy</span></td>
+                                            <td>$43,180.50</td>
+                                            <td>0.05000000</td>
+                                            <td>$2,159.03</td>
+                                            <td>0.10% ($2.16)</td>
+                                            <td><span class="badge bg-success">Filled</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>13:45:22</td>
+                                            <td>ETH/USDT</td>
+                                            <td><span class="text-danger">Sell</span></td>
+                                            <td>$2,590.25</td>
+                                            <td>0.75000000</td>
+                                            <td>$1,942.69</td>
+                                            <td>0.10% ($1.94)</td>
+                                            <td><span class="badge bg-success">Filled</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>12:18:45</td>
+                                            <td>BNB/USDT</td>
+                                            <td><span class="text-success">Buy</span></td>
+                                            <td>$310.75</td>
+                                            <td>10.00000000</td>
+                                            <td>$3,107.50</td>
+                                            <td>0.10% ($3.11)</td>
+                                            <td><span class="badge bg-success">Filled</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Price Chart
+        const priceCtx = document.getElementById('priceChart').getContext('2d');
+        new Chart(priceCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: 'BTC Price (USDT)',
+                    data: [42800, 43100, 42950, 43250, 43180, 43300, 43250],
+                    borderColor: '#f7931a',
+                    backgroundColor: 'rgba(247, 147, 26, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(102, 204, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#ffffff'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(102, 204, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        function selectPair(pair) {
+            // Remove selected class from all pairs
+            document.querySelectorAll('.trading-pair').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked pair
+            event.target.closest('.trading-pair').classList.add('selected');
+            
+            console.log('Selected trading pair:', pair);
+            // In production, this would update the chart and order book
+        }
+
+        // Real-time price updates simulation
+        setInterval(function() {
+            console.log('Updating real-time prices...');
+            // In production, this would fetch live price data from Binance API
+        }, 5000);
+    </script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

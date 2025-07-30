@@ -1,0 +1,355 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Branch Management - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Branch Management{% endblock %}
+{% block page_description %}Comprehensive branch management and administration{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        Administration
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-building" aria-hidden="true"></i>
+    Branch Management
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export branch data">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Branch Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Add new branch">
+    <i class="fas fa-plus" aria-hidden="true"></i>
+    Add Branch
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh branch data">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh Data
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Branch Management Overview -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-building" aria-hidden="true"></i>
+                    Branch Statistics
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">
+                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                        {{ branches|length if branches else '12' }} Branches
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Branch Management Metrics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-primary">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-primary">
+                                    <i class="fas fa-building" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+2</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ branch_data.total_branches or '12' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Branches</p>
+                                <p class="nvc-metric-subtitle">Across all regions</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    <span>Active</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ branch_data.active_branches or '10' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Active Branches</p>
+                                <p class="nvc-metric-subtitle">Operational status</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-clock" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-minus" aria-hidden="true"></i>
+                                    <span>Review</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ branch_data.pending_approvals or '2' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Pending Approvals</p>
+                                <p class="nvc-metric-subtitle">Awaiting review</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-users" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>+45</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ branch_data.total_staff or '247' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Staff</p>
+                                <p class="nvc-metric-subtitle">All branch employees</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Branch Management Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-table" aria-hidden="true"></i>
+                    Branch Directory
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Filter branches">
+                        <i class="fas fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Add new branch">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Add Branch
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- FINRA-Compliant Branch Management Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="Branch directory and management">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">Branch ID</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Branch Name</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Location</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Manager</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Staff Count</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Last Updated</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for branch in branch_data.branches or [
+                                {'id': 'BR-001', 'name': 'Downtown Main Branch', 'location': '123 Main St, Downtown', 'manager': 'John Smith', 'staff_count': 25, 'status': 'Active', 'last_updated': '2024-01-15'},
+                                {'id': 'BR-002', 'name': 'Uptown Financial Center', 'location': '456 Oak Ave, Uptown', 'manager': 'Sarah Johnson', 'staff_count': 18, 'status': 'Active', 'last_updated': '2024-01-14'},
+                                {'id': 'BR-003', 'name': 'Westside Community Branch', 'location': '789 Pine Rd, Westside', 'manager': 'Mike Wilson', 'staff_count': 12, 'status': 'Active', 'last_updated': '2024-01-13'},
+                                {'id': 'BR-004', 'name': 'Eastside Business Hub', 'location': '321 Elm St, Eastside', 'manager': 'Emily Davis', 'staff_count': 22, 'status': 'Active', 'last_updated': '2024-01-12'},
+                                {'id': 'BR-005', 'name': 'Southside Express', 'location': '654 Maple Dr, Southside', 'manager': 'David Brown', 'staff_count': 8, 'status': 'Pending', 'last_updated': '2024-01-11'},
+                                {'id': 'BR-006', 'name': 'Northside Premium', 'location': '987 Cedar Ln, Northside', 'manager': 'Lisa Garcia', 'staff_count': 15, 'status': 'Active', 'last_updated': '2024-01-10'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td class="nvc-wcag-high-contrast">{{ branch.id }}</td>
+                                <td>
+                                    <div class="nvc-branch-info">
+                                        <span class="nvc-branch-name nvc-wcag-high-contrast">{{ branch.name }}</span>
+                                    </div>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ branch.location }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ branch.manager }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ branch.staff_count }}</td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'success' if branch.status == 'Active' else 'warning' if branch.status == 'Pending' else 'danger' }}">
+                                        {{ branch.status }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ branch.last_updated }}</td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View details for {{ branch.name }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-xs nvc-wcag-focus" aria-label="Edit {{ branch.name }}">
+                                            <i class="fas fa-edit" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-info nvc-btn-xs nvc-wcag-focus" aria-label="View reports for {{ branch.name }}">
+                                            <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                        </button>
+                                        <div class="nvc-dropdown">
+                                            <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-dropdown-toggle nvc-wcag-focus" aria-label="More actions for {{ branch.name }}">
+                                                <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+                                            </button>
+                                            <div class="nvc-dropdown-menu">
+                                                <a href="#" class="nvc-dropdown-item nvc-wcag-focus">
+                                                    <i class="fas fa-users" aria-hidden="true"></i>
+                                                    Manage Staff
+                                                </a>
+                                                <a href="#" class="nvc-dropdown-item nvc-wcag-focus">
+                                                    <i class="fas fa-cog" aria-hidden="true"></i>
+                                                    Branch Settings
+                                                </a>
+                                                <a href="#" class="nvc-dropdown-item nvc-wcag-focus">
+                                                    <i class="fas fa-history" aria-hidden="true"></i>
+                                                    Activity Log
+                                                </a>
+                                                <div class="nvc-dropdown-divider"></div>
+                                                <a href="#" class="nvc-dropdown-item nvc-dropdown-warning nvc-wcag-focus">
+                                                    <i class="fas fa-pause" aria-hidden="true"></i>
+                                                    Suspend Branch
+                                                </a>
+                                                <a href="#" class="nvc-dropdown-item nvc-dropdown-danger nvc-wcag-focus">
+                                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                                    Close Branch
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="nvc-table-footer">
+                    <div class="nvc-pagination-info">
+                        <span class="nvc-pagination-text nvc-wcag-medium-contrast">
+                            Showing 1-6 of {{ branch_data.total_branches or '12' }} branches
+                        </span>
+                    </div>
+                    <nav class="nvc-pagination" aria-label="Branch directory pagination">
+                        <ul class="nvc-pagination-list">
+                            <li class="nvc-pagination-item nvc-pagination-disabled">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-label="Previous page">
+                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                            <li class="nvc-pagination-item nvc-pagination-active">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-current="page">1</a>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus">2</a>
+                            </li>
+                            <li class="nvc-pagination-item">
+                                <a href="#" class="nvc-pagination-link nvc-wcag-focus" aria-label="Next page">
+                                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Branch Management Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            console.log('Sorting by:', this.textContent);
+            // Add actual sorting logic here
+        });
+    });
+
+    // Dropdown functionality
+    const dropdownToggles = document.querySelectorAll('.nvc-dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const dropdown = this.parentElement;
+            const menu = dropdown.querySelector('.nvc-dropdown-menu');
+
+            // Close other dropdowns
+            document.querySelectorAll('.nvc-dropdown-menu').forEach(otherMenu => {
+                if (otherMenu !== menu) {
+                    otherMenu.style.display = 'none';
+                }
+            });
+
+            // Toggle current dropdown
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nvc-dropdown')) {
+            document.querySelectorAll('.nvc-dropdown-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+    });
+
+    // Branch action buttons functionality
+    const actionButtons = document.querySelectorAll('.nvc-action-buttons .nvc-btn');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.getAttribute('aria-label');
+            console.log(`Executing branch action: ${action}`);
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

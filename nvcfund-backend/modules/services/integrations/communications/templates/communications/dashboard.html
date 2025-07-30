@@ -1,0 +1,355 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Communications Integration Hub{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">
+                            <i class="fas fa-comments me-2" style="color: #3b82f6;"></i>
+                            Communications Integration Hub
+                        </h3>
+                        <p class="text-light mb-0">Centralized Communication Services Management</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success px-3 py-2">{{ active_services }}/{{ total_services }} ACTIVE</span>
+                        <div class="small text-light mt-1">All systems operational</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Emails Sent Today</h6>
+                            <h3 class="text-primary">{{ "{:,}".format(emails_sent_today) }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-envelope fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">SMS Sent Today</h6>
+                            <h3 class="text-success">{{ "{:,}".format(sms_sent_today) }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-sms fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Push Notifications</h6>
+                            <h3 class="text-info">{{ "{:,}".format(push_notifications_today) }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-bell fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Total Channels</h6>
+                            <h3 class="text-warning">{{ total_services }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-broadcast-tower fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Communication Services -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Communication Services</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <!-- SendGrid Email Service -->
+                        <div class="col-md-4 mb-3">
+                            <div class="nvc-card border-left-primary h-100" style="border-left: 4px solid #00b3e6;">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="me-3">
+                                            <i class="fas fa-envelope fa-2x" style="color: #00b3e6;"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">SendGrid</h6>
+                                            <small class="text-light">Email Service</small>
+                                        </div>
+                                        <div class="ms-auto">
+                                            <span class="badge bg-success">LIVE</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="small text-light">Daily Volume</div>
+                                        <div class="fw-bold">1,247 emails</div>
+                                        <div class="small text-success">98.9% delivery rate</div>
+                                    </div>
+                                    <a href="/integrations/communications/sendgrid/" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                                        <i class="fas fa-external-link-alt me-1"></i>
+                                        Manage Service
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Twilio SMS/Voice Service -->
+                        <div class="col-md-4 mb-3">
+                            <div class="nvc-card border-left-danger h-100" style="border-left: 4px solid #f22f46;">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="me-3">
+                                            <i class="fas fa-sms fa-2x" style="color: #f22f46;"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">Twilio</h6>
+                                            <small class="text-light">SMS, Voice & WhatsApp</small>
+                                        </div>
+                                        <div class="ms-auto">
+                                            <span class="badge bg-success">LIVE</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="small text-light">Daily Volume</div>
+                                        <div class="fw-bold">567 messages</div>
+                                        <div class="small text-success">4 channels active</div>
+                                    </div>
+                                    <a href="/integrations/communications/twilio/" class="btn nvc-btn nvc-btn-outline-danger btn-sm">
+                                        <i class="fas fa-external-link-alt me-1"></i>
+                                        Manage Service
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Push Notifications Service -->
+                        <div class="col-md-4 mb-3">
+                            <div class="nvc-card border-left-warning h-100" style="border-left: 4px solid #ff9800;">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="me-3">
+                                            <i class="fas fa-bell fa-2x" style="color: #ff9800;"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">Push Notifications</h6>
+                                            <small class="text-light">Mobile & Web Push</small>
+                                        </div>
+                                        <div class="ms-auto">
+                                            <span class="badge bg-success">LIVE</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="small text-light">Daily Volume</div>
+                                        <div class="fw-bold">2,890 notifications</div>
+                                        <div class="small text-success">95.2% delivery rate</div>
+                                    </div>
+                                    <a href="/integrations/communications/push-notifications/" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                                        <i class="fas fa-external-link-alt me-1"></i>
+                                        Manage Service
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Communication Analytics & Activity -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Communication Analytics</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="communicationChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <div class="fw-bold">SendGrid Status</div>
+                                <div class="small text-light">Email service operational</div>
+                                <div class="small text-light">2 mins ago</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <div class="fw-bold">Twilio Update</div>
+                                <div class="small text-light">SMS quota renewed</div>
+                                <div class="small text-light">15 mins ago</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <div class="fw-bold">Push Notifications</div>
+                                <div class="small text-light">Campaign sent to 5.2K users</div>
+                                <div class="small text-light">1 hour ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-left-primary { border-left: 4px solid #00b3e6 !important; }
+.border-left-danger { border-left: 4px solid #f22f46 !important; }
+.border-left-warning { border-left: 4px solid #ff9800 !important; }
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline:before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e2e8f0;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #1e293b;
+}
+
+.timeline-content {
+    background: #334155;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #475569;
+}
+</style>
+
+<script>
+// Communication Analytics Chart
+const ctx = document.getElementById('communicationChart').getContext('2d');
+const communicationChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+        datasets: [
+            {
+                label: 'Emails',
+                data: [120, 89, 156, 234, 198, 145, 167],
+                borderColor: '#00b3e6',
+                backgroundColor: 'rgba(0, 179, 230, 0.1)',
+                tension: 0.4
+            },
+            {
+                label: 'SMS',
+                data: [45, 67, 89, 123, 98, 76, 87],
+                borderColor: '#f22f46',
+                backgroundColor: 'rgba(242, 47, 70, 0.1)',
+                tension: 0.4
+            },
+            {
+                label: 'Push Notifications',
+                data: [234, 298, 345, 567, 456, 389, 423],
+                borderColor: '#ff9800',
+                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                tension: 0.4
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    color: '#e2e8f0',
+                    padding: 15
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: '#334155'
+                },
+                ticks: {
+                    color: '#e2e8f0'
+                }
+            },
+            x: {
+                grid: {
+                    color: '#334155'
+                },
+                ticks: {
+                    color: '#e2e8f0'
+                }
+            }
+        }
+    }
+});
+</script>
+</div>
+{% endblock %}

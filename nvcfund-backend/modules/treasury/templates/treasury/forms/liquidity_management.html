@@ -1,0 +1,74 @@
+<!-- Liquidity Management Form -->
+<div class="nvc-card mb-4">
+    <div class="nvc-nvc-card-header">
+        <h5 class="mb-0"><i class="fas fa-tint"></i> Liquidity Management</h5>
+    </div>
+    <div class="nvc-nvc-card-body">
+        <form method="POST" action="{{ url_for('treasury.settings') }}">
+            {{ csrf_token }}
+            <input type="hidden" name="form_section" value="liquidity_management">
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="lcr_target">Liquidity Coverage Ratio Target (%)</label>
+                        <input type="number" class="nvc-form-input" id="lcr_target" name="lcr_target" 
+                               value="125.0" step="1.0" min="100" max="200" required>
+                        <small class="form-text text-light">Target LCR above regulatory minimum of 100%</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="nsfr_target">Net Stable Funding Ratio Target (%)</label>
+                        <input type="number" class="nvc-form-input" id="nsfr_target" name="nsfr_target" 
+                               value="115.0" step="1.0" min="100" max="150" required>
+                        <small class="form-text text-light">Target NSFR above regulatory minimum of 100%</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="cash_buffer">Minimum Cash Buffer ($M)</label>
+                        <input type="number" class="nvc-form-input" id="cash_buffer" name="cash_buffer" 
+                               value="50.0" step="1.0" min="10" max="500" required>
+                        <small class="form-text text-light">Minimum cash reserves in millions USD</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="funding_horizon">Funding Horizon (Days)</label>
+                        <input type="number" class="nvc-form-input" id="funding_horizon" name="funding_horizon" 
+                               value="30" step="1" min="7" max="90" required>
+                        <small class="form-text text-light">Minimum funding horizon for liquidity planning</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="liquidity_sources">Preferred Liquidity Sources</label>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="repo_market" name="liquidity_sources" value="repo_market" checked>
+                    <label class="form-check-label" for="repo_market">Repo Market</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="fed_funds" name="liquidity_sources" value="fed_funds" checked>
+                    <label class="form-check-label" for="fed_funds">Federal Funds</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="discount_window" name="liquidity_sources" value="discount_window">
+                    <label class="form-check-label" for="discount_window">Discount Window</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="credit_facilities" name="liquidity_sources" value="credit_facilities" checked>
+                    <label class="form-check-label" for="credit_facilities">Credit Facilities</label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn nvc-btn nvc-btn-primary">
+                <i class="fas fa-save"></i> Update Liquidity Settings
+            </button>
+        </form>
+    </div>
+</div>

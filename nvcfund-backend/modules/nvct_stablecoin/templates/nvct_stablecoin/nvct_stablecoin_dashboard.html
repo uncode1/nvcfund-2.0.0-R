@@ -1,0 +1,1070 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}NVCT Stablecoin Operations - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}NVCT Stablecoin Operations{% endblock %}
+{% block page_description %}$30 Trillion Stablecoin with $56.7T Asset Backing (189% Over-Collateralization){% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-cogs"></i>
+    Manage Supply
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus-circle"></i>
+    Mint NVCT
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportStablecoinData() {
+    const csvData = 'Date,Supply,Market Cap,Price,Volume,Holders\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nvct_stablecoin_dashboard.csv';
+    a.click();
+}
+
+function manageSupply() {
+    window.location.href = "{{ url_for('nvct_stablecoin.nvct_supply_management') }}";
+}
+
+function mintNVCT() {
+    window.location.href = "{{ url_for('nvct_stablecoin.mint_nvct') }}";
+}
+
+function burnNVCT() {
+    window.location.href = "{{ url_for('nvct_stablecoin.burn_nvct') }}";
+}
+
+// Multi-Level NVCT Stablecoin Dashboard Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 1: Stablecoin cards with drilldown navigation (existing functionality enhanced)
+    const stablecoinCards = document.querySelectorAll('.card, .stablecoin-card');
+    stablecoinCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Total Supply')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.nvct_supply_management') }}";
+            } else if (cardTitle?.includes('Market Cap')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.market_data') }}";
+            } else if (cardTitle?.includes('Analytics')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.nvct_analytics_dashboard') }}";
+            } else if (cardTitle?.includes('Governance')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.nvct_governance') }}";
+            }
+        });
+    });
+
+    // Level 2: NVCT Operation Cards
+    const operationCards = document.querySelectorAll('.nvct-operation-card');
+    operationCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const operationType = this.getAttribute('data-operation-type');
+            handleNVCTOperationDrilldown(operationType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: NVCT Transaction Rows
+    const transactionRows = document.querySelectorAll('.nvct-transaction-row');
+    transactionRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const txId = this.getAttribute('data-tx-id');
+            viewNVCTTransactionDetails(txId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // NVCT operation filter
+    const operationFilter = document.getElementById('nvct-operation-filter');
+    if (operationFilter) {
+        operationFilter.addEventListener('change', function() {
+            filterNVCTTransactionsByOperation(this.value);
+        });
+    }
+});
+
+// Level 2: NVCT Operation Drilldown
+function handleNVCTOperationDrilldown(operationType) {
+    // Filter the transactions table by operation type
+    filterNVCTTransactionsByOperation(operationType);
+
+    // Update the filter dropdown
+    const operationFilter = document.getElementById('nvct-operation-filter');
+    if (operationFilter) {
+        operationFilter.value = operationType;
+    }
+
+    // Scroll to transactions table
+    document.querySelector('#nvct-transactions-table').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter transactions by operation
+function filterNVCTTransactionsByOperation(operationType) {
+    const rows = document.querySelectorAll('.nvct-transaction-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowOperation = row.getAttribute('data-operation-type');
+        if (!operationType || rowOperation === operationType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updateNVCTTransactionCounts(operationType, visibleCount);
+}
+
+// Update transaction counts
+function updateNVCTTransactionCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.nvct-transaction-row').length;
+    const header = document.querySelector('.card-header-enterprise h4');
+    if (header) {
+        if (!activeFilter) {
+            header.innerHTML = `<i class="fas fa-list"></i> Recent NVCT Transactions (${totalRows} transactions)`;
+        } else {
+            const filterName = activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
+            header.innerHTML = `<i class="fas fa-list"></i> ${filterName} NVCT Transactions (${visibleCount} transactions)`;
+        }
+    }
+}
+
+// Level 4: View individual transaction details (Level 4 → Level 5 drilldown)
+function viewNVCTTransactionDetails(txId) {
+    // Navigate to detailed transaction view with comprehensive NVCT analysis
+    const detailsUrl = "{{ url_for('nvct_stablecoin.transaction_details', tx_id='TX_ID') }}".replace('TX_ID', encodeURIComponent(txId));
+    window.location.href = detailsUrl + '?view=comprehensive&include=supply_impact,backing_analysis';
+}
+
+// Level 5: Specialized NVCT functions
+function viewOnBlockExplorer(txId) {
+    // Navigate to blockchain explorer
+    const explorerUrl = "{{ url_for('nvct_stablecoin.explorer', tx_id='TX_ID') }}".replace('TX_ID', encodeURIComponent(txId));
+    window.location.href = explorerUrl + '?view=detailed&external=true';
+}
+
+function trackBridgeStatus(txId) {
+    // Navigate to cross-chain bridge tracking
+    const bridgeUrl = "{{ url_for('nvct_stablecoin.bridge_tracking', tx_id='TX_ID') }}".replace('TX_ID', encodeURIComponent(txId));
+    window.location.href = bridgeUrl + '?view=realtime&status=pending';
+}
+
+function analyzeSupplyImpact(txId) {
+    // Navigate to supply impact analysis
+    const supplyUrl = "{{ url_for('nvct_stablecoin.supply_impact', tx_id='TX_ID') }}".replace('TX_ID', encodeURIComponent(txId));
+    window.location.href = supplyUrl + '?view=detailed&model=economic';
+}
+
+function viewBackingAnalysis(txId) {
+    // Navigate to asset backing analysis
+    const backingUrl = "{{ url_for('nvct_stablecoin.backing_analysis', tx_id='TX_ID') }}".replace('TX_ID', encodeURIComponent(txId));
+    window.location.href = backingUrl + '?view=comprehensive&ratio_impact=true';
+}
+
+function generateNVCTReport(txId) {
+    // Navigate to NVCT report generation
+    const reportUrl = "{{ url_for('nvct_stablecoin.transaction_report', tx_id='TX_ID') }}".replace('TX_ID', encodeURIComponent(txId));
+    window.location.href = reportUrl + '?format=regulatory&export=pdf&compliance=true';
+}
+
+function auditNVCTTransaction(txId) {
+    // Navigate to NVCT transaction audit
+    const auditUrl = "{{ url_for('nvct_stablecoin.transaction_audit', tx_id='TX_ID') }}".replace('TX_ID', encodeURIComponent(txId));
+    window.location.href = auditUrl + '?view=detailed&compliance_check=true';
+}
+
+function viewGovernanceImpact(txId) {
+    // Navigate to governance impact analysis
+    const governanceUrl = "{{ url_for('nvct_stablecoin.governance_impact', tx_id='TX_ID') }}".replace('TX_ID', encodeURIComponent(txId));
+    window.location.href = governanceUrl + '?view=voting_power&proposals=related';
+}
+</script>
+{% endblock %}
+{% block breadcrumb_section %}Blockchain{% endblock %}
+{% block breadcrumb_page %}NVCT Stablecoin{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <!-- NVCT Stablecoin Overview Section -->
+    <div class="nvc-content-section" id="overview">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-coins"></i> NVCT Stablecoin Operations Center
+            </h3>
+            <div class="nvc-content-section-actions">
+                <span class="nvc-badge nvc-badge-success">
+                    <i class="fas fa-shield-alt"></i> 189% Over-Collateralized
+                </span>
+            </div>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="nvc-card nvc-card-elevated">
+                <div class="nvc-card-body">
+                    <p class="nvc-text-muted mb-0">$30 Trillion Stablecoin with $56.7T Asset Backing - The world's most secure and stable digital currency</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Section -->
+    <div class="nvc-content-section" id="metrics">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-chart-bar"></i> Key NVCT Metrics
+            </h3>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ url_for('nvct_stablecoin.nvct_supply_management') }}" class="nvc-metric-link">
+                        <div class="nvc-card nvc-card-metric nvc-card-success">
+                            <div class="nvc-card-body">
+                                <div class="nvc-metric-content">
+                                    <div class="nvc-metric-icon">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div class="nvc-metric-details">
+                                        <div class="nvc-metric-value">$30T</div>
+                                        <div class="nvc-metric-label">Total Supply</div>
+                                        <div class="nvc-metric-status nvc-status-success">30 Trillion NVCT</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ url_for('nvct_stablecoin.asset_backing') }}" class="nvc-metric-link">
+                        <div class="nvc-card nvc-card-metric nvc-card-info">
+                            <div class="nvc-card-body">
+                                <div class="nvc-metric-content">
+                                    <div class="nvc-metric-icon">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div class="nvc-metric-details">
+                                        <div class="nvc-metric-value">$56.7T</div>
+                                        <div class="nvc-metric-label">Asset Backing</div>
+                                        <div class="nvc-metric-status nvc-status-success">$56.7 Trillion USD</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ url_for('nvct_stablecoin.nvct_analytics_dashboard') }}" class="nvc-metric-link">
+                        <div class="nvc-card nvc-card-metric nvc-card-warning">
+                            <div class="nvc-card-body">
+                                <div class="nvc-metric-content">
+                                    <div class="nvc-metric-icon">
+                                        <i class="fas fa-chart-pie"></i>
+                                    </div>
+                                    <div class="nvc-metric-details">
+                                        <div class="nvc-metric-value">189%</div>
+                                        <div class="nvc-metric-label">Backing Ratio</div>
+                                        <div class="nvc-metric-status nvc-status-success">Over-Collateralized</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-primary">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">$1.00</div>
+                                    <div class="nvc-metric-label">Current Price</div>
+                                    <div class="nvc-metric-status nvc-status-success">USD Parity Target</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Old metrics for reference -->
+    <div class="row mb-4" class="d-none">
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-success">
+                <div class="nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Total Supply</h6>
+                            <h4>${{ '{:,}'.format(dashboard_data.total_supply|int) }}</h4>
+                            <small>30 Trillion NVCT</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-globe fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-info">
+                <div class="nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Asset Backing</h6>
+                            <h4>${{ '{:,}'.format(dashboard_data.backing_value|int) }}</h4>
+                            <small>$56.7 Trillion USD</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shield-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-warning">
+                <div class="nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Backing Ratio</h6>
+                            <h4>{{ dashboard_data.backing_ratio }%}</h4>
+                            <small>189% Over-Collateralized</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-pie fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('nvct_stablecoin.analytics') }}" class="text-decoration-none">
+                <div class="nvc-card text-white bg-primary dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="nvc-card-title">Current Price</h6>
+                                <h4>${{ dashboard_data.current_price }}</h4>
+                                <small>USD Parity Target</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-dollar-sign fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Price Analytics</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+<!-- Level 2: NVCT Operation Categories -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="nvc-card">
+            <div class="nvc-card-header">
+                <h4><i class="fas fa-layer-group"></i> NVCT Operations</h4>
+            </div>
+            <div class="nvc-card-body">
+                <div class="row g-3">
+                    <div class="col-xl-2 col-md-4">
+                        <div class="nvct-operation-card" data-operation-type="supply_management" >
+                            <div class="operation-icon bg-primary">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <div class="operation-content">
+                                <h4>30T</h4>
+                                <p>Supply Management</p>
+                                <small class="text-success">Total Supply</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="nvct-operation-card" data-operation-type="asset_backing" >
+                            <div class="operation-icon bg-success">
+                                <i class="fas fa-vault"></i>
+                            </div>
+                            <div class="operation-content">
+                                <h4>$56.7T</h4>
+                                <p>Asset Backing</p>
+                                <small class="text-info">189% Ratio</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="nvct-operation-card" data-operation-type="network_management" >
+                            <div class="operation-icon bg-warning">
+                                <i class="fas fa-network-wired"></i>
+                            </div>
+                            <div class="operation-content">
+                                <h4>12</h4>
+                                <p>Network Management</p>
+                                <small class="text-warning">Multi-chain</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="nvct-operation-card" data-operation-type="cross_chain" >
+                            <div class="operation-icon bg-info">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="operation-content">
+                                <h4>$2.4B</h4>
+                                <p>Cross-Chain Bridge</p>
+                                <small class="text-primary">Daily Volume</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="nvct-operation-card" data-operation-type="governance" >
+                            <div class="operation-icon bg-secondary">
+                                <i class="fas fa-vote-yea"></i>
+                            </div>
+                            <div class="operation-content">
+                                <h4>847K</h4>
+                                <p>Governance</p>
+                                <small class="text-secondary">Active Voters</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="nvct-operation-nvc-card" data-operation-type="analytics" >
+                            <div class="operation-icon bg-danger">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="operation-content">
+                                <h4>$1.00</h4>
+                                <p>Analytics</p>
+                                <small class="text-danger">Price Stability</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Level 3: NVCT Transactions Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-list"></i> Recent NVCT Transactions</h4>
+                <div class="header-actions">
+                    <select id="nvct-operation-filter" class="form-select nvc-form-select-sm">
+                        <option value="">All Operations</option>
+                        <option value="mint">Mint</option>
+                        <option value="burn">Burn</option>
+                        <option value="transfer">Transfer</option>
+                        <option value="bridge">Cross-Chain Bridge</option>
+                        <option value="governance">Governance</option>
+                        <option value="backing">Asset Backing</option>
+                    </select>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table enterprise-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction Hash</th>
+                                <th>Operation</th>
+                                <th>Amount</th>
+                                <th>Network</th>
+                                <th>Status</th>
+                                <th>Timestamp</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nvct-transactions-table">
+                            <tr class="nvct-transaction-row" data-tx-id="0xabc123...def456" data-operation-type="mint" data-status="confirmed" >
+                                <td><strong>0xabc123...def456</strong></td>
+                                <td><span class="badge bg-success">Mint</span></td>
+                                <td class="text-success">1,000,000 NVCT</td>
+                                <td><span class="badge bg-primary">Ethereum</span></td>
+                                <td><span class="badge bg-success">Confirmed</span></td>
+                                <td>2 min ago</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Explorer</button>
+                                </td>
+                            </tr>
+                            <tr class="nvct-transaction-row" data-tx-id="0x789xyz...abc123" data-operation-type="bridge" data-status="pending" >
+                                <td><strong>0x789xyz...abc123</strong></td>
+                                <td><span class="badge bg-warning">Bridge</span></td>
+                                <td class="text-warning">500,000 NVCT</td>
+                                <td><span class="badge bg-success">Polygon</span></td>
+                                <td><span class="badge bg-warning">Pending</span></td>
+                                <td>15 min ago</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Track</button>
+                                </td>
+                            </tr>
+                            <tr class="nvct-transaction-row" data-tx-id="0xdef456...ghi789" data-operation-type="burn" data-status="confirmed" >
+                                <td><strong>0xdef456...ghi789</strong></td>
+                                <td><span class="badge bg-danger">Burn</span></td>
+                                <td class="text-danger">-250,000 NVCT</td>
+                                <td><span class="badge bg-info">BSC</span></td>
+                                <td><span class="badge bg-success">Confirmed</span></td>
+                                <td>1 hour ago</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Explorer</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>NVCT Operations
+                    </h5>
+                </div>
+                <div class="nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('nvct_stablecoin.supply_management') }}" class="btn nvc-btn nvc-btn-primary btn-lg w-100">
+                                <i class="fas fa-cogs me-2"></i>Supply Management
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('nvct_stablecoin.asset_backing') }}" class="btn nvc-btn nvc-btn-success btn-lg w-100">
+                                <i class="fas fa-vault me-2"></i>Asset Backing
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('nvct_stablecoin.network_management') }}" class="btn nvc-btn nvc-btn-info btn-lg w-100">
+                                <i class="fas fa-network-wired me-2"></i>Network Management
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('nvct_stablecoin.cross_chain_bridge') }}" class="btn nvc-btn nvc-btn-warning btn-lg w-100">
+                                <i class="fas fa-exchange-alt me-2"></i>Cross-Chain Bridge
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('nvct_stablecoin.governance_dashboard') }}" class="btn nvc-btn nvc-btn-secondary btn-lg w-100">
+                                <i class="fas fa-vote-yea me-2"></i>Governance
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('nvct_stablecoin.analytics_dashboard') }}" class="btn nvc-btn nvc-btn-dark btn-lg w-100">
+                                <i class="fas fa-chart-line me-2"></i>Analytics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Deployment Status -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-globe me-2"></i>Network Deployment Status
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fab fa-ethereum text-primary"></i> Binance Smart Chain</span>
+                            <span class="badge bg-success">Live</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-success" class="w-100"></div>
+                        </div>
+                        <small class="text-light">Contract: 0x369baE...D576</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-polygon text-purple"></i> Polygon</span>
+                            <span class="badge bg-warning">Deployment Ready</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-warning" class="progress-bar-95"></div>
+                        </div>
+                        <small class="text-light">ETA: 2-3 weeks</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-ghost text-info"></i> Fantom</span>
+                            <span class="badge bg-warning">Deployment Ready</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-warning" class="progress-bar-90"></div>
+                        </div>
+                        <small class="text-light">ETA: 3-4 weeks</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fab fa-ethereum text-secondary"></i> Ethereum</span>
+                            <span class="badge bg-secondary">Governance Pending</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-secondary" class="progress-bar-60"></div>
+                        </div>
+                        <small class="text-light">ETA: Q4 2025</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Supply Metrics
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row text-center">
+                        <div class="col-6 border-end">
+                            <h4 class="text-primary">{{ '{:,}'.format(dashboard_data.supply_metrics.total_issued|int) }}</h4>
+                            <small class="text-light">Circulating Supply<br>5T NVCT</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ '{:,}'.format(25000000000000|int) }}</h4>
+                            <small class="text-light">Reserved Supply<br>25T NVCT</small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h6 class="text-info">Daily Mint</h6>
+                            <p class="mb-0">15B NVCT</p>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-warning">Daily Burn</h6>
+                            <p class="mb-0">12B NVCT</p>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-success">Net Change</h6>
+                            <p class="mb-0">+3B NVCT</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Asset Backing Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-building me-2"></i>Asset Backing Portfolio Overview
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center border-end">
+                            <h6 class="text-primary">US Treasury Bonds</h6>
+                            <h4>$20T</h4>
+                            <small class="text-light">35.3% • 4.1% Yield</small>
+                        </div>
+                        <div class="col-md-3 text-center border-end">
+                            <h6 class="text-success">Corporate Bonds</h6>
+                            <h4>$12T</h4>
+                            <small class="text-light">21.2% • 5.2% Yield</small>
+                        </div>
+                        <div class="col-md-3 text-center border-end">
+                            <h6 class="text-info">Sovereign Debt</h6>
+                            <h4>$10T</h4>
+                            <small class="text-light">17.6% • 3.8% Yield</small>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h6 class="text-warning">Other Assets</h6>
+                            <h4>$14.7T</h4>
+                            <small class="text-light">25.9% • Mixed Yield</small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-2">
+                            <strong>Real Estate:</strong><br>
+                            <span class="text-light">$6T (10.6%)</span>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Gold:</strong><br>
+                            <span class="text-light">$4T (7.1%)</span>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Equities:</strong><br>
+                            <span class="text-light">$3T (5.3%)</span>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Cash:</strong><br>
+                            <span class="text-light">$1.7T (3.0%)</span>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>VAR (95%):</strong><br>
+                            <span class="text-light">$450B</span>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Credit Rating:</strong><br>
+                            <span class="text-success">AAA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Recent Minting Operations
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Purpose</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Jul 02</td>
+                                    <td>5B NVCT</td>
+                                    <td>Exchange Liquidity</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Jul 01</td>
+                                    <td>10B NVCT</td>
+                                    <td>Strategic Reserve</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Jun 30</td>
+                                    <td>2B NVCT</td>
+                                    <td>Ecosystem Fund</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-fire me-2"></i>Recent Burning Operations
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Jul 02</td>
+                                    <td>3B NVCT</td>
+                                    <td>Price Stability</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Jul 01</td>
+                                    <td>1.5B NVCT</td>
+                                    <td>Supply Reduction</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Jun 29</td>
+                                    <td>500M NVCT</td>
+                                    <td>Quarterly Review</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.text-purple {
+    color: #8B5CF6 !important;
+}
+
+.fas.fa-polygon::before {
+    content: "⬟";
+    font-family: "Font Awesome 6 Free";
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #0a2447, #66ccff) !important;
+}
+
+.progress {
+    height: 8px;
+}
+
+.border-end {
+    border-right: 1px solid #dee2e6 !important;
+}
+
+.card-body h4 {
+    font-weight: bold;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.table-sm td, .table-sm th {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* NVCT Dashboard Specific Enhancements */
+.dashboard-stat-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
+    border: none !important;
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%) !important;
+}
+
+.dashboard-stat-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+.nvct-operation-card, .nvct-operation-nvc-card {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%) !important;
+    border: 1px solid #4a5568 !important;
+    border-radius: 0.75rem !important;
+    padding: 1.5rem !important;
+    text-align: center !important;
+    transition: all 0.3s ease !important;
+    color: #e2e8f0 !important;
+    height: 100% !important;
+}
+
+.nvct-operation-card:hover, .nvct-operation-nvc-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+    border-color: #3b82f6 !important;
+}
+
+.operation-icon {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 1rem auto !important;
+    font-size: 1.5rem !important;
+    color: white !important;
+}
+
+.operation-content h4 {
+    color: #f8fafc !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.5rem !important;
+    font-size: 1.5rem !important;
+}
+
+.operation-content p {
+    color: #cbd5e0 !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.25rem !important;
+    font-size: 0.875rem !important;
+}
+
+.operation-content small {
+    font-size: 0.75rem !important;
+}
+
+.enterprise-nvc-card {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%) !important;
+    border: 1px solid #4a5568 !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.nvc-nvc-card-header-enterprise {
+    background: linear-gradient(135deg, #2d3748 0%, #374151 100%) !important;
+    border-bottom: 1px solid #4a5568 !important;
+    padding: 1.25rem !important;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.nvc-nvc-card-header-enterprise h4 {
+    color: #f8fafc !important;
+    margin: 0 !important;
+    font-weight: 600 !important;
+}
+
+.nvc-nvc-card-body {
+    padding: 1.5rem !important;
+}
+
+.enterprise-table {
+    background-color: transparent !important;
+    color: #e2e8f0 !important;
+    margin-bottom: 0 !important;
+}
+
+.enterprise-table th {
+    background-color: #374151 !important;
+    border-color: #4a5568 !important;
+    color: #f8fafc !important;
+    font-weight: 600 !important;
+    padding: 1rem !important;
+    font-size: 0.875rem !important;
+}
+
+.enterprise-table td {
+    border-color: #4a5568 !important;
+    padding: 0.875rem 1rem !important;
+    vertical-align: middle !important;
+    font-size: 0.875rem !important;
+}
+
+.nvct-transaction-row:hover {
+    background-color: #374151 !important;
+    cursor: pointer !important;
+}
+
+.nvc-form-select-sm {
+    background-color: #374151 !important;
+    border-color: #4a5568 !important;
+    color: #e2e8f0 !important;
+    font-size: 0.875rem !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 0.375rem !important;
+}
+
+.header-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+}
+
+/* Network Status Cards */
+.nvc-nvc-card-header h5 {
+    color: #f8fafc !important;
+    margin: 0 !important;
+    font-weight: 600 !important;
+}
+
+/* Quick Actions Enhancement */
+.nvc-btn-lg {
+    padding: 1rem 1.5rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+}
+
+.nvc-btn-lg i {
+    font-size: 1rem !important;
+}
+
+/* Responsive Fixes */
+@media (max-width: 768px) {
+    .nvct-operation-card, .nvct-operation-nvc-card {
+        margin-bottom: 1rem !important;
+    }
+    
+    .operation-content h4 {
+        font-size: 1.25rem !important;
+    }
+    
+    .nvc-btn-lg {
+        font-size: 0.75rem !important;
+        padding: 0.75rem 1rem !important;
+    }
+}
+</style>
+</div>
+{% endblock %}

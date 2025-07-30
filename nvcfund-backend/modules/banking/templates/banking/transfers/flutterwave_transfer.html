@@ -1,0 +1,408 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Flutterwave Transfer - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Flutterwave Transfer{% endblock %}
+{% block page_description %}African payment gateway for local and international transfers{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-history"></i>
+    Transfer History
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-line"></i>
+    Exchange Rates
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-paper-plane"></i>
+    Send Transfer
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.flutterwave-gradient {
+    background: linear-gradient(135deg, #f5a623 0%, #ff6b35 100%);
+}
+
+.flutterwave-card {
+    border: 2px solid #f5a623;
+    background: rgba(245, 166, 35, 0.1);
+}
+
+.flutterwave-badge {
+    background: linear-gradient(135deg, #f5a623 0%, #ff6b35 100%);
+    color: white;
+}
+
+.flutterwave-button {
+    background: linear-gradient(135deg, #f5a623 0%, #ff6b35 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.flutterwave-button:hover {
+    background: linear-gradient(135deg, #e5941f 0%, #e55a2e 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 166, 35, 0.3);
+}
+
+.flutterwave-icon {
+    color: #f5a623;
+}
+
+.country-flag {
+    width: 20px;
+    height: 15px;
+    margin-right: 8px;
+}
+</style>
+
+<div class="container-fluid">
+    <!-- Flutterwave Transfer Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card flutterwave-nvc-card">
+                <div class="nvc-nvc-card-body text-center py-4">
+                    <div class="flutterwave-logo d-inline-flex align-items-center justify-content-center mb-3" 
+                         class="nvc-h-60">
+                        <img src="{{ url_for('static', filename='images/logos/flutterwave-logo.png') }}" 
+                             alt="Flutterwave Logo" 
+                             class="nvc-style-17425d"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="nvc-style-ef27e2">
+                            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #f5a623 0%, #ff6b35 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <span class="nvc-colored-df9e5b">F</span>
+                            </div>
+                            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 700; font-size: 18px; color: #f5a623;">
+                                Flutterwave
+                            </div>
+                        </div>
+                    </div>
+                    <h2 class="mb-2" style="color: #f5a623; font-weight: 600;">{{ channel_config.title }}</h2>
+                    <p class="text-light mb-3">{{ channel_config.description }}</p>
+                    <div class="row justify-content-center">
+                        {% for feature in channel_config.features %}
+                        <div class="col-auto">
+                            <span class="badge flutterwave-badge me-2 mb-2">{{ feature }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Form -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header flutterwave-gradient text-white">
+                    <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Flutterwave Transfer Details</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('banking.process_send_transfer') }}">
+                        <input type="hidden" name="transfer_channel" value="flutterwave">
+                        
+                        <!-- Destination Country -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="destination_country" class="nvc-form-label">
+                                    <i class="fas fa-globe-africa flutterwave-icon me-2"></i>Destination Country
+                                </label>
+                                <select class="nvc-form-select" id="destination_country" name="destination_country" required>
+                                    <option value="">Select destination country</option>
+                                    <option value="NG">🇳🇬 Nigeria</option>
+                                    <option value="GH">🇬🇭 Ghana</option>
+                                    <option value="KE">🇰🇪 Kenya</option>
+                                    <option value="UG">🇺🇬 Uganda</option>
+                                    <option value="TZ">🇹🇿 Tanzania</option>
+                                    <option value="RW">🇷🇼 Rwanda</option>
+                                    <option value="ZA">🇿🇦 South Africa</option>
+                                    <option value="CM">🇨🇲 Cameroon</option>
+                                    <option value="SN">🇸🇳 Senegal</option>
+                                    <option value="CI">🇨🇮 Côte d'Ivoire</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="from_account" class="nvc-form-label">From Account</label>
+                                <select class="nvc-form-select" name="from_account" required>
+                                    <option value="">Select source account</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.account_number }}">
+                                        {{ account.account_type.title() }} - ****{{ account.account_number[-4:] }} 
+                                        (${{ "%.2f"|format(account.balance) }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Recipient Details -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="recipient_name" class="nvc-form-label">Recipient Full Name</label>
+                                <input type="text" class="nvc-form-input" id="recipient_name" name="recipient_name" 
+                                       placeholder="John Doe" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="recipient_phone" class="nvc-form-label">Recipient Phone Number</label>
+                                <input type="tel" class="nvc-form-input" id="recipient_phone" name="recipient_phone" 
+                                       placeholder="+234xxxxxxxxxx" required>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="payment_method" class="nvc-form-label">Payment Method</label>
+                                <select class="nvc-form-select" id="payment_method" name="payment_method" required>
+                                    <option value="">Select payment method</option>
+                                    <option value="bank_transfer">Bank Transfer</option>
+                                    <option value="mobile_money">Mobile Money</option>
+                                    <option value="card">Debit Card</option>
+                                    <option value="cash_pickup">Cash Pickup</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="bank_code" class="nvc-form-label">Bank/Provider</label>
+                                <select class="nvc-form-select" id="bank_code" name="bank_code">
+                                    <option value="">Select bank or provider</option>
+                                    <!-- Will be populated based on country/method selection -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Amount and Currency -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="amount" class="nvc-form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" id="amount" name="amount" 
+                                           min="{{ channel_config.limits.min }}" 
+                                           max="{{ channel_config.limits.max }}" 
+                                           step="0.01" placeholder="0.00" required>
+                                </div>
+                                <div class="form-text">
+                                    Limits: ${{ channel_config.limits.min }} - ${{ "{:,}".format(channel_config.limits.max) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="recipient_currency" class="nvc-form-label">Recipient Gets</label>
+                                <select class="nvc-form-select" id="recipient_currency" name="recipient_currency" required>
+                                    <option value="NGN">Nigerian Naira (NGN)</option>
+                                    <option value="GHS">Ghanaian Cedi (GHS)</option>
+                                    <option value="KES">Kenyan Shilling (KES)</option>
+                                    <option value="UGX">Ugandan Shilling (UGX)</option>
+                                    <option value="TZS">Tanzanian Shilling (TZS)</option>
+                                    <option value="RWF">Rwandan Franc (RWF)</option>
+                                    <option value="ZAR">South African Rand (ZAR)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Account Details -->
+                        <div class="row mb-3" id="account_details" class="d-none">
+                            <div class="col-md-6">
+                                <label for="account_number" class="nvc-form-label">Account Number</label>
+                                <input type="text" class="nvc-form-input" id="account_number" name="account_number" 
+                                       placeholder="Enter account number">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="account_name" class="nvc-form-label">Account Name</label>
+                                <input type="text" class="nvc-form-input" id="account_name" name="account_name" 
+                                       placeholder="Account holder name">
+                            </div>
+                        </div>
+
+                        <!-- Purpose -->
+                        <div class="mb-3">
+                            <label for="transfer_purpose" class="nvc-form-label">Purpose of Transfer</label>
+                            <select class="nvc-form-select" name="transfer_purpose" required>
+                                <option value="">Select purpose</option>
+                                <option value="family_support">Family Support</option>
+                                <option value="business">Business Payment</option>
+                                <option value="education">Education</option>
+                                <option value="medical">Medical Expenses</option>
+                                <option value="investment">Investment</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="nvc-form-label">Additional Notes (Optional)</label>
+                            <textarea class="nvc-form-input" id="description" name="description" rows="2" 
+                                      placeholder="Any additional information"></textarea>
+                        </div>
+
+                        <!-- Exchange Rate Info -->
+                        <div class="alert nvc-nvc-alert-info">
+                            <h6><i class="fas fa-exchange-alt me-2"></i>Flutterwave Transfer Information</h6>
+                            <ul class="mb-0">
+                                <li><strong>Fee:</strong> {{ channel_config.fee }}% + service charges</li>
+                                <li><strong>Processing Time:</strong> {{ channel_config.processing_time }}</li>
+                                <li><strong>Exchange Rate:</strong> Live rates applied at time of transfer</li>
+                                <li><strong>Coverage:</strong> 30+ African countries</li>
+                            </ul>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Transfers
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn flutterwave-button w-100">
+                                    <i class="fas fa-paper-plane me-2"></i>Send via Flutterwave
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flutterwave Coverage -->
+    <div class="row mt-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <h6 class="nvc-card-title"><i class="fas fa-globe-africa flutterwave-icon me-2"></i>African Coverage</h6>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-mobile-alt flutterwave-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Mobile Money</h6>
+                            <p class="text-light small">M-Pesa, MTN, Airtel, and more</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-university flutterwave-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Bank Transfers</h6>
+                            <p class="text-light small">Direct to bank accounts</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-hand-holding-usd flutterwave-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Cash Pickup</h6>
+                            <p class="text-light small">Collect at agent locations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethodSelect = document.getElementById('payment_method');
+    const accountDetails = document.getElementById('account_details');
+    const bankCodeSelect = document.getElementById('bank_code');
+    const countrySelect = document.getElementById('destination_country');
+    
+    // Show/hide account details based on payment method
+    paymentMethodSelect.addEventListener('change', function() {
+        if (this.value === 'bank_transfer') {
+            accountDetails.style.display = 'block';
+            document.getElementById('account_number').required = true;
+        } else {
+            accountDetails.style.display = 'none';
+            document.getElementById('account_number').required = false;
+        }
+        
+        updateBankOptions();
+    });
+    
+    // Update bank options based on country and payment method
+    function updateBankOptions() {
+        const country = countrySelect.value;
+        const method = paymentMethodSelect.value;
+        
+        bankCodeSelect.innerHTML = '<option value="">Select bank or provider</option>';
+        
+        if (country === 'NG' && method === 'bank_transfer') {
+            const nigerianBanks = [
+                'Access Bank', 'GTBank', 'First Bank', 'UBA', 'Zenith Bank',
+                'Fidelity Bank', 'FCMB', 'Sterling Bank', 'Union Bank'
+            ];
+            nigerianBanks.forEach(bank => {
+                const option = document.createElement('option');
+                option.value = bank.toLowerCase().replace(/\s+/g, '_');
+                option.textContent = bank;
+                bankCodeSelect.appendChild(option);
+            });
+        } else if (method === 'mobile_money') {
+            const mobileMoneyProviders = {
+                'NG': ['MTN Mobile Money', 'Airtel Money'],
+                'KE': ['M-Pesa', 'Airtel Money'],
+                'GH': ['MTN Mobile Money', 'AirtelTigo Money'],
+                'UG': ['MTN Mobile Money', 'Airtel Money']
+            };
+            
+            if (mobileMoneyProviders[country]) {
+                mobileMoneyProviders[country].forEach(provider => {
+                    const option = document.createElement('option');
+                    option.value = provider.toLowerCase().replace(/\s+/g, '_');
+                    option.textContent = provider;
+                    bankCodeSelect.appendChild(option);
+                });
+            }
+        }
+    }
+    
+    countrySelect.addEventListener('change', updateBankOptions);
+    
+    // Exchange rate calculation
+    const amountInput = document.getElementById('amount');
+    const currencySelect = document.getElementById('recipient_currency');
+    
+    function updateExchangeRate() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const currency = currencySelect.value;
+        
+        // Mock exchange rates (in production, fetch from Flutterwave API)
+        const rates = {
+            'NGN': 1650,
+            'GHS': 12.5,
+            'KES': 145,
+            'UGX': 3700,
+            'TZS': 2600,
+            'RWF': 1300,
+            'ZAR': 18.5
+        };
+        
+        if (amount > 0 && rates[currency]) {
+            const convertedAmount = amount * rates[currency];
+            const fee = amount * {{ channel_config.fee }}/100;
+            
+            let rateDisplay = document.getElementById('rate-display');
+            if (!rateDisplay) {
+                rateDisplay = document.createElement('div');
+                rateDisplay.id = 'rate-display';
+                rateDisplay.className = 'form-text';
+                currencySelect.parentElement.appendChild(rateDisplay);
+            }
+            
+            rateDisplay.innerHTML = `
+                Recipient gets: ${convertedAmount.toLocaleString()} ${currency}<br>
+                Exchange rate: 1 USD = ${rates[currency]} ${currency}<br>
+                Fee: $${fee.toFixed(2)}
+            `;
+        }
+    }
+    
+    amountInput.addEventListener('input', updateExchangeRate);
+    currencySelect.addEventListener('change', updateExchangeRate);
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

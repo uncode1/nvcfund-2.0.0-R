@@ -1,0 +1,462 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Internal Exchange - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Internal Exchange Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-primary">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0">
+                                <i class="fas fa-university me-2"></i>
+                                Internal Exchange
+                            </h3>
+                            <p class="mb-0">Exchange between NVC platform assets with preferential rates</p>
+                        </div>
+                        <a href="{{ url_for('exchange.exchange_dashboard') }}" class="btn nvc-btn nvc-btn-outline-light">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Exchange
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Exchange Form -->
+        <div class="col-lg-8">
+            <div class="nvc-card bg-dark border-light">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-exchange-alt me-2"></i>Exchange Assets
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="exchangeForm">
+                        <div class="row">
+                            <!-- From Section -->
+                            <div class="col-md-5">
+                                <div class="nvc-card bg-secondary border-success">
+                                    <div class="nvc-nvc-card-header bg-success text-white">
+                                        <h6 class="mb-0">From</h6>
+                                    </div>
+                                    <div class="nvc-nvc-card-body">
+                                        <!-- From Account Selection -->
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label text-light">Source Account</label>
+                                            <select class="nvc-form-select bg-dark text-light border-success" id="fromAccount" required>
+                                                <option value="">Select Source Account</option>
+                                                {% for account in fiat_accounts %}
+                                                <option value="{{ account.id }}" data-currency="{{ account.currency }}" data-balance="{{ account.balance }}" data-type="fiat">
+                                                    {{ account.account_type|title }} ({{ account.currency }}) - Balance: {{ "{:,.2f}".format(account.balance) }}
+                                                </option>
+                                                {% endfor %}
+                                                {% for account in digital_accounts %}
+                                                <option value="{{ account.id }}" data-currency="{{ account.token_type.symbol }}" data-balance="{{ account.balance }}" data-type="digital">
+                                                    {{ account.token_type.name }} ({{ account.token_type.symbol }}) - Balance: {{ "{:,.6f}".format(account.balance) }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <!-- From Amount -->
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label text-light">Amount</label>
+                                            <div class="input-group">
+                                                <input type="number" class="nvc-form-input bg-dark text-light border-success" 
+                                                       id="fromAmount" step="0.000001" min="0" placeholder="0.00" required>
+                                                <span class="input-group-text bg-success text-white" id="fromCurrency">Currency</span>
+                                            </div>
+                                            <div class="form-text text-light">
+                                                Available: <span id="availableBalance">0.00</span>
+                                                <button type="button" class="btn btn-link btn-sm text-success p-0 ms-2" id="useMaxAmount">Use Max</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Exchange Arrow -->
+                            <div class="col-md-2 d-flex align-items-center justify-content-center">
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary rounded-circle" id="swapButton" title="Swap currencies">
+                                    <i class="fas fa-exchange-alt fa-2x"></i>
+                                </button>
+                            </div>
+
+                            <!-- To Section -->
+                            <div class="col-md-5">
+                                <div class="nvc-card bg-secondary border-info">
+                                    <div class="nvc-nvc-card-header bg-info text-white">
+                                        <h6 class="mb-0">To</h6>
+                                    </div>
+                                    <div class="nvc-nvc-card-body">
+                                        <!-- To Account Selection -->
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label text-light">Destination Account</label>
+                                            <select class="nvc-form-select bg-dark text-light border-info" id="toAccount" required>
+                                                <option value="">Select Destination Account</option>
+                                                {% for account in fiat_accounts %}
+                                                <option value="{{ account.id }}" data-currency="{{ account.currency }}" data-type="fiat">
+                                                    {{ account.account_type|title }} ({{ account.currency }})
+                                                </option>
+                                                {% endfor %}
+                                                {% for account in digital_accounts %}
+                                                <option value="{{ account.id }}" data-currency="{{ account.token_type.symbol }}" data-type="digital">
+                                                    {{ account.token_type.name }} ({{ account.token_type.symbol }})
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <!-- To Amount (calculated) -->
+                                        <div class="mb-3">
+                                            <label class="nvc-form-label text-light">You'll Receive</label>
+                                            <div class="input-group">
+                                                <input type="text" class="nvc-form-input bg-dark text-light border-info" 
+                                                       id="toAmount" readonly placeholder="0.00">
+                                                <span class="input-group-text bg-info text-white" id="toCurrency">Currency</span>
+                                            </div>
+                                            <div class="form-text text-light">
+                                                Rate: <span id="exchangeRate">--</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Exchange Summary -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="nvc-card bg-secondary border-warning" id="exchangeSummary" class="d-none">
+                                    <div class="nvc-nvc-card-header bg-warning text-dark">
+                                        <h6 class="mb-0">Exchange Summary</h6>
+                                    </div>
+                                    <div class="nvc-nvc-card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <small class="text-light">Exchange Rate</small>
+                                                <div class="h6 text-warning" id="summaryRate">--</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-light">Exchange Fee</small>
+                                                <div class="h6 text-info" id="summaryFee">--</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-light">Processing Time</small>
+                                                <div class="h6 text-success">Instant</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-light">Final Amount</small>
+                                                <div class="h6 text-light" id="summaryFinalAmount">--</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-secondary me-md-2" id="getQuoteBtn">
+                                        <i class="fas fa-calculator me-2"></i>Get Quote
+                                    </button>
+                                    <button type="submit" class="btn nvc-btn nvc-btn-success" id="executeExchangeBtn" disabled>
+                                        <i class="fas fa-check me-2"></i>Execute Exchange
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Rates & Info -->
+        <div class="col-lg-4">
+            <!-- Current Internal Rates -->
+            <div class="nvc-card bg-dark border-info mb-4">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Current Internal Rates
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if current_rates %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Pair</th>
+                                        <th class="text-end">Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rate in current_rates %}
+                                    <tr>
+                                        <td>{{ rate.from_currency }}/{{ rate.to_currency }}</td>
+                                        <td class="text-end">{{ "{:.6f}".format(rate.rate) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-light">No rates available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Supported Pairs -->
+            <div class="nvc-card bg-dark border-success mb-4">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-coins me-2"></i>Supported Pairs
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if supported_pairs %}
+                        <div class="row">
+                            {% for pair in supported_pairs %}
+                            <div class="col-12 mb-2">
+                                <div class="badge bg-secondary w-100 text-start">
+                                    {{ pair.base_currency }} ⟷ {{ pair.quote_currency }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-light">No trading pairs available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Exchange Information -->
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Exchange Information
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <ul class="list-unstyled text-light mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Instant processing for internal exchanges
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-percentage text-info me-2"></i>
+                            Competitive rates with low fees
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-shield-alt text-warning me-2"></i>
+                            Secure and regulated transactions
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            24/7 availability
+                        </li>
+                        <li>
+                            <i class="fas fa-headset text-secondary me-2"></i>
+                            Customer support available
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content bg-dark border-primary">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status"></div>
+                <p class="text-light mb-0">Processing exchange...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fromAccount = document.getElementById('fromAccount');
+    const toAccount = document.getElementById('toAccount');
+    const fromAmount = document.getElementById('fromAmount');
+    const toAmount = document.getElementById('toAmount');
+    const fromCurrency = document.getElementById('fromCurrency');
+    const toCurrency = document.getElementById('toCurrency');
+    const availableBalance = document.getElementById('availableBalance');
+    const useMaxAmount = document.getElementById('useMaxAmount');
+    const getQuoteBtn = document.getElementById('getQuoteBtn');
+    const executeExchangeBtn = document.getElementById('executeExchangeBtn');
+    const exchangeSummary = document.getElementById('exchangeSummary');
+    const swapButton = document.getElementById('swapButton');
+
+    // Update currency display when account is selected
+    fromAccount.addEventListener('change', function() {
+        const option = this.selectedOptions[0];
+        if (option.value) {
+            const currency = option.dataset.currency;
+            const balance = parseFloat(option.dataset.balance);
+            fromCurrency.textContent = currency;
+            availableBalance.textContent = balance.toFixed(6);
+            fromAmount.max = balance;
+        } else {
+            fromCurrency.textContent = 'Currency';
+            availableBalance.textContent = '0.00';
+        }
+        clearQuote();
+    });
+
+    toAccount.addEventListener('change', function() {
+        const option = this.selectedOptions[0];
+        if (option.value) {
+            const currency = option.dataset.currency;
+            toCurrency.textContent = currency;
+        } else {
+            toCurrency.textContent = 'Currency';
+        }
+        clearQuote();
+    });
+
+    // Use max amount
+    useMaxAmount.addEventListener('click', function() {
+        const option = fromAccount.selectedOptions[0];
+        if (option.value) {
+            const balance = parseFloat(option.dataset.balance);
+            fromAmount.value = balance.toFixed(6);
+            fromAmount.dispatchEvent(new Event('input'));
+        }
+    });
+
+    // Clear quote when amount changes
+    fromAmount.addEventListener('input', clearQuote);
+
+    // Get quote
+    getQuoteBtn.addEventListener('click', function() {
+        if (!validateForm()) return;
+
+        const data = {
+            exchange_type: 'internal',
+            from_currency: fromAccount.selectedOptions[0].dataset.currency,
+            to_currency: toAccount.selectedOptions[0].dataset.currency,
+            amount: parseFloat(fromAmount.value)
+        };
+
+        fetch('/exchange/quote', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                displayQuote(data);
+            }
+        })
+        .catch(error => {
+            alert('Error getting quote: ' + error.message);
+        });
+    });
+
+    // Execute exchange
+    document.getElementById('exchangeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!confirm('Are you sure you want to execute this exchange?')) {
+            return;
+        }
+
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        loadingModal.show();
+
+        const data = {
+            exchange_type: 'internal',
+            from_account_id: parseInt(fromAccount.value),
+            to_account_id: parseInt(toAccount.value),
+            from_currency: fromAccount.selectedOptions[0].dataset.currency,
+            to_currency: toAccount.selectedOptions[0].dataset.currency,
+            amount: parseFloat(fromAmount.value)
+        };
+
+        fetch('/exchange/execute', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingModal.hide();
+            if (data.success) {
+                alert('Exchange completed successfully!');
+                window.location.href = '{{ url_for("exchange.exchange_dashboard") }}';
+            } else {
+                alert('Error: ' + (data.error || 'Exchange failed'));
+            }
+        })
+        .catch(error => {
+            loadingModal.hide();
+            alert('Error executing exchange: ' + error.message);
+        });
+    });
+
+    function validateForm() {
+        if (!fromAccount.value || !toAccount.value || !fromAmount.value) {
+            alert('Please fill in all required fields.');
+            return false;
+        }
+        
+        if (fromAccount.value === toAccount.value) {
+            alert('Source and destination accounts must be different.');
+            return false;
+        }
+        
+        const amount = parseFloat(fromAmount.value);
+        const maxAmount = parseFloat(fromAmount.max);
+        if (amount > maxAmount) {
+            alert('Amount exceeds available balance.');
+            return false;
+        }
+        
+        return true;
+    }
+
+    function displayQuote(quote) {
+        toAmount.value = quote.to_amount;
+        document.getElementById('exchangeRate').textContent = `1 ${quote.from_currency} = ${quote.rate} ${quote.to_currency}`;
+        
+        document.getElementById('summaryRate').textContent = quote.rate;
+        document.getElementById('summaryFee').textContent = `${quote.fee} ${quote.from_currency}`;
+        document.getElementById('summaryFinalAmount').textContent = `${quote.to_amount} ${quote.to_currency}`;
+        
+        exchangeSummary.style.display = 'block';
+        executeExchangeBtn.disabled = false;
+    }
+
+    function clearQuote() {
+        toAmount.value = '';
+        document.getElementById('exchangeRate').textContent = '--';
+        exchangeSummary.style.display = 'none';
+        executeExchangeBtn.disabled = true;
+    }
+});
+</script>
+</div>
+{% endblock %}

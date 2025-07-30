@@ -1,0 +1,668 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}NVCT Governance - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}NVCT Governance{% endblock %}
+{% block page_description %}Decentralized governance and voting system for NVCT stablecoin{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Create Proposal
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-vote-yea"></i>
+    Active Votes
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportGovernanceData() {
+    const csvData = 'Proposal,Status,Votes For,Votes Against,End Date\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nvct_governance.csv';
+    a.click();
+}
+
+function createProposal() {
+    window.location.href = "{{ url_for('nvct_stablecoin.create_proposal') }}";
+}
+
+function viewActiveVotes() {
+    window.location.href = "{{ url_for('nvct_stablecoin.active_votes') }}";
+}
+
+function voteOnProposal(proposalId, vote) {
+    if (confirm('Are you sure you want to vote ' + vote + ' on this proposal?')) {
+        fetch('/nvct/governance/vote', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: JSON.stringify({ proposalId: proposalId, vote: vote })
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error submitting vote');
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const governanceCards = document.querySelectorAll('.card, .governance-card');
+    governanceCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Active Proposals')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.active_proposals') }}";
+            } else if (cardTitle?.includes('Voting Power')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.voting_power') }}";
+            } else if (cardTitle?.includes('Treasury')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.treasury_governance') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0a2447;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .main-content {
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid #66ccff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.3);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 100%);
+            border-bottom: 1px solid #66ccff;
+            color: #66ccff;
+            font-weight: bold;
+        }
+        .proposal-item {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .proposal-item:hover {
+            background: rgba(30, 60, 114, 0.5);
+            transform: translateY(-2px);
+        }
+        .proposal-status {
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-active { background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid #ffc107; }
+        .status-passed { background: rgba(40, 167, 69, 0.2); color: #28a745; border: 1px solid #28a745; }
+        .status-failed { background: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid #dc3545; }
+        .status-executed { background: rgba(23, 162, 184, 0.2); color: #17a2b8; border: 1px solid #17a2b8; }
+        .voting-bar {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .voting-progress {
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+        }
+        .vote-yes { background: #28a745; }
+        .vote-no { background: #dc3545; }
+        .vote-abstain { background: #6c757d; }
+        .form-control, .form-select, .form-check-input {
+            background: #1e3c72;
+            border: 1px solid #66ccff;
+            color: #ffffff;
+        }
+        .form-control:focus, .form-select:focus {
+            background: #1e3c72;
+            border-color: #66ccff;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            border: none;
+            color: #0a2447;
+            font-weight: bold;
+        }
+        .btn-outline-primary {
+            border-color: #66ccff;
+            color: #66ccff;
+        }
+        .btn-outline-primary:hover {
+            background: #66ccff;
+            color: #0a2447;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        .voting-power {
+            background: rgba(30, 60, 114, 0.2);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .stats-card {
+            background: rgba(30, 60, 114, 0.2);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stats-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #66ccff;
+        }
+        .stats-label {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+        .delegate-item {
+            background: rgba(30, 60, 114, 0.2);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1><i class="fas fa-vote-yea"></i> NVCT Governance</h1>
+                            <p class="mb-0">Decentralized governance for the $30T NVCT stablecoin ecosystem</p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn nvc-btn nvc-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createProposalModal">
+                                <i class="fas fa-plus"></i> Create Proposal
+                            </button>
+                            <span class="text-light">Total NVCT Staked: 8.2T (27.3%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Active Proposals -->
+                <div class="col-md-8">
+                    <div class="nvc-card mb-4">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-clipboard-list"></i> Active Proposals</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="proposal-item">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h6><strong>Proposal #47: Ethereum Mainnet Deployment</strong></h6>
+                                        <span class="proposal-status status-active">Active Voting</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-light small">Ends in 2 days, 14 hours</div>
+                                        <div class="text-light small">Created by: NVC Treasury</div>
+                                    </div>
+                                </div>
+                                
+                                <p class="mb-3">Deploy NVCT stablecoin on Ethereum mainnet to expand cross-chain accessibility and integrate with major DeFi protocols. This proposal includes gas optimization strategies and emergency pause mechanisms.</p>
+                                
+                                <div class="voting-bar">
+                                    <div class="voting-progress">
+                                        <div class="vote-yes" style="width: 78.2%"></div>
+                                        <div class="vote-no" style="width: 15.1%"></div>
+                                        <div class="vote-abstain" style="width: 6.7%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="d-flex justify-content-between small">
+                                            <span class="text-success">Yes: 78.2% (6.4T NVCT)</span>
+                                            <span class="text-danger">No: 15.1% (1.2T NVCT)</span>
+                                            <span class="text-light">Abstain: 6.7% (549B NVCT)</span>
+                                        </div>
+                                        <div class="mt-2 small text-light">
+                                            Quorum: 8.2T / 6.0T required (136.7%) ✓ | Threshold: 78.2% / 66.7% required ✓
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm me-1" data-action="custom-action">
+                                            <i class="fas fa-thumbs-up"></i> Vote Yes
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-danger btn-sm me-1" data-action="custom-action">
+                                            <i class="fas fa-thumbs-down"></i> Vote No
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary btn-sm" data-action="custom-action">
+                                            Abstain
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="proposal-item">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h6><strong>Proposal #48: Cross-Chain Bridge Fee Reduction</strong></h6>
+                                        <span class="proposal-status status-active">Active Voting</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-light small">Ends in 5 days, 8 hours</div>
+                                        <div class="text-light small">Created by: Community</div>
+                                    </div>
+                                </div>
+                                
+                                <p class="mb-3">Reduce cross-chain bridge fees from 0.1% to 0.05% to encourage more cross-chain adoption and improve user experience across all supported networks.</p>
+                                
+                                <div class="voting-bar">
+                                    <div class="voting-progress">
+                                        <div class="vote-yes" style="width: 91.8%"></div>
+                                        <div class="vote-no" style="width: 4.2%"></div>
+                                        <div class="vote-abstain" style="width: 4.0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="d-flex justify-content-between small">
+                                            <span class="text-success">Yes: 91.8% (7.5T NVCT)</span>
+                                            <span class="text-danger">No: 4.2% (344B NVCT)</span>
+                                            <span class="text-light">Abstain: 4.0% (328B NVCT)</span>
+                                        </div>
+                                        <div class="mt-2 small text-light">
+                                            Quorum: 8.2T / 6.0T required (136.7%) ✓ | Threshold: 91.8% / 66.7% required ✓
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm me-1" data-action="custom-action">
+                                            <i class="fas fa-thumbs-up"></i> Vote Yes
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-danger btn-sm me-1" data-action="custom-action">
+                                            <i class="fas fa-thumbs-down"></i> Vote No
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary btn-sm" data-action="custom-action">
+                                            Abstain
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="proposal-item">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h6><strong>Proposal #49: Yield Enhancement Program</strong></h6>
+                                        <span class="proposal-status status-active">Active Voting</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-light small">Ends in 6 days, 22 hours</div>
+                                        <div class="text-light small">Created by: Yield Committee</div>
+                                    </div>
+                                </div>
+                                
+                                <p class="mb-3">Implement a staking rewards program offering 3.5% APY for NVCT holders who lock their tokens for governance participation, funded by treasury yield generation.</p>
+                                
+                                <div class="voting-bar">
+                                    <div class="voting-progress">
+                                        <div class="vote-yes" style="width: 67.3%"></div>
+                                        <div class="vote-no" style="width: 23.1%"></div>
+                                        <div class="vote-abstain" style="width: 9.6%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="d-flex justify-content-between small">
+                                            <span class="text-success">Yes: 67.3% (5.5T NVCT)</span>
+                                            <span class="text-danger">No: 23.1% (1.9T NVCT)</span>
+                                            <span class="text-light">Abstain: 9.6% (787B NVCT)</span>
+                                        </div>
+                                        <div class="mt-2 small text-light">
+                                            Quorum: 8.2T / 6.0T required (136.7%) ✓ | Threshold: 67.3% / 66.7% required ✓
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm me-1" data-action="custom-action">
+                                            <i class="fas fa-thumbs-up"></i> Vote Yes
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-danger btn-sm me-1" data-action="custom-action">
+                                            <i class="fas fa-thumbs-down"></i> Vote No
+                                        </button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary btn-sm" data-action="custom-action">
+                                            Abstain
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Decisions -->
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-history"></i> Recent Decisions</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="proposal-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6><strong>Proposal #46: Treasury Diversification</strong></h6>
+                                        <span class="proposal-status status-executed">Executed</span>
+                                        <div class="text-light small mt-1">Diversify 15% of treasury into real estate and commodities</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success">Passed: 89.2%</div>
+                                        <div class="text-light small">Executed 3 days ago</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="proposal-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6><strong>Proposal #45: Emergency Response Protocol</strong></h6>
+                                        <span class="proposal-status status-passed">Passed</span>
+                                        <div class="text-light small mt-1">Implement rapid response mechanisms for market volatility</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success">Passed: 94.7%</div>
+                                        <div class="text-light small">Awaiting execution</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="proposal-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6><strong>Proposal #44: Governance Token Migration</strong></h6>
+                                        <span class="proposal-status status-failed">Failed</span>
+                                        <div class="text-light small mt-1">Create separate governance token for voting</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-danger">Failed: 23.4%</div>
+                                        <div class="text-light small">1 week ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Governance Info -->
+                <div class="col-md-4">
+                    <div class="nvc-card mb-4">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-user-check"></i> My Voting Power</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="voting-power">
+                                <div class="stats-nvc-card">
+                                    <div class="stats-value">125.7B</div>
+                                    <div class="stats-label">NVCT Staked</div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Voting Power</span>
+                                        <span class="text-primary">1.532%</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Delegation Received</span>
+                                        <span class="text-info">+45.2B NVCT</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Active Delegations</span>
+                                        <span class="text-warning">247 delegators</span>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                                        <i class="fas fa-plus"></i> Stake More NVCT
+                                    </button>
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                                        <i class="fas fa-users"></i> Manage Delegations
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-card mb-4">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-chart-bar"></i> Governance Statistics</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="stats-nvc-card mb-3">
+                                <div class="stats-value">8.2T</div>
+                                <div class="stats-label">Total NVCT Staked</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="stats-nvc-card">
+                                        <div class="stats-value small">27.3%</div>
+                                        <div class="stats-label">Participation Rate</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stats-nvc-card">
+                                        <div class="stats-value small">49</div>
+                                        <div class="stats-label">Total Proposals</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2">
+                                <div class="col-6">
+                                    <div class="stats-nvc-card">
+                                        <div class="stats-value small">42</div>
+                                        <div class="stats-label">Passed</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stats-nvc-card">
+                                        <div class="stats-value small">4</div>
+                                        <div class="stats-label">Failed</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-users-cog"></i> Top Delegates</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="delegate-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>NVC Treasury Committee</strong>
+                                        <div class="text-light small">Core team delegation</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div>2.1T NVCT</div>
+                                        <div class="text-light small">25.6%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="delegate-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>Institutional Delegate A</strong>
+                                        <div class="text-light small">Banking institutional</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div>945B NVCT</div>
+                                        <div class="text-light small">11.5%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="delegate-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>Community Representative</strong>
+                                        <div class="text-light small">Retail user advocate</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div>678B NVCT</div>
+                                        <div class="text-light small">8.3%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="delegate-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>DeFi Protocol Delegate</strong>
+                                        <div class="text-light small">Cross-protocol integration</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div>543B NVCT</div>
+                                        <div class="text-light small">6.6%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i> View All Delegates
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Proposal Modal -->
+        <div class="modal fade" id="createProposalModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content" style="background: #1e3c72; border: 1px solid #66ccff;">
+                    <div class="modal-header" style="border-bottom: 1px solid #66ccff;">
+                        <h5 class="modal-title text-white">Create New Proposal</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Proposal Title</label>
+                                <input type="text" class="nvc-form-input" placeholder="Enter proposal title">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Category</label>
+                                <select class="nvc-form-select">
+                                    <option>Technical Implementation</option>
+                                    <option>Economic Policy</option>
+                                    <option>Governance Process</option>
+                                    <option>Treasury Management</option>
+                                    <option>Network Expansion</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Description</label>
+                                <textarea class="nvc-form-input" rows="5" placeholder="Provide detailed description of the proposal..."></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Voting Duration</label>
+                                <select class="nvc-form-select">
+                                    <option>3 days</option>
+                                    <option>7 days</option>
+                                    <option>14 days</option>
+                                    <option>30 days</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="nvc-form-label">Required Threshold</label>
+                                <select class="nvc-form-select">
+                                    <option>Simple Majority (>50%)</option>
+                                    <option>Supermajority (>66.7%)</option>
+                                    <option>Qualified Majority (>75%)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="alert nvc-nvc-alert-warning" style="background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; color: #ffc107;">
+                                <strong>Notice:</strong> Creating a proposal requires a minimum of 100B NVCT voting power. Your current voting power: 125.7B NVCT ✓
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #66ccff;">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary">Submit Proposal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function vote(proposalId, voteType) {
+            const voteMessages = {
+                'yes': 'Vote YES submitted',
+                'no': 'Vote NO submitted', 
+                'abstain': 'Abstention recorded'
+            };
+            
+            alert(`Proposal #${proposalId}: ${voteMessages[voteType]}\n\nYour voting power: 125.7B NVCT\nTransaction will be processed on-chain.`);
+            
+            // In production, this would interact with the smart contract
+            console.log(`Voting ${voteType} on proposal ${proposalId}`);
+        }
+
+        // Real-time updates
+        setInterval(function() {
+            console.log('Refreshing governance data...');
+            // This would fetch live proposal data in production
+        }, 30000);
+    </script>
+</body>
+</html>

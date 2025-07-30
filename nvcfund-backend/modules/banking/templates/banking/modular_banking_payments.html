@@ -1,0 +1,286 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Smart Payment Hub - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Payment Hub{% endblock %}
+{% block page_description %}Comprehensive payment management for traditional and digital currencies{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-calendar-alt"></i>
+    Schedule Payment
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-paper-plane"></i>
+    Make Payment
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Payment Functions
+function exportPaymentData() {
+    const csvData = 'Date,Type,Amount,Status,Gateway\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'payment_data.csv';
+    a.click();
+}
+
+function schedulePayment() {
+    window.location.href = "{{ url_for('banking.schedule_payment') }}";
+}
+
+function makePayment() {
+    window.location.href = "{{ url_for('banking.bill_payment') }}";
+}
+
+function setupBankTransfer() {
+    window.location.href = "{{ url_for('banking.setup_bank_transfer') }}";
+}
+
+function manageCards() {
+    window.location.href = "{{ url_for('banking.cards_management') }}";
+}
+
+// Add drilldown functionality for stat cards
+document.addEventListener('DOMContentLoaded', function() {
+    const statCards = document.querySelectorAll('.payment-stat-card');
+    statCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardType = this.querySelector('h6').textContent;
+            if (cardType.includes('Total Payments')) {
+                window.location.href = "{{ url_for('banking.transfer_history') }}";
+            } else if (cardType.includes('Successful')) {
+                window.location.href = "{{ url_for('banking.transfer_history') }}?status=completed";
+            } else if (cardType.includes('Pending')) {
+                window.location.href = "{{ url_for('banking.transfer_history') }}?status=pending";
+            } else if (cardType.includes('Crypto Payments')) {
+                window.location.href = "{{ url_for('banking.transfer_history') }}?type=crypto";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- Modern Payment Hub -->
+<div class="row g-4">
+    <!-- Payment Overview -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="payment-stat-nvc-card bg-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-credit-nvc-card"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Total Payments</h6>
+                                <h3>{{ total_payments or '847' }}</h3>
+                                <small>This month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="payment-stat-nvc-card bg-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Successful</h6>
+                                <h3>${{ "%.2f"|format(successful_payments) if successful_payments else '45,678.90' }}</h3>
+                                <small>99.2% success rate</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="payment-stat-nvc-card bg-warning">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Pending</h6>
+                                <h3>{{ pending_payments or '12' }}</h3>
+                                <small>Awaiting processing</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="payment-stat-nvc-card bg-info">
+                            <div class="stat-icon">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Crypto Payments</h6>
+                                <h3>{{ crypto_payments or '156' }}</h3>
+                                <small>Digital assets</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Methods -->
+    <div class="col-xl-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-layer-group text-primary me-2"></i>
+                    Payment Methods
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <!-- Payment Method Tabs -->
+                <ul class="nav nav-pills mb-4" id="paymentTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="traditional-tab" data-bs-toggle="pill"
+                                data-bs-target="#traditional" type="button" role="tab">
+                            <i class="fas fa-university me-1"></i>
+                            Traditional
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="digital-tab" data-bs-toggle="pill"
+                                data-bs-target="#digital" type="button" role="tab">
+                            <i class="fas fa-mobile-alt me-1"></i>
+                            Digital Wallets
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="crypto-tab" data-bs-toggle="pill"
+                                data-bs-target="#crypto" type="button" role="tab">
+                            <i class="fab fa-bitcoin me-1"></i>
+                            Cryptocurrency
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Payment Method Content -->
+                <div class="tab-content" id="paymentTabsContent">
+                    <!-- Traditional Payment Methods -->
+                    <div class="tab-pane fade show active" id="traditional" role="tabpanel">
+                        <div class="row g-3">
+                            <!-- Bank Transfer -->
+                            <div class="col-md-6">
+                                <div class="payment-method-nvc-card">
+                                    <div class="method-header">
+                                        <div class="method-icon bg-primary">
+                                            <i class="fas fa-university"></i>
+                                        </div>
+                                        <div class="method-info">
+                                            <h6>Bank Transfer</h6>
+                                            <p class="text-muted small">Direct bank-to-bank transfers</p>
+                                        </div>
+                                        <div class="method-status">
+                                            <span class="badge bg-success">Active</span>
+                                        </div>
+                                    </div>
+                                    <div class="method-details">
+                                        <ul class="list-unstyled small">
+                                            <li><i class="fas fa-check text-success me-1"></i> ACH transfers</li>
+                                            <li><i class="fas fa-check text-success me-1"></i> Wire transfers</li>
+                                            <li><i class="fas fa-check text-success me-1"></i> SWIFT international</li>
+                                        </ul>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm w-100" data-action="custom-action">
+                                            Configure
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Credit/Debit Cards -->
+                            <div class="col-md-6">
+                                <div class="payment-method-nvc-card">
+                                    <div class="method-header">
+                                        <div class="method-icon bg-success">
+                                            <i class="fas fa-credit-nvc-card"></i>
+                                        </div>
+                                        <div class="method-info">
+                                            <h6>Credit/Debit Cards</h6>
+                                            <p class="text-muted small">Visa, Mastercard, American Express</p>
+                                        </div>
+                                        <div class="method-status">
+                                            <span class="badge bg-success">Active</span>
+                                        </div>
+                                    </div>
+                                    <div class="method-details">
+                                        <ul class="list-unstyled small">
+                                            <li><i class="fas fa-check text-success me-1"></i> Instant processing</li>
+                                            <li><i class="fas fa-check text-success me-1"></i> Contactless payments</li>
+                                            <li><i class="fas fa-check text-success me-1"></i> Fraud protection</li>
+                                        </ul>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-sm w-100" data-action="custom-action">
+                                            Manage Cards
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Digital Wallets -->
+                    <div class="tab-pane fade" id="digital" role="tabpanel">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="payment-method-nvc-card">
+                                    <div class="method-header">
+                                        <div class="method-icon bg-info">
+                                            <i class="fab fa-paypal"></i>
+                                        </div>
+                                        <div class="method-info">
+                                            <h6>PayPal</h6>
+                                            <p class="text-muted small">Digital wallet payments</p>
+                                        </div>
+                                        <div class="method-status">
+                                            <span class="badge bg-success">Active</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cryptocurrency -->
+                    <div class="tab-pane fade" id="crypto" role="tabpanel">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="payment-method-nvc-card">
+                                    <div class="method-header">
+                                        <div class="method-icon bg-warning">
+                                            <i class="fab fa-bitcoin"></i>
+                                        </div>
+                                        <div class="method-info">
+                                            <h6>Bitcoin</h6>
+                                            <p class="text-muted small">Cryptocurrency payments</p>
+                                        </div>
+                                        <div class="method-status">
+                                            <span class="badge bg-success">Active</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

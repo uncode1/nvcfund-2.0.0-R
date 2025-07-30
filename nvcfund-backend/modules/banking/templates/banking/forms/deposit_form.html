@@ -1,0 +1,150 @@
+<!-- Modern Banking & Crypto Deposit Form -->
+<div class="nvc-card border-0 shadow-sm mb-4">
+    <div class="nvc-nvc-card-header bg-transparent border-0">
+        <h5 class="mb-0 text-primary">
+            <i class="fas fa-plus-circle me-2"></i>
+            Smart Deposit System
+        </h5>
+        <small class="text-muted">Traditional banking and digital asset deposits</small>
+    </div>
+    <div class="nvc-nvc-card-body">
+        <form method="POST" action="{{ url_for('banking.deposit') }}" id="modernDepositForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+            <input type="hidden" name="form_type" value="deposit">
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="account_id" class="nvc-form-label">
+                            <i class="fas fa-university text-primary me-1"></i>
+                            Deposit To Account
+                        </label>
+                        <select class="nvc-form-select" id="account_id" name="account_id" required>
+                            <option value="">Select destination account</option>
+                            <option value="1">🏦 Checking - ****1234 ($15,250.00)</option>
+                            <option value="2">💰 Savings - ****5678 ($75,500.00)</option>
+                            <option value="3">🏢 Business - ****9012 ($125,750.00)</option>
+                            <option value="4">₿ Crypto Wallet - ****BTC1 (2.5 BTC)</option>
+                            <option value="5">🪙 NVCT Wallet - ****NVCT (10,000 NVCT)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="deposit_method" class="nvc-form-label">
+                            <i class="fas fa-credit-nvc-card text-success me-1"></i>
+                            Deposit Method
+                        </label>
+                        <select class="nvc-form-select" id="deposit_method" name="deposit_method" required onchange="updateDepositOptions()">
+                            <option value="">Select deposit method</option>
+                            <optgroup label="Traditional Banking">
+                                <option value="check">📄 Check Deposit</option>
+                                <option value="cash">💵 Cash Deposit</option>
+                                <option value="wire">🏦 Wire Transfer</option>
+                                <option value="ach">🔄 ACH Transfer</option>
+                                <option value="mobile_check">📱 Mobile Check Deposit</option>
+                            </optgroup>
+                            <optgroup label="Digital Payments">
+                                <option value="card">💳 Debit/Credit Card</option>
+                                <option value="paypal">🅿️ PayPal</option>
+                                <option value="apple_pay">🍎 Apple Pay</option>
+                                <option value="google_pay">🔍 Google Pay</option>
+                            </optgroup>
+                            <optgroup label="Cryptocurrency">
+                                <option value="bitcoin">₿ Bitcoin</option>
+                                <option value="ethereum">⟠ Ethereum</option>
+                                <option value="nvct">🪙 NVCT Stablecoin</option>
+                                <option value="usdc">💎 USDC</option>
+                                <option value="crypto_exchange">🔄 Crypto Exchange</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                            <option value="ach">ACH Transfer</option>
+                            <option value="mobile">Mobile Deposit</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="amount">Deposit Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="nvc-form-input" id="amount" name="amount" 
+                                   step="0.01" min="0.01" max="100000" required placeholder="0.00">
+                        </div>
+                        <small class="form-text text-light">Maximum deposit: $100,000 per transaction</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="currency">Currency</label>
+                        <select class="nvc-form-input" id="currency" name="currency" required>
+                            <option value="USD" selected>USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="CAD">CAD - Canadian Dollar</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="check_details" class="d-none">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="check_number">Check Number</label>
+                            <input type="text" class="nvc-form-input" id="check_number" name="check_number" placeholder="Check number">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="bank_name">Issuing Bank</label>
+                            <input type="text" class="nvc-form-input" id="bank_name" name="bank_name" placeholder="Bank name">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="description">Deposit Description</label>
+                <textarea class="nvc-form-input" id="description" name="description" rows="3" 
+                          placeholder="Optional description for this deposit" maxlength="255"></textarea>
+            </div>
+            
+            <div class="form-group mb-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="confirm_deposit" required>
+                    <label class="form-check-label" for="confirm_deposit">
+                        I confirm the accuracy of this deposit information
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn nvc-btn nvc-btn-success">
+                <i class="fas fa-plus"></i> Process Deposit
+            </button>
+            <button type="button" class="btn nvc-btn nvc-btn-secondary ms-2">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('deposit_method').addEventListener('change', function() {
+    const checkDetails = document.getElementById('check_details');
+    if (this.value === 'check' || this.value === 'mobile') {
+        checkDetails.style.display = 'block';
+        document.getElementById('check_number').required = true;
+        document.getElementById('bank_name').required = true;
+    } else {
+        checkDetails.style.display = 'none';
+        document.getElementById('check_number').required = false;
+        document.getElementById('bank_name').required = false;
+    }
+});
+</script>

@@ -1,0 +1,515 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Smart Bill Payment - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Bill Payment{% endblock %}
+{% block page_description %}Automated bill payment with crypto and traditional payment options{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-upload"></i>
+    Import Bills
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-calendar-alt"></i>
+    Schedule Payments
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Add Payee
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- Modern Bill Payment Dashboard -->
+<div class="row g-4">
+    <!-- Payment Overview -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="payment-stat-nvc-card bg-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Pending Bills</h6>
+                                <h3>{{ pending_bills_count or '12' }}</h3>
+                                <small>Due this month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="payment-stat-nvc-card bg-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Paid This Month</h6>
+                                <h3>${{ "%.2f"|format(paid_amount) if paid_amount else '4,567.89' }}</h3>
+                                <small>{{ paid_bills_count or '28' }} payments</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="payment-stat-nvc-card bg-warning">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Scheduled</h6>
+                                <h3>{{ scheduled_payments or '8' }}</h3>
+                                <small>Auto-payments</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="payment-stat-nvc-card bg-info">
+                            <div class="stat-icon">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Crypto Payments</h6>
+                                <h3>{{ crypto_payments or '5' }}</h3>
+                                <small>Digital assets</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bill Categories -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-th-list me-2"></i>Bill Categories
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for category in bill_data.bill_categories %}
+                    <div class="list-group-item list-group-item-action text-white border-secondary" style="background-color: #1e293b;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-folder-open me-2 text-primary"></i>
+                                {{ category }}
+                            </div>
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-bookmark me-2"></i>Saved Payees
+                    </h5>
+                </div>
+                    {% if bill_data.saved_payees %}
+                        <div class="list-group list-group-flush">
+                            {% for payee in bill_data.saved_payees %}
+                            <div class="list-group-item list-group-item-action bg-dark text-white border-secondary">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ payee.name }}</strong>
+                                        <small class="text-light d-block">{{ payee.type }}</small>
+                                    </div>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning">
+                                        <i class="fas fa-credit-nvc-card me-1"></i>Pay
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-light mb-3"></i>
+                            <h5 class="text-light">No saved payees</h5>
+                            <p class="text-light">Add a payee to get started with bill payments</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Pay Options and Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Pay Options
+                    </h5>
+                </div>
+                {% for option in bill_data.quick_pay_options %}
+                <div class="d-flex justify-content-between align-items-center p-3 mb-2 border rounded nvc-colored-bg-bordered-d1d2d4" >
+                    <div>
+                        <div class="fw-bold text-white">{{ option.name }}</div>
+                        <small class="text-light">{{ option.category }}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="text-primary">${{ option.last_amount }}</div>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-primary quick-pay-btn" 
+                                data-payee="{{ option.name }}"
+                                data-amount="{{ option.last_amount }}"
+                                data-category="{{ option.category }}">
+                            Pay Now
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Monthly Summary
+                    </h5>
+                </div>
+                <div class="row text-center">
+                    <div class="col-12 mb-3">
+                        <div class="p-3 border rounded nvc-colored-bg-bordered-d1d2d4" >
+                            <div class="text-primary fs-4">${{ "{:,.2f}".format(bill_data.monthly_stats.total_paid) }}</div>
+                            <small class="text-light">Total Paid This Month</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 border rounded nvc-colored-bg-bordered-d1d2d4" >
+                            <div class="text-success">{{ bill_data.monthly_stats.payments_count }}</div>
+                            <small class="text-light">Payments</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 border rounded nvc-colored-bg-bordered-d1d2d4" >
+                            <div class="text-warning">${{ "{:,.2f}".format(bill_data.monthly_stats.avg_amount) }}</div>
+                            <small class="text-light">Average</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Bill Payment Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-credit-nvc-card me-2"></i>Make a Payment
+                    </h5>
+                </div>
+                    <form method="POST" action="{{ url_for('banking.process_bill_payment') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="payee_name" class="nvc-form-label text-white">Payee Name</label>
+                                    <input type="text" class="nvc-form-input" 
+                                           id="payee_name" name="payee_name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="account_number" class="nvc-form-label text-white">Account Number</label>
+                                    <input type="text" class="nvc-form-input" 
+                                           id="account_number" name="account_number" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="amount" class="nvc-form-label text-white">Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" class="nvc-form-input" 
+                                               id="amount" name="amount" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="category" class="nvc-form-label text-white">Category</label>
+                                    <select class="nvc-form-select" 
+                                            id="category" name="category" required>
+                                        <option value="">Select Category</option>
+                                        {% for category in bill_data.bill_categories %}
+                                        <option value="{{ category }}">{{ category }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="due_date" class="nvc-form-label text-white">Due Date</label>
+                                    <input type="date" class="nvc-form-input" 
+                                           id="due_date" name="due_date">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="memo" class="nvc-form-label text-white">Memo (Optional)</label>
+                                    <textarea class="nvc-form-input" 
+                                              id="memo" name="memo" rows="2"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="payment_type" class="nvc-form-label text-white">Payment Type</label>
+                                    <select class="nvc-form-select" id="payment_type" name="payment_type">
+                                        <option value="one_time">One-time Payment</option>
+                                        <option value="scheduled">Schedule for Later</option>
+                                        <option value="recurring">Recurring Payment</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Scheduling Options (hidden by default) -->
+                        <div id="scheduling_options" class="row" class="d-none">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="scheduled_date" class="nvc-form-label text-white">Scheduled Date</label>
+                                    <input type="date" class="nvc-form-input" 
+                                           id="scheduled_date" name="scheduled_date">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="frequency" class="nvc-form-label text-white">Frequency</label>
+                                    <select class="nvc-form-select" id="frequency" name="frequency">
+                                        <option value="monthly">Monthly</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="quarterly">Quarterly</option>
+                                        <option value="yearly">Yearly</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Save Payee Option -->
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="save_payee" name="save_payee" value="true">
+                            <label class="form-check-label text-white" for="save_payee">
+                                Save this payee for future payments
+                            </label>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn nvc-btn nvc-btn-primary btn-lg">
+                                <i class="fas fa-money-bill-wave me-2"></i>Pay Bill
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bill Payments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Bill Payments
+                    </h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Payee</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if bill_data.payment_history %}
+                                    {% for payment in bill_data.payment_history %}
+                                    <tr>
+                                        <td>{{ payment.processed_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <strong>{{ payment.payee_name }}</strong>
+                                            <small class="text-light d-block">Acct: {{ payment.account_number[-4:].rjust(8, '*') }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ payment.category }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>${{ "%.2f"|format(payment.amount) }}</strong>
+                                            <small class="text-light d-block">{{ payment.currency }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">{{ payment.status }}</span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" title="Repeat Payment">
+                                                <i class="fas fa-redo"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-light py-4">
+                                            <i class="fas fa-file-invoice fa-2x mb-2"></i>
+                                            <div>No recent bill payments</div>
+                                            <small>Your bill payment history will appear here</small>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Payee Modal -->
+<div class="modal fade" id="addPayeeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-white">Add New Payee</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addPayeeForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="modal_payee_name" class="nvc-form-label text-white">Payee Name</label>
+                                <input type="text" class="nvc-form-input" 
+                                       id="modal_payee_name" name="payee_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="modal_category" class="nvc-form-label text-white">Category</label>
+                                <select class="nvc-form-select" 
+                                        id="modal_category" name="category" required>
+                                    <option value="">Select Category</option>
+                                    {% for category in bill_data.bill_categories %}
+                                    <option value="{{ category }}">{{ category }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="modal_account_number" class="nvc-form-label text-white">Account Number</label>
+                        <input type="text" class="nvc-form-input" 
+                               id="modal_account_number" name="account_number" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="modal_notes" class="nvc-form-label text-white">Notes (Optional)</label>
+                        <textarea class="nvc-form-input" 
+                                  id="modal_notes" name="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn nvc-btn nvc-btn-primary">
+                    <i class="fas fa-save me-2"></i>Save Payee
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle payment type changes to show/hide scheduling options
+    const paymentTypeSelect = document.getElementById('payment_type');
+    const schedulingOptions = document.getElementById('scheduling_options');
+    
+    if (paymentTypeSelect && schedulingOptions) {
+        paymentTypeSelect.addEventListener('change', function() {
+            if (this.value === 'scheduled' || this.value === 'recurring') {
+                schedulingOptions.style.display = 'block';
+                document.getElementById('scheduled_date').required = true;
+            } else {
+                schedulingOptions.style.display = 'none';
+                document.getElementById('scheduled_date').required = false;
+            }
+        });
+    }
+    
+    // Handle quick pay buttons
+    document.querySelectorAll('.quick-pay-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const payeeName = this.dataset.payee;
+            const amount = this.dataset.amount;
+            const category = this.dataset.category;
+            
+            // Fill form with quick pay data
+            if (document.getElementById('payee_name')) {
+                document.getElementById('payee_name').value = payeeName;
+            }
+            if (document.getElementById('amount')) {
+                document.getElementById('amount').value = amount;
+            }
+            if (document.getElementById('category')) {
+                document.getElementById('category').value = category;
+            }
+            
+            // Scroll to form
+            const formElement = document.querySelector('#payee_name');
+            if (formElement) {
+                formElement.scrollIntoView({ behavior: 'smooth' });
+                formElement.focus();
+            }
+        });
+    });
+});
+</script>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Additional bill payment JavaScript can go here
+function importBills() {
+    alert('Import bills functionality will be implemented');
+}
+
+function schedulePayments() {
+    alert('Schedule payments functionality will be implemented');
+}
+
+function addPayee() {
+    const modal = new bootstrap.Modal(document.getElementById('addPayeeModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

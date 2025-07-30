@@ -1,0 +1,184 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Settlement Reconciliation - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h2><i class="fas fa-balance-scale text-primary"></i> Settlement Reconciliation</h2>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm" data-action="custom-action">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm" data-action="custom-action">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reconciliation Metrics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-left-primary shadow h-100 py-2">
+                <div class="nvc-nvc-card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Pending Reconciliations</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ reconciliation_data.pending_reconciliations }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-left-success shadow h-100 py-2">
+                <div class="nvc-nvc-card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completed Today</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ reconciliation_data.completed_today }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-left-warning shadow h-100 py-2">
+                <div class="nvc-nvc-card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Exceptions</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ reconciliation_data.exceptions }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card border-left-info shadow h-100 py-2">
+                <div class="nvc-nvc-card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Amount</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ reconciliation_data.total_amount }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reconciliation Status Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Bank Reconciliation Status</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="reconciliationTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Bank</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in reconciliation_data.reconciliation_status %}
+                                <tr>
+                                    <td>{{ record.bank }}</td>
+                                    <td>${{ record.amount }}</td>
+                                    <td>
+                                        {% if record.status == 'completed' %}
+                                            <span class="badge badge-success">{{ record.status|title }}</span>
+                                        {% elif record.status == 'pending' %}
+                                            <span class="badge badge-warning">{{ record.status|title }}</span>
+                                        {% elif record.status == 'exception' %}
+                                            <span class="badge badge-danger">{{ record.status|title }}</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ record.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ record.time }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-primary" data-action="custom-action">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            {% if record.status == 'pending' %}
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-success" data-action="custom-action">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                            {% endif %}
+                                            {% if record.status == 'exception' %}
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-warning" data-action="custom-action">
+                                                <i class="fas fa-wrench"></i> Resolve
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshReconciliation() {
+    window.location.reload();
+}
+
+function exportReconciliation() {
+    alert('Exporting reconciliation data...');
+}
+
+function viewReconciliation(bank) {
+    alert('Viewing reconciliation details for ' + bank);
+}
+
+function approveReconciliation(bank) {
+    if (confirm('Approve reconciliation for ' + bank + '?')) {
+        alert('Reconciliation approved for ' + bank);
+    }
+}
+
+function resolveException(bank) {
+    alert('Resolving exception for ' + bank);
+}
+</script>
+</div>
+{% endblock %}

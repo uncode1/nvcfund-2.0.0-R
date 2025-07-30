@@ -1,0 +1,103 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Wire Transfers - NVC Banking{% endblock %}
+
+{% block page_title %}Wire Transfers{% endblock %}
+{% block page_description %}Secure domestic and international wire transfer services{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <!-- Wire Transfer Options -->
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Wire Transfer Services
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card border-primary">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <i class="fas fa-home fa-3x text-primary mb-3"></i>
+                                    <h6 class="nvc-card-title">Domestic Wire</h6>
+                                    <p class="nvc-card-text">Same-day transfers within the US</p>
+                                    <ul class="list-unstyled text-start">
+                                        <li><i class="fas fa-check text-success me-2"></i>Processing: Same day</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Fee: ${{ wire_data.fees.domestic }}</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Cutoff: 3:00 PM EST</li>
+                                    </ul>
+                                    <button type="button" class="btn nvc-btn nvc-btn-primary">Send Domestic Wire</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card border-info">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <i class="fas fa-globe fa-3x text-info mb-3"></i>
+                                    <h6 class="nvc-card-title">International Wire</h6>
+                                    <p class="nvc-card-text">Global transfers via SWIFT network</p>
+                                    <ul class="list-unstyled text-start">
+                                        <li><i class="fas fa-check text-success me-2"></i>Processing: 1-5 business days</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Fee: ${{ wire_data.fees.international }}</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>200+ countries</li>
+                                    </ul>
+                                    <button type="button" class="btn btn-info">Send International Wire</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>Available Currencies</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for currency in wire_data.available_currencies %}
+                                <span class="badge bg-secondary">{{ currency }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Processing Times -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Processing Times</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% for time_type, time_value in wire_data.processing_times.items() %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>{{ time_type|title }}:</span>
+                        <span class="badge bg-info">{{ time_value }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Important Information</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-info-circle text-info me-2"></i>All wires are subject to compliance review</li>
+                        <li><i class="fas fa-shield-alt text-success me-2"></i>Bank-grade security and encryption</li>
+                        <li><i class="fas fa-clock text-warning me-2"></i>Cutoff times apply for same-day processing</li>
+                        <li><i class="fas fa-phone text-primary me-2"></i>24/7 support available</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

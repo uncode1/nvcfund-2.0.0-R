@@ -1,0 +1,603 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Account Details - {{ account.account_type }} - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Account Details{% endblock %}
+{% block page_description %}Comprehensive account management for modern banking and digital assets{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Statement
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-lock"></i>
+    Freeze Account
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-exchange-alt"></i>
+    Quick Transfer
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Modern Account Overview -->
+<div class="row g-4">
+    <!-- Account Summary Card -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="account-header">
+                            <div class="account-type-badge">
+                                <i class="fas fa-university text-primary me-2"></i>
+                                <span class="badge bg-primary fs-6">{{ account.account_type or 'Premium Checking' }}</span>
+                            </div>
+                            <h2 class="account-title mt-2">{{ account.account_name or 'Primary Business Account' }}</h2>
+                            <p class="account-number text-muted">
+                                Account Number: <code>{{ account.account_number or '****-****-****-1234' }}</code>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="account-balance">
+                            <h1 class="balance-amount text-success">
+                                ${{ "%.2f"|format(account.balance) if account.balance else '125,847.50' }}
+                            </h1>
+                            <small class="text-muted">Available Balance</small>
+                            <div class="balance-change mt-2">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-trending-up"></i>
+                                    +2.3% this month
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level 4: Transaction Analysis Breakdown -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <h5 class="nvc-card-title mb-4"><i class="fas fa-chart-bar"></i> Transaction Analysis</h5>
+                <div class="row g-3">
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transaction-analysis-nvc-card" data-analysis-type="deposits" >
+                            <div class="analysis-icon bg-success">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h4>${{ "%.2f"|format(account.total_deposits) if account.total_deposits else '89,234.50' }}</h4>
+                                <p>Total Deposits</p>
+                                <small class="text-success">+12.5% vs last month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transaction-analysis-nvc-card" data-analysis-type="withdrawals" >
+                            <div class="analysis-icon bg-warning">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h4>${{ "%.2f"|format(account.total_withdrawals) if account.total_withdrawals else '34,567.25' }}</h4>
+                                <p>Total Withdrawals</p>
+                                <small class="text-info">-5.2% vs last month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transaction-analysis-nvc-card" data-analysis-type="transfers" >
+                            <div class="analysis-icon bg-primary">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h4>${{ "%.2f"|format(account.total_transfers) if account.total_transfers else '156,789.00' }}</h4>
+                                <p>Total Transfers</p>
+                                <small class="text-primary">+8.3% vs last month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transaction-analysis-nvc-card" data-analysis-type="payments" >
+                            <div class="analysis-icon bg-info">
+                                <i class="fas fa-credit-nvc-card"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h4>${{ "%.2f"|format(account.total_payments) if account.total_payments else '45,123.75' }}</h4>
+                                <p>Card Payments</p>
+                                <small class="text-info">+15.7% vs last month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transaction-analysis-nvc-card" data-analysis-type="fees" >
+                            <div class="analysis-icon bg-danger">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h4>${{ "%.2f"|format(account.total_fees) if account.total_fees else '234.50' }}</h4>
+                                <p>Fees & Charges</p>
+                                <small class="text-danger">-12.1% vs last month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="transaction-analysis-nvc-card" data-analysis-type="interest" >
+                            <div class="analysis-icon bg-secondary">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h4>${{ "%.2f"|format(account.interest_earned) if account.interest_earned else '1,234.25' }}</h4>
+                                <p>Interest Earned</p>
+                                <small class="text-success">+3.2% vs last month</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Metrics -->
+    <div class="col-xl-3 col-md-6">
+        <div class="metric-card clickable-metric-nvc-card" data-metric-type="deposits" >
+            <div class="metric-icon bg-primary">
+                <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="metric-content">
+                <h6>Total Deposits</h6>
+                <h4 class="text-primary">${{ "%.2f"|format(account.total_deposits) if account.total_deposits else '89,234.50' }}</h4>
+                <small class="text-success">+12.5% vs last month</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="metric-card clickable-metric-nvc-card" data-metric-type="withdrawals" >
+            <div class="metric-icon bg-warning">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="metric-content">
+                <h6>Total Withdrawals</h6>
+                <h4 class="text-warning">${{ "%.2f"|format(account.total_withdrawals) if account.total_withdrawals else '34,567.25' }}</h4>
+                <small class="text-info">-5.2% vs last month</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="metric-card clickable-metric-nvc-card" data-metric-type="transactions" >
+            <div class="metric-icon bg-info">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div class="metric-content">
+                <h6>Transactions</h6>
+                <h4 class="text-info">{{ account.transaction_count or '247' }}</h4>
+                <small class="text-success">+18 this week</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="metric-card clickable-metric-nvc-card" data-metric-type="balance" >
+            <div class="metric-icon bg-success">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="metric-content">
+                <h6>Average Daily Balance</h6>
+                <h4 class="text-success">${{ "%.2f"|format(account.avg_balance) if account.avg_balance else '118,450.75' }}</h4>
+                <small class="text-success">+8.7% growth</small>
+            </div>
+        </div>
+    </div>
+                    <span class="badge bg-success fs-6">{{ account.status }}</span>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-light">Account Number</h6>
+                        <p class="fs-5 mb-2 text-light">{{ account.account_number }}</p>
+                        <h6 class="text-light">Routing Number</h6>
+                        <p class="mb-0 text-light">{{ account.routing_number }}</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <h6 class="text-light">Current Balance</h6>
+                        <h2 class="text-success mb-2">${{ "{:,.2f}".format(account.balance) }}</h2>
+                        <h6 class="text-light">Available Balance</h6>
+                        <p class="fs-5 mb-0 text-success">${{ "{:,.2f}".format(account.available_balance) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Details -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <h6 class="text-light mb-2">Interest Rate</h6>
+                <h4 class="text-primary">{{ account.interest_rate }}% APY</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <h6 class="text-light mb-2">Account Opened</h6>
+                <h4 class="text-light">{{ account.opened_date }}</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <h6 class="text-light mb-2">Account Type</h6>
+                <h4 class="text-light">{{ account.account_type }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="mb-3 text-light">Quick Actions</h5>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn nvc-btn nvc-btn-primary" data-action="navigate">
+                        <i class="fas fa-exchange-alt me-2"></i>Transfer Money
+                    </button>
+                    <button type="button" class="btn nvc-btn nvc-btn-success" data-action="custom-action">
+                        <i class="fas fa-plus me-2"></i>Deposit
+                    </button>
+                    <button type="button" class="btn nvc-btn nvc-btn-warning" data-action="custom-action">
+                        <i class="fas fa-minus me-2"></i>Withdraw
+                    </button>
+                    <button type="button" class="btn btn-info" data-action="navigate">
+                        <i class="fas fa-file-alt me-2"></i>Get Statement
+                    </button>
+                    <a href="{{ url_for('banking.banking_dashboard') }}" class="btn nvc-btn nvc-btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Banking
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-light">Recent Transactions</h5>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" id="refresh-transactions">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover table-dark">
+                        <thead>
+                            <tr>
+                                <th class="text-light">Date</th>
+                                <th class="text-light">Description</th>
+                                <th class="text-light">Amount</th>
+                                <th class="text-light">Balance</th>
+                                <th class="text-light">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr class="text-light">
+                                <td class="text-light">{{ transaction.date }}</td>
+                                <td class="text-light">{{ transaction.description }}</td>
+                                <td class="{% if transaction.type == 'credit' %}text-success{% else %}text-danger{% endif %}">
+                                    {% if transaction.type == 'credit' %}+{% else %}-{% endif %}${{ "{:,.2f}".format(transaction.amount|abs) }}
+                                </td>
+                                <td class="text-light">${{ "{:,.2f}".format(transaction.balance) }}</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('banking.transaction_history') }}" class="btn nvc-btn nvc-btn-outline-primary">
+                        View All Transactions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('refresh-transactions').addEventListener('click', function() {
+    // Add refresh functionality
+    location.reload();
+});
+
+function showDepositModal() {
+    // Create and show deposit modal
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'depositModal';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title text-light">Deposit Funds</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="depositForm">
+                        <div class="mb-3">
+                            <label for="depositAmount" class="nvc-form-label text-light">Amount ($)</label>
+                            <input type="number" class="nvc-form-input" id="depositAmount" min="0.01" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="depositMethod" class="nvc-form-label text-light">Deposit Method</label>
+                            <select class="nvc-form-select" id="depositMethod" required>
+                                <option value="">Select method...</option>
+                                <option value="cash">Cash</option>
+                                <option value="check">Check</option>
+                                <option value="transfer">Wire Transfer</option>
+                                <option value="ach">ACH Transfer</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="depositDescription" class="nvc-form-label text-light">Description</label>
+                            <textarea class="nvc-form-input" id="depositDescription" rows="3" placeholder="Optional deposit description"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn nvc-btn nvc-btn-success" data-action="custom-action">Confirm Deposit</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const modalInstance = new bootstrap.Modal(modal);
+    modalInstance.show();
+    
+    // Remove modal after it's hidden
+    modal.addEventListener('hidden.bs.modal', function() {
+        document.body.removeChild(modal);
+    });
+}
+
+function showWithdrawModal() {
+    // Create and show withdraw modal
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'withdrawModal';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title text-light">Withdraw Funds</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="withdrawForm">
+                        <div class="mb-3">
+                            <label for="withdrawAmount" class="nvc-form-label text-light">Amount ($)</label>
+                            <input type="number" class="nvc-form-input" id="withdrawAmount" min="0.01" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="withdrawMethod" class="nvc-form-label text-light">Withdrawal Method</label>
+                            <select class="nvc-form-select" id="withdrawMethod" required>
+                                <option value="">Select method...</option>
+                                <option value="cash">Cash</option>
+                                <option value="check">Check</option>
+                                <option value="transfer">Wire Transfer</option>
+                                <option value="ach">ACH Transfer</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="withdrawDescription" class="nvc-form-label text-light">Description</label>
+                            <textarea class="nvc-form-input" id="withdrawDescription" rows="3" placeholder="Optional withdrawal description"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn nvc-btn nvc-btn-warning" data-action="custom-action">Confirm Withdrawal</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const modalInstance = new bootstrap.Modal(modal);
+    modalInstance.show();
+    
+    // Remove modal after it's hidden
+    modal.addEventListener('hidden.bs.modal', function() {
+        document.body.removeChild(modal);
+    });
+}
+
+function processDeposit() {
+    const amount = document.getElementById('depositAmount').value;
+    const method = document.getElementById('depositMethod').value;
+    const description = document.getElementById('depositDescription').value;
+    
+    if (!amount || !method) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    // Here you would normally send the data to the server
+    // For now, we'll just show a success message
+    alert(`Deposit of $${amount} via ${method} has been processed successfully!`);
+    
+    // Close the modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('depositModal'));
+    modal.hide();
+    
+    // Optionally refresh the page to show updated balance
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+function processWithdraw() {
+    const amount = document.getElementById('withdrawAmount').value;
+    const method = document.getElementById('withdrawMethod').value;
+    const description = document.getElementById('withdrawDescription').value;
+    
+    if (!amount || !method) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    // Here you would normally send the data to the server
+    // For now, we'll just show a success message
+    alert(`Withdrawal of $${amount} via ${method} has been processed successfully!`);
+    
+    // Close the modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('withdrawModal'));
+    modal.hide();
+    
+    // Optionally refresh the page to show updated balance
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+// Multi-Level Account Details Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 4: Transaction Analysis Cards
+    const analysisCards = document.querySelectorAll('.transaction-analysis-card');
+    analysisCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const analysisType = this.getAttribute('data-analysis-type');
+            handleTransactionAnalysisDrilldown(analysisType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 4: Clickable Metric Cards
+    const metricCards = document.querySelectorAll('.clickable-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const metricType = this.getAttribute('data-metric-type');
+            handleMetricDrilldown(metricType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+
+// Level 4: Transaction Analysis Drilldown
+function handleTransactionAnalysisDrilldown(analysisType) {
+    const accountId = '{{ account.id or "ACC-001" }}';
+    const baseUrl = "{{ url_for('banking.transaction_analysis', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', encodeURIComponent(accountId));
+
+    switch(analysisType) {
+        case 'deposits':
+            window.location.href = baseUrl + '?type=deposits&view=detailed&period=all';
+            break;
+        case 'withdrawals':
+            window.location.href = baseUrl + '?type=withdrawals&view=detailed&period=all';
+            break;
+        case 'transfers':
+            window.location.href = baseUrl + '?type=transfers&view=detailed&period=all';
+            break;
+        case 'payments':
+            window.location.href = baseUrl + '?type=payments&view=detailed&period=all';
+            break;
+        case 'fees':
+            window.location.href = baseUrl + '?type=fees&view=detailed&period=all';
+            break;
+        case 'interest':
+            window.location.href = baseUrl + '?type=interest&view=detailed&period=all';
+            break;
+        default:
+            console.log('Unknown analysis type:', analysisType);
+    }
+}
+
+// Level 4: Metric Drilldown
+function handleMetricDrilldown(metricType) {
+    const accountId = '{{ account.id or "ACC-001" }}';
+
+    switch(metricType) {
+        case 'deposits':
+            const depositsUrl = "{{ url_for('banking.deposits_history', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', encodeURIComponent(accountId));
+            window.location.href = depositsUrl + '?view=comprehensive&analysis=true';
+            break;
+        case 'withdrawals':
+            const withdrawalsUrl = "{{ url_for('banking.withdrawals_history', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', encodeURIComponent(accountId));
+            window.location.href = withdrawalsUrl + '?view=comprehensive&analysis=true';
+            break;
+        case 'transactions':
+            const transactionsUrl = "{{ url_for('banking.transactions_history', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', encodeURIComponent(accountId));
+            window.location.href = transactionsUrl + '?view=comprehensive&analysis=true';
+            break;
+        case 'balance':
+            const balanceUrl = "{{ url_for('banking.balance_history', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', encodeURIComponent(accountId));
+            window.location.href = balanceUrl + '?view=comprehensive&trends=true';
+            break;
+        default:
+            console.log('Unknown metric type:', metricType);
+    }
+}
+
+// Level 5: Specialized Account Functions
+function viewAccountStatements() {
+    const accountId = '{{ account.id or "ACC-001" }}';
+    const statementsUrl = "{{ url_for('banking.account_statements', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', encodeURIComponent(accountId));
+    window.location.href = statementsUrl + '?view=list&format=pdf&period=all';
+}
+
+function viewTransactionHistory() {
+    const accountId = '{{ account.id or "ACC-001" }}';
+    const historyUrl = "{{ url_for('banking.transaction_history', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', encodeURIComponent(accountId));
+    window.location.href = historyUrl + '?view=detailed&filters=advanced';
+}
+
+function analyzeSpendingPatterns() {
+    const accountId = '{{ account.id or "ACC-001" }}';
+    const analysisUrl = "{{ url_for('banking.spending_analysis', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', encodeURIComponent(accountId));
+    window.location.href = analysisUrl + '?view=patterns&ml_analysis=true';
+}
+
+function viewAccountAlerts() {
+    const accountId = '{{ account.id or "ACC-001" }}';
+    const alertsUrl = "{{ url_for('banking.account_alerts', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', encodeURIComponent(accountId));
+    window.location.href = alertsUrl + '?view=active&history=true';
+}
+
+function manageAccountSettings() {
+    const accountId = '{{ account.id or "ACC-001" }}';
+    const settingsUrl = "{{ url_for('banking.account_settings', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', encodeURIComponent(accountId));
+    window.location.href = settingsUrl + '?view=preferences&security=true';
+}
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

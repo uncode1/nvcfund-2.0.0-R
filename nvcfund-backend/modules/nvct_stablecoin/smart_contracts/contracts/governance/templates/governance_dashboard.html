@@ -1,0 +1,582 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Quadratic Voting Governance - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Quadratic Voting Governance{% endblock %}
+{% block page_description %}Democratic governance with quadratic voting to prevent plutocracy and ensure fair representation{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-bar"></i>
+    Analytics
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Create Proposal
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .governance-card {
+        background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--card-bg) 100%);
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .governance-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    }
+
+    .governance-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--accent-cyan);
+    }
+
+    .proposal-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-muted);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .proposal-card:hover {
+        border-color: var(--accent-cyan);
+        box-shadow: var(--shadow);
+    }
+
+    .proposal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .proposal-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .proposal-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .proposal-status.active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .proposal-status.pending {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .proposal-status.executed {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+    }
+
+    .proposal-description {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .voting-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: var(--tertiary-bg);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-muted);
+    }
+
+    .vote-stat {
+        text-align: center;
+    }
+
+    .vote-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: block;
+    }
+
+    .vote-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .voting-progress {
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: var(--tertiary-bg);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        transition: width 0.3s ease;
+    }
+
+    .progress-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .voting-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-vote {
+        flex: 1;
+        padding: 0.875rem 1.5rem;
+        border-radius: var(--border-radius);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-vote-for {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border-color: var(--accent-emerald);
+    }
+
+    .btn-vote-for:hover {
+        background: #059669;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-vote-against {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border-color: var(--accent-rose);
+    }
+
+    .btn-vote-against:hover {
+        background: #dc2626;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-vote-abstain {
+        background: var(--card-bg);
+        color: var(--text-secondary);
+        border-color: var(--border-color);
+    }
+
+    .btn-vote-abstain:hover {
+        background: var(--accent-bg);
+        color: var(--text-primary);
+        border-color: var(--accent-cyan);
+    }
+
+    .quadratic-info {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(8, 145, 178, 0.1) 100%);
+        border: 2px solid var(--accent-cyan);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .quadratic-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .quadratic-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--accent-cyan);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .voting-power-calculator {
+        background: var(--secondary-bg);
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .calculator-input {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+        margin-bottom: 1rem;
+    }
+
+    .calculator-result {
+        background: var(--tertiary-bg);
+        border: 1px solid var(--border-muted);
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent-cyan);
+        display: block;
+    }
+
+    .result-label {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- Governance Overview -->
+<div class="metric-grid">
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise cyan">
+                <i class="fas fa-vote-yea"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">12</div>
+        <div class="metric-label-enterprise">Active Proposals</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+3 this week</span>
+        </div>
+    </div>
+
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise emerald">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">78%</div>
+        <div class="metric-label-enterprise">Participation Rate</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+5% from last month</span>
+        </div>
+    </div>
+
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise amber">
+                <i class="fas fa-coins"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">456</div>
+        <div class="metric-label-enterprise">Total Voters</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+23 new voters</span>
+        </div>
+    </div>
+
+    <div class="metric-nvc-card-enterprise">
+        <div class="metric-header">
+            <div class="metric-icon-enterprise purple">
+                <i class="fas fa-balance-scale"></i>
+            </div>
+        </div>
+        <div class="metric-value-enterprise">2.4M</div>
+        <div class="metric-label-enterprise">Total Voting Power</div>
+        <div class="metric-change-enterprise positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>Quadratic scaling</span>
+        </div>
+    </div>
+</div>
+
+<!-- Quadratic Voting Explanation -->
+<div class="quadratic-info">
+    <div class="quadratic-header">
+        <div class="quadratic-icon">
+            <i class="fas fa-square-root-alt"></i>
+        </div>
+        <div>
+            <h3 class="text-primary-enterprise mb-1">Quadratic Voting System</h3>
+            <p class="text-secondary-enterprise mb-0">Democratic governance that prevents plutocracy through quadratic cost scaling</p>
+        </div>
+    </div>
+    <p class="text-secondary-enterprise mb-0">
+        In quadratic voting, the cost of votes increases quadratically. Your voting power = √(tokens used). 
+        This ensures that wealthy participants cannot easily dominate governance decisions.
+    </p>
+</div>
+
+<!-- Voting Power Calculator -->
+<div class="voting-power-calculator">
+    <h3 class="text-primary-enterprise mb-3">Voting Power Calculator</h3>
+    
+    <div class="calculator-input">
+        <div class="form-group-enterprise" style="flex: 1;">
+            <label class="nvc-form-label-enterprise">Tokens to Use for Voting</label>
+            <input type="number" class="nvc-form-input-enterprise" placeholder="1000" id="tokenInput">
+        </div>
+        <button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+            <i class="fas fa-calculator"></i>
+            Calculate
+        </button>
+    </div>
+    
+    <div class="calculator-result">
+        <span class="result-value" id="votingPowerResult">0</span>
+        <span class="result-label">Voting Power (√tokens)</span>
+    </div>
+</div>
+
+<!-- Active Proposals -->
+<div class="enterprise-nvc-card">
+    <div class="nvc-nvc-card-header-enterprise">
+        <h3 class="nvc-card-title-enterprise">Active Proposals</h3>
+        <div class="nvc-card-actions-enterprise">
+            <button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+                <i class="fas fa-external-link-alt"></i>
+                View All
+            </button>
+        </div>
+    </div>
+
+    <!-- Proposal 1 -->
+    <div class="proposal-nvc-card">
+        <div class="proposal-header">
+            <h4 class="proposal-title">Increase Flash Loan Fee to 0.1%</h4>
+            <span class="proposal-status active">Active</span>
+        </div>
+        
+        <p class="proposal-description">
+            Proposal to increase the flash loan fee from 0.09% to 0.1% to improve protocol sustainability 
+            and fund additional security audits. This change would affect all flash loan operations.
+        </p>
+        
+        <div class="voting-stats">
+            <div class="vote-stat">
+                <span class="vote-value">234</span>
+                <span class="vote-label">For</span>
+            </div>
+            <div class="vote-stat">
+                <span class="vote-value">89</span>
+                <span class="vote-label">Against</span>
+            </div>
+            <div class="vote-stat">
+                <span class="vote-value">23</span>
+                <span class="vote-label">Abstain</span>
+            </div>
+            <div class="vote-stat">
+                <span class="vote-value">2 days</span>
+                <span class="vote-label">Remaining</span>
+            </div>
+        </div>
+        
+        <div class="voting-progress">
+            <div class="progress-bar">
+                <div class="progress-fill" class="progress-bar-67"></div>
+            </div>
+            <div class="progress-labels">
+                <span>67% For</span>
+                <span>26% Against</span>
+                <span>7% Abstain</span>
+            </div>
+        </div>
+        
+        <div class="voting-actions">
+            <button type="button" class="btn-vote btn-vote-for" data-action="custom-action">
+                <i class="fas fa-thumbs-up"></i>
+                Vote For
+            </button>
+            <button type="button" class="btn-vote btn-vote-against" data-action="custom-action">
+                <i class="fas fa-thumbs-down"></i>
+                Vote Against
+            </button>
+            <button type="button" class="btn-vote btn-vote-abstain" data-action="custom-action">
+                <i class="fas fa-minus"></i>
+                Abstain
+            </button>
+        </div>
+    </div>
+
+    <!-- Proposal 2 -->
+    <div class="proposal-nvc-card">
+        <div class="proposal-header">
+            <h4 class="proposal-title">Add New Yield Farming Pool: NVCT-BTC</h4>
+            <span class="proposal-status active">Active</span>
+        </div>
+        
+        <p class="proposal-description">
+            Create a new yield farming pool for NVCT-BTC pair with 15% APY rewards. 
+            This would expand our DeFi offerings and provide more earning opportunities for users.
+        </p>
+        
+        <div class="voting-stats">
+            <div class="vote-stat">
+                <span class="vote-value">189</span>
+                <span class="vote-label">For</span>
+            </div>
+            <div class="vote-stat">
+                <span class="vote-value">45</span>
+                <span class="vote-label">Against</span>
+            </div>
+            <div class="vote-stat">
+                <span class="vote-value">12</span>
+                <span class="vote-label">Abstain</span>
+            </div>
+            <div class="vote-stat">
+                <span class="vote-value">5 days</span>
+                <span class="vote-label">Remaining</span>
+            </div>
+        </div>
+        
+        <div class="voting-progress">
+            <div class="progress-bar">
+                <div class="progress-fill" class="progress-bar-77"></div>
+            </div>
+            <div class="progress-labels">
+                <span>77% For</span>
+                <span>18% Against</span>
+                <span>5% Abstain</span>
+            </div>
+        </div>
+        
+        <div class="voting-actions">
+            <button type="button" class="btn-vote btn-vote-for" data-action="custom-action">
+                <i class="fas fa-thumbs-up"></i>
+                Vote For
+            </button>
+            <button type="button" class="btn-vote btn-vote-against" data-action="custom-action">
+                <i class="fas fa-thumbs-down"></i>
+                Vote Against
+            </button>
+            <button type="button" class="btn-vote btn-vote-abstain" data-action="custom-action">
+                <i class="fas fa-minus"></i>
+                Abstain
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- My Voting History -->
+<div class="governance-nvc-card">
+    <h3 class="text-primary-enterprise mb-3">My Voting History</h3>
+    
+    <div class="table-enterprise">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Proposal</th>
+                    <th>My Vote</th>
+                    <th>Voting Power Used</th>
+                    <th>Result</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Reduce Staking Lock Period</td>
+                    <td><span class="status-badge success">For</span></td>
+                    <td>31.6 (1,000 tokens)</td>
+                    <td><span class="status-badge success">Passed</span></td>
+                    <td>2 days ago</td>
+                </tr>
+                <tr>
+                    <td>Increase Governance Threshold</td>
+                    <td><span class="status-badge danger">Against</span></td>
+                    <td>22.4 (500 tokens)</td>
+                    <td><span class="status-badge danger">Failed</span></td>
+                    <td>1 week ago</td>
+                </tr>
+                <tr>
+                    <td>Add Multi-sig Treasury</td>
+                    <td><span class="status-badge info">Abstain</span></td>
+                    <td>0 (0 tokens)</td>
+                    <td><span class="status-badge success">Passed</span></td>
+                    <td>2 weeks ago</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function calculateVotingPower() {
+    const tokens = parseFloat(document.getElementById('tokenInput').value) || 0;
+    const votingPower = Math.sqrt(tokens);
+    document.getElementById('votingPowerResult').textContent = votingPower.toFixed(1);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects to proposal cards
+    const proposalCards = document.querySelectorAll('.proposal-card');
+    proposalCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Auto-calculate voting power on input
+    document.getElementById('tokenInput').addEventListener('input', calculateVotingPower);
+});
+</script>
+{% endblock %}

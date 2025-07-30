@@ -1,0 +1,306 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Exchange Markets - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="exchange-markets-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-chart-area me-2"></i>
+            Exchange Markets
+        </h1>
+        <p class="page-subtitle">Real-time market data and trading pairs</p>
+    </div>
+
+    <!-- Market Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">Active Pairs</h6>
+                            <h3 class="text-primary mb-0">24</h3>
+                        </div>
+                        <div class="metric-icon bg-primary">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">24h Volume</h6>
+                            <h3 class="text-success mb-0">$2.4M</h3>
+                        </div>
+                        <div class="metric-icon bg-success">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">Top Gainer</h6>
+                            <h3 class="text-success mb-0">+12.5%</h3>
+                        </div>
+                        <div class="metric-icon bg-success">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="nvc-card-title text-light mb-1">Market Status</h6>
+                            <h3 class="text-success mb-0">OPEN</h3>
+                        </div>
+                        <div class="metric-icon bg-success">
+                            <i class="fas fa-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Categories -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>
+                        Market Categories
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="btn-group mb-3" role="group">
+                        <button type="button" class="btn nvc-btn nvc-btn-primary">All Markets</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">Forex</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">Crypto</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">Stablecoins</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">Favorites</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trading Pairs Table -->
+    <div class="nvc-card">
+        <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+            <h5 class="nvc-card-title mb-0">
+                <i class="fas fa-table me-2"></i>
+                Trading Pairs
+            </h5>
+            <div class="search-box">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="nvc-form-input" placeholder="Search pairs...">
+                </div>
+            </div>
+        </div>
+        <div class="nvc-nvc-card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Pair</th>
+                            <th>Last Price</th>
+                            <th>24h Change</th>
+                            <th>24h Volume</th>
+                            <th>High</th>
+                            <th>Low</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="pair-info">
+                                    <strong>BTC/USD</strong>
+                                    <small class="text-light d-block">Bitcoin</small>
+                                </div>
+                            </td>
+                            <td><strong>$30,245.50</strong></td>
+                            <td><span class="badge bg-success">+2.4%</span></td>
+                            <td>$485.2M</td>
+                            <td>$30,890.00</td>
+                            <td>$29,850.00</td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Buy</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger">Sell</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="pair-info">
+                                    <strong>ETH/USD</strong>
+                                    <small class="text-light d-block">Ethereum</small>
+                                </div>
+                            </td>
+                            <td><strong>$2,045.75</strong></td>
+                            <td><span class="badge bg-success">+1.8%</span></td>
+                            <td>$284.7M</td>
+                            <td>$2,089.50</td>
+                            <td>$1,995.25</td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Buy</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger">Sell</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="pair-info">
+                                    <strong>NVCT/USD</strong>
+                                    <small class="text-light d-block">NVC Token</small>
+                                </div>
+                            </td>
+                            <td><strong>$1.0000</strong></td>
+                            <td><span class="badge bg-secondary">0.0%</span></td>
+                            <td>$125.8M</td>
+                            <td>$1.0001</td>
+                            <td>$0.9999</td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Buy</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger">Sell</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="pair-info">
+                                    <strong>EUR/USD</strong>
+                                    <small class="text-light d-block">Euro</small>
+                                </div>
+                            </td>
+                            <td><strong>1.0845</strong></td>
+                            <td><span class="badge bg-danger">-0.3%</span></td>
+                            <td>$156.4M</td>
+                            <td>1.0889</td>
+                            <td>1.0821</td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Buy</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger">Sell</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="pair-info">
+                                    <strong>GBP/USD</strong>
+                                    <small class="text-light d-block">British Pound</small>
+                                </div>
+                            </td>
+                            <td><strong>1.2567</strong></td>
+                            <td><span class="badge bg-success">+0.8%</span></td>
+                            <td>$98.3M</td>
+                            <td>1.2598</td>
+                            <td>1.2534</td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Buy</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger">Sell</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="pair-info">
+                                    <strong>ADA/USD</strong>
+                                    <small class="text-light d-block">Cardano</small>
+                                </div>
+                            </td>
+                            <td><strong>$0.4567</strong></td>
+                            <td><span class="badge bg-success">+5.2%</span></td>
+                            <td>$45.8M</td>
+                            <td>$0.4789</td>
+                            <td>$0.4234</td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Buy</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger">Sell</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="pair-info">
+                                    <strong>DOT/USD</strong>
+                                    <small class="text-light d-block">Polkadot</small>
+                                </div>
+                            </td>
+                            <td><strong>$7.245</strong></td>
+                            <td><span class="badge bg-danger">-1.2%</span></td>
+                            <td>$32.1M</td>
+                            <td>$7.489</td>
+                            <td>$7.123</td>
+                            <td>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-success me-1">Buy</button>
+                                <button type="button" class="btn btn-sm nvc-btn nvc-btn-danger">Sell</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.exchange-markets-container {
+    padding: 2rem 0;
+}
+
+.metric-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+}
+
+.metric-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.pair-info strong {
+    font-size: 1.1em;
+}
+
+.search-box {
+    width: 250px;
+}
+</style>
+</div>
+{% endblock %}

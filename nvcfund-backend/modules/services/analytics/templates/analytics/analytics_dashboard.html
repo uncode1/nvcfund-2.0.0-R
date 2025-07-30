@@ -1,0 +1,1349 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Analytics Dashboard - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Analytics Dashboard{% endblock %}
+{% block page_description %}Comprehensive business intelligence and performance analytics for banking and cryptocurrency operations{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-calendar"></i>
+    Schedule Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-plus"></i>
+    Custom Dashboard
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<style>
+    /* Analytics Dashboard Specific Styles */
+    .analytics-metric-card {
+        background: linear-gradient(135deg, var(--info-bg) 0%, var(--info-hover) 100%);
+        border: 2px solid var(--info-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .analytics-metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
+    }
+
+    .chart-container {
+        background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .analytics-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255,255,255,0.15);
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #66ccff;
+        margin-bottom: 10px;
+    }
+    
+    .metric-label {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 5px;
+    }
+    
+    .metric-change {
+        font-size: 0.9rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        display: inline-block;
+    }
+    
+    .metric-change.positive {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4caf50;
+    }
+    
+    .metric-change.negative {
+        background: rgba(244, 67, 54, 0.2);
+        color: #f44336;
+    }
+    
+    .metric-change.neutral {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+    }
+    
+    .analytics-section {
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #66ccff;
+    }
+    
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .chart-container {
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .chart-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #66ccff;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .quick-stat {
+        background: rgba(255,255,255,0.05);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .quick-stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #66ccff;
+    }
+    
+    .quick-stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-top: 5px;
+    }
+    
+    .real-time-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .real-time-dot {
+        width: 8px;
+        height: 8px;
+        background: #00ff88;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .action-btn {
+        background: #66ccff;
+        color: #0a2447;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    
+    .action-btn:hover {
+        background: #4db8ff;
+        transform: scale(1.05);
+        color: #0a2447;
+        text-decoration: none;
+    }
+    
+    .navigation-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .nav-tab {
+        background: rgba(255,255,255,0.1);
+        color: #ffffff;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .nav-tab:hover, .nav-tab.active {
+        background: #66ccff;
+        color: #0a2447;
+        text-decoration: none;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .data-table th {
+        background: rgba(255,255,255,0.1);
+        font-weight: bold;
+        color: #66ccff;
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .status-success { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+    .status-warning { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+    .status-danger { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+    .status-info { background: rgba(33, 150, 243, 0.2); color: #2196f3; }
+    
+    .refresh-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .auto-refresh {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .refresh-interval {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 5px;
+        padding: 5px 10px;
+        color: #ffffff;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- Analytics Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Business Intelligence Center</h3>
+                        <p>Comprehensive analytics and performance insights for banking and crypto operations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Analytics Navigation -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="analytics-nav-tabs">
+                    <a href="{{ url_for('analytics.analytics_dashboard') }}" class="nav-tab-enterprise active">
+                        <i class="fas fa-tachometer-alt"></i> Overview
+                    </a>
+                    <a href="{{ url_for('analytics.financial_analytics') }}" class="nav-tab-enterprise">
+                        <i class="fas fa-dollar-sign"></i> Financial
+                    </a>
+                    <a href="{{ url_for('analytics.risk_analytics') }}" class="nav-tab-enterprise">
+                        <i class="fas fa-shield-alt"></i> Risk
+                    </a>
+                    <a href="{{ url_for('analytics.performance_analytics') }}" class="nav-tab-enterprise">
+                        <i class="fas fa-gauge-high"></i> Performance
+                    </a>
+                    <a href="{{ url_for('analytics.compliance_analytics') }}" class="nav-tab-enterprise">
+                        <i class="fas fa-balance-scale"></i> Compliance
+                    </a>
+                    <a href="{{ url_for('analytics.executive_analytics') }}" class="nav-tab-enterprise">
+                        <i class="fas fa-crown"></i> Executive
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics KPIs -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('analytics.financial_analytics') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card analytics-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon success">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ "${:,.0f}".format(analytics.financial_metrics.total_aum) if analytics and analytics.financial_metrics and analytics.financial_metrics.total_aum else "$45.8M" }}</h3>
+                        <p>Total AUM</p>
+                        <span class="metric-trend positive">
+                            <i class="fas fa-arrow-up"></i> +12.5% this quarter
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('analytics.user_analytics') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card analytics-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ "{:,}".format(analytics.user_activity.daily_active_users) if analytics and analytics.user_activity else "15,847" }}</h3>
+                        <p>Daily Active Users</p>
+                        <span class="metric-trend positive">
+                            <i class="fas fa-arrow-up"></i> +5.2% this week
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('analytics.performance_analytics') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card analytics-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon info">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ analytics.performance_metrics.avg_response_time if analytics and analytics.performance_metrics else "127" }}ms</h3>
+                        <p>Avg Response Time</p>
+                        <span class="metric-trend positive">
+                            <i class="fas fa-arrow-down"></i> -15ms improved
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('analytics.risk_analytics') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card analytics-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon warning">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ analytics.risk_metrics.risk_score if analytics and analytics.risk_metrics else "92.5" }}%</h3>
+                        <p>Security Score</p>
+                        <span class="metric-trend positive">
+                            <i class="fas fa-check"></i> Excellent rating
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Level 2: Analytics Category Breakdown -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-layer-group"></i> Analytics Categories</h4>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="row g-3">
+                    <div class="col-xl-2 col-md-4">
+                        <div class="analytics-category-nvc-card" data-category="financial" >
+                            <div class="category-icon bg-success">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>$45.8M</h4>
+                                <p>Financial Analytics</p>
+                                <small class="text-success">Revenue, AUM, P&L</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="analytics-category-nvc-card" data-category="user" >
+                            <div class="category-icon bg-primary">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>15,847</h4>
+                                <p>User Analytics</p>
+                                <small class="text-info">Activity, Engagement</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="analytics-category-nvc-card" data-category="transaction" >
+                            <div class="category-icon bg-warning">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>2,847</h4>
+                                <p>Transaction Analytics</p>
+                                <small class="text-warning">Volume, Patterns</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="analytics-category-nvc-card" data-category="performance" >
+                            <div class="category-icon bg-info">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>127ms</h4>
+                                <p>Performance Analytics</p>
+                                <small class="text-primary">Speed, Uptime</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="analytics-category-nvc-card" data-category="risk" >
+                            <div class="category-icon bg-danger">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>92.5%</h4>
+                                <p>Risk Analytics</p>
+                                <small class="text-danger">Security, Fraud</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="analytics-category-nvc-card" data-category="compliance" >
+                            <div class="category-icon bg-secondary">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            <div class="category-content">
+                                <h4>97.1%</h4>
+                                <p>Compliance Analytics</p>
+                                <small class="text-secondary">KYC, AML</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Level 3: Analytics Data Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-table"></i> Analytics Data Points</h4>
+                <div class="header-actions">
+                    <select id="analytics-category-filter" class="form-select nvc-form-select-sm">
+                        <option value="">All Categories</option>
+                        <option value="financial">Financial Analytics</option>
+                        <option value="user">User Analytics</option>
+                        <option value="transaction">Transaction Analytics</option>
+                        <option value="performance">Performance Analytics</option>
+                        <option value="risk">Risk Analytics</option>
+                        <option value="compliance">Compliance Analytics</option>
+                    </select>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table enterprise-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Category</th>
+                                <th>Current Value</th>
+                                <th>Trend</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analytics-data-table">
+                            <tr class="analytics-data-row" data-metric-id="METRIC-001" data-category="financial" data-status="healthy" >
+                                <td><strong>Total AUM</strong></td>
+                                <td><span class="badge bg-success">Financial</span></td>
+                                <td class="text-success">$45.8M</td>
+                                <td class="text-success">+12.5%</td>
+                                <td><span class="badge bg-success">Healthy</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Alert</button>
+                                </td>
+                            </tr>
+                            <tr class="analytics-data-row" data-metric-id="METRIC-002" data-category="user" data-status="healthy" >
+                                <td><strong>Daily Active Users</strong></td>
+                                <td><span class="badge bg-primary">User</span></td>
+                                <td class="text-info">15,847</td>
+                                <td class="text-success">+5.2%</td>
+                                <td><span class="badge bg-success">Healthy</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Alert</button>
+                                </td>
+                            </tr>
+                            <tr class="analytics-data-row" data-metric-id="METRIC-003" data-category="performance" data-status="warning" >
+                                <td><strong>API Response Time</strong></td>
+                                <td><span class="badge bg-info">Performance</span></td>
+                                <td class="text-warning">127ms</td>
+                                <td class="text-success">-15ms</td>
+                                <td><span class="badge bg-warning">Warning</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Optimize</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('analytics.transaction_analytics') }}" class="text-decoration-none">
+            <div class="metric-card dashboard-stat-card hover-nvc-card">
+                <div class="metric-value" id="transaction-volume">
+                    {{ "${:,.0f}".format(analytics.transaction_analytics.daily_transaction_volume) if analytics.transaction_analytics.daily_transaction_volume else "$2.85M" }}
+                </div>
+                <div class="metric-label">Daily Transaction Volume</div>
+                <div class="metric-change positive">
+                    {{ "{:,}".format(analytics.transaction_analytics.daily_transaction_count) if analytics.transaction_analytics.daily_transaction_count else "1,247" }} transactions
+                </div>
+                <div class="mt-2">
+                    <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Transaction Analytics</small>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('analytics.performance_analytics') }}" class="text-decoration-none">
+            <div class="metric-card dashboard-stat-card hover-nvc-card">
+                <div class="metric-value" id="system-uptime">
+                    {{ analytics.performance_indicators.system_uptime if analytics.performance_indicators.system_uptime else "7d 0h" }}
+                </div>
+                <div class="metric-label">System Uptime</div>
+                <div class="metric-change positive">
+                    {{ analytics.performance_indicators.api_response_time_avg if analytics.performance_indicators.api_response_time_avg else "124.5" }}ms avg response
+                </div>
+                <div class="mt-2">
+                    <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Performance Analytics</small>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('analytics.risk_analytics') }}" class="text-decoration-none">
+            <div class="metric-card dashboard-stat-card hover-nvc-card">
+                <div class="metric-value" id="risk-score">
+                    {{ analytics.risk_metrics.risk_score if analytics.risk_metrics.risk_score else "24.5" }}
+                </div>
+                <div class="metric-label">Risk Score (Low Risk)</div>
+                <div class="metric-change neutral">
+                    {{ analytics.risk_metrics.fraud_detection_rate if analytics.risk_metrics.fraud_detection_rate else "99.8" }%} fraud detection
+                </div>
+                <div class="mt-2">
+                    <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Risk Analytics</small>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('analytics.compliance_analytics') }}" class="text-decoration-none">
+            <div class="metric-card dashboard-stat-card hover-nvc-card">
+                <div class="metric-value" id="compliance-score">
+                    {{ analytics.compliance_status.overall_compliance_score if analytics.compliance_status.overall_compliance_score else "97.1" }}%
+                </div>
+                <div class="metric-label">Compliance Score</div>
+                <div class="metric-change positive">
+                    {{ analytics.compliance_status.kyc_completion_rate if analytics.compliance_status.kyc_completion_rate else "94.5" }}% KYC completion
+                </div>
+                <div class="mt-2">
+                    <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Compliance Analytics</small>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-grid">
+        <div class="chart-container">
+            <div class="chart-title">User Growth Trend (7 Days)</div>
+            <canvas id="userGrowthChart" width="400" height="300"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-title">Transaction Volume Trend</div>
+            <canvas id="transactionVolumeChart" width="400" height="300"></canvas>
+        </div>
+    </div>
+
+    <!-- Real-Time Statistics -->
+    <div class="analytics-section">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="fas fa-clock"></i> Real-Time Statistics
+            </div>
+            <div class="real-time-indicator">
+                <span class="real-time-dot"></span>
+                <span>Updated every 30 seconds</span>
+            </div>
+        </div>
+        
+        <div class="quick-stats">
+            <div class="quick-stat">
+                <div class="quick-stat-value" id="users-online">
+                    {{ analytics.real_time_stats.users_online_now if analytics.real_time_stats.users_online_now else "87" }}
+                </div>
+                <div class="quick-stat-label">Users Online</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-value" id="transactions-hour">
+                    {{ analytics.real_time_stats.transactions_last_hour if analytics.real_time_stats.transactions_last_hour else "156" }}
+                </div>
+                <div class="quick-stat-label">Transactions/Hour</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-value" id="api-requests">
+                    {{ analytics.real_time_stats.api_requests_last_minute if analytics.real_time_stats.api_requests_last_minute else "47" }}
+                </div>
+                <div class="quick-stat-label">API Requests/Min</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-value" id="system-alerts">
+                    {{ analytics.real_time_stats.system_alerts_active if analytics.real_time_stats.system_alerts_active else "2" }}
+                </div>
+                <div class="quick-stat-label">Active Alerts</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-value" id="security-events">
+                    {{ analytics.real_time_stats.security_events_last_hour if analytics.real_time_stats.security_events_last_hour else "8" }}
+                </div>
+                <div class="quick-stat-label">Security Events/Hour</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-value" id="db-performance">
+                    {{ analytics.performance_indicators.database_performance if analytics.performance_indicators.database_performance else "98.7" }%}
+                </div>
+                <div class="quick-stat-label">DB Performance</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Performance -->
+    <div class="analytics-section">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="fas fa-server"></i> System Performance
+            </div>
+            <div class="action-buttons">
+                <a href="/analytics/performance" class="action-btn">
+                    <i class="fas fa-chart-area"></i> Detailed View
+                </a>
+            </div>
+        </div>
+        
+        <div class="quick-stats">
+            <div class="quick-stat">
+                <div class="quick-stat-value">
+                    {{ analytics.performance_indicators.cpu_usage if analytics.performance_indicators.cpu_usage else "23.1" }%}
+                </div>
+                <div class="quick-stat-label">CPU Usage</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-value">
+                    {{ analytics.performance_indicators.memory_usage if analytics.performance_indicators.memory_usage else "68.5" }%}
+                </div>
+                <div class="quick-stat-label">Memory Usage</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-value">
+                    {{ analytics.performance_indicators.disk_usage if analytics.performance_indicators.disk_usage else "45.8" }%}
+                </div>
+                <div class="quick-stat-label">Disk Usage</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-value">
+                    {{ analytics.performance_indicators.cache_hit_rate if analytics.performance_indicators.cache_hit_rate else "94.2" }%}
+                </div>
+                <div class="quick-stat-label">Cache Hit Rate</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-value">
+                    {{ analytics.performance_indicators.api_error_rate if analytics.performance_indicators.api_error_rate else "0.12" }%}
+                </div>
+                <div class="quick-stat-label">API Error Rate</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-value">
+                    {{ analytics.performance_indicators.active_connections if analytics.performance_indicators.active_connections else "127" }}
+                </div>
+                <div class="quick-stat-label">Active Connections</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Analysis -->
+    <div class="analytics-section">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="fas fa-exchange-alt"></i> Transaction Analysis
+            </div>
+            <div class="action-buttons">
+                <a href="/analytics/financial" class="action-btn">
+                    <i class="fas fa-chart-pie"></i> Financial Analytics
+                </a>
+            </div>
+        </div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Transaction Type</th>
+                    <th>Count</th>
+                    <th>Volume</th>
+                    <th>Percentage</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if analytics.transaction_analytics.transaction_types %}
+                    {% for type_name, type_data in analytics.transaction_analytics.transaction_types.items() %}
+                    <tr>
+                        <td>{{ type_name.title() }}</td>
+                        <td>{{ "{:,}".format(type_data.count) }}</td>
+                        <td>${{ "{:,.2f}".format(type_data.volume) }}</td>
+                        <td>{{ type_data.percentage }%}</td>
+                        <td><span class="status-badge status-success">Active</span></td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td>Transfer</td>
+                        <td>892</td>
+                        <td>$1,574,829.32</td>
+                        <td>71.5%</td>
+                        <td><span class="status-badge status-success">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td>Payment</td>
+                        <td>245</td>
+                        <td>$892,346.78</td>
+                        <td>19.6%</td>
+                        <td><span class="status-badge status-success">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td>Deposit</td>
+                        <td>78</td>
+                        <td>$234,567.89</td>
+                        <td>6.3%</td>
+                        <td><span class="status-badge status-success">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td>Withdrawal</td>
+                        <td>32</td>
+                        <td>$145,849.46</td>
+                        <td>2.6%</td>
+                        <td><span class="status-badge status-success">Active</span></td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="analytics-section">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="fas fa-bolt"></i> Quick Actions
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="/analytics/reports" class="action-btn">
+                <i class="fas fa-file-alt"></i> Generate Report
+            </a>
+            <a href="/analytics/real-time" class="action-btn">
+                <i class="fas fa-broadcast-tower"></i> Real-Time Monitor
+            </a>
+            <button type="button" class="action-btn" data-action="custom-action">
+                <i class="fas fa-download"></i> Export Data
+            </button>
+            <a href="/analytics/executive" class="action-btn">
+                <i class="fas fa-crown"></i> Executive Summary
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Chart instances
+let userGrowthChart;
+let transactionVolumeChart;
+
+// Auto-refresh settings
+let refreshInterval = 30000; // 30 seconds default
+let refreshTimer;
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    setupAutoRefresh();
+    
+    // Set refresh interval from dropdown
+    document.getElementById('refresh-interval').addEventListener('change', function() {
+        refreshInterval = parseInt(this.value);
+        setupAutoRefresh();
+    });
+});
+
+// Initialize charts
+function initializeCharts() {
+    initializeUserGrowthChart();
+    initializeTransactionVolumeChart();
+}
+
+function initializeUserGrowthChart() {
+    const ctx = document.getElementById('userGrowthChart').getContext('2d');
+    
+    // Use real data if available, otherwise demo data
+    const growthData = {{ analytics.trends.user_growth_trend | tojson if analytics.trends.user_growth_trend else [
+        {'date': '2025-06-27', 'value': 23},
+        {'date': '2025-06-28', 'value': 31},
+        {'date': '2025-06-29', 'value': 28},
+        {'date': '2025-06-30', 'value': 45},
+        {'date': '2025-07-01', 'value': 38},
+        {'date': '2025-07-02', 'value': 52},
+        {'date': '2025-07-03', 'value': 41}
+    ] | tojson }};
+    
+    userGrowthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: growthData.map(item => new Date(item.date).toLocaleDateString()),
+            datasets: [{
+                label: 'New Users',
+                data: growthData.map(item => item.value),
+                borderColor: '#66ccff',
+                backgroundColor: 'rgba(102, 204, 255, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#ffffff' }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                },
+                y: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                }
+            }
+        }
+    });
+}
+
+function initializeTransactionVolumeChart() {
+    const ctx = document.getElementById('transactionVolumeChart').getContext('2d');
+    
+    // Use real data if available, otherwise demo data
+    const volumeData = {{ analytics.trends.transaction_volume_trend | tojson if analytics.trends.transaction_volume_trend else [
+        {'date': '2025-06-27', 'volume': 2456789.23},
+        {'date': '2025-06-28', 'volume': 2678345.67},
+        {'date': '2025-06-29', 'volume': 2234567.89},
+        {'date': '2025-06-30', 'volume': 3045678.12},
+        {'date': '2025-07-01', 'volume': 2789234.56},
+        {'date': '2025-07-02', 'volume': 3123456.78},
+        {'date': '2025-07-03', 'volume': 2847593.45}
+    ] | tojson }};
+    
+    transactionVolumeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: volumeData.map(item => new Date(item.date).toLocaleDateString()),
+            datasets: [{
+                label: 'Transaction Volume ($)',
+                data: volumeData.map(item => item.volume),
+                backgroundColor: 'rgba(102, 204, 255, 0.7)',
+                borderColor: '#66ccff',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#ffffff' }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                },
+                y: {
+                    ticks: { 
+                        color: '#ffffff',
+                        callback: function(value) {
+                            return '$' + (value / 1000000).toFixed(1) + 'M';
+                        }
+                    },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                }
+            }
+        }
+    });
+}
+
+// Auto-refresh functionality
+function setupAutoRefresh() {
+    if (refreshTimer) {
+        clearInterval(refreshTimer);
+    }
+    
+    if (refreshInterval > 0) {
+        refreshTimer = setInterval(refreshDashboard, refreshInterval);
+    }
+}
+
+function refreshDashboard() {
+    // Fetch updated dashboard data
+    fetch('/analytics/api/dashboard-data')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateDashboardMetrics(data.data);
+                updateCharts(data.data);
+            }
+        })
+        .catch(error => {
+            console.error('Dashboard refresh error:', error);
+        });
+}
+
+function updateDashboardMetrics(data) {
+    // Update key metrics
+    if (data.financial_metrics) {
+        const totalAum = document.getElementById('total-aum');
+        if (totalAum) {
+            totalAum.textContent = '$' + (data.financial_metrics.total_aum / 1000000).toFixed(1) + 'M';
+        }
+    }
+    
+    if (data.user_activity) {
+        const activeUsers = document.getElementById('active-users');
+        if (activeUsers) {
+            activeUsers.textContent = data.user_activity.daily_active_users.toLocaleString();
+        }
+    }
+    
+    if (data.transaction_analytics) {
+        const transactionVolume = document.getElementById('transaction-volume');
+        if (transactionVolume) {
+            transactionVolume.textContent = '$' + (data.transaction_analytics.daily_transaction_volume / 1000000).toFixed(2) + 'M';
+        }
+    }
+    
+    if (data.real_time_stats) {
+        const usersOnline = document.getElementById('users-online');
+        if (usersOnline) {
+            usersOnline.textContent = data.real_time_stats.users_online_now;
+        }
+        
+        const transactionsHour = document.getElementById('transactions-hour');
+        if (transactionsHour) {
+            transactionsHour.textContent = data.real_time_stats.transactions_last_hour;
+        }
+        
+        const apiRequests = document.getElementById('api-requests');
+        if (apiRequests) {
+            apiRequests.textContent = data.real_time_stats.api_requests_last_minute;
+        }
+    }
+}
+
+function updateCharts(data) {
+    // Update charts with new data
+    if (data.trends && data.trends.user_growth_trend) {
+        userGrowthChart.data.datasets[0].data = data.trends.user_growth_trend.map(item => item.value);
+        userGrowthChart.update();
+    }
+    
+    if (data.trends && data.trends.transaction_volume_trend) {
+        transactionVolumeChart.data.datasets[0].data = data.trends.transaction_volume_trend.map(item => item.volume);
+        transactionVolumeChart.update();
+    }
+}
+
+// Dashboard actions
+function exportDashboardData() {
+    fetch('/analytics/api/export-data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            export_type: 'json',
+            data_type: 'dashboard'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Create download link
+            const blob = new Blob([JSON.stringify(data.export_data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analytics_dashboard_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } else {
+            alert('Export failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Export error:', error);
+        alert('Export failed');
+    });
+}
+
+// Enhanced template functions
+function exportAnalyticsData() {
+    const csvData = 'Metric,Value,Change,Period\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analytics_report.csv';
+    a.click();
+}
+
+function scheduleReport() {
+    window.location.href = "{{ url_for('analytics.schedule_report') }}";
+}
+
+function createCustomDashboard() {
+    window.location.href = "{{ url_for('analytics.custom_dashboard') }}";
+}
+
+// Page visibility handling for auto-refresh
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        if (refreshTimer) {
+            clearInterval(refreshTimer);
+        }
+    } else {
+        setupAutoRefresh();
+    }
+});
+
+// Multi-Level Analytics Dashboard Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 1: Metric cards with drilldown navigation (existing functionality enhanced)
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+
+        // Enhanced click handlers for drilldown navigation
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6, .metric-label')?.textContent;
+            handleAnalyticsDrilldown(cardTitle);
+        });
+    });
+
+    // Level 2: Analytics Category Cards
+    const categoryCards = document.querySelectorAll('.analytics-category-card');
+    categoryCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
+            handleAnalyticsCategoryDrilldown(category);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: Analytics Data Rows
+    const dataRows = document.querySelectorAll('.analytics-data-row');
+    dataRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const metricId = this.getAttribute('data-metric-id');
+            viewMetricDetails(metricId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Analytics category filter
+    const categoryFilter = document.getElementById('analytics-category-filter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', function() {
+            filterAnalyticsByCategory(this.value);
+        });
+    }
+});
+
+// Level 2: Analytics Category Drilldown
+function handleAnalyticsCategoryDrilldown(category) {
+    // Filter the analytics data table by category
+    filterAnalyticsByCategory(category);
+
+    // Update the filter dropdown
+    const categoryFilter = document.getElementById('analytics-category-filter');
+    if (categoryFilter) {
+        categoryFilter.value = category;
+    }
+
+    // Scroll to data table
+    document.querySelector('#analytics-data-table').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter analytics by category
+function filterAnalyticsByCategory(category) {
+    const rows = document.querySelectorAll('.analytics-data-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowCategory = row.getAttribute('data-category');
+        if (!category || rowCategory === category) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updateAnalyticsCounts(category, visibleCount);
+}
+
+// Update analytics counts
+function updateAnalyticsCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.analytics-data-row').length;
+    const header = document.querySelector('.card-header-enterprise h4');
+    if (header) {
+        if (!activeFilter) {
+            header.innerHTML = `<i class="fas fa-table"></i> Analytics Data Points (${totalRows} metrics)`;
+        } else {
+            const filterName = activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
+            header.innerHTML = `<i class="fas fa-table"></i> ${filterName} Analytics (${visibleCount} metrics)`;
+        }
+    }
+}
+
+// Level 4: View individual metric details (Level 4 → Level 5 drilldown)
+function viewMetricDetails(metricId) {
+    // Navigate to detailed metric view with comprehensive analysis
+    const detailsUrl = "{{ url_for('analytics.metric_details', metric_id='METRIC_ID') }}".replace('METRIC_ID', encodeURIComponent(metricId));
+    window.location.href = detailsUrl + '?view=comprehensive&include=trends,forecasts,alerts';
+}
+
+// Level 5: Specialized analytics functions
+function createMetricAlert(metricId) {
+    // Navigate to metric alert creation
+    const alertUrl = "{{ url_for('analytics.metric_alerts', metric_id='METRIC_ID') }}".replace('METRIC_ID', encodeURIComponent(metricId));
+    window.location.href = alertUrl + '?action=create&thresholds=custom';
+}
+
+function optimizePerformance(metricId) {
+    // Navigate to performance optimization
+    const optimizeUrl = "{{ url_for('analytics.performance_optimization', metric_id='METRIC_ID') }}".replace('METRIC_ID', encodeURIComponent(metricId));
+    window.location.href = optimizeUrl + '?view=recommendations&auto_apply=false';
+}
+
+function analyzeMetricTrends(metricId) {
+    // Navigate to metric trend analysis
+    const trendsUrl = "{{ url_for('analytics.metric_trends', metric_id='METRIC_ID') }}".replace('METRIC_ID', encodeURIComponent(metricId));
+    window.location.href = trendsUrl + '?view=detailed&ml_analysis=true&period=all';
+}
+
+function generateMetricReport(metricId) {
+    // Navigate to metric report generation
+    const reportUrl = "{{ url_for('analytics.metric_report', metric_id='METRIC_ID') }}".replace('METRIC_ID', encodeURIComponent(metricId));
+    window.location.href = reportUrl + '?format=comprehensive&export=pdf&period=ytd';
+}
+
+function viewMetricHistory(metricId) {
+    // Navigate to metric history
+    const historyUrl = "{{ url_for('analytics.metric_history', metric_id='METRIC_ID') }}".replace('METRIC_ID', encodeURIComponent(metricId));
+    window.location.href = historyUrl + '?view=detailed&include=changes,annotations';
+}
+
+function forecastMetric(metricId) {
+    // Navigate to metric forecasting
+    const forecastUrl = "{{ url_for('analytics.metric_forecast', metric_id='METRIC_ID') }}".replace('METRIC_ID', encodeURIComponent(metricId));
+    window.location.href = forecastUrl + '?model=ml&confidence=95&horizon=90d';
+}
+
+function compareMetrics(metricId) {
+    // Navigate to metric comparison
+    const compareUrl = "{{ url_for('analytics.metric_comparison') }}";
+    window.location.href = compareUrl + `?base_metric=${encodeURIComponent(metricId)}&view=benchmarks`;
+}
+
+function handleAnalyticsDrilldown(cardTitle) {
+    if (!cardTitle) return;
+
+    if (cardTitle.includes('Total Users') || cardTitle.includes('Active Users')) {
+        window.location.href = "{{ url_for('analytics.user_analytics') }}?view=detailed";
+    } else if (cardTitle.includes('Revenue') || cardTitle.includes('Income')) {
+        window.location.href = "{{ url_for('analytics.revenue_analytics') }}?period=monthly";
+    } else if (cardTitle.includes('Transactions') || cardTitle.includes('Volume')) {
+        window.location.href = "{{ url_for('analytics.transaction_analytics') }}?view=trends";
+    } else if (cardTitle.includes('Conversion') || cardTitle.includes('Rate')) {
+        window.location.href = "{{ url_for('analytics.conversion_analytics') }}?view=funnel";
+    } else if (cardTitle.includes('Performance') || cardTitle.includes('Speed')) {
+        window.location.href = "{{ url_for('analytics.performance_analytics') }}?view=metrics";
+    } else if (cardTitle.includes('Growth') || cardTitle.includes('Trend')) {
+        window.location.href = "{{ url_for('analytics.growth_analytics') }}?period=quarterly";
+    }
+}
+</script>
+</div>
+{% endblock %}
+{% endblock %}

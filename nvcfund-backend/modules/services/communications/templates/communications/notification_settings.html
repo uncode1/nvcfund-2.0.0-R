@@ -1,0 +1,629 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Notification Settings - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            background-color: #0a2447;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .main-content {
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid #66ccff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.3);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 100%);
+            border-bottom: 1px solid #66ccff;
+            color: #66ccff;
+            font-weight: bold;
+        }
+        .notification-category {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .notification-item {
+            background: rgba(30, 60, 114, 0.2);
+            border: 1px solid rgba(102, 204, 255, 0.2);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        .form-check-input:checked {
+            background-color: #66ccff;
+            border-color: #66ccff;
+        }
+        .form-check-input:focus {
+            border-color: #66ccff;
+            box-shadow: 0 0 0 0.25rem rgba(102, 204, 255, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            border: none;
+            color: #0a2447;
+            font-weight: bold;
+        }
+        .btn-outline-primary {
+            border-color: #66ccff;
+            color: #66ccff;
+        }
+        .btn-outline-primary:hover {
+            background: #66ccff;
+            color: #0a2447;
+        }
+        .form-control, .form-select {
+            background: #1e3c72;
+            border: 1px solid #66ccff;
+            color: #ffffff;
+        }
+        .form-control:focus, .form-select:focus {
+            background: #1e3c72;
+            border-color: #66ccff;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+        }
+        .channel-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.8em;
+        }
+        .icon-email { background: rgba(23, 162, 184, 0.3); color: #17a2b8; }
+        .icon-sms { background: rgba(40, 167, 69, 0.3); color: #28a745; }
+        .icon-push { background: rgba(255, 193, 7, 0.3); color: #ffc107; }
+        .icon-app { background: rgba(102, 204, 255, 0.3); color: #66ccff; }
+        .frequency-selector {
+            background: rgba(30, 60, 114, 0.4);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .testing-section {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1><i class="fas fa-bell"></i> Notification Settings</h1>
+                            <p class="mb-0">Customize how and when you receive notifications from NVC Banking</p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn nvc-btn nvc-btn-primary">
+                                <i class="fas fa-save"></i> Save All Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Security Notifications -->
+                <div class="col-md-6">
+                    <div class="notification-category">
+                        <h5><i class="fas fa-shield-alt text-danger"></i> Security Notifications</h5>
+                        <p class="text-light mb-3">Critical security alerts and account protection updates</p>
+                        
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Login Alerts</strong>
+                                    <div class="text-light small">Get notified when your account is accessed</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="loginEmail" checked>
+                                            <label class="form-check-label" for="loginEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="loginSMS" checked>
+                                            <label class="form-check-label" for="loginSMS">
+                                                <span class="channel-icon icon-sms me-1"><i class="fas fa-sms"></i></span>
+                                                SMS
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="loginPush">
+                                            <label class="form-check-label" for="loginPush">
+                                                <span class="channel-icon icon-push me-1"><i class="fas fa-bell"></i></span>
+                                                Push
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Suspicious Activity</strong>
+                                    <div class="text-light small">Unusual account activity and potential threats</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="suspiciousEmail" checked>
+                                            <label class="form-check-label" for="suspiciousEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="suspiciousSMS" checked>
+                                            <label class="form-check-label" for="suspiciousSMS">
+                                                <span class="channel-icon icon-sms me-1"><i class="fas fa-sms"></i></span>
+                                                SMS
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="suspiciousPush" checked>
+                                            <label class="form-check-label" for="suspiciousPush">
+                                                <span class="channel-icon icon-push me-1"><i class="fas fa-bell"></i></span>
+                                                Push
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Password Changes</strong>
+                                    <div class="text-light small">Password updates and security changes</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="passwordEmail" checked>
+                                            <label class="form-check-label" for="passwordEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="passwordSMS" checked>
+                                            <label class="form-check-label" for="passwordSMS">
+                                                <span class="channel-icon icon-sms me-1"><i class="fas fa-sms"></i></span>
+                                                SMS
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Notifications -->
+                <div class="col-md-6">
+                    <div class="notification-category">
+                        <h5><i class="fas fa-exchange-alt text-success"></i> Transaction Notifications</h5>
+                        <p class="text-light mb-3">Account activity and transaction updates</p>
+                        
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Large Transactions</strong>
+                                    <div class="text-light small">Transactions over $1,000</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="largeTransEmail" checked>
+                                            <label class="form-check-label" for="largeTransEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="largeTransSMS">
+                                            <label class="form-check-label" for="largeTransSMS">
+                                                <span class="channel-icon icon-sms me-1"><i class="fas fa-sms"></i></span>
+                                                SMS
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="largeTransPush" checked>
+                                            <label class="form-check-label" for="largeTransPush">
+                                                <span class="channel-icon icon-push me-1"><i class="fas fa-bell"></i></span>
+                                                Push
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="frequency-selector">
+                                        <label class="nvc-form-label small">Amount Threshold:</label>
+                                        <input type="number" class="form-control nvc-form-input-sm" value="1000" min="100" step="100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Daily Summaries</strong>
+                                    <div class="text-light small">Daily account activity summary</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="dailyEmail" checked>
+                                            <label class="form-check-label" for="dailyEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="dailyApp">
+                                            <label class="form-check-label" for="dailyApp">
+                                                <span class="channel-icon icon-app me-1"><i class="fas fa-mobile-alt"></i></span>
+                                                App
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="frequency-selector">
+                                        <label class="nvc-form-label small">Delivery Time:</label>
+                                        <select class="form-select nvc-form-select-sm">
+                                            <option>6:00 AM</option>
+                                            <option selected>8:00 AM</option>
+                                            <option>12:00 PM</option>
+                                            <option>6:00 PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Low Balance Alerts</strong>
+                                    <div class="text-light small">When account balance falls below threshold</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="lowBalanceEmail" checked>
+                                            <label class="form-check-label" for="lowBalanceEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="lowBalanceSMS" checked>
+                                            <label class="form-check-label" for="lowBalanceSMS">
+                                                <span class="channel-icon icon-sms me-1"><i class="fas fa-sms"></i></span>
+                                                SMS
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="frequency-selector">
+                                        <label class="nvc-form-label small">Balance Threshold:</label>
+                                        <input type="number" class="form-control nvc-form-input-sm" value="500" min="0" step="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Account & Service Notifications -->
+                <div class="col-md-6">
+                    <div class="notification-category">
+                        <h5><i class="fas fa-cog text-info"></i> Account & Service Updates</h5>
+                        <p class="text-light mb-3">Account changes and service announcements</p>
+                        
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Account Changes</strong>
+                                    <div class="text-light small">Profile updates, settings changes</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="accountEmail" checked>
+                                            <label class="form-check-label" for="accountEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="accountApp">
+                                            <label class="form-check-label" for="accountApp">
+                                                <span class="channel-icon icon-app me-1"><i class="fas fa-mobile-alt"></i></span>
+                                                App
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>System Maintenance</strong>
+                                    <div class="text-light small">Scheduled maintenance and downtime</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="maintenanceEmail" checked>
+                                            <label class="form-check-label" for="maintenanceEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="maintenancePush">
+                                            <label class="form-check-label" for="maintenancePush">
+                                                <span class="channel-icon icon-push me-1"><i class="fas fa-bell"></i></span>
+                                                Push
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="frequency-selector">
+                                        <label class="nvc-form-label small">Advance Notice:</label>
+                                        <select class="form-select nvc-form-select-sm">
+                                            <option>24 hours</option>
+                                            <option selected>48 hours</option>
+                                            <option>1 week</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>New Features</strong>
+                                    <div class="text-light small">Product updates and new services</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="featuresEmail">
+                                            <label class="form-check-label" for="featuresEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="featuresApp" checked>
+                                            <label class="form-check-label" for="featuresApp">
+                                                <span class="channel-icon icon-app me-1"><i class="fas fa-mobile-alt"></i></span>
+                                                App
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketing & Promotional -->
+                <div class="col-md-6">
+                    <div class="notification-category">
+                        <h5><i class="fas fa-gift text-warning"></i> Marketing & Promotions</h5>
+                        <p class="text-light mb-3">Special offers and promotional content</p>
+                        
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Special Offers</strong>
+                                    <div class="text-light small">Exclusive deals and limited-time offers</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="offersEmail">
+                                            <label class="form-check-label" for="offersEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="offersApp">
+                                            <label class="form-check-label" for="offersApp">
+                                                <span class="channel-icon icon-app me-1"><i class="fas fa-mobile-alt"></i></span>
+                                                App
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="frequency-selector">
+                                        <label class="nvc-form-label small">Frequency:</label>
+                                        <select class="form-select nvc-form-select-sm">
+                                            <option>Weekly</option>
+                                            <option selected>Monthly</option>
+                                            <option>Quarterly</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Investment Opportunities</strong>
+                                    <div class="text-light small">New investment products and market insights</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="investmentEmail">
+                                            <label class="form-check-label" for="investmentEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <strong>Newsletters</strong>
+                                    <div class="text-light small">Monthly banking insights and tips</div>
+                                    <div class="mt-2">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="newsletterEmail">
+                                            <label class="form-check-label" for="newsletterEmail">
+                                                <span class="channel-icon icon-email me-1"><i class="fas fa-envelope"></i></span>
+                                                Email
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testing Section -->
+                    <div class="testing-section">
+                        <h6><i class="fas fa-flask text-warning"></i> Test Notifications</h6>
+                        <p class="small mb-3">Send test notifications to verify your settings</p>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">
+                                <i class="fas fa-envelope"></i> Send Test Email
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">
+                                <i class="fas fa-sms"></i> Send Test SMS
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm" data-action="custom-action">
+                                <i class="fas fa-bell"></i> Send Test Push
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Settings -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-globe"></i> Global Notification Settings</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="notification-item">
+                                        <h6>Do Not Disturb</h6>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="doNotDisturb">
+                                            <label class="form-check-label" for="doNotDisturb">
+                                                Enable quiet hours
+                                            </label>
+                                        </div>
+                                        <div class="mt-2">
+                                            <label class="nvc-form-label small">From:</label>
+                                            <input type="time" class="form-control nvc-form-input-sm" value="22:00">
+                                            <label class="nvc-form-label small mt-1">To:</label>
+                                            <input type="time" class="form-control nvc-form-input-sm" value="08:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="notification-item">
+                                        <h6>Emergency Override</h6>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="emergencyOverride" checked>
+                                            <label class="form-check-label" for="emergencyOverride">
+                                                Allow critical security alerts
+                                            </label>
+                                        </div>
+                                        <div class="text-light small mt-2">
+                                            Security alerts will bypass quiet hours
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="notification-item">
+                                        <h6>Delivery Optimization</h6>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="batchDelivery">
+                                            <label class="form-check-label" for="batchDelivery">
+                                                Batch non-urgent notifications
+                                            </label>
+                                        </div>
+                                        <div class="text-light small mt-2">
+                                            Group similar notifications together
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="notification-item">
+                                        <h6>Backup Contacts</h6>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm w-100">
+                                            <i class="fas fa-plus"></i> Add Emergency Contact
+                                        </button>
+                                        <div class="text-light small mt-2">
+                                            Backup contact for critical alerts
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function sendTestNotification(type) {
+            const messages = {
+                email: 'Test email sent to your registered email address',
+                sms: 'Test SMS sent to your registered phone number',
+                push: 'Test push notification sent to your browser'
+            };
+            
+            alert(messages[type] || 'Test notification sent');
+        }
+
+        // Save settings functionality
+        document.querySelector('.btn-primary').addEventListener('click', function() {
+            alert('Notification settings saved successfully!');
+        });
+
+        // Toggle switches functionality
+        document.querySelectorAll('.form-check-input[type="checkbox"]').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                console.log(`${this.id} ${this.checked ? 'enabled' : 'disabled'}`);
+            });
+        });
+
+        // Do not disturb toggle
+        document.getElementById('doNotDisturb').addEventListener('change', function() {
+            const timeInputs = this.parentElement.parentElement.querySelectorAll('input[type="time"]');
+            timeInputs.forEach(input => {
+                input.disabled = !this.checked;
+            });
+        });
+    </script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

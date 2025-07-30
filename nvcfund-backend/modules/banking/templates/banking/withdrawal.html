@@ -1,0 +1,87 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Smart Withdrawal Center - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Withdrawal Center{% endblock %}
+{% block page_description %}Secure withdrawals from traditional banking and digital asset accounts{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-history"></i>
+    Withdrawal History
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-shield-alt"></i>
+    Check Limits
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-money-bill-wave"></i>
+    Process Withdrawal
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Withdrawal Functions
+function viewWithdrawalHistory() {
+    window.location.href = "{{ url_for('banking.withdrawal_history') }}";
+}
+
+function checkLimits() {
+    alert('Withdrawal limits check will be implemented');
+}
+
+function processWithdrawal() {
+    alert('Withdrawal processing will be implemented');
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Smart Withdrawal Center -->
+<div class="row g-4">
+                        <li class="breadcrumb-item"><a href="{{ url_for('banking.banking_dashboard') }}">Banking</a></li>
+                        <li class="breadcrumb-item active">Withdrawal</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} nvc-alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Withdrawal Form -->
+            {% include 'banking/forms/withdrawal_form.html' %}
+            
+            <!-- Security Notice -->
+            <div class="nvc-card mt-4">
+                <div class="nvc-nvc-card-body">
+                    <h6 class="nvc-card-title"><i class="fas fa-shield-alt text-warning"></i> Withdrawal Security</h6>
+                    <p class="nvc-card-text small text-light">
+                        All withdrawals are subject to verification procedures for security.
+                        Wire transfers and large withdrawals may require additional approval.
+                        Daily withdrawal limits apply and can be adjusted by contacting customer service.
+                        Withdrawals to external accounts are processed within 1-5 business days.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

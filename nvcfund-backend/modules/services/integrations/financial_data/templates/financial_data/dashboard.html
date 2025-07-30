@@ -1,0 +1,132 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}{{ page_title }} - NVC Banking{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-light mb-1">{{ page_title }}</h2>
+            <p class="text-light mb-0">Financial Data Providers Integration Management</p>
+        </div>
+        <div>
+            <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm me-2">
+                <i class="fas fa-sync-alt me-1"></i>
+                Refresh
+            </button>
+            <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">
+                <i class="fas fa-cog me-1"></i>
+                Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- Data Provider Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-success">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="ms-3">
+                        <div class="stat-value">{{ active_connections }}/{{ total_providers }}</div>
+                        <div class="stat-label">Active Connections</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-primary">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="ms-3">
+                        <div class="stat-value">{{ daily_api_calls }}</div>
+                        <div class="stat-label">Daily API Calls</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-info">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="ms-3">
+                        <div class="stat-value">{{ data_sources|length }} Providers</div>
+                        <div class="stat-label">Connected Data Sources</div>
+                        <small class="text-light">{{ data_sources|join(', ') }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Data Providers -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header bg-transparent border-0 pb-0">
+                    <h5 class="text-light mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Financial Data Providers
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="/integrations/financial-data/plaid/" class="btn nvc-btn nvc-btn-outline-primary btn-lg w-100 h-100 d-flex align-items-center justify-content-center">
+                                <div class="text-center">
+                                    <i class="fas fa-university fa-2x mb-2"></i>
+                                    <h6 class="mb-1">Plaid</h6>
+                                    <small class="text-light">Banking Data</small>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <a href="/integrations/financial-data/federal-reserve/" class="btn nvc-btn nvc-btn-outline-info btn-lg w-100 h-100 d-flex align-items-center justify-content-center">
+                                <div class="text-center">
+                                    <i class="fas fa-landmark fa-2x mb-2"></i>
+                                    <h6 class="mb-1">Federal Reserve</h6>
+                                    <small class="text-light">Economic Data</small>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <a href="/integrations/financial-data/swift-network/" class="btn nvc-btn nvc-btn-outline-warning btn-lg w-100 h-100 d-flex align-items-center justify-content-center">
+                                <div class="text-center">
+                                    <i class="fas fa-globe fa-2x mb-2"></i>
+                                    <h6 class="mb-1">SWIFT Network</h6>
+                                    <small class="text-light">International Transfers</small>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <a href="/integrations/financial-data/clearing-house/" class="btn nvc-btn nvc-btn-outline-success btn-lg w-100 h-100 d-flex align-items-center justify-content-center">
+                                <div class="text-center">
+                                    <i class="fas fa-handshake fa-2x mb-2"></i>
+                                    <h6 class="mb-1">Clearing House</h6>
+                                    <small class="text-light">Settlement Data</small>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

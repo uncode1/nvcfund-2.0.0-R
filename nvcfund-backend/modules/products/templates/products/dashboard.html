@@ -1,0 +1,640 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+{% from "macros/dashboard_macros.html" import chart_card_premium, financial_kpi_grid, data_table_premium %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+
+{% block title %}Products Management - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Products Management{% endblock %}
+{% block page_description %}Comprehensive product portfolio management for banking and cryptocurrency services{% endblock %}
+
+{% block page_actions %}
+{% if check_permission('can_export_products') %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-wcag-focus nvc-touch-target" data-action="export-products" aria-label="Export product data">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    <span>Export Data</span>
+</button>
+{% endif %}
+{% if check_permission('can_view_analytics') %}
+<a href="{{ url_for('products.analytics') }}" class="nvc-btn nvc-btn-secondary nvc-wcag-focus nvc-touch-target" aria-label="View product analytics">
+    <i class="fas fa-chart-line" aria-hidden="true"></i>
+    <span>Analytics</span>
+</a>
+{% endif %}
+{% if check_permission('can_create_products') %}
+<a href="{{ url_for('products.create') }}" class="nvc-btn nvc-btn-primary nvc-wcag-focus nvc-touch-target" aria-label="Create new product">
+    <i class="fas fa-plus" aria-hidden="true"></i>
+    <span>Add Product</span>
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-container">
+    <!-- World-Class KPI Overview -->
+    {{ financial_kpi_grid([
+        {
+            'title': 'Total Products',
+            'value': '247',
+            'subtitle': 'Active Products',
+            'icon': 'fas fa-box-open',
+            'trend': 'up',
+            'change': '+12.5%',
+            'color': 'primary',
+            'sparkline_data': [45, 52, 48, 61, 55, 67, 73, 69, 78, 85, 82, 89]
+        },
+        {
+            'title': 'Revenue',
+            'value': '2.4M',
+            'subtitle': 'Monthly Revenue',
+            'icon': 'fas fa-dollar-sign',
+            'trend': 'up',
+            'change': '+8.3%',
+            'color': 'success',
+            'currency': true,
+            'sparkline_data': [120, 135, 128, 145, 152, 168, 175, 162, 189, 195, 203, 218]
+        },
+        {
+            'title': 'Active Users',
+            'value': '15.7K',
+            'subtitle': 'Monthly Active',
+            'icon': 'fas fa-users',
+            'trend': 'up',
+            'change': '+15.2%',
+            'color': 'info',
+            'sparkline_data': [850, 920, 880, 1050, 1120, 1280, 1350, 1290, 1480, 1520, 1630, 1570]
+        },
+        {
+            'title': 'Conversion Rate',
+            'value': '3.8',
+            'subtitle': 'Product Adoption',
+            'icon': 'fas fa-chart-line',
+            'trend': 'up',
+            'change': '+2.1%',
+            'color': 'warning',
+            'percentage': true,
+            'sparkline_data': [2.1, 2.3, 2.8, 3.1, 3.4, 3.2, 3.6, 3.9, 3.7, 4.1, 3.8, 3.8]
+        }
+    ]) }}
+
+    <!-- Dashboard Sections with World-Class Layout -->
+    <div class="nvc-dashboard-section">
+        <div class="nvc-section-header">
+            <h2 class="nvc-section-title">
+                <i class="fas fa-chart-pie nvc-section-icon" aria-hidden="true"></i>
+                Product Portfolio Analytics
+            </h2>
+            <div class="nvc-section-actions">
+                <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" onclick="refreshDashboard()" aria-label="Refresh dashboard data">
+                    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                    <span>Refresh</span>
+                </button>
+                <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" onclick="exportDashboard()" aria-label="Export dashboard data">
+                    <i class="fas fa-download" aria-hidden="true"></i>
+                    <span>Export</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Advanced Chart Layout -->
+        <div class="nvc-split-layout nvc-split-70-30">
+            <div class="nvc-main-content">
+                {{ chart_card_premium(
+                    title="Product Performance Trends",
+                    chart_type="line",
+                    height="400px",
+                    card_id="performance-chart",
+                    actions=[
+                        {'icon': 'fas fa-cog', 'label': 'Chart settings', 'onclick': 'configureChart()'},
+                        {'icon': 'fas fa-share', 'label': 'Share chart', 'onclick': 'shareChart()'}
+                    ]
+                ) }}
+            </div>
+
+            <div class="nvc-sidebar">
+                {{ chart_card_premium(
+                    title="Category Distribution",
+                    chart_type="pie",
+                    height="300px",
+                    card_id="category-chart"
+                ) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Statistics Section -->
+    <div class="nvc-content-section" id="statistics">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-chart-bar"></i> Product Statistics
+            </h3>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-primary">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-box-open"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">{{ total_products|default('24') }}</div>
+                                    <div class="nvc-metric-label">Total Products</div>
+                                    <div class="nvc-metric-status nvc-status-success">+3 this month</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-success">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">{{ active_products|default('22') }}</div>
+                                    <div class="nvc-metric-label">Active Products</div>
+                                    <div class="nvc-metric-status nvc-status-success">
+                        <i class="fas fa-arrow-up"></i> 91.7% uptime
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon info">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ daily_transactions|default('15,847')|int|round|string }}</h3>
+                    <p>Daily Transactions</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-arrow-up"></i> +12% today
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon warning">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ product_uptime|default('99.8') }}%</h3>
+                    <p>System Uptime</p>
+                    <span class="metric-trend positive">
+                        <i class="fas fa-check"></i> All systems operational
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Categories -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Product Categories</h3>
+                        <p>Organized product portfolio by business lines</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="row">
+                    {% for category in product_categories %}
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="nvc-card category-nvc-card">
+                            <div class="category-header">
+                                <div class="category-icon {{ category.color|default('primary') }}">
+                                    <i class="{{ category.icon|default('fas fa-box') }}"></i>
+                                </div>
+                                <div class="category-info">
+                                    <h4>{{ category.name|default('Banking Products') }}</h4>
+                                    <p>{{ category.description|default('Core banking services and products') }}</p>
+                                </div>
+                                <div class="category-badge">
+                                    <span class="badge-enterprise {{ category.color|default('primary') }}">
+                                        {{ category.active|default('8') }}/{{ category.count|default('10') }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="category-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-value">{{ category.count|default('10') }}</span>
+                                    <span class="metric-label">Total Products</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">{{ category.active|default('8') }}</span>
+                                    <span class="metric-label">Active Products</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">{{ ((category.active|default(8) / category.count|default(10)) * 100)|round(1) }}%</span>
+                                    <span class="metric-label">Availability</span>
+                                </div>
+                            </div>
+
+                            <div class="category-modules">
+                                <div class="modules-label">Modules:</div>
+                                <div class="modules-list">
+                                    {% for module in category.modules|default(['Banking', 'Cards', 'Payments']) %}
+                                    <span class="module-tag">{{ module }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="category-actions">
+                                <div class="progress-indicator">
+                                    <div class="progress-bar" data-progress="{{ ((category.active|default(8) / category.count|default(10)) * 100)|round(1) }}"></div>
+                                </div>
+                                <a href="{{ category.url|default('#') }}" class="nvc-btn nvc-btn-primary-enterprise">
+                                    <i class="fas fa-arrow-right"></i>
+                                    View Category
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Default categories if none provided -->
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="nvc-card category-nvc-card">
+                            <div class="category-header">
+                                <div class="category-icon primary">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <div class="category-info">
+                                    <h4>Banking Products</h4>
+                                    <p>Core banking services and account management</p>
+                                </div>
+                                <div class="category-badge">
+                                    <span class="badge-enterprise primary">8/10</span>
+                                </div>
+                            </div>
+                            <div class="category-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-value">10</span>
+                                    <span class="metric-label">Total Products</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">8</span>
+                                    <span class="metric-label">Active Products</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">80%</span>
+                                    <span class="metric-label">Availability</span>
+                                </div>
+                            </div>
+                            <div class="category-modules">
+                                <div class="modules-label">Modules:</div>
+                                <div class="modules-list">
+                                    <span class="module-tag">Banking</span>
+                                    <span class="module-tag">Accounts</span>
+                                    <span class="module-tag">Cards</span>
+                                </div>
+                            </div>
+                            <div class="category-actions">
+                                <div class="progress-indicator">
+                                    <div class="progress-bar" class="progress-bar-80"></div>
+                                </div>
+                                <a href="{{ url_for('products.banking_products') }}" class="nvc-btn nvc-btn-primary-enterprise">
+                                    <i class="fas fa-arrow-right"></i>
+                                    View Category
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-md-12 mb-4">
+                        <div class="nvc-card category-nvc-card">
+                            <div class="category-header">
+                                <div class="category-icon success">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="category-info">
+                                    <h4>Digital Assets</h4>
+                                    <p>Cryptocurrency and blockchain services</p>
+                                </div>
+                                <div class="category-badge">
+                                    <span class="badge-enterprise success">6/8</span>
+                                </div>
+                            </div>
+                            <div class="category-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-value">8</span>
+                                    <span class="metric-label">Total Products</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">6</span>
+                                    <span class="metric-label">Active Products</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-value">75%</span>
+                                    <span class="metric-label">Availability</span>
+                                </div>
+                            </div>
+                            <div class="category-modules">
+                                <div class="modules-label">Modules:</div>
+                                <div class="modules-list">
+                                    <span class="module-tag">NVCT</span>
+                                    <span class="module-tag">Trading</span>
+                                    <span class="module-tag">Staking</span>
+                                </div>
+                            </div>
+                            <div class="category-actions">
+                                <div class="progress-indicator">
+                                    <div class="progress-bar" class="progress-bar-75"></div>
+                                </div>
+                                <a href="#" class="nvc-btn nvc-btn-primary-enterprise">
+                                    <i class="fas fa-arrow-right"></i>
+                                    View Category
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Recent Product Activity</h3>
+                        <p>Real-time monitoring of product operations and updates</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+                        <i class="fas fa-list"></i>
+                        View All
+                    </button>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon success">
+                            <i class="fas fa-credit-nvc-card"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-header">
+                                <h5>Cards & Payments</h5>
+                                <span class="badge-enterprise primary">Banking</span>
+                            </div>
+                            <p>Transaction processing update completed successfully</p>
+                            <div class="activity-meta">
+                                <span class="status success">
+                                    <i class="fas fa-check-circle"></i> Success
+                                </span>
+                                <span class="timestamp">2 minutes ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon info">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-header">
+                                <h5>NVCT Stablecoin</h5>
+                                <span class="badge-enterprise info">Digital Assets</span>
+                            </div>
+                            <p>Smart contract deployment and verification completed</p>
+                            <div class="activity-meta">
+                                <span class="status success">
+                                    <i class="fas fa-check-circle"></i> Success
+                                </span>
+                                <span class="timestamp">5 minutes ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon warning">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-header">
+                                <h5>Trading Platform</h5>
+                                <span class="badge-enterprise success">Investment</span>
+                            </div>
+                            <p>Market data synchronization in progress</p>
+                            <div class="activity-meta">
+                                <span class="status warning">
+                                    <i class="fas fa-clock"></i> Processing
+                                </span>
+                                <span class="timestamp">8 minutes ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon success">
+                            <i class="fas fa-umbrella"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-header">
+                                <h5>Insurance Services</h5>
+                                <span class="badge-enterprise warning">Insurance</span>
+                            </div>
+                            <p>Policy renewal batch processing completed</p>
+                            <div class="activity-meta">
+                                <span class="status success">
+                                    <i class="fas fa-check-circle"></i> Success
+                                </span>
+                                <span class="timestamp">12 minutes ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon primary">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-header">
+                                <h5>Smart Contracts</h5>
+                                <span class="badge-enterprise dark">Blockchain</span>
+                            </div>
+                            <p>Gas optimization update deployed successfully</p>
+                            <div class="activity-meta">
+                                <span class="status success">
+                                    <i class="fas fa-check-circle"></i> Success
+                                </span>
+                                <span class="timestamp">15 minutes ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Enhanced Products Dashboard with Drilldown Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add drilldown functionality for product metric cards
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.style.cursor = 'pointer';
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+
+        // Add click handlers for drilldown navigation
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6, p')?.textContent;
+            handleProductsDrilldown(cardTitle);
+        });
+    });
+
+    // Add drilldown for product category cards
+    const productCards = document.querySelectorAll('.product-category-card, .enterprise-card');
+    productCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h4, h5, h6')?.textContent;
+            handleProductCategoryDrilldown(cardTitle);
+        });
+    });
+});
+
+function handleProductsDrilldown(cardTitle) {
+    if (!cardTitle) return;
+
+    if (cardTitle.includes('Total Products') || cardTitle.includes('24')) {
+        window.location.href = "{{ url_for('products.product_catalog') }}?view=all";
+    } else if (cardTitle.includes('Active Products') || cardTitle.includes('22')) {
+        window.location.href = "{{ url_for('products.product_catalog') }}?filter=status:active";
+    } else if (cardTitle.includes('Daily Transactions') || cardTitle.includes('15,847')) {
+        window.location.href = "{{ url_for('products.transaction_analytics') }}?period=daily";
+    } else if (cardTitle.includes('Revenue') || cardTitle.includes('$2.8M')) {
+        window.location.href = "{{ url_for('products.revenue_analytics') }}?period=monthly";
+    }
+}
+
+function handleProductCategoryDrilldown(cardTitle) {
+    if (!cardTitle) return;
+
+    if (cardTitle.includes('Cards & Payments')) {
+        window.location.href = "{{ url_for('cards_payments.main_dashboard') }}";
+    } else if (cardTitle.includes('Trading')) {
+        window.location.href = "{{ url_for('trading.trading_dashboard') }}";
+    } else if (cardTitle.includes('Investments')) {
+        window.location.href = "{{ url_for('investments.investments_dashboard') }}";
+    } else if (cardTitle.includes('Insurance')) {
+        window.location.href = "{{ url_for('insurance.insurance_dashboard') }}";
+    } else if (cardTitle.includes('Loans')) {
+        window.location.href = "{{ url_for('loans.portfolio_overview') }}";
+    } else if (cardTitle.includes('Islamic Banking')) {
+        window.location.href = "{{ url_for('islamic_banking.islamic_banking_dashboard') }}";
+    }
+}
+
+// Products Dashboard Functions
+function exportProductData() {
+    // Secure export with CSRF protection
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ url_for('products.export_data') }}";
+
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = 'csrf_token';
+    csrfToken.value = "{{ csrf_token() }}";
+    form.appendChild(csrfToken);
+
+    const exportType = document.createElement('input');
+    exportType.type = 'hidden';
+    exportType.name = 'export_type';
+    exportType.value = 'products_overview';
+    form.appendChild(exportType);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function analyzeProducts() {
+    window.location.href = "{{ url_for('products.analytics') }}";
+}
+
+function addNewProduct() {
+    window.location.href = "{{ url_for('products.add_product') }}";
+}
+
+function refreshProducts() {
+    location.reload();
+}
+
+function viewAllActivity() {
+    window.location.href = "{{ url_for('products.activity_log') }}";
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for category cards
+    const categoryCards = document.querySelectorAll('.category-card');
+    categoryCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function(e) {
+            if (!e.target.closest('.btn-primary-enterprise')) {
+                const link = this.querySelector('.btn-primary-enterprise');
+                if (link) link.click();
+            }
+        });
+    });
+
+    // Add hover effects for metric cards
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+</div>
+{% endblock %}
+{% endblock %}

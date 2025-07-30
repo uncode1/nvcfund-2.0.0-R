@@ -1,0 +1,295 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Foreign Exchange Operations{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0">
+                                <i class="fas fa-exchange-alt me-2"></i>Foreign Exchange Operations
+                            </h3>
+                            <small class="text-light">Currency positions, hedging, and FX risk management</small>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{{ url_for('treasury.main_dashboard') }}" class="btn nvc-btn nvc-btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Treasury
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FX Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-primary">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-globe fa-3x text-primary mb-3"></i>
+                    <h5 class="text-light">Total FX Exposure</h5>
+                    <h3 class="text-primary">$58.0M</h3>
+                    <small class="text-light">Multi-currency</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                    <h5 class="text-light">Hedged Ratio</h5>
+                    <h3 class="text-success">85.2%</h3>
+                    <small class="text-light">Risk Coverage</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                    <h5 class="text-light">Daily P&L</h5>
+                    <h3 class="text-warning">+$125K</h3>
+                    <small class="text-light">Unrealized</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-file-contract fa-3x text-info mb-3"></i>
+                    <h5 class="text-light">Open Contracts</h5>
+                    <h3 class="text-info">45</h3>
+                    <small class="text-light">Active FX Deals</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Currency Positions -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card bg-dark border-primary">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-money-bill-alt me-2"></i>Currency Positions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Currency</th>
+                                    <th>Position (USD Equiv)</th>
+                                    <th>Exposure</th>
+                                    <th>Hedge Ratio</th>
+                                    <th>P&L Today</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>USD</strong></td>
+                                    <td class="text-success">$100.0M</td>
+                                    <td class="text-light">Base</td>
+                                    <td class="text-light">N/A</td>
+                                    <td class="text-light">N/A</td>
+                                    <td><span class="badge bg-success">Base Currency</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EUR</strong></td>
+                                    <td class="text-info">$25.0M</td>
+                                    <td class="text-warning">High</td>
+                                    <td class="text-success">92%</td>
+                                    <td class="text-success">+$45K</td>
+                                    <td><button type="button" class="btn btn-sm nvc-btn nvc-btn-primary">Hedge</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>GBP</strong></td>
+                                    <td class="text-info">$15.0M</td>
+                                    <td class="text-warning">Medium</td>
+                                    <td class="text-success">88%</td>
+                                    <td class="text-success">+$28K</td>
+                                    <td><button type="button" class="btn btn-sm nvc-btn nvc-btn-primary">Hedge</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>JPY</strong></td>
+                                    <td class="text-info">$10.0M</td>
+                                    <td class="text-info">Medium</td>
+                                    <td class="text-warning">75%</td>
+                                    <td class="text-danger">-$12K</td>
+                                    <td><button type="button" class="btn btn-sm nvc-btn nvc-btn-warning">Review</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>CAD</strong></td>
+                                    <td class="text-info">$8.0M</td>
+                                    <td class="text-info">Low</td>
+                                    <td class="text-success">95%</td>
+                                    <td class="text-success">+$15K</td>
+                                    <td><button type="button" class="btn btn-sm nvc-btn nvc-btn-success">Optimal</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>FX Risk Profile
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <h6 class="text-warning">Currency Risk</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" role="progressbar" class="progress-bar-70"></div>
+                        </div>
+                        <small class="text-light">Moderate exposure</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-warning">Hedge Effectiveness</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" class="progress-bar-85"></div>
+                        </div>
+                        <small class="text-light">Well hedged</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-warning">Volatility Impact</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" role="progressbar" class="progress-bar-60"></div>
+                        </div>
+                        <small class="text-light">Managed volatility</small>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-success me-2">Risk: Acceptable</span>
+                        <span class="badge bg-info">Coverage: Good</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FX Market Data -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Live FX Rates
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <h6 class="text-success">EUR/USD</h6>
+                            <h4 class="text-primary">1.0845</h4>
+                            <small class="text-success">↑ +0.0025 (0.23%)</small>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-success">GBP/USD</h6>
+                            <h4 class="text-primary">1.2650</h4>
+                            <small class="text-danger">↓ -0.0015 (-0.12%)</small>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <h6 class="text-success">USD/JPY</h6>
+                            <h4 class="text-primary">149.85</h4>
+                            <small class="text-success">↑ +0.45 (0.30%)</small>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-success">USD/CAD</h6>
+                            <h4 class="text-primary">1.3525</h4>
+                            <small class="text-warning">↑ +0.0008 (0.06%)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card bg-dark border-danger">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>FX Alerts & Limits
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="alert nvc-nvc-alert-warning" role="alert">
+                        <i class="fas fa-warning me-2"></i>
+                        <strong>JPY Position Alert:</strong> Hedge ratio below target (75% vs 80%)
+                    </div>
+                    <div class="alert nvc-nvc-alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Market Update:</strong> ECB meeting tomorrow may impact EUR volatility
+                    </div>
+                    <div class="mt-3">
+                        <h6 class="text-danger">Daily VaR Limit</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" role="progressbar" class="progress-bar-65"></div>
+                        </div>
+                        <small class="text-light">$650K / $1M limit used</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FX Operations Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-tools me-2"></i>FX Operations Tools
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn nvc-btn nvc-btn-primary">
+                                    <i class="fas fa-plus me-2"></i>New FX Deal
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn nvc-btn nvc-btn-success">
+                                    <i class="fas fa-shield-alt me-2"></i>Hedge Position
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn nvc-btn nvc-btn-warning">
+                                    <i class="fas fa-chart-bar me-2"></i>Risk Analysis
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-info">
+                                    <i class="fas fa-file-pdf me-2"></i>FX Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

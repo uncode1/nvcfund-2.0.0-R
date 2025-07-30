@@ -1,0 +1,347 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Threat Monitoring - Security Center{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h1 class="h2 text-light mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Threat Monitoring
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level 3 Drilldown: Threat Type Filter Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card threat-filter-nvc-card" data-filter="all" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-list fa-2x text-primary mb-2"></i>
+                    <h6>All Threats</h6>
+                    <span class="badge bg-primary" id="all-count">31</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card threat-filter-nvc-card" data-filter="malware" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-virus fa-2x text-danger mb-2"></i>
+                    <h6>Malware</h6>
+                    <span class="badge bg-danger" id="malware-count">12</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card threat-filter-nvc-card" data-filter="phishing" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-fish fa-2x text-warning mb-2"></i>
+                    <h6>Phishing</h6>
+                    <span class="badge bg-warning" id="phishing-count">8</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card threat-filter-nvc-card" data-filter="ddos" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-shield-alt fa-2x text-info mb-2"></i>
+                    <h6>DDoS</h6>
+                    <span class="badge bg-info" id="ddos-count">3</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card threat-filter-nvc-card" data-filter="intrusion" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-user-secret fa-2x text-secondary mb-2"></i>
+                    <h6>Intrusion</h6>
+                    <span class="badge bg-secondary" id="intrusion-count">5</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card threat-filter-nvc-card" data-filter="fraud" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-credit-nvc-card fa-2x text-success mb-2"></i>
+                    <h6>Fraud</h6>
+                    <span class="badge bg-success" id="fraud-count">2</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Threat Monitoring Dashboard -->
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-radar me-2"></i>Real-time Threat Detection</h5>
+                    <div class="header-actions">
+                        <select id="severity-filter" class="form-select nvc-form-select-sm">
+                            <option value="">All Severities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Threat ID</th>
+                                    <th>Type</th>
+                                    <th>Source</th>
+                                    <th>Risk Level</th>
+                                    <th>Status</th>
+                                    <th>Detected</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="threats-table-body">
+                                <tr class="threat-row" data-threat-id="THR-001" data-threat-type="malware" data-severity="high" >
+                                    <td><strong>THR-001</strong></td>
+                                    <td><span class="badge bg-danger">Malware</span></td>
+                                    <td>185.220.101.42</td>
+                                    <td><span class="badge bg-danger">High</span></td>
+                                    <td><span class="badge bg-warning">Monitoring</span></td>
+                                    <td>5 minutes ago</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger" data-action="custom-action">Block</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    </td>
+                                </tr>
+                                <tr class="threat-row" data-threat-id="THR-002" data-threat-type="phishing" data-severity="medium" >
+                                    <td><strong>THR-002</strong></td>
+                                    <td><span class="badge bg-warning">Phishing</span></td>
+                                    <td>192.168.1.100</td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                    <td><span class="badge bg-success">Resolved</span></td>
+                                    <td>15 minutes ago</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">Details</button>
+                                    </td>
+                                </tr>
+                                <tr class="threat-row" data-threat-id="THR-003" data-threat-type="ddos" data-severity="critical" >
+                                    <td><strong>THR-003</strong></td>
+                                    <td><span class="badge bg-info">DDoS</span></td>
+                                    <td>Multiple Sources</td>
+                                    <td><span class="badge bg-danger">Critical</span></td>
+                                    <td><span class="badge bg-danger">Active</span></td>
+                                    <td>2 minutes ago</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger" data-action="custom-action">Block</button>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>THR-002</td>
+                                    <td>SQL Injection</td>
+                                    <td>192.168.1.100</td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                    <td><span class="badge bg-success">Blocked</span></td>
+                                    <td>15 minutes ago</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Details</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-tachometer-alt me-2"></i>Threat Statistics</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Threats Detected Today</label>
+                        <div class="h4 text-danger">23</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Threats Blocked</label>
+                        <div class="h4 text-success">20</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Active Monitoring</label>
+                        <div class="h4 text-warning">3</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Risk Level</label>
+                        <div class="h4 text-info">Medium</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Multi-Level Threat Monitoring Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 3: Threat Filter Cards
+    const filterCards = document.querySelectorAll('.threat-filter-card');
+    filterCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            filterThreatsByType(filter);
+
+            // Update active state
+            filterCards.forEach(c => c.classList.remove('border-primary'));
+            this.classList.add('border-primary');
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 4: Threat Table Rows
+    const threatRows = document.querySelectorAll('.threat-row');
+    threatRows.forEach(row => {
+        row.addEventListener('click', function() {
+            const threatId = this.getAttribute('data-threat-id');
+            viewThreatDetails(threatId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Severity filter
+    const severityFilter = document.getElementById('severity-filter');
+    if (severityFilter) {
+        severityFilter.addEventListener('change', function() {
+            filterThreatsBySeverity(this.value);
+        });
+    }
+});
+
+// Level 3: Filter threats by type
+function filterThreatsByType(threatType) {
+    const rows = document.querySelectorAll('.threat-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowType = row.getAttribute('data-threat-type');
+        if (threatType === 'all' || rowType === threatType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updateThreatCounts(threatType, visibleCount);
+}
+
+// Filter threats by severity
+function filterThreatsBySeverity(severity) {
+    const rows = document.querySelectorAll('.threat-row');
+
+    rows.forEach(row => {
+        const rowSeverity = row.getAttribute('data-severity');
+        if (!severity || rowSeverity === severity) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Update threat counts
+function updateThreatCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.threat-row').length;
+    const header = document.querySelector('.card-header h5');
+    if (header) {
+        if (activeFilter === 'all') {
+            header.innerHTML = `<i class="fas fa-radar me-2"></i>Real-time Threat Detection (${totalRows} threats)`;
+        } else {
+            header.innerHTML = `<i class="fas fa-radar me-2"></i>Real-time Threat Detection (${visibleCount} ${activeFilter} threats)`;
+        }
+    }
+}
+
+// Level 4: View individual threat details (Level 4 → Level 5 drilldown)
+function viewThreatDetails(threatId) {
+    // Navigate to detailed threat investigation page
+    window.location.href = `/security_center/threat_details/${encodeURIComponent(threatId)}?view=comprehensive`;
+}
+
+// Threat action functions
+function blockThreat(threatId) {
+    if (confirm(`Are you sure you want to block threat ${threatId}?`)) {
+        // Secure threat blocking
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/security_center/block_threat';
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        form.appendChild(csrfToken);
+
+        const threatIdInput = document.createElement('input');
+        threatIdInput.type = 'hidden';
+        threatIdInput.name = 'threat_id';
+        threatIdInput.value = threatId;
+        form.appendChild(threatIdInput);
+
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'block';
+        form.appendChild(action);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}
+</script>
+
+<style>
+.threat-filter-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.threat-filter-card:hover {
+    border-color: #007bff;
+}
+
+.threat-row {
+    transition: background-color 0.2s ease;
+}
+
+.threat-row:hover {
+    background-color: rgba(0,123,255,0.05) !important;
+}
+</style>
+</div>
+{% endblock %}

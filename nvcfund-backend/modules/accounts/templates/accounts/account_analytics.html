@@ -1,0 +1,407 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Account Analytics - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Account Analytics{% endblock %}
+{% block page_description %}Comprehensive analytics and insights for account performance and trends{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('accounts.main_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        Accounts
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+    Analytics
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export analytics data">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Analytics
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Select date range">
+    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+    Date Range
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Generate analytics report">
+    <i class="fas fa-chart-line" aria-hidden="true"></i>
+    Generate Report
+</button>
+{% endblock %}
+
+{% block sidebar %}
+<!-- No sidebar for modern dashboard layout -->
+{% endblock %}
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Analytics Overview Metrics -->
+        <div class="nvc-dashboard-grid">
+            <div class="nvc-metrics-row">
+                <div class="nvc-metric-card nvc-metric-primary">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-primary">
+                            <i class="fas fa-users" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+8.3%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ analytics_data.total_accounts or '1,247' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Active Accounts</p>
+                        <p class="nvc-metric-subtitle">+8.3% this month</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-success">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-success">
+                            <i class="fas fa-dollar-sign" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+12.5%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">${{ analytics_data.total_value or '2.4M' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Total Account Value</p>
+                        <p class="nvc-metric-subtitle">+12.5% this month</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-warning">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-warning">
+                            <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+15.7%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ analytics_data.monthly_transactions or '3,892' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Monthly Transactions</p>
+                        <p class="nvc-metric-subtitle">+15.7% this month</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-info">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-info">
+                            <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+2.1%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ analytics_data.satisfaction or '94.2%' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Account Satisfaction</p>
+                        <p class="nvc-metric-subtitle">+2.1% this month</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Analytics Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-line" aria-hidden="true"></i>
+                    Performance Analytics
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Filter analytics data">
+                        <i class="fas fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Export analytics">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        Export
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Generate report">
+                        <i class="fas fa-chart-line" aria-hidden="true"></i>
+                        Generate Report
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="Account performance analytics">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">Account ID</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Account Type</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Balance</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Growth Rate</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Performance</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in top_accounts or [
+                                {'id': 'ACC-001', 'type': 'Premium Savings', 'balance': '$125,000', 'growth': '+18.5%', 'performance': 'Excellent', 'status': 'Active'},
+                                {'id': 'ACC-002', 'type': 'Business Checking', 'balance': '$89,500', 'growth': '+12.3%', 'performance': 'Good', 'status': 'Active'},
+                                {'id': 'ACC-003', 'type': 'Investment Account', 'balance': '$245,000', 'growth': '+25.7%', 'performance': 'Excellent', 'status': 'Active'},
+                                {'id': 'ACC-004', 'type': 'Corporate Treasury', 'balance': '$1,250,000', 'growth': '+8.9%', 'performance': 'Good', 'status': 'Active'},
+                                {'id': 'ACC-005', 'type': 'High Yield Savings', 'balance': '$67,800', 'growth': '+15.2%', 'performance': 'Very Good', 'status': 'Active'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td class="nvc-wcag-high-contrast">{{ account.id }}</td>
+                                <td class="nvc-wcag-medium-contrast">
+                                    <span class="nvc-badge nvc-badge-secondary">{{ account.type }}</span>
+                                </td>
+                                <td class="nvc-wcag-high-contrast">{{ account.balance }}</td>
+                                <td class="nvc-wcag-high-contrast nvc-amount-positive">{{ account.growth }}</td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-{{ 'success' if account.performance == 'Excellent' else 'info' if account.performance == 'Very Good' else 'primary' }}">
+                                        {{ account.performance }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="nvc-status nvc-status-success">{{ account.status }}</span>
+                                </td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View account {{ account.id }} details">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="Analyze account {{ account.id }}">
+                                            <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Summary Cards -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h3 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                    Analytics Summary
+                </h3>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">Updated 5 min ago</span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-analytics-grid">
+                    <div class="nvc-analytics-card">
+                        <div class="nvc-analytics-header">
+                            <h4 class="nvc-analytics-title nvc-wcag-high-contrast">Financial Health Score</h4>
+                            <div class="nvc-analytics-icon">
+                                <i class="fas fa-heartbeat" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="nvc-analytics-content">
+                            <div class="nvc-analytics-value nvc-wcag-high-contrast">{{ analytics_data.health_score or '85' }}</div>
+                            <div class="nvc-analytics-label nvc-wcag-medium-contrast">Excellent Financial Health</div>
+                            <div class="nvc-progress-container">
+                                <div class="nvc-progress-bar nvc-progress-success nvc-progress-85" aria-label="Financial health score: 85%"></div>
+                            </div>
+                            <div class="nvc-analytics-breakdown">
+                                <div class="nvc-breakdown-item">
+                                    <span class="nvc-breakdown-label">Savings Rate</span>
+                                    <span class="nvc-breakdown-value nvc-amount-positive">92</span>
+                                </div>
+                                <div class="nvc-breakdown-item">
+                                    <span class="nvc-breakdown-label">Spending</span>
+                                    <span class="nvc-breakdown-value nvc-amount-warning">78</span>
+                                </div>
+                                <div class="nvc-breakdown-item">
+                                    <span class="nvc-breakdown-label">Investment</span>
+                                    <span class="nvc-breakdown-value nvc-amount-info">85</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-analytics-card">
+                        <div class="nvc-analytics-header">
+                            <h4 class="nvc-analytics-title nvc-wcag-high-contrast">Performance Metrics</h4>
+                            <div class="nvc-analytics-icon">
+                                <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="nvc-analytics-content">
+                            <div class="nvc-performance-metrics">
+                                <div class="nvc-metric-item">
+                                    <div class="nvc-metric-header">
+                                        <span class="nvc-metric-name nvc-wcag-medium-contrast">Account Growth</span>
+                                        <span class="nvc-metric-value nvc-amount-positive">+18.5%</span>
+                                    </div>
+                                    <div class="nvc-progress-container">
+                                        <div class="nvc-progress-bar nvc-progress-success nvc-progress-85" aria-label="Account growth: 18.5%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-metric-item">
+                                    <div class="nvc-metric-header">
+                                        <span class="nvc-metric-name nvc-wcag-medium-contrast">Transaction Volume</span>
+                                        <span class="nvc-metric-value nvc-amount-info">+15.7%</span>
+                                    </div>
+                                    <div class="nvc-progress-container">
+                                        <div class="nvc-progress-bar nvc-progress-info nvc-progress-78" aria-label="Transaction volume: 15.7%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-metric-item">
+                                    <div class="nvc-metric-header">
+                                        <span class="nvc-metric-name nvc-wcag-medium-contrast">Customer Satisfaction</span>
+                                        <span class="nvc-metric-value nvc-amount-primary">94.2%</span>
+                                    </div>
+                                    <div class="nvc-progress-container">
+                                        <div class="nvc-progress-bar nvc-progress-primary nvc-progress-94" aria-label="Customer satisfaction: 94.2%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-metric-item">
+                                    <div class="nvc-metric-header">
+                                        <span class="nvc-metric-name nvc-wcag-medium-contrast">Security Score</span>
+                                        <span class="nvc-metric-value nvc-amount-warning">89.1%</span>
+                                    </div>
+                                    <div class="nvc-progress-container">
+                                        <div class="nvc-progress-bar nvc-progress-warning nvc-progress-89" aria-label="Security score: 89.1%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-analytics-card">
+                        <div class="nvc-analytics-header">
+                            <h4 class="nvc-analytics-title nvc-wcag-high-contrast">Account Alerts</h4>
+                            <div class="nvc-analytics-icon">
+                                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="nvc-analytics-content">
+                            <div class="nvc-alert-list">
+                                <div class="nvc-alert-item">
+                                    <div class="nvc-alert-icon nvc-alert-warning">
+                                        <i class="fas fa-clock" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="nvc-alert-content">
+                                        <span class="nvc-alert-label nvc-wcag-medium-contrast">Pending Verifications</span>
+                                        <span class="nvc-alert-count nvc-badge nvc-badge-warning">12</span>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-alert-item">
+                                    <div class="nvc-alert-icon nvc-alert-info">
+                                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="nvc-alert-content">
+                                        <span class="nvc-alert-label nvc-wcag-medium-contrast">Security Reviews</span>
+                                        <span class="nvc-alert-count nvc-badge nvc-badge-info">5</span>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-alert-item">
+                                    <div class="nvc-alert-icon nvc-alert-danger">
+                                        <i class="fas fa-ban" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="nvc-alert-content">
+                                        <span class="nvc-alert-label nvc-wcag-medium-contrast">Suspended Accounts</span>
+                                        <span class="nvc-alert-count nvc-badge nvc-badge-danger">3</span>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-alert-item">
+                                    <div class="nvc-alert-icon nvc-alert-success">
+                                        <i class="fas fa-star" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="nvc-alert-content">
+                                        <span class="nvc-alert-label nvc-wcag-medium-contrast">VIP Accounts</span>
+                                        <span class="nvc-alert-count nvc-badge nvc-badge-success">47</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Analytics Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            // Add sorting functionality here
+            console.log('Sorting by:', this.textContent);
+        });
+    });
+
+    // Analytics card interactions
+    const analyticsCards = document.querySelectorAll('.nvc-analytics-card');
+    analyticsCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

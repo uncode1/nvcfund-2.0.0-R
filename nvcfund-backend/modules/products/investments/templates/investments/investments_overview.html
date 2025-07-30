@@ -1,0 +1,332 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Investment Services Overview{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/text_contrast_fix.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid mt-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card border-0 shadow-sm nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="me-3">
+                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                        <rect width="40" height="40" rx="8" fill="#3b82f6"/>
+                                        <path d="M12 28L20 20L28 28" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M12 16L20 8L28 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h1 class="h2 text-white mb-0 fw-bold">Investment Services</h1>
+                                    <small class="text-light">Enterprise banking operations dashboard</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-success me-2">
+                                    <i class="fas fa-circle me-1"></i>Operational
+                                </span>
+                                <span class="text-white">
+                                    Last update: <span id="last-update">14:23:45</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-group">
+                                <a href="{{ url_for('investments.overview') }}" class="btn nvc-btn nvc-btn-primary btn-sm">
+                                    <i class="fas fa-chart-bar me-1"></i>Overview
+                                </a>
+                                <a href="{{ url_for('investments.settings') }}" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                    <i class="fas fa-cog me-1"></i>Settings
+                                </a>
+                                <a href="{{ url_for('investments.portfolio') }}" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                    <i class="fas fa-chart-pie me-1"></i>Portfolio
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card border-0 shadow-sm h-100 nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h6 class="text-light mb-1">Operations</h6>
+                    <h3 class="fw-bold mb-1 text-white">1,200</h3>
+                    <small class="text-success fw-bold">Successful</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card border-0 shadow-sm h-100 nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                    <h6 class="text-light mb-1">Pending</h6>
+                    <h3 class="fw-bold mb-1 text-white">25</h3>
+                    <small class="text-warning fw-bold">In Progress</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card border-0 shadow-sm h-100 nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-dollar-sign fa-3x text-primary mb-3"></i>
+                    <h6 class="text-light mb-1">Volume</h6>
+                    <h3 class="fw-bold mb-1 text-white">$2.5M</h3>
+                    <small class="text-primary fw-bold">Monthly</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card border-0 shadow-sm h-100 nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-shield-alt fa-3x text-danger mb-3"></i>
+                    <h6 class="text-light mb-1">Security</h6>
+                    <h3 class="fw-bold mb-1 text-white">100%</h3>
+                    <small class="text-success fw-bold">Compliant</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Portfolio Analysis -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card border-0 shadow-sm nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-header border-bottom" class="nvc-bg-dark-20">
+                    <div>
+                        <h5 class="mb-0 text-white"><i class="fas fa-chart-area me-2 text-primary"></i>Portfolio Performance</h5>
+                        <small class="text-light">Real-time investment tracking</small>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body" class="nvc-bg-dark-10">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h4 class="text-white fw-bold">$847.2M</h4>
+                                <p class="text-light mb-0">Total Assets</p>
+                                <small class="text-success">+2.4% YTD</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h4 class="text-white fw-bold">$12.8M</h4>
+                                <p class="text-light mb-0">Monthly Returns</p>
+                                <small class="text-success">+1.5% MTD</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h4 class="text-white fw-bold">247</h4>
+                                <p class="text-light mb-0">Active Positions</p>
+                                <small class="text-info">Diversified</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nvc-style-54d8d9">
+                        <canvas id="portfolioChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investment Categories -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card border-0 shadow-sm nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-header border-bottom" class="nvc-bg-dark-20">
+                    <h5 class="text-white mb-0"><i class="fas fa-pie-chart me-2 text-warning"></i>Asset Allocation</h5>
+                    <small class="text-light">Portfolio distribution</small>
+                </div>
+                <div class="nvc-nvc-card-body" class="nvc-bg-dark-10">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between text-white mb-1">
+                            <span>Equities</span>
+                            <span class="fw-bold">45%</span>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-primary" class="progress-bar-45"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between text-white mb-1">
+                            <span>Fixed Income</span>
+                            <span class="fw-bold">30%</span>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-success" class="progress-bar-30"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between text-white mb-1">
+                            <span>Alternative</span>
+                            <span class="fw-bold">15%</span>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-warning" class="progress-bar-15"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between text-white mb-1">
+                            <span>Cash & Equivalents</span>
+                            <span class="fw-bold">10%</span>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-info" class="progress-bar-10"></div>
+                        </div>
+                    </div>
+                    <hr class="border-secondary">
+                    <div class="d-flex justify-content-between text-white">
+                        <span class="fw-bold">Total Portfolio</span>
+                        <span class="fw-bold text-success">$847.2M</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card border-0 shadow-sm nvc-bg-ee7697" >
+                <div class="nvc-nvc-card-header border-bottom" class="nvc-bg-dark-20">
+                    <h5 class="text-white mb-0"><i class="fas fa-history me-2 text-info"></i>Recent Activity</h5>
+                    <small class="text-light">Latest investment operations</small>
+                </div>
+                <div class="nvc-nvc-card-body" class="nvc-bg-dark-10">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-white">Time</th>
+                                    <th class="text-white">Action</th>
+                                    <th class="text-white">Asset</th>
+                                    <th class="text-white">Amount</th>
+                                    <th class="text-white">Status</th>
+                                    <th class="text-white">User</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-light">14:23</td>
+                                    <td class="text-light">Portfolio Rebalance</td>
+                                    <td class="text-light">Multi-Asset</td>
+                                    <td class="text-success fw-bold">$2.4M</td>
+                                    <td><span class="badge bg-success">Success</span></td>
+                                    <td class="text-light">{{ current_user.username if current_user.username else 'system' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-light">14:08</td>
+                                    <td class="text-light">Equity Purchase</td>
+                                    <td class="text-light">Technology Index</td>
+                                    <td class="text-primary fw-bold">$850K</td>
+                                    <td><span class="badge bg-success">Success</span></td>
+                                    <td class="text-light">Treasury Desk</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-light">13:51</td>
+                                    <td class="text-light">Risk Assessment</td>
+                                    <td class="text-light">Corporate Bonds</td>
+                                    <td class="text-info fw-bold">Analysis</td>
+                                    <td><span class="badge bg-info">Complete</span></td>
+                                    <td class="text-light">Risk Team</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-light">13:38</td>
+                                    <td class="text-light">Dividend Processing</td>
+                                    <td class="text-light">Blue Chip Portfolio</td>
+                                    <td class="text-success fw-bold">$1.2M</td>
+                                    <td><span class="badge bg-success">Success</span></td>
+                                    <td class="text-light">Operations</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-light">13:21</td>
+                                    <td class="text-light">Performance Review</td>
+                                    <td class="text-light">Alternative Investments</td>
+                                    <td class="text-warning fw-bold">Review</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td class="text-light">Analytics Team</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Portfolio Performance Chart
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('portfolioChart').getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+    gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Portfolio Value ($M)',
+                data: [820, 825, 835, 842, 845, 847],
+                borderColor: '#3b82f6',
+                backgroundColor: gradient,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#e2e8f0'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#94a3b8'
+                    },
+                    grid: {
+                        color: 'rgba(148, 163, 184, 0.1)'
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: '#94a3b8'
+                    },
+                    grid: {
+                        color: 'rgba(148, 163, 184, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Auto-update timestamp
+    setInterval(function() {
+        document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+    }, 1000);
+});
+</script>
+</div>
+{% endblock %}

@@ -1,0 +1,592 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Digital Statements Center - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Digital Statements Center{% endblock %}
+{% block page_description %}Comprehensive statements for traditional banking and cryptocurrency portfolios{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Download All
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-calendar-alt"></i>
+    Schedule Auto-Send
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-file-pdf"></i>
+    Generate Statement
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Statements Functions
+function downloadAllStatements() {
+    alert('Downloading all statements...');
+    // TODO: Implement bulk download
+}
+
+function scheduleStatements() {
+    alert('Schedule statements functionality will be implemented');
+}
+
+function generateStatement() {
+    window.location.href = "{{ url_for('banking.generate_statement') }}";
+}
+
+function viewStatement(statementId) {
+    window.open('/banking/statements/' + statementId + '/view', '_blank');
+}
+
+function downloadStatement(statementId) {
+    window.location.href = '/banking/statements/' + statementId + '/download';
+}
+
+function emailStatement(statementId) {
+    const email = prompt('Enter email address:');
+    if (email) {
+        fetch('/banking/statements/' + statementId + '/email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: JSON.stringify({ email: email })
+        }).then(response => {
+            if (response.ok) {
+                alert('Statement sent to ' + email);
+            } else {
+                alert('Error sending statement');
+            }
+        });
+    }
+}
+
+// Add drilldown functionality for stat cards
+document.addEventListener('DOMContentLoaded', function() {
+    const statCards = document.querySelectorAll('.statement-stat-card');
+    statCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardType = this.querySelector('h6').textContent;
+            if (cardType.includes('Total Statements')) {
+                document.getElementById('banking-tab').click();
+            } else if (cardType.includes('Banking Statements')) {
+                document.getElementById('banking-tab').click();
+            } else if (cardType.includes('Crypto Statements')) {
+                document.getElementById('crypto-tab').click();
+            } else if (cardType.includes('Last Generated')) {
+                window.location.href = "{{ url_for('banking.generate_statement') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- Digital Statements Center -->
+<div class="row g-4">
+    <!-- Statement Overview -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="statement-stat-nvc-card bg-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Total Statements</h6>
+                                <h3>{{ total_statements or '247' }}</h3>
+                                <small>Available</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="statement-stat-nvc-card bg-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Banking Statements</h6>
+                                <h3>{{ banking_statements or '189' }}</h3>
+                                <small>Traditional accounts</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="statement-stat-nvc-card bg-warning">
+                            <div class="stat-icon">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Crypto Statements</h6>
+                                <h3>{{ crypto_statements or '58' }}</h3>
+                                <small>Digital assets</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="statement-stat-nvc-card bg-info">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6>Last Generated</h6>
+                                <h3>{{ last_generated or '2' }}</h3>
+                                <small>days ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statement Categories -->
+    <div class="col-xl-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-layer-group text-primary me-2"></i>
+                    Available Statements
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <!-- Statement Tabs -->
+                <ul class="nav nav-pills mb-4" id="statementTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="banking-tab" data-bs-toggle="pill"
+                                data-bs-target="#banking" type="button" role="tab">
+                            <i class="fas fa-university me-1"></i>
+                            Banking
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="crypto-tab" data-bs-toggle="pill"
+                                data-bs-target="#crypto" type="button" role="tab">
+                            <i class="fab fa-bitcoin me-1"></i>
+                            Cryptocurrency
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tax-tab" data-bs-toggle="pill"
+                                data-bs-target="#tax" type="button" role="tab">
+                            <i class="fas fa-calculator me-1"></i>
+                            Tax Reports
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Statement Content -->
+                <div class="tab-content" id="statementTabsContent">
+                    <!-- Banking Statements -->
+                    <div class="tab-pane fade show active" id="banking" role="tabpanel">
+                        <div class="statement-list">
+                            <!-- Monthly Statement -->
+                            <div class="statement-item">
+                                <div class="statement-header">
+                                    <div class="statement-icon bg-primary">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div class="statement-info">
+                                        <h6>Monthly Statement - December 2024</h6>
+                                        <p class="text-muted small">Checking Account ****1234</p>
+                                    </div>
+                                    <div class="statement-meta">
+                                        <span class="badge bg-success">Ready</span>
+                                        <small class="text-muted">2.4 MB</small>
+                                    </div>
+                                </div>
+                                <div class="statement-actions">
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Quarterly Statement -->
+                            <div class="statement-item">
+                                <div class="statement-header">
+                                    <div class="statement-icon bg-success">
+                                        <i class="fas fa-file-excel"></i>
+                                    </div>
+                                    <div class="statement-info">
+                                        <h6>Quarterly Statement - Q4 2024</h6>
+                                        <p class="text-muted small">All Banking Accounts</p>
+                                    </div>
+                                    <div class="statement-meta">
+                                        <span class="badge bg-success">Ready</span>
+                                        <small class="text-muted">5.7 MB</small>
+                                    </div>
+                                </div>
+                                <div class="statement-actions">
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Annual Statement -->
+                            <div class="statement-item">
+                                <div class="statement-header">
+                                    <div class="statement-icon bg-info">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div class="statement-info">
+                                        <h6>Annual Statement - 2024</h6>
+                                        <p class="text-muted small">Complete Banking Portfolio</p>
+                                    </div>
+                                    <div class="statement-meta">
+                                        <span class="badge bg-warning">Generating</span>
+                                        <small class="text-muted">Est. 12 MB</small>
+                                    </div>
+                                </div>
+                                <div class="statement-actions">
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" disabled>
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crypto Statements -->
+                    <div class="tab-pane fade" id="crypto" role="tabpanel">
+                        <div class="statement-list">
+                            <div class="statement-item">
+                                <div class="statement-header">
+                                    <div class="statement-icon bg-warning">
+                                        <i class="fab fa-bitcoin"></i>
+                                    </div>
+                                    <div class="statement-info">
+                                        <h6>Crypto Portfolio Statement - December 2024</h6>
+                                        <p class="text-muted small">All Digital Assets</p>
+                                    </div>
+                                    <div class="statement-meta">
+                                        <span class="badge bg-success">Ready</span>
+                                        <small class="text-muted">1.8 MB</small>
+                                    </div>
+                                </div>
+                                <div class="statement-actions">
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tax Reports -->
+                    <div class="tab-pane fade" id="tax" role="tabpanel">
+                        <div class="statement-list">
+                            <div class="statement-item">
+                                <div class="statement-header">
+                                    <div class="statement-icon bg-info">
+                                        <i class="fas fa-calculator"></i>
+                                    </div>
+                                    <div class="statement-info">
+                                        <h6>Tax Report - 2024</h6>
+                                        <p class="text-muted small">Complete Tax Documentation</p>
+                                    </div>
+                                    <div class="statement-meta">
+                                        <span class="badge bg-success">Ready</span>
+                                        <small class="text-muted">3.2 MB</small>
+                                    </div>
+                                </div>
+                                <div class="statement-actions">
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statement Filters -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <label class="nvc-form-label text-light">Account</label>
+            <select class="nvc-form-input bg-dark text-light border-secondary">
+                <option>All Accounts</option>
+                <option>Checking ****1234</option>
+                <option>Savings ****5678</option>
+                <option>Business ****9012</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="nvc-form-label text-light">Statement Period</label>
+            <select class="nvc-form-input bg-dark text-light border-secondary">
+                <option>Last 6 Months</option>
+                <option>Last 12 Months</option>
+                <option>Last 24 Months</option>
+                <option>All Available</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="nvc-form-label text-light">Format</label>
+            <select class="nvc-form-input bg-dark text-light border-secondary">
+                <option>PDF</option>
+                <option>Excel</option>
+                <option>CSV</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="button" class="btn nvc-btn nvc-btn-primary w-100">
+                <i class="fas fa-search me-2"></i>Filter
+            </button>
+        </div>
+    </div>
+
+    <!-- Available Statements -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Available Statements
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Account</th>
+                                    <th>Statement Period</th>
+                                    <th>Generated Date</th>
+                                    <th>File Size</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-university text-primary me-2"></i>
+                                        Checking ****1234
+                                    </td>
+                                    <td>June 2025</td>
+                                    <td>2025-07-01</td>
+                                    <td>245 KB</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                                                <i class="fas fa-download me-1"></i>Download
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                                                <i class="fas fa-envelope me-1"></i>Email
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-piggy-bank text-success me-2"></i>
+                                        Savings ****5678
+                                    </td>
+                                    <td>June 2025</td>
+                                    <td>2025-07-01</td>
+                                    <td>198 KB</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                                                <i class="fas fa-download me-1"></i>Download
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                                                <i class="fas fa-envelope me-1"></i>Email
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-university text-primary me-2"></i>
+                                        Checking ****1234
+                                    </td>
+                                    <td>May 2025</td>
+                                    <td>2025-06-01</td>
+                                    <td>267 KB</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                                                <i class="fas fa-download me-1"></i>Download
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                                                <i class="fas fa-envelope me-1"></i>Email
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-briefcase text-warning me-2"></i>
+                                        Business ****9012
+                                    </td>
+                                    <td>May 2025</td>
+                                    <td>2025-06-01</td>
+                                    <td>412 KB</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                                                <i class="fas fa-download me-1"></i>Download
+                                            </button>
+                                            <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                                                <i class="fas fa-envelope me-1"></i>Email
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statement Preferences -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>Statement Preferences
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label text-light">Delivery Method</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery" id="electronic" checked>
+                            <label class="form-check-label text-light" for="electronic">
+                                Electronic Statements (Recommended)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery" id="postal">
+                            <label class="form-check-label text-light" for="postal">
+                                Postal Mail ($2.50/month)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="nvc-form-label text-light">Email Notifications</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="statementReady" checked>
+                            <label class="form-check-label text-light" for="statementReady">
+                                Statement Ready Notification
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="lowBalance">
+                            <label class="form-check-label text-light" for="lowBalance">
+                                Low Balance Alerts
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn nvc-btn nvc-btn-warning">
+                        <i class="fas fa-save me-2"></i>Save Preferences
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Security & Privacy
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="security-feature mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light fw-bold">Password Protection</span><br>
+                                <small class="text-light">All statements are password protected</small>
+                            </div>
+                            <i class="fas fa-shield-alt text-success"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="security-feature mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light fw-bold">Encryption</span><br>
+                                <small class="text-light">256-bit SSL encryption in transit</small>
+                            </div>
+                            <i class="fas fa-lock text-success"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="security-feature mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-light fw-bold">Audit Trail</span><br>
+                                <small class="text-light">All downloads are logged</small>
+                            </div>
+                            <i class="fas fa-history text-success"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="alert nvc-nvc-alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small>Statements are retained for 7 years and automatically deleted thereafter.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

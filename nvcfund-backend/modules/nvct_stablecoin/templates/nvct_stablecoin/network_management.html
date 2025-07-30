@@ -1,0 +1,314 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Network Management - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Network Management{% endblock %}
+{% block page_description %}Multi-chain deployment and network management for NVCT stablecoin{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-sync-alt"></i>
+    Sync Networks
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-rocket"></i>
+    Deploy to Network
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportNetworkData() {
+    const csvData = 'Network,Status,Contract Address,Deployment Date,Transactions\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'network_management.csv';
+    a.click();
+}
+
+function syncNetworks() {
+    if (confirm('Synchronize all network deployments? This may take several minutes.')) {
+        fetch('/nvct/networks/sync', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert('Network synchronization initiated');
+                location.reload();
+            } else {
+                alert('Error synchronizing networks');
+            }
+        });
+    }
+}
+
+function deployToNetwork() {
+    const network = prompt('Enter network (ethereum, bsc, polygon, fantom, avalanche):');
+    const contractType = prompt('Enter contract type (nvct, governance, bridge):');
+    
+    if (network && contractType) {
+        if (confirm(`Deploy ${contractType} contract to ${network}?`)) {
+            const formData = new FormData();
+            formData.append('network', network);
+            formData.append('contract_type', contractType);
+            
+            fetch('/nvct/deploy', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+                },
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    alert('Deployment initiated');
+                    location.reload();
+                } else {
+                    alert('Error deploying to network');
+                }
+            });
+        }
+    }
+}
+
+function pauseNetwork(network) {
+    if (confirm(`Pause NVCT operations on ${network}?`)) {
+        fetch(`/nvct/networks/${network}/pause`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert(`${network} operations paused`);
+                location.reload();
+            } else {
+                alert('Error pausing network');
+            }
+        });
+    }
+}
+
+function resumeNetwork(network) {
+    if (confirm(`Resume NVCT operations on ${network}?`)) {
+        fetch(`/nvct/networks/${network}/resume`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert(`${network} operations resumed`);
+                location.reload();
+            } else {
+                alert('Error resuming network');
+            }
+        });
+    }
+}
+
+function viewNetworkDetails(network) {
+    window.location.href = `/nvct/networks/${network}/details`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const networkCards = document.querySelectorAll('.card, .network-card');
+    networkCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Active Networks')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.active_networks') }}";
+            } else if (cardTitle?.includes('Total Deployments')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.deployment_history') }}";
+            } else if (cardTitle?.includes('Cross-Chain Volume')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.cross_chain_bridge') }}";
+            } else if (cardTitle?.includes('Network Health')) {
+                window.location.href = "{{ url_for('nvct_stablecoin.network_health') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="row g-4">
+    <!-- Network Overview Cards -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card network-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-network-wired text-primary fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Active Networks</h6>
+                        <h4 class="mb-0 text-primary">8</h4>
+                        <small class="text-success">All operational</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card network-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-rocket text-success fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Total Deployments</h6>
+                        <h4 class="mb-0 text-success">24</h4>
+                        <small class="text-muted">Contracts deployed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card network-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exchange-alt text-info fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Cross-Chain Volume</h6>
+                        <h4 class="mb-0 text-info">$2.1B</h4>
+                        <small class="text-success">+15.2% today</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card network-nvc-card">
+            <div class="nvc-nvc-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-heartbeat text-warning fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="nvc-card-title mb-1">Network Health</h6>
+                        <h4 class="mb-0 text-warning">99.9%</h4>
+                        <small class="text-muted">Average uptime</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <!-- Network Status Table -->
+    <div class="col-12">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <h5 class="nvc-card-title mb-0">Network Deployment Status</h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Network</th>
+                                <th>Status</th>
+                                <th>Contract Address</th>
+                                <th>Deployment Date</th>
+                                <th>24h Transactions</th>
+                                <th>Gas Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="/static/images/ethereum.png" alt="Ethereum" class="me-2" width="24" height="24">
+                                        Ethereum
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td><code>0x1234...5678</code></td>
+                                <td>2024-01-15</td>
+                                <td>45,231</td>
+                                <td>25 gwei</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Pause</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="/static/images/bsc.png" alt="BSC" class="me-2" width="24" height="24">
+                                        Binance Smart Chain
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td><code>0xabcd...efgh</code></td>
+                                <td>2024-01-20</td>
+                                <td>78,542</td>
+                                <td>5 gwei</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Pause</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="/static/images/polygon.png" alt="Polygon" class="me-2" width="24" height="24">
+                                        Polygon
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td><code>0x9876...5432</code></td>
+                                <td>2024-02-01</td>
+                                <td>123,456</td>
+                                <td>30 gwei</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Pause</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="/static/images/fantom.png" alt="Fantom" class="me-2" width="24" height="24">
+                                        Fantom
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-warning">Deploying</span></td>
+                                <td><em>Pending...</em></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary" disabled>Deploying...</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

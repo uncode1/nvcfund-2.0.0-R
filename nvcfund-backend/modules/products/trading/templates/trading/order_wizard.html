@@ -1,0 +1,982 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Advanced Trading Order - NVC Banking Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .trading-wizard-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 1400px;
+        margin: 2rem auto;
+        min-height: 800px;
+    }
+    
+    .wizard-header {
+        background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .wizard-body {
+        display: flex;
+        min-height: 700px;
+    }
+    
+    .step-sidebar {
+        background: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        width: 280px;
+        padding: 2rem 1rem;
+    }
+    
+    .main-content {
+        flex: 1;
+        padding: 2rem;
+    }
+    
+    /* Step Navigation */
+    .step-nav {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .step-nav-item {
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .step-nav-link {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #6c757d;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .step-nav-link:hover {
+        background: #e9ecef;
+        color: #495057;
+        text-decoration: none;
+    }
+    
+    .step-nav-link.active {
+        background: #0a2447;
+        color: white;
+        border-color: #0a2447;
+    }
+    
+    .step-nav-link.completed {
+        background: #28a745;
+        color: white;
+    }
+    
+    .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: currentColor;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .step-nav-link:not(.active):not(.completed) .step-number {
+        background: #dee2e6;
+        color: #6c757d;
+    }
+    
+    .step-title {
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    /* Form Steps */
+    .form-step {
+        display: none;
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    .form-step.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Asset Type Selection Cards */
+    .asset-type-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .asset-card {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .asset-card:hover {
+        border-color: #0a2447;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(10, 36, 71, 0.2);
+    }
+    
+    .asset-card.selected {
+        border-color: #0a2447;
+        background: #f8f9fa;
+        box-shadow: 0 5px 15px rgba(10, 36, 71, 0.3);
+    }
+    
+    .asset-card i {
+        color: #0a2447;
+        margin-bottom: 1rem;
+    }
+    
+    .asset-card h6 {
+        color: #0a2447;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Form Controls */
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0a2447;
+        box-shadow: 0 0 0 0.2rem rgba(10, 36, 71, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-label.required::after {
+        content: " *";
+        color: #dc3545;
+    }
+    
+    /* Order Type Indicators */
+    .order-type-indicator {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .order-market { background: #17a2b8; color: white; }
+    .order-limit { background: #28a745; color: white; }
+    .order-stop { background: #ffc107; color: #212529; }
+    .order-stop-limit { background: #dc3545; color: white; }
+    
+    /* Risk Warning */
+    .risk-warning {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .risk-warning h6 {
+        color: #856404;
+        margin-bottom: 0.5rem;
+    }
+    
+    .risk-warning p {
+        color: #856404;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    /* Order Summary */
+    .order-summary {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .summary-item:last-child {
+        border-bottom: none;
+        font-weight: 600;
+        color: #0a2447;
+    }
+    
+    .summary-label {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .summary-value {
+        color: #212529;
+    }
+    
+    /* Navigation Buttons */
+    .form-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn-nav {
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .btn-prev {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-prev:hover {
+        background: #5a6268;
+        transform: translateY(-1px);
+    }
+    
+    .btn-next, .btn-submit {
+        background: linear-gradient(135deg, #0a2447 0%, #1e3a5f 100%);
+        color: white;
+    }
+    
+    .btn-next:hover, .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(10, 36, 71, 0.4);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .wizard-body {
+            flex-direction: column;
+        }
+        
+        .step-sidebar {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .step-nav {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.5rem;
+        }
+        
+        .step-nav-item {
+            margin-bottom: 0;
+            min-width: 120px;
+        }
+        
+        .asset-type-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    /* Price Input Styling */
+    .price-input-group {
+        position: relative;
+    }
+    
+    .price-input-group .currency-symbol {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .price-input-group .form-control {
+        padding-left: 35px;
+    }
+    
+    /* Validation styles */
+    .is-invalid {
+        border-color: #dc3545;
+    }
+    
+    .is-valid {
+        border-color: #28a745;
+    }
+    
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="trading-wizard-container">
+        <div class="wizard-header">
+            <h2><i class="fas fa-chart-line"></i> Advanced Trading Order</h2>
+            <p class="mb-0">Execute sophisticated trading strategies with institutional-grade precision</p>
+        </div>
+        
+        <div class="wizard-body">
+            <!-- Step Navigation Sidebar -->
+            <div class="step-sidebar">
+                <h6 class="mb-3"><i class="fas fa-list-ol"></i> Order Steps</h6>
+                <ul class="step-nav">
+                    <li class="step-nav-item">
+                        <a href="/contact" class="step-nav-link active" data-step="1">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Asset Type</div>
+                        </a>
+                    </li>
+                    <li class="step-nav-item">
+                        <a href="/contact" class="step-nav-link" data-step="2">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Order Details</div>
+                        </a>
+                    </li>
+                    <li class="step-nav-item">
+                        <a href="/contact" class="step-nav-link" data-step="3">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Price & Execution</div>
+                        </a>
+                    </li>
+                    <li class="step-nav-item">
+                        <a href="/contact" class="step-nav-link" data-step="4">
+                            <div class="step-number">4</div>
+                            <div class="step-title">Risk Management</div>
+                        </a>
+                    </li>
+                    <li class="step-nav-item">
+                        <a href="/contact" class="step-nav-link" data-step="5">
+                            <div class="step-number">5</div>
+                            <div class="step-title">Review & Submit</div>
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Live Market Data Widget -->
+                <div class="mt-4 p-3 bg-white rounded border">
+                    <h6 class="text-light mb-2"><i class="fas fa-chart-area"></i> Market Status</h6>
+                    <div class="small">
+                        <div class="d-flex justify-content-between">
+                            <span>S&P 500:</span>
+                            <span class="text-success">+0.85%</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>NASDAQ:</span>
+                            <span class="text-success">+1.12%</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>VIX:</span>
+                            <span class="text-danger">-2.34%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} nvc-alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'info-circle' }}"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <form method="POST" action="{{ url_for('trading.place_order') }}" id="tradingOrderForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="asset_type" id="selectedAssetType" value="">
+                    
+                    <!-- Step 1: Asset Type Selection -->
+                    <div class="form-step active" data-step="1">
+                        <h4><i class="fas fa-layer-group"></i> Select Asset Type</h4>
+                        <p class="text-light mb-4">Choose the type of financial instrument you want to trade</p>
+                        
+                        <div class="asset-type-grid">
+                            <div class="asset-nvc-card" data-type="equity">
+                                <i class="fas fa-building fa-3x"></i>
+                                <h6>Equities</h6>
+                                <p class="small text-light">Stocks & Shares</p>
+                                <ul class="list-unstyled small">
+                                    <li>• Common Stocks</li>
+                                    <li>• Preferred Shares</li>
+                                    <li>• ETFs</li>
+                                </ul>
+                            </div>
+                            <div class="asset-nvc-card" data-type="forex">
+                                <i class="fas fa-exchange-alt fa-3x"></i>
+                                <h6>Foreign Exchange</h6>
+                                <p class="small text-light">Currency Pairs</p>
+                                <ul class="list-unstyled small">
+                                    <li>• Major Pairs</li>
+                                    <li>• Minor Pairs</li>
+                                    <li>• Exotic Pairs</li>
+                                </ul>
+                            </div>
+                            <div class="asset-nvc-card" data-type="commodity">
+                                <i class="fas fa-seedling fa-3x"></i>
+                                <h6>Commodities</h6>
+                                <p class="small text-light">Physical Assets</p>
+                                <ul class="list-unstyled small">
+                                    <li>• Precious Metals</li>
+                                    <li>• Energy</li>
+                                    <li>• Agriculture</li>
+                                </ul>
+                            </div>
+                            <div class="asset-nvc-card" data-type="derivative">
+                                <i class="fas fa-chart-line fa-3x"></i>
+                                <h6>Derivatives</h6>
+                                <p class="small text-light">Complex Instruments</p>
+                                <ul class="list-unstyled small">
+                                    <li>• Options</li>
+                                    <li>• Futures</li>
+                                    <li>• Swaps</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Order Details -->
+                    <div class="form-step" data-step="2">
+                        <h4><i class="fas fa-info-circle"></i> Order Details</h4>
+                        <p class="text-light mb-4">Specify the instrument and basic order parameters</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="symbol" class="nvc-form-label required">Symbol/Instrument</label>
+                                <input type="text" class="nvc-form-input" id="symbol" name="symbol" 
+                                       placeholder="e.g., AAPL, EUR/USD, GC" required>
+                                <small class="text-light">Enter the trading symbol or instrument identifier</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="order_side" class="nvc-form-label required">Order Side</label>
+                                <select class="nvc-form-select" id="order_side" name="order_side" required>
+                                    <option value="">Select order side</option>
+                                    <option value="BUY">Buy (Long Position)</option>
+                                    <option value="SELL">Sell (Short Position)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="quantity" class="nvc-form-label required">Quantity</label>
+                                <input type="number" class="nvc-form-input" id="quantity" name="quantity" 
+                                       min="1" max="10000000" step="1" required>
+                                <small class="text-light">Number of units to trade</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="order_type" class="nvc-form-label required">Order Type</label>
+                                <select class="nvc-form-select" id="order_type" name="order_type" required>
+                                    <option value="">Select order type</option>
+                                    <option value="MARKET">Market Order</option>
+                                    <option value="LIMIT">Limit Order</option>
+                                    <option value="STOP">Stop Order</option>
+                                    <option value="STOP_LIMIT">Stop Limit Order</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Asset-specific fields will be populated here via JavaScript -->
+                        <div id="assetSpecificFields"></div>
+                    </div>
+                    
+                    <!-- Step 3: Price & Execution -->
+                    <div class="form-step" data-step="3">
+                        <h4><i class="fas fa-dollar-sign"></i> Price & Execution Settings</h4>
+                        <p class="text-light mb-4">Configure pricing and execution parameters</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="limit_price" class="nvc-form-label">Limit Price</label>
+                                <div class="price-input-group">
+                                    <span class="currency-symbol">$</span>
+                                    <input type="number" class="nvc-form-input" id="limit_price" name="limit_price" 
+                                           min="0.01" max="1000000" step="0.01">
+                                </div>
+                                <small class="text-light">Price for limit orders</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="stop_price" class="nvc-form-label">Stop Price</label>
+                                <div class="price-input-group">
+                                    <span class="currency-symbol">$</span>
+                                    <input type="number" class="nvc-form-input" id="stop_price" name="stop_price" 
+                                           min="0.01" max="1000000" step="0.01">
+                                </div>
+                                <small class="text-light">Trigger price for stop orders</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="time_in_force" class="nvc-form-label">Time in Force</label>
+                                <select class="nvc-form-select" id="time_in_force" name="time_in_force">
+                                    <option value="DAY">Day Order</option>
+                                    <option value="GTC">Good Till Cancelled</option>
+                                    <option value="IOC">Immediate or Cancel</option>
+                                    <option value="FOK">Fill or Kill</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="expiration_date" class="nvc-form-label">Expiration Date</label>
+                                <input type="datetime-local" class="nvc-form-input" id="expiration_date" name="expiration_date">
+                                <small class="text-light">Optional expiration for certain order types</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4: Risk Management -->
+                    <div class="form-step" data-step="4">
+                        <h4><i class="fas fa-shield-alt"></i> Risk Management</h4>
+                        <p class="text-light mb-4">Set risk controls and position limits</p>
+                        
+                        <div class="risk-warning">
+                            <h6><i class="fas fa-exclamation-triangle"></i> Risk Disclosure</h6>
+                            <p>Trading involves substantial risk of loss and is not suitable for all investors. Past performance is not indicative of future results.</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="stop_loss" class="nvc-form-label">Stop Loss</label>
+                                <div class="price-input-group">
+                                    <span class="currency-symbol">$</span>
+                                    <input type="number" class="nvc-form-input" id="stop_loss" name="stop_loss" 
+                                           min="0.01" max="1000000" step="0.01">
+                                </div>
+                                <small class="text-light">Automatic loss limit</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="take_profit" class="nvc-form-label">Take Profit</label>
+                                <div class="price-input-group">
+                                    <span class="currency-symbol">$</span>
+                                    <input type="number" class="nvc-form-input" id="take_profit" name="take_profit" 
+                                           min="0.01" max="1000000" step="0.01">
+                                </div>
+                                <small class="text-light">Automatic profit target</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="max_position_size" class="nvc-form-label">Maximum Position Size</label>
+                                <input type="number" class="nvc-form-input" id="max_position_size" name="max_position_size" 
+                                       min="1" max="10000000">
+                                <small class="text-light">Risk limit per position</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="portfolio_allocation" class="nvc-form-label">Portfolio Allocation (%)</label>
+                                <input type="number" class="nvc-form-input" id="portfolio_allocation" name="portfolio_allocation" 
+                                       min="0.1" max="100" step="0.1">
+                                <small class="text-light">Percentage of portfolio for this trade</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="acknowledge_risk" name="acknowledge_risk" required>
+                            <label class="form-check-label" for="acknowledge_risk">
+                                I acknowledge the risks associated with this trading order and understand that I may lose my entire investment
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 5: Review & Submit -->
+                    <div class="form-step" data-step="5">
+                        <h4><i class="fas fa-clipboard-check"></i> Order Review</h4>
+                        <p class="text-light mb-4">Review your order details before submission</p>
+                        
+                        <div class="order-summary" id="orderSummary">
+                            <h6 class="mb-3"><i class="fas fa-file-contract"></i> Order Summary</h6>
+                            <div class="summary-item">
+                                <span class="summary-label">Asset Type:</span>
+                                <span class="summary-value" id="summaryAssetType">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Symbol:</span>
+                                <span class="summary-value" id="summarySymbol">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Order Side:</span>
+                                <span class="summary-value" id="summaryOrderSide">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Quantity:</span>
+                                <span class="summary-value" id="summaryQuantity">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Order Type:</span>
+                                <span class="summary-value" id="summaryOrderType">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Estimated Value:</span>
+                                <span class="summary-value" id="summaryEstimatedValue">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="confirm_order" name="confirm_order" required>
+                            <label class="form-check-label" for="confirm_order">
+                                I confirm that all order details are correct and authorize the execution of this trade
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation Buttons -->
+                    <div class="form-navigation">
+                        <button type="button" class="btn btn-nav btn-prev" id="prevBtn" data-action="custom-action" class="d-none">
+                            <i class="fas fa-arrow-left me-2"></i>Previous
+                        </button>
+                        <div class="text-center">
+                            <small class="text-light">Step <span id="currentStepText">1</span> of 5</small>
+                        </div>
+                        <button type="button" class="btn btn-nav btn-next" id="nextBtn" data-action="custom-action">
+                            Next<i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                        <button type="submit" class="btn btn-nav btn-submit" id="submitBtn" class="d-none">
+                            <i class="fas fa-paper-plane me-2"></i>Place Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentStep = 1;
+const totalSteps = 5;
+
+function updateStepNavigation() {
+    const stepLinks = document.querySelectorAll('.step-nav-link');
+    stepLinks.forEach((link, index) => {
+        const stepNumber = index + 1;
+        link.classList.remove('active', 'completed');
+        
+        if (stepNumber < currentStep) {
+            link.classList.add('completed');
+        } else if (stepNumber === currentStep) {
+            link.classList.add('active');
+        }
+    });
+}
+
+function showStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.form-step').forEach(stepEl => {
+        stepEl.classList.remove('active');
+    });
+    
+    // Show current step
+    document.querySelector(`[data-step="${step}"]`).classList.add('active');
+    
+    // Update navigation buttons
+    document.getElementById('prevBtn').style.display = step === 1 ? 'none' : 'inline-block';
+    document.getElementById('nextBtn').style.display = step === totalSteps ? 'none' : 'inline-block';
+    document.getElementById('submitBtn').style.display = step === totalSteps ? 'inline-block' : 'none';
+    
+    // Update step text
+    document.getElementById('currentStepText').textContent = step;
+    
+    // Update step navigation
+    updateStepNavigation();
+    
+    // Update summary on final step
+    if (step === totalSteps) {
+        updateOrderSummary();
+    }
+}
+
+function validateStep(step) {
+    const stepElement = document.querySelector(`[data-step="${step}"]`);
+    const requiredFields = stepElement.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            if (isValid) {
+                field.focus();
+                isValid = false;
+            }
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+        }
+    });
+    
+    // Special validation for step 1 (asset type selection)
+    if (step === 1 && !document.getElementById('selectedAssetType').value) {
+        alert('Please select an asset type');
+        return false;
+    }
+    
+    return isValid;
+}
+
+function changeStep(direction) {
+    if (direction === 1) {
+        // Validate current step before moving forward
+        if (!validateStep(currentStep)) {
+            return;
+        }
+    }
+    
+    const newStep = currentStep + direction;
+    
+    if (newStep >= 1 && newStep <= totalSteps) {
+        currentStep = newStep;
+        showStep(currentStep);
+    }
+}
+
+function updateOrderSummary() {
+    // Update summary fields
+    document.getElementById('summaryAssetType').textContent = 
+        document.querySelector('.asset-card.selected h6')?.textContent || '-';
+    document.getElementById('summarySymbol').textContent = 
+        document.getElementById('symbol').value || '-';
+    
+    const orderSide = document.getElementById('order_side');
+    document.getElementById('summaryOrderSide').textContent = 
+        orderSide.options[orderSide.selectedIndex]?.text || '-';
+    
+    document.getElementById('summaryQuantity').textContent = 
+        document.getElementById('quantity').value || '-';
+    
+    const orderType = document.getElementById('order_type');
+    const orderTypeText = orderType.options[orderType.selectedIndex]?.text || '-';
+    const orderTypeClass = orderType.value ? `order-${orderType.value.toLowerCase().replace('_', '-')}` : '';
+    document.getElementById('summaryOrderType').innerHTML = 
+        orderTypeText !== '-' ? `<span class="order-type-indicator ${orderTypeClass}">${orderTypeText}</span>` : '-';
+    
+    // Calculate estimated value
+    const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+    const limitPrice = parseFloat(document.getElementById('limit_price').value) || 0;
+    const estimatedValue = quantity * limitPrice;
+    document.getElementById('summaryEstimatedValue').textContent = 
+        estimatedValue > 0 ? `$${estimatedValue.toLocaleString('en-US', {minimumFractionDigits: 2})}` : '-';
+}
+
+function populateAssetSpecificFields(assetType) {
+    const container = document.getElementById('assetSpecificFields');
+    let fieldsHtml = '';
+    
+    switch(assetType) {
+        case 'forex':
+            fieldsHtml = `
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <label for="base_currency" class="nvc-form-label required">Base Currency</label>
+                        <input type="text" class="nvc-form-input" id="base_currency" name="base_currency" 
+                               placeholder="USD" maxlength="3" required>
+                        <small class="text-light">3-letter currency code</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="quote_currency" class="nvc-form-label required">Quote Currency</label>
+                        <input type="text" class="nvc-form-input" id="quote_currency" name="quote_currency" 
+                               placeholder="EUR" maxlength="3" required>
+                        <small class="text-light">3-letter currency code</small>
+                    </div>
+                </div>
+            `;
+            break;
+        case 'commodity':
+            fieldsHtml = `
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <label for="commodity_type" class="nvc-form-label required">Commodity Type</label>
+                        <select class="nvc-form-select" id="commodity_type" name="commodity_type" required>
+                            <option value="">Select commodity</option>
+                            <option value="GOLD">Gold</option>
+                            <option value="SILVER">Silver</option>
+                            <option value="OIL">Oil</option>
+                            <option value="WHEAT">Wheat</option>
+                            <option value="CORN">Corn</option>
+                            <option value="NATURAL_GAS">Natural Gas</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="delivery_month" class="nvc-form-label">Delivery Month</label>
+                        <input type="text" class="nvc-form-input" id="delivery_month" name="delivery_month" 
+                               placeholder="202512" maxlength="6">
+                        <small class="text-light">Format: YYYYMM</small>
+                    </div>
+                </div>
+            `;
+            break;
+        case 'derivative':
+            fieldsHtml = `
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <label for="derivative_type" class="nvc-form-label required">Derivative Type</label>
+                        <select class="nvc-form-select" id="derivative_type" name="derivative_type" required>
+                            <option value="">Select derivative</option>
+                            <option value="OPTION">Option</option>
+                            <option value="FUTURE">Future</option>
+                            <option value="SWAP">Swap</option>
+                            <option value="FORWARD">Forward</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="strike_price" class="nvc-form-label">Strike Price</label>
+                        <div class="price-input-group">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" class="nvc-form-input" id="strike_price" name="strike_price" 
+                                   min="0.01" max="100000" step="0.01">
+                        </div>
+                        <small class="text-light">For options and warrants</small>
+                    </div>
+                </div>
+            `;
+            break;
+    }
+    
+    container.innerHTML = fieldsHtml;
+}
+
+// Initialize form
+document.addEventListener('DOMContentLoaded', function() {
+    showStep(1);
+    
+    // Asset type selection
+    document.querySelectorAll('.asset-card').forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected class from all cards
+            document.querySelectorAll('.asset-card').forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            
+            // Set hidden input value
+            const assetType = this.dataset.type;
+            document.getElementById('selectedAssetType').value = assetType;
+            
+            // Populate asset-specific fields for step 2
+            populateAssetSpecificFields(assetType);
+        });
+    });
+    
+    // Step navigation click handlers
+    document.querySelectorAll('.step-nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetStep = parseInt(this.dataset.step);
+            
+            // Only allow navigation to completed steps or the next step
+            if (targetStep <= currentStep + 1) {
+                // Validate current step if moving forward
+                if (targetStep > currentStep && !validateStep(currentStep)) {
+                    return;
+                }
+                
+                currentStep = targetStep;
+                showStep(currentStep);
+            }
+        });
+    });
+    
+    // Real-time validation
+    document.querySelectorAll('input[required], select[required]').forEach(field => {
+        field.addEventListener('blur', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+        
+        field.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+    
+    // Price field dependencies
+    document.getElementById('order_type').addEventListener('change', function() {
+        const orderType = this.value;
+        const limitPriceField = document.getElementById('limit_price');
+        const stopPriceField = document.getElementById('stop_price');
+        
+        // Show/hide price fields based on order type
+        limitPriceField.required = orderType === 'LIMIT' || orderType === 'STOP_LIMIT';
+        stopPriceField.required = orderType === 'STOP' || orderType === 'STOP_LIMIT';
+        
+        // Update field styling
+        [limitPriceField, stopPriceField].forEach(field => {
+            const label = document.querySelector(`label[for="${field.id}"]`);
+            if (field.required) {
+                label.classList.add('required');
+                field.parentElement.style.display = 'block';
+            } else {
+                label.classList.remove('required');
+                field.value = '';
+            }
+        });
+    });
+});
+
+// Form submission
+document.getElementById('tradingOrderForm').addEventListener('submit', function(e) {
+    if (!validateStep(5)) {
+        e.preventDefault();
+        return;
+    }
+    
+    if (!document.getElementById('selectedAssetType').value) {
+        e.preventDefault();
+        alert('Please select an asset type');
+        changeStep(-4); // Go back to step 1
+        return;
+    }
+});
+</script>
+</div>
+{% endblock %}

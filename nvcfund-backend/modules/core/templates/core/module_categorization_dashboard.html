@@ -1,0 +1,387 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Module Categorization Dashboard - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Module Categorization Dashboard{% endblock %}
+{% block page_description %}System module organization and categorization management{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Modules
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-layer-group"></i>
+    Auto-Categorize
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Module Categorization Functions
+function exportModuleData() {
+    const csvData = 'Module,Category,Status,Dependencies,Last Updated\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'module_categorization.csv';
+    a.click();
+}
+
+function refreshModules() {
+    location.reload();
+}
+
+function categorizeModules() {
+    alert('Auto-categorization functionality will be implemented');
+}
+
+function viewModuleDetails(moduleId) {
+    window.location.href = "{{ url_for('core.module_details') }}?id=" + moduleId;
+}
+
+function updateModuleCategory(moduleId, category) {
+    fetch('/core/modules/' + moduleId + '/category', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+        },
+        body: JSON.stringify({ category: category })
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Error updating module category');
+        }
+    });
+}
+
+// Add drilldown functionality for dashboard cards
+document.addEventListener('DOMContentLoaded', function() {
+    const dashboardCards = document.querySelectorAll('.dashboard-stat-card');
+    dashboardCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Total Modules')) {
+                window.location.href = "{{ url_for('core.module_overview') }}";
+            } else if (cardTitle?.includes('Core Modules')) {
+                window.location.href = "{{ url_for('core.module_overview') }}?category=core";
+            } else if (cardTitle?.includes('Business Modules')) {
+                window.location.href = "{{ url_for('core.module_overview') }}?category=business";
+            } else if (cardTitle?.includes('Service Modules')) {
+                window.location.href = "{{ url_for('core.module_overview') }}?category=service";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+        .text-warning { color: #f59e0b !important; }
+        .text-danger { color: #ef4444 !important; }
+        .text-info { color: #06b6d4 !important; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-sitemap me-2"></i>Module Categorization Dashboard
+                    </h4>
+                    <p class="text-light mb-0">Strategic organization of 30+ banking modules across 8 categories</p>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <!-- Overview Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-md-6 mb-3">
+                            <div class="card dashboard-stat-nvc-card">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="text-light text-uppercase fw-bold small">Total Modules</div>
+                                            <div class="h3 text-white mb-0">{{ statistics.total_modules }}</div>
+                                            <div class="text-info small">
+                                                <i class="fas fa-cubes me-1"></i>Organized modules
+                                            </div>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-cubes fa-2x text-info"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-3">
+                            <div class="card dashboard-stat-nvc-card">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="text-light text-uppercase fw-bold small">Categories</div>
+                                            <div class="h3 text-white mb-0">{{ statistics.categories_count }}</div>
+                                            <div class="text-success small">
+                                                <i class="fas fa-layer-group me-1"></i>Strategic categories
+                                            </div>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-layer-group fa-2x text-success"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-3">
+                            <div class="card dashboard-stat-nvc-card">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="text-light text-uppercase fw-bold small">Critical Priority</div>
+                                            <div class="h3 text-white mb-0">{{ statistics.priority_distribution.critical }}</div>
+                                            <div class="text-warning small">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>High priority modules
+                                            </div>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-3">
+                            <div class="card dashboard-stat-nvc-card">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="text-light text-uppercase fw-bold small">User Roles</div>
+                                            <div class="h3 text-white mb-0">{{ statistics.user_role_coverage|length }}</div>
+                                            <div class="text-primary small">
+                                                <i class="fas fa-users me-1"></i>Role coverage
+                                            </div>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-users fa-2x text-primary"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Breakdown -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="nvc-card">
+                                <div class="nvc-nvc-card-header">
+                                    <h5 class="mb-0">Category Breakdown</h5>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <div class="row">
+                                        {% for category in categories %}
+                                        <div class="col-xl-3 col-md-6 mb-3">
+                                            <div class="nvc-card border-primary">
+                                                <div class="nvc-nvc-card-body">
+                                                    <h6 class="nvc-card-title text-primary">{{ category.name }}</h6>
+                                                    <p class="text-light small">{{ category.module_count }} modules</p>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span class="badge bg-danger">Critical: {{ category.priority_distribution.critical }}</span>
+                                                        <span class="badge bg-warning">High: {{ category.priority_distribution.high }}</span>
+                                                        <span class="badge bg-info">Medium: {{ category.priority_distribution.medium }}</span>
+                                                    </div>
+                                                    <div class="mt-2">
+                                                        <strong>Subcategories:</strong>
+                                                        <ul class="list-unstyled small">
+                                                            {% for subcategory in category.subcategories %}
+                                                            <li><i class="fas fa-angle-right me-1"></i>{{ subcategory }}</li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Structure -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="nvc-card">
+                                <div class="nvc-nvc-card-header">
+                                    <h5 class="mb-0">Navigation Structure</h5>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <div class="row">
+                                        {% for category_key, category_data in navigation.items() %}
+                                        <div class="col-xl-6 col-lg-12 mb-3">
+                                            <div class="nvc-card">
+                                                <div class="nvc-nvc-card-header bg-primary text-white">
+                                                    <h6 class="mb-0">{{ category_data.display_name }}</h6>
+                                                </div>
+                                                <div class="nvc-nvc-card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Module</th>
+                                                                    <th>Subcategory</th>
+                                                                    <th>Priority</th>
+                                                                    <th>URL</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for module in category_data.modules %}
+                                                                <tr>
+                                                                    <td>
+                                                                        <i class="{{ module.icon }} me-2"></i>
+                                                                        {{ module.display_name }}
+                                                                    </td>
+                                                                    <td>{{ module.subcategory }}</td>
+                                                                    <td>
+                                                                        {% if module.priority == 1 %}
+                                                                            <span class="badge bg-danger">Critical</span>
+                                                                        {% elif module.priority == 2 %}
+                                                                            <span class="badge bg-warning">High</span>
+                                                                        {% elif module.priority == 3 %}
+                                                                            <span class="badge bg-info">Medium</span>
+                                                                        {% elif module.priority == 4 %}
+                                                                            <span class="badge bg-success">Low</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-secondary">Maintenance</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <a href="{{ module.url }}" class="btn btn-sm nvc-btn nvc-btn-outline-primary">
+                                                                            <i class="fas fa-external-link-alt"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Priority Distribution Chart -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="nvc-card">
+                                <div class="nvc-nvc-card-header">
+                                    <h5 class="mb-0">Priority Distribution</h5>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <canvas id="priorityChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="nvc-card">
+                                <div class="nvc-nvc-card-header">
+                                    <h5 class="mb-0">User Role Coverage</h5>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Role</th>
+                                                    <th>Module Access</th>
+                                                    <th>Coverage</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for role, count in statistics.user_role_coverage.items() %}
+                                                <tr>
+                                                    <td>{{ role.replace('_', ' ').title() }}</td>
+                                                    <td>{{ count }}</td>
+                                                    <td>
+                                                        <div class="progress">
+                                                            <div class="progress-bar" role="progressbar" 
+                                                                 style="width: {{ (count / statistics.total_modules * 100)|round(1) }}%"
+                                                                 aria-valuenow="{{ count }}" 
+                                                                 aria-valuemin="0" 
+                                                                 aria-valuemax="{{ statistics.total_modules }}">
+                                                                {{ (count / statistics.total_modules * 100)|round(1) }}%
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Priority Distribution Chart
+const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+const priorityChart = new Chart(priorityCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Critical', 'High', 'Medium', 'Low', 'Maintenance'],
+        datasets: [{
+            data: [
+                {{ statistics.priority_distribution.critical }},
+                {{ statistics.priority_distribution.high }},
+                {{ statistics.priority_distribution.medium }},
+                {{ statistics.priority_distribution.low }},
+                {{ statistics.priority_distribution.maintenance }}
+            ],
+            backgroundColor: [
+                '#dc3545',
+                '#ffc107',
+                '#17a2b8',
+                '#28a745',
+                '#6c757d'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: '#e2e8f0'
+                }
+            }
+        }
+    }
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

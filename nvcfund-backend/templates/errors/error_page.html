@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if error_code %}{{ error_code }} - {% endif %}NVC Banking Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 50%, #2a5298 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+        
+        .error-icon {
+            font-size: 6rem;
+            color: #66ccff;
+            margin-bottom: 2rem;
+        }
+        
+        .error-code {
+            font-size: 8rem;
+            font-weight: bold;
+            color: #66ccff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+        }
+        
+        .error-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        
+        .error-message {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #66ccff, #0066cc);
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #0066cc, #004499);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(102, 204, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #66ccff;
+            color: #66ccff;
+            padding: 10px 28px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+        
+        .btn-secondary:hover {
+            background: #66ccff;
+            color: #0a2447;
+        }
+        
+        .support-info {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        {% if error_code == 404 %}
+            <i class="fas fa-search error-icon"></i>
+            <div class="error-code">404</div>
+            <h1 class="error-title">Page Not Found</h1>
+            <p class="error-message">
+                The page you're looking for doesn't exist or has been moved. 
+                Please check the URL or navigate back to our homepage.
+            </p>
+        {% elif error_code == 403 %}
+            <i class="fas fa-lock error-icon"></i>
+            <div class="error-code">403</div>
+            <h1 class="error-title">Access Forbidden</h1>
+            <p class="error-message">
+                You don't have permission to access this resource. 
+                Please log in with appropriate credentials or contact support.
+            </p>
+        {% elif error_code == 401 %}
+            <i class="fas fa-user-lock error-icon"></i>
+            <div class="error-code">401</div>
+            <h1 class="error-title">Authentication Required</h1>
+            <p class="error-message">
+                You need to log in to access this page. 
+                Please authenticate with your banking credentials.
+            </p>
+        {% elif error_code == 500 %}
+            <i class="fas fa-tools error-icon"></i>
+            <div class="error-code">500</div>
+            <h1 class="error-title">Service Temporarily Unavailable</h1>
+            <p class="error-message">
+                We're experiencing technical difficulties. Our team has been notified 
+                and is working to resolve this issue as quickly as possible.
+            </p>
+        {% else %}
+            <i class="fas fa-exclamation-triangle error-icon"></i>
+            <div class="error-code">{{ error_code or '?' }}</div>
+            <h1 class="error-title">Unexpected Error</h1>
+            <p class="error-message">
+                Something went wrong. Our technical team has been notified 
+                and is investigating the issue. Please try again in a few moments.
+            </p>
+        {% endif %}
+        
+        <div>
+            <a href="/" class="nvc-btn nvc-btn-primary">
+                <i class="fas fa-home me-2"></i>Return to Homepage
+            </a>
+            {% if error_code == 401 %}
+                <a href="/auth/login" class="nvc-btn nvc-btn-secondary">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+            {% endif %}
+            {% if error_code in [404, 403] %}
+                <a href="javascript:history.back()" class="nvc-btn nvc-btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                </a>
+            {% endif %}
+        </div>
+        
+        <div class="support-info">
+            <p>
+                <i class="fas fa-phone me-2"></i>Need help? Contact support: support@nvcfund.com
+                <br>
+                <i class="fas fa-clock me-2"></i>24/7 Customer Service: 1-800-NVC-BANK
+            </p>
+        </div>
+    </div>
+</body>
+</html>

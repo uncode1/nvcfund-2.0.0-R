@@ -1,0 +1,273 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Treasury Officer - Rate Management Dashboard{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Treasury Officer Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">Treasury Officer Dashboard</h1>
+            <p class="text-light">Interest Rate Management & Policy Implementation</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-primary">Rate Authority: 0.50%</span>
+            <span class="badge bg-success">Treasury Officer</span>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card bg-primary text-white">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title">Federal Funds Rate</h5>
+                    <h2 class="mb-0">{{ federal_funds_rate }%}</h2>
+                    <small>Last Updated: {{ last_updated }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-success text-white">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title">Prime Rate</h5>
+                    <h2 class="mb-0">{{ prime_rate }%}</h2>
+                    <small>Fed + 3.00%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-info text-white">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title">Savings Rate</h5>
+                    <h2 class="mb-0">{{ savings_rate }%}</h2>
+                    <small>Current APY</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-warning text-white">
+                <div class="nvc-nvc-card-body">
+                    <h5 class="nvc-card-title">Pending Changes</h5>
+                    <h2 class="mb-0">{{ pending_changes }}</h2>
+                    <small>Awaiting Approval</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate Management Actions -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Rate Management Actions</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Consumer Products (Your Authority)</h6>
+                            <div class="list-group">
+                                <a href="{{ url_for('interest_rate_management.manage_consumer_rates') }}" class="list-group-item list-group-item-action">
+                                    <strong>Savings & Checking Rates</strong>
+                                    <br><small>Adjust deposit rates within 0.50% authority</small>
+                                </a>
+                                <a href="{{ url_for('interest_rate_management.manage_personal_loans') }}" class="list-group-item list-group-item-action">
+                                    <strong>Personal Loan Rates</strong>
+                                    <br><small>Consumer lending rate adjustments</small>
+                                </a>
+                                <a href="{{ url_for('interest_rate_management.manage_promotional_rates') }}" class="list-group-item list-group-item-action">
+                                    <strong>Promotional Rates</strong>
+                                    <br><small>Short-term promotional offerings</small>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Request Higher Authority</h6>
+                            <div class="list-group">
+                                <a href="{{ url_for('interest_rate_management.request_mortgage_authority') }}" class="list-group-item list-group-item-action">
+                                    <strong>Mortgage Rate Changes</strong>
+                                    <br><small>Requires Asset Liability Manager approval</small>
+                                </a>
+                                <a href="{{ url_for('interest_rate_management.request_commercial_authority') }}" class="list-group-item list-group-item-action">
+                                    <strong>Commercial Rate Changes</strong>
+                                    <br><small>Requires Asset Liability Manager approval</small>
+                                </a>
+                                <a href="{{ url_for('interest_rate_management.request_policy_authority') }}" class="list-group-item list-group-item-action">
+                                    <strong>Policy Rate Changes</strong>
+                                    <br><small>Requires CFO/Board approval</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Quick Rate Update</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('interest_rate_management.quick_rate_update') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Product Type</label>
+                            <select name="product_type" class="nvc-form-select" required>
+                                <option value="">Select Product</option>
+                                <option value="savings">Regular Savings</option>
+                                <option value="high_yield_savings">High-Yield Savings</option>
+                                <option value="checking">Checking Account</option>
+                                <option value="money_market">Money Market</option>
+                                <option value="personal_loan">Personal Loan</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">New Rate (%)</label>
+                            <input type="number" name="new_rate" class="nvc-form-input" step="0.0001" min="0" max="10" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Effective Date</label>
+                            <input type="datetime-local" name="effective_date" class="nvc-form-input" required>
+                        </div>
+                        <button type="submit" class="btn nvc-btn nvc-btn-primary w-100">Update Rate</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate History and Analytics -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Recent Rate Changes</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Product</th>
+                                    <th>From Rate</th>
+                                    <th>To Rate</th>
+                                    <th>Change</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for change in recent_changes %}
+                                <tr>
+                                    <td>{{ change.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ change.product_name }}</td>
+                                    <td>{{ "%.4f"|format(change.from_rate) }%}</td>
+                                    <td>{{ "%.4f"|format(change.to_rate) }%}</td>
+                                    <td>
+                                        {% if change.change_amount > 0 %}
+                                            <span class="text-success">+{{ "%.4f"|format(change.change_amount) }%}</span>
+                                        {% else %}
+                                            <span class="text-danger">{{ "%.4f"|format(change.change_amount) }%}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if change.status == 'approved' %}
+                                            <span class="badge bg-success">{{ change.status.title() }}</span>
+                                        {% elif change.status == 'pending' %}
+                                            <span class="badge bg-warning">{{ change.status.title() }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ change.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Market Intelligence</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <h6>Federal Reserve Updates</h6>
+                    <div class="mb-3">
+                        <small class="text-light">Next FOMC Meeting: {{ next_fomc_date }}</small>
+                        <br><small>Current Fed Policy: {{ fed_policy_stance }}</small>
+                    </div>
+                    
+                    <h6>Competitor Rates</h6>
+                    <div class="mb-3">
+                        {% for competitor in competitor_rates %}
+                        <div class="d-flex justify-content-between">
+                            <span>{{ competitor.name }}</span>
+                            <span>{{ "%.2f"|format(competitor.rate) }%}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <h6>Rate Recommendations</h6>
+                    <div class="alert nvc-nvc-alert-info">
+                        {{ rate_recommendation }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: 1px solid #2d5aa0;
+    background: #0a2447;
+    color: #ffffff;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #2d5aa0 0%, #1e3a8a 100%);
+    border-bottom: 1px solid #66ccff;
+}
+
+.list-group-item {
+    background: #0a2447;
+    border: 1px solid #2d5aa0;
+    color: #ffffff;
+}
+
+.list-group-item:hover {
+    background: #1e3a8a;
+    color: #66ccff;
+}
+
+.table-dark {
+    background: #0a2447;
+    color: #ffffff;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2d5aa0 0%, #1e3a8a 100%);
+    border: 1px solid #66ccff;
+}
+
+.form-control, .form-select {
+    background: #0a2447;
+    border: 1px solid #2d5aa0;
+    color: #ffffff;
+}
+
+.form-control:focus, .form-select:focus {
+    background: #0a2447;
+    border-color: #66ccff;
+    box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+    color: #ffffff;
+}
+</style>
+</div>
+{% endblock %}

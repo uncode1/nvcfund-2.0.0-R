@@ -1,0 +1,497 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Contract Deployment - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Contract Deployment{% endblock %}
+{% block page_description %}Deploy and manage NVCT smart contracts across multiple blockchain networks{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-list"></i>
+    View Deployed
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-rocket"></i>
+    Deploy Contract
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportDeploymentData() {
+    const csvData = 'Contract,Network,Address,Status,Deployed Date\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'contract_deployment.csv';
+    a.click();
+}
+
+function viewDeployedContracts() {
+    window.location.href = "{{ url_for('smart_contracts.manage_contracts') }}";
+}
+
+function deployNewContract() {
+    window.location.href = "{{ url_for('smart_contracts.deploy_contract') }}";
+}
+
+function deployContract(contractType, network) {
+    if (confirm(`Deploy ${contractType} contract to ${network}?`)) {
+        fetch('/smart-contracts/deploy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: JSON.stringify({
+                contract_type: contractType,
+                network: network
+            })
+        }).then(response => {
+            if (response.ok) {
+                alert('Contract deployment initiated');
+                location.reload();
+            } else {
+                alert('Error deploying contract');
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const deploymentCards = document.querySelectorAll('.card, .deployment-card');
+    deploymentCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Deployed Contracts')) {
+                window.location.href = "{{ url_for('smart_contracts.manage_contracts') }}";
+            } else if (cardTitle?.includes('Monitor')) {
+                window.location.href = "{{ url_for('smart_contracts.monitor_contracts') }}";
+            } else if (cardTitle?.includes('Audit')) {
+                window.location.href = "{{ url_for('smart_contracts.audit_contracts') }}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Deployment Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-primary">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="h2 text-white mb-2">
+                                <i class="fab fa-ethereum me-2"></i>Smart Contract Deployment
+                            </h1>
+                            <p class="text-light mb-0">Deploy and manage blockchain smart contracts</p>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('smart_contracts.smart_contracts_dashboard') }}" class="btn btn-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deployment Wizard -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-rocket me-2"></i>Contract Deployment Wizard</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <!-- Deployment Steps -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="step-item active">
+                                    <div class="step-number">1</div>
+                                    <div class="step-label">Contract Selection</div>
+                                </div>
+                                <div class="step-connector"></div>
+                                <div class="step-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-label">Configuration</div>
+                                </div>
+                                <div class="step-connector"></div>
+                                <div class="step-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-label">Testing</div>
+                                </div>
+                                <div class="step-connector"></div>
+                                <div class="step-item">
+                                    <div class="step-number">4</div>
+                                    <div class="step-label">Deployment</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contract Selection -->
+                    <form id="deploymentForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="nvc-form-label">Contract Type</label>
+                                <select class="nvc-form-select" id="contractType" required>
+                                    <option value="">Select Contract Type</option>
+                                    <option value="token">ERC-20 Token</option>
+                                    <option value="nft">ERC-721 NFT</option>
+                                    <option value="multisig">Multi-Signature Wallet</option>
+                                    <option value="stablecoin">NVCT Stablecoin</option>
+                                    <option value="bond">Treasury Bond Token</option>
+                                    <option value="escrow">Escrow Contract</option>
+                                    <option value="loan">Loan Agreement</option>
+                                    <option value="insurance">Insurance Policy</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="nvc-form-label">Blockchain Network</label>
+                                <select class="nvc-form-select" id="network" required>
+                                    <option value="">Select Network</option>
+                                    <option value="ethereum">Ethereum Mainnet</option>
+                                    <option value="polygon">Polygon</option>
+                                    <option value="bsc">Binance Smart Chain</option>
+                                    <option value="arbitrum">Arbitrum</option>
+                                    <option value="sepolia">Sepolia Testnet</option>
+                                    <option value="mumbai">Mumbai Testnet</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="nvc-form-label">Contract Name</label>
+                                <input type="text" class="nvc-form-input" id="contractName" placeholder="Enter contract name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="nvc-form-label">Symbol (for tokens)</label>
+                                <input type="text" class="nvc-form-input" id="tokenSymbol" placeholder="e.g., NVCT">
+                            </div>
+                        </div>
+
+                        <!-- Contract Parameters -->
+                        <div class="nvc-card bg-light mb-3">
+                            <div class="nvc-nvc-card-header">
+                                <h6><i class="fas fa-cog me-2"></i>Contract Parameters</h6>
+                            </div>
+                            <div class="nvc-nvc-card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label">Total Supply (for tokens)</label>
+                                        <input type="number" class="nvc-form-input" id="totalSupply" placeholder="1000000">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label">Decimals</label>
+                                        <input type="number" class="nvc-form-input" id="decimals" value="18" min="0" max="18">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label">Owner Address</label>
+                                        <input type="text" class="nvc-form-input" id="ownerAddress" placeholder="0x...">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label">Initial Mint To</label>
+                                        <input type="text" class="nvc-form-input" id="mintTo" placeholder="0x...">
+                                    </div>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="pausable">
+                                    <label class="form-check-label" for="pausable">
+                                        Pausable Contract
+                                    </label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="burnable">
+                                    <label class="form-check-label" for="burnable">
+                                        Burnable Tokens
+                                    </label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="mintable">
+                                    <label class="form-check-label" for="mintable">
+                                        Mintable Tokens
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gas Estimation -->
+                        <div class="nvc-card border-info mb-3">
+                            <div class="nvc-nvc-card-header bg-info text-white">
+                                <h6><i class="fas fa-gas-pump me-2"></i>Gas Estimation</h6>
+                            </div>
+                            <div class="nvc-nvc-card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <strong>Estimated Gas:</strong><br>
+                                        <span class="h6">{{ "2,547,821"|default("0") }}</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Gas Price:</strong><br>
+                                        <span class="h6">{{ "25 Gwei"|default("0") }}</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Estimated Cost:</strong><br>
+                                        <span class="h6 text-success">${{ "127.39"|default("0") }}</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>ETH Cost:</strong><br>
+                                        <span class="h6">{{ "0.0637 ETH"|default("0") }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deployment Actions -->
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-secondary">
+                                <i class="fas fa-vial me-2"></i>Test Contract
+                            </button>
+                            <div>
+                                <button type="button" class="btn nvc-btn nvc-btn-warning me-2">
+                                    <i class="fas fa-save me-2"></i>Save Draft
+                                </button>
+                                <button type="submit" class="btn nvc-btn nvc-btn-success">
+                                    <i class="fas fa-rocket me-2"></i>Deploy Contract
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deployment Status & History -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card mb-3">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-chart-bar me-2"></i>Deployment Stats</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Total Deployed</label>
+                        <div class="d-flex justify-content-between">
+                            <span class="h5">{{ "158"|default("0") }}</span>
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">This Month</label>
+                        <div class="d-flex justify-content-between">
+                            <span class="h5">{{ "12"|default("0") }}</span>
+                            <span class="badge bg-info">+3 from last month</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Total Gas Used</label>
+                        <div class="d-flex justify-content-between">
+                            <span class="h5">{{ "45.2M"|default("0") }}</span>
+                            <span class="badge bg-warning">Gas Units</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Success Rate</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-98">98%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-history me-2"></i>Recent Deployments</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6>NVCT Stablecoin</h6>
+                                <p class="text-light small">0x1234...5678</p>
+                                <span class="badge bg-success">Deployed</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6>Multi-Sig Wallet</h6>
+                                <p class="text-light small">0xabcd...efgh</p>
+                                <span class="badge bg-info">Testing</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6>Treasury Bond Token</h6>
+                                <p class="text-light small">0x9876...5432</p>
+                                <span class="badge bg-warning">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contract Templates -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-code me-2"></i>Pre-built Contract Templates</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="nvc-card h-100 border-primary">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <i class="fas fa-coins fa-3x text-primary mb-3"></i>
+                                    <h6>ERC-20 Token</h6>
+                                    <p class="text-light small">Standard fungible token contract</p>
+                                    <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">Use Template</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="nvc-card h-100 border-success">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <i class="fas fa-certificate fa-3x text-success mb-3"></i>
+                                    <h6>NFT Collection</h6>
+                                    <p class="text-light small">ERC-721 non-fungible tokens</p>
+                                    <button type="button" class="btn nvc-btn nvc-btn-success btn-sm">Use Template</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="nvc-card h-100 border-warning">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                                    <h6>Multi-Signature</h6>
+                                    <p class="text-light small">Secure multi-party wallet</p>
+                                    <button type="button" class="btn nvc-btn nvc-btn-warning btn-sm">Use Template</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="nvc-card h-100 border-info">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <i class="fas fa-handshake fa-3x text-info mb-3"></i>
+                                    <h6>Escrow Contract</h6>
+                                    <p class="text-light small">Secure payment escrow</p>
+                                    <button type="button" class="btn btn-info btn-sm">Use Template</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.step-item.active .step-number {
+    background-color: #0d6efd;
+}
+
+.step-label {
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.step-connector {
+    height: 2px;
+    background-color: #dee2e6;
+    flex: 1;
+    margin: 0 1rem;
+    margin-top: 20px;
+}
+
+.timeline {
+    position: relative;
+}
+
+.timeline-item {
+    display: flex;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.timeline-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.timeline-content {
+    flex: 1;
+}
+</style>
+
+<script>
+document.getElementById('deploymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Show deployment progress
+    alert('Contract deployment initiated! Check deployment status in the Smart Contracts dashboard.');
+});
+
+// Contract type change handler
+document.getElementById('contractType').addEventListener('change', function() {
+    const contractType = this.value;
+    const tokenSymbolField = document.getElementById('tokenSymbol');
+    const totalSupplyField = document.getElementById('totalSupply');
+    
+    if (contractType === 'token' || contractType === 'stablecoin') {
+        tokenSymbolField.required = true;
+        totalSupplyField.required = true;
+    } else {
+        tokenSymbolField.required = false;
+        totalSupplyField.required = false;
+    }
+});
+</script>
+</div>
+{% endblock %}

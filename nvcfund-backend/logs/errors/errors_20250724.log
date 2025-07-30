@@ -1,0 +1,30 @@
+2025-07-24T06:19:09.936653 - template_render_error: Failed to render homepage: 'moment' is undefined
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-24T07:25:31.364685 - template_render_error: Failed to render homepage: 'moment' is undefined
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-24T07:25:35.334756 - template_render_error: Failed to render homepage: 'moment' is undefined
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-24T07:25:39.186925 - template_render_error: Failed to render homepage: 'moment' is undefined
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-24T07:33:06.772863 - template_render_error: Failed to render homepage: 'moment' is undefined
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-24T07:33:21.353673 - template_render_error: Failed to render homepage: 'moment' is undefined
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-24T08:57:02.803320 - template_render_error: Failed to render homepage: 'moment' is undefined
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-24T09:19:09.691660 - template_render_error: Failed to render homepage: 'moment' is undefined
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-24T11:10:03.388624 - template_render_error: Failed to render homepage: 'moment' is undefined
+Details: {'route': 'public.index', 'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 OPR/119.0.0.0', 'ip_address': '127.0.0.1'}
+---
+2025-07-24T18:00:07.676405 - DASHBOARD_ERROR: Could not build url for endpoint 'treasury.transaction_details' with values ['transaction_id']. Did you mean 'banking.transaction_details' instead?
+Details: {'user_id': 1}
+---

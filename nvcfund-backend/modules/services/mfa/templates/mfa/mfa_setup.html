@@ -1,0 +1,381 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Multi-Factor Authentication Setup - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- MFA Setup Header -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Multi-Factor Authentication Setup
+                    </h3>
+                    <p class="mb-0">Secure your account with an additional layer of protection</p>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="text-light">
+                                Multi-Factor Authentication (MFA) adds an extra layer of security to your NVC Banking account. 
+                                Once enabled, you'll need both your password and a verification code to sign in.
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-lock fa-4x text-primary mb-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MFA Methods -->
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-mobile-alt me-2"></i>Choose Your Authentication Method</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <!-- Authenticator App -->
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card border-success h-100">
+                                <div class="nvc-nvc-card-header bg-success text-white">
+                                    <h6><i class="fas fa-mobile-alt me-2"></i>Authenticator App</h6>
+                                    <small>Recommended</small>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <p class="nvc-card-text">
+                                        Use apps like Google Authenticator, Authy, or Microsoft Authenticator to generate time-based codes.
+                                    </p>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Works offline</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Most secure</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Fast setup</li>
+                                    </ul>
+                                    <button type="button" class="btn nvc-btn nvc-btn-success w-100" data-action="custom-action">
+                                        Setup Authenticator App
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SMS -->
+                        <div class="col-md-6 mb-4">
+                            <div class="nvc-card border-warning h-100">
+                                <div class="nvc-nvc-card-header bg-warning text-white">
+                                    <h6><i class="fas fa-sms me-2"></i>SMS Text Message</h6>
+                                    <small>Backup option</small>
+                                </div>
+                                <div class="nvc-nvc-card-body">
+                                    <p class="nvc-card-text">
+                                        Receive verification codes via SMS text message to your mobile phone.
+                                    </p>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Requires cell signal</li>
+                                        <li><i class="fas fa-info-circle text-info me-2"></i>Easy to use</li>
+                                        <li><i class="fas fa-clock text-secondary me-2"></i>May have delays</li>
+                                    </ul>
+                                    <button type="button" class="btn nvc-btn nvc-btn-warning w-100" data-action="custom-action">
+                                        Setup SMS Authentication
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Authenticator App Setup (Hidden by default) -->
+            <div class="nvc-card mt-4" id="authenticatorSetup" class="d-none">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h5><i class="fas fa-mobile-alt me-2"></i>Authenticator App Setup</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Step 1: Install an Authenticator App</h6>
+                            <p>Download one of these apps on your mobile device:</p>
+                            <ul>
+                                <li><strong>Google Authenticator</strong> - Available on iOS and Android</li>
+                                <li><strong>Microsoft Authenticator</strong> - Available on iOS and Android</li>
+                                <li><strong>Authy</strong> - Available on iOS, Android, and Desktop</li>
+                            </ul>
+
+                            <h6 class="mt-4">Step 2: Scan QR Code</h6>
+                            <p>Open your authenticator app and scan this QR code:</p>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <div class="border p-3 rounded">
+                                <div id="qrcode"></div>
+                                <p class="mt-3 small text-light">
+                                    Can't scan? Use this key manually:<br>
+                                    <code id="manualKey">{{ manual_key or "JBSWY3DPEHPK3PXP" }}</code>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6>Step 3: Enter Verification Code</h6>
+                            <p>Enter the 6-digit code from your authenticator app to verify setup:</p>
+                            <form id="verifyAuthenticatorForm">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <input type="text" class="nvc-form-input text-center" id="verificationCode" 
+                                               placeholder="000000" maxlength="6" pattern="[0-9]{6}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn nvc-btn nvc-btn-success">Verify & Enable MFA</button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn nvc-btn nvc-btn-secondary" data-action="custom-action">Cancel</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SMS Setup (Hidden by default) -->
+            <div class="nvc-card mt-4" id="smsSetup" class="d-none">
+                <div class="nvc-nvc-card-header bg-warning text-white">
+                    <h5><i class="fas fa-sms me-2"></i>SMS Authentication Setup</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="smsSetupForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Step 1: Enter Phone Number</h6>
+                                <p>We'll send verification codes to this number:</p>
+                                <div class="mb-3">
+                                    <label class="nvc-form-label">Phone Number</label>
+                                    <div class="input-group">
+                                        <select class="nvc-form-select" style="max-width: 120px;">
+                                            <option value="+1">+1 (US)</option>
+                                            <option value="+44">+44 (UK)</option>
+                                            <option value="+49">+49 (DE)</option>
+                                            <option value="+33">+33 (FR)</option>
+                                            <option value="+81">+81 (JP)</option>
+                                        </select>
+                                        <input type="tel" class="nvc-form-input" placeholder="(555) 123-4567" required>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn nvc-btn nvc-btn-warning" data-action="custom-action">
+                                    Send Test Code
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Step 2: Verify Phone Number</h6>
+                                <p>Enter the 6-digit code sent to your phone:</p>
+                                <div class="mb-3" id="smsVerificationStep" class="d-none">
+                                    <label class="nvc-form-label">Verification Code</label>
+                                    <input type="text" class="nvc-form-input text-center" id="smsVerificationCode" 
+                                           placeholder="000000" maxlength="6" pattern="[0-9]{6}">
+                                </div>
+                                <div id="smsActions" class="d-none">
+                                    <button type="button" class="btn nvc-btn nvc-btn-success" data-action="custom-action">
+                                        Verify & Enable SMS MFA
+                                    </button>
+                                    <button type="button" class="btn nvc-btn nvc-btn-secondary ms-2" data-action="custom-action">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Backup Codes -->
+            <div class="nvc-card mt-4" id="backupCodes" class="d-none">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h5><i class="fas fa-key me-2"></i>Backup Recovery Codes</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="alert nvc-nvc-alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Save these backup codes in a secure location. 
+                        You can use these codes to access your account if you lose your authenticator device.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="bg-light p-3 rounded">
+                                <div class="row text-center">
+                                    <div class="col-6 mb-2"><code>8A4F-2B9E</code></div>
+                                    <div class="col-6 mb-2"><code>C7D3-5F8A</code></div>
+                                    <div class="col-6 mb-2"><code>1E9B-4C7D</code></div>
+                                    <div class="col-6 mb-2"><code>6F2A-8E5B</code></div>
+                                    <div class="col-6 mb-2"><code>9D4C-7A1E</code></div>
+                                    <div class="col-6 mb-2"><code>3B8F-6D2A</code></div>
+                                    <div class="col-6 mb-2"><code>7E1C-5A9B</code></div>
+                                    <div class="col-6 mb-2"><code>4D7F-2E8C</code></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Backup Code Instructions:</h6>
+                            <ul>
+                                <li>Each code can only be used once</li>
+                                <li>Store them in a password manager or safe place</li>
+                                <li>Don't share these codes with anyone</li>
+                                <li>You can generate new codes anytime</li>
+                            </ul>
+                            <div class="mt-3">
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary me-2" data-action="custom-action">
+                                    <i class="fas fa-download me-1"></i>Download
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-secondary" data-action="custom-action">
+                                    <i class="fas fa-print me-1"></i>Print
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="button" class="btn nvc-btn nvc-btn-success btn-lg" data-action="custom-action">
+                            <i class="fas fa-check me-2"></i>Complete MFA Setup
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MFA Status (If already enabled) -->
+            {% if mfa_enabled %}
+            <div class="nvc-card mt-4">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h5><i class="fas fa-check-circle me-2"></i>MFA is Enabled</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="mb-3">Your account is protected with Multi-Factor Authentication.</p>
+                            <p><strong>Enabled Methods:</strong></p>
+                            <ul>
+                                <li><i class="fas fa-mobile-alt text-success me-2"></i>Authenticator App</li>
+                                {% if sms_enabled %}
+                                <li><i class="fas fa-sms text-success me-2"></i>SMS: {{ masked_phone or "*****1234" }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-shield-check fa-4x text-success"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary me-2" data-action="custom-action">
+                            Add Backup Method
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-warning me-2" data-action="custom-action">
+                            New Backup Codes
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-danger" data-action="custom-action">
+                            Disable MFA
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+function setupAuthenticatorApp() {
+    document.getElementById('authenticatorSetup').style.display = 'block';
+    document.getElementById('smsSetup').style.display = 'none';
+    
+    // Generate QR code
+    const secret = 'JBSWY3DPEHPK3PXP'; // In production, this would be generated by the server
+    const issuer = 'NVC Banking';
+    const account = '{{ user.email if user else "user@nvcbank.com" }}';
+    const otpauth_url = `otpauth://totp/${issuer}:${account}?secret=${secret}&issuer=${issuer}`;
+    
+    QRCode.toCanvas(document.getElementById('qrcode'), otpauth_url, function (error) {
+        if (error) console.error(error);
+    });
+    
+    document.getElementById('manualKey').textContent = secret;
+}
+
+function setupSMS() {
+    document.getElementById('smsSetup').style.display = 'block';
+    document.getElementById('authenticatorSetup').style.display = 'none';
+}
+
+function cancelSetup() {
+    document.getElementById('authenticatorSetup').style.display = 'none';
+    document.getElementById('smsSetup').style.display = 'none';
+}
+
+function sendSMSCode() {
+    // In production, this would send an actual SMS
+    document.getElementById('smsVerificationStep').style.display = 'block';
+    document.getElementById('smsActions').style.display = 'block';
+    alert('Verification code sent to your phone!');
+}
+
+function verifySMSCode() {
+    const code = document.getElementById('smsVerificationCode').value;
+    if (code.length === 6) {
+        document.getElementById('backupCodes').style.display = 'block';
+        document.getElementById('smsSetup').style.display = 'none';
+    } else {
+        alert('Please enter a valid 6-digit code.');
+    }
+}
+
+document.getElementById('verifyAuthenticatorForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const code = document.getElementById('verificationCode').value;
+    if (code.length === 6) {
+        document.getElementById('backupCodes').style.display = 'block';
+        document.getElementById('authenticatorSetup').style.display = 'none';
+    } else {
+        alert('Please enter a valid 6-digit code.');
+    }
+});
+
+function downloadBackupCodes() {
+    const codes = ['8A4F-2B9E', 'C7D3-5F8A', '1E9B-4C7D', '6F2A-8E5B', '9D4C-7A1E', '3B8F-6D2A', '7E1C-5A9B', '4D7F-2E8C'];
+    const blob = new Blob([codes.join('\n')], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nvc-banking-backup-codes.txt';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function printBackupCodes() {
+    window.print();
+}
+
+function completeMFASetup() {
+    alert('Multi-Factor Authentication has been successfully enabled for your account!');
+    window.location.href = "{{ url_for('dashboard.dashboard_home') }}";
+}
+
+function addBackupMethod() {
+    // Show setup options for additional methods
+    alert('Additional authentication method setup would be displayed here.');
+}
+
+function regenerateBackupCodes() {
+    if (confirm('Are you sure you want to generate new backup codes? Your current codes will no longer work.')) {
+        alert('New backup codes generated successfully!');
+    }
+}
+
+function disableMFA() {
+    if (confirm('Are you sure you want to disable Multi-Factor Authentication? This will make your account less secure.')) {
+        alert('MFA has been disabled. You can re-enable it anytime from your security settings.');
+    }
+}
+</script>
+</div>
+{% endblock %}

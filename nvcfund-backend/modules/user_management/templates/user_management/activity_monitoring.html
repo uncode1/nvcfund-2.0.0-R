@@ -1,0 +1,566 @@
+{% extends "unified_base.html" %}
+
+{% block title %}User Activity Monitoring - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            background-color: #0a2447;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .main-content {
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid #66ccff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.3);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 100%);
+            border-bottom: 1px solid #66ccff;
+            color: #66ccff;
+            font-weight: bold;
+        }
+        .activity-item {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        .activity-item:hover {
+            background: rgba(30, 60, 114, 0.5);
+            transform: translateY(-2px);
+        }
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        .activity-success { background: rgba(40, 167, 69, 0.3); color: #28a745; }
+        .activity-warning { background: rgba(255, 193, 7, 0.3); color: #ffc107; }
+        .activity-danger { background: rgba(220, 53, 69, 0.3); color: #dc3545; }
+        .activity-info { background: rgba(23, 162, 184, 0.3); color: #17a2b8; }
+        .metric-card {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.4);
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #66ccff;
+        }
+        .metric-label {
+            font-size: 0.9em;
+            color: #ccc;
+            margin-top: 5px;
+        }
+        .chart-container {
+            background: rgba(30, 60, 114, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .filter-controls {
+            background: rgba(30, 60, 114, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .form-control, .form-select {
+            background: #1e3c72;
+            border: 1px solid #66ccff;
+            color: #ffffff;
+        }
+        .form-control:focus, .form-select:focus {
+            background: #1e3c72;
+            border-color: #66ccff;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            border: none;
+            color: #0a2447;
+            font-weight: bold;
+        }
+        .security-alert {
+            border-left: 4px solid #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 15px;
+        }
+        .session-item {
+            background: rgba(30, 60, 114, 0.2);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1><i class="fas fa-chart-line"></i> User Activity Monitoring</h1>
+                            <p class="mb-0">Real-time monitoring of user activities and security events</p>
+                        </div>
+                        <div>
+                            <span class="badge bg-info">Live Monitoring</span>
+                            <span class="text-light ms-2">Auto-refresh: 30s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="filter-controls">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">User Filter</label>
+                        <select class="nvc-form-select" id="userFilter">
+                            <option value="all">All Users</option>
+                            <option value="active">Active Users</option>
+                            <option value="flagged">Flagged Users</option>
+                            <option value="new">New Users</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">Activity Type</label>
+                        <select class="nvc-form-select" id="activityType">
+                            <option value="all">All Activities</option>
+                            <option value="login">Login/Logout</option>
+                            <option value="transaction">Transactions</option>
+                            <option value="security">Security Events</option>
+                            <option value="admin">Admin Actions</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">Time Range</label>
+                        <select class="nvc-form-select" id="timeRange">
+                            <option value="1h">Last Hour</option>
+                            <option value="24h" selected>Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="nvc-form-label">&nbsp;</label>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary w-100" data-action="custom-action">
+                            <i class="fas fa-refresh"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Metrics -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="metric-nvc-card">
+                        <div class="metric-value text-success">2,847</div>
+                        <div class="metric-label">Total Activities (24h)</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-nvc-card">
+                        <div class="metric-value text-info">445</div>
+                        <div class="metric-label">Active Users</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-nvc-card">
+                        <div class="metric-value text-warning">12</div>
+                        <div class="metric-label">Security Alerts</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-nvc-card">
+                        <div class="metric-value text-danger">3</div>
+                        <div class="metric-label">Blocked Activities</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Recent Activities -->
+                <div class="col-md-8">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-list"></i> Recent User Activities</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="activity-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="activity-icon activity-success me-3">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>User Login</strong>
+                                            <small class="text-light">2 minutes ago</small>
+                                        </div>
+                                        <div class="text-light small">john.anderson@nvcfund.com logged in from Chrome on Windows</div>
+                                        <div class="text-light small">IP: 192.168.1.100 | Location: New York, US</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="activity-icon activity-info me-3">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>Fund Transfer</strong>
+                                            <small class="text-light">5 minutes ago</small>
+                                        </div>
+                                        <div class="text-light small">sarah.johnson@nvcfund.com transferred $2,500.00</div>
+                                        <div class="text-light small">From: Checking (****1234) To: Savings (****5678)</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="activity-icon activity-warning me-3">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>Failed Login Attempt</strong>
+                                            <small class="text-light">8 minutes ago</small>
+                                        </div>
+                                        <div class="text-light small">Multiple failed login attempts for user.blocked@nvcfund.com</div>
+                                        <div class="text-light small">IP: 89.34.156.78 | Location: Unknown</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="activity-icon activity-success me-3">
+                                        <i class="fas fa-credit-nvc-card"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>Card Transaction</strong>
+                                            <small class="text-light">12 minutes ago</small>
+                                        </div>
+                                        <div class="text-light small">mike.thompson@nvcfund.com made a purchase of $45.67</div>
+                                        <div class="text-light small">Merchant: Amazon.com | Card: ****1234</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="activity-icon activity-danger me-3">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>Security Alert</strong>
+                                            <small class="text-light">15 minutes ago</small>
+                                        </div>
+                                        <div class="text-light small">Suspicious activity detected for admin@nvcfund.com</div>
+                                        <div class="text-light small">Multiple high-value transfers from unusual location</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="activity-icon activity-info me-3">
+                                        <i class="fas fa-user-plus"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>New Account Creation</strong>
+                                            <small class="text-light">18 minutes ago</small>
+                                        </div>
+                                        <div class="text-light small">emma.davis@nvcfund.com completed account registration</div>
+                                        <div class="text-light small">Account Type: Individual | KYC Status: Pending</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Analytics -->
+                <div class="col-md-4">
+                    <div class="nvc-card mb-4">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-chart-pie"></i> Activity Breakdown</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="chart-container">
+                                <canvas id="activityChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-users"></i> Active Sessions</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="session-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>john.anderson@nvcfund.com</strong>
+                                        <div class="text-light small">Desktop - Chrome</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success small">Active</div>
+                                        <div class="text-light small">2m ago</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="session-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>sarah.johnson@nvcfund.com</strong>
+                                        <div class="text-light small">Mobile - Safari</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success small">Active</div>
+                                        <div class="text-light small">5m ago</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="session-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>mike.thompson@nvcfund.com</strong>
+                                        <div class="text-light small">Tablet - Chrome</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-warning small">Idle</div>
+                                        <div class="text-light small">12m ago</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="session-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>emma.davis@nvcfund.com</strong>
+                                        <div class="text-light small">Desktop - Firefox</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success small">Active</div>
+                                        <div class="text-light small">18m ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Alerts -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-shield-alt"></i> Security Alerts & Suspicious Activities</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="security-nvc-alert">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong><i class="fas fa-exclamation-triangle"></i> High Risk Activity</strong>
+                                        <div class="mt-2">Multiple large transfers ($50K+) detected from admin@nvcfund.com account</div>
+                                        <div class="text-light small">IP: 89.34.156.78 | Location: Eastern Europe | Risk Score: 95/100</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-danger">Block User</button>
+                                        <div class="text-light small mt-1">15 minutes ago</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="security-nvc-alert">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong><i class="fas fa-user-shield"></i> Brute Force Attempt</strong>
+                                        <div class="mt-2">50+ failed login attempts detected for user.blocked@nvcfund.com</div>
+                                        <div class="text-light small">IP: 45.123.67.89 | Location: Asia | Risk Score: 88/100</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning">Block IP</button>
+                                        <div class="text-light small mt-1">32 minutes ago</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="security-nvc-alert">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong><i class="fas fa-map-marker-alt"></i> Unusual Location Access</strong>
+                                        <div class="mt-2">Login from new country detected for verified.user@nvcfund.com</div>
+                                        <div class="text-light small">IP: 203.45.67.123 | Location: Southeast Asia | Risk Score: 65/100</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info">Verify User</button>
+                                        <div class="text-light small mt-1">1 hour ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Trends -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-chart-area"></i> Activity Trends (24 Hours)</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="chart-container">
+                                <canvas id="trendsChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Chart configurations
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#ffffff'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(102, 204, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#ffffff'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(102, 204, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#ffffff'
+                    }
+                }
+            }
+        };
+
+        // Activity Breakdown Chart
+        const activityCtx = document.getElementById('activityChart').getContext('2d');
+        new Chart(activityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Logins', 'Transactions', 'Admin', 'Security', 'Other'],
+                datasets: [{
+                    data: [45, 30, 10, 8, 7],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(23, 162, 184, 0.8)',
+                        'rgba(102, 204, 255, 0.8)',
+                        'rgba(220, 53, 69, 0.8)',
+                        'rgba(108, 117, 125, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Activity Trends Chart
+        const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+        new Chart(trendsCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: 'User Logins',
+                    data: [45, 23, 67, 134, 156, 98, 76],
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Transactions',
+                    data: [23, 12, 45, 89, 123, 67, 45],
+                    borderColor: '#17a2b8',
+                    backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Security Events',
+                    data: [2, 1, 4, 8, 12, 6, 3],
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: chartOptions
+        });
+
+        function refreshData() {
+            location.reload();
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshData, 30000);
+    </script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

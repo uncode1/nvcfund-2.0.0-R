@@ -1,0 +1,447 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Islamic Banking Dashboard - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Islamic Banking Dashboard{% endblock %}
+{% block page_description %}Sharia-compliant banking services and portfolio management{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+  <a href="{{ url_for('products.dashboard') }}">Products</a>
+</li>
+<li class="nvc-breadcrumb-item active" aria-current="page">Islamic Banking</li>
+{% endblock %}
+
+{% block page_actions %}
+{% if check_permission('can_access_islamic_products') %}
+<div class="nvc-page-actions-group">
+  <a href="{{ url_for('islamic_banking.islamic_products') }}" class="nvc-btn nvc-btn-primary nvc-wcag-focus nvc-touch-target">
+    <i class="fas fa-plus" aria-hidden="true"></i>
+    <span>New Islamic Product</span>
+  </a>
+  <a href="{{ url_for('islamic_banking.sharia_compliance') }}" class="nvc-btn nvc-btn-outline nvc-wcag-focus nvc-touch-target">
+    <i class="fas fa-certificate" aria-hidden="true"></i>
+    <span>Compliance Report</span>
+  </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+  <!-- Sharia Compliance Header -->
+  <div class="nvc-compliance-header nvc-card nvc-card-elevated">
+    <div class="nvc-card-body">
+      <div class="nvc-compliance-status-display">
+        <div class="nvc-compliance-icon">
+          <i class="fas fa-mosque nvc-wcag-high-contrast" aria-hidden="true"></i>
+        </div>
+        <div class="nvc-compliance-info">
+          <h2 class="nvc-wcag-high-contrast">Islamic Banking Portfolio</h2>
+          <p class="nvc-text-accessible">Fully Sharia-compliant financial services</p>
+        </div>
+        <div class="nvc-compliance-score">
+          <div class="nvc-score-value nvc-wcag-high-contrast">
+            {{ "%.1f"|format(compliance_data.compliance_metrics.overall_compliance_score) }}%
+          </div>
+          <div class="nvc-score-label nvc-text-accessible">Compliance Score</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics Overview -->
+  <div class="nvc-metrics-grid">
+    <!-- Total Portfolio Metric -->
+    <div class="nvc-metric-card">
+      <a
+        href="{{ url_for('islamic_banking.islamic_products') }}"
+        class="nvc-metric-link nvc-wcag-focus"
+        aria-label="View Islamic financing products portfolio"
+      >
+        <div class="nvc-card nvc-card-elevated nvc-card-hover">
+          <div class="nvc-card-body">
+            <div class="nvc-metric-header">
+              <div class="nvc-metric-icon">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+              </div>
+              <h3 class="nvc-metric-title nvc-wcag-high-contrast">Total Portfolio</h3>
+            </div>
+            <div class="nvc-metric-content">
+              <div class="nvc-metric-value nvc-financial-data-accessible nvc-currency">
+                ${{ "%.1f"|format(products_data.financing_products.murabaha.total_portfolio + products_data.financing_products.ijara.total_portfolio + products_data.financing_products.musharaka.total_portfolio + products_data.financing_products.mudaraba.total_portfolio) }}B
+              </div>
+              <div class="nvc-metric-label nvc-text-accessible">Islamic Financing</div>
+              <div class="nvc-metric-action">
+                <span class="nvc-text-accessible">
+                  <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                  View Financing Products
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Sukuk Management Metric -->
+    <div class="nvc-metric-card">
+      <a
+        href="{{ url_for('islamic_banking.sukuk_management') }}"
+        class="nvc-metric-link nvc-wcag-focus"
+        aria-label="View Sukuk management dashboard"
+      >
+        <div class="nvc-card nvc-card-elevated nvc-card-hover">
+          <div class="nvc-card-body">
+            <div class="nvc-metric-header">
+              <div class="nvc-metric-icon nvc-icon-success">
+                <i class="fas fa-certificate" aria-hidden="true"></i>
+              </div>
+              <h3 class="nvc-metric-title nvc-wcag-high-contrast">Sukuk Portfolio</h3>
+            </div>
+                        <h6 class="mb-0">
+                            <i class="fas fa-certificate me-2"></i>
+                            Sukuk Outstanding
+                        </h6>
+                    </div>
+                    <div class="nvc-nvc-card-body text-center">
+                        <h3 class="text-success">${{ "%.1f"|format(products_data.investment_products.sukuk.outstanding_sukuk) }}B</h3>
+                        <small class="text-light">Islamic Bonds</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Sukuk Management</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('islamic_banking.islamic_products') }}" class="text-decoration-none">
+                <div class="card border-0 dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-header bg-warning text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-users me-2"></i>
+                            Active Customers
+                        </h6>
+                    </div>
+                    <div class="nvc-nvc-card-body text-center">
+                        <h3 class="text-warning">{{ "{:,}".format(products_data.banking_services.current_accounts.account_holders + products_data.banking_services.savings_accounts.account_holders) }}</h3>
+                        <small class="text-light">Islamic Accounts</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Customer Management</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('islamic_banking.zakat_management') }}" class="text-decoration-none">
+                <div class="card border-0 dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-hand-holding-heart me-2"></i>
+                            Zakat Distributed
+                        </h6>
+                    </div>
+                    <div class="nvc-nvc-card-body text-center">
+                        <h3 class="text-info">${{ "%.2f"|format((products_data.financing_products.murabaha.total_portfolio + products_data.financing_products.ijara.total_portfolio) * 0.025) }}B</h3>
+                        <small class="text-light">Annual Zakat</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Zakat Management</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Islamic Financing Products -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-handshake me-2"></i>
+                        Islamic Financing Products
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded bg-light mb-3">
+                                <h6 class="text-light mb-1">Murabaha</h6>
+                                <h4 class="text-primary">${{ "%.1f"|format(products_data.financing_products.murabaha.total_portfolio) }}B</h4>
+                                <small class="text-light">{{ "{:,}".format(products_data.financing_products.murabaha.active_contracts) }} contracts</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded bg-light mb-3">
+                                <h6 class="text-light mb-1">Ijara</h6>
+                                <h4 class="text-success">${{ "%.1f"|format(products_data.financing_products.ijara.total_portfolio) }}B</h4>
+                                <small class="text-light">{{ "{:,}".format(products_data.financing_products.ijara.active_contracts) }} leases</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded bg-light">
+                                <h6 class="text-light mb-1">Musharaka</h6>
+                                <h4 class="text-warning">${{ "%.1f"|format(products_data.financing_products.musharaka.total_portfolio) }}B</h4>
+                                <small class="text-light">{{ "{:,}".format(products_data.financing_products.musharaka.active_partnerships) }} partnerships</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded bg-light">
+                                <h6 class="text-light mb-1">Mudaraba</h6>
+                                <h4 class="text-info">${{ "%.1f"|format(products_data.financing_products.mudaraba.total_portfolio) }}B</h4>
+                                <small class="text-light">{{ "{:,}".format(products_data.financing_products.mudaraba.active_investments) }} investments</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Sharia Compliance Status
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="text-center mb-3">
+                        <div class="display-6 text-success">{{ "%.1f"|format(compliance_data.compliance_metrics.overall_compliance_score) }}%</div>
+                        <p class="text-light">Overall Compliance Score</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <small class="text-light">Products Certified:</small>
+                                <div class="fw-bold text-success">{{ compliance_data.compliance_metrics.products_certified }}/{{ compliance_data.compliance_metrics.products_reviewed }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <small class="text-light">Violations:</small>
+                                <div class="fw-bold text-success">{{ compliance_data.compliance_metrics.compliance_violations }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <span class="badge bg-success">{{ compliance_data.sharia_board.members }} Sharia Board Members</span>
+                        <span class="badge bg-info ms-2">{{ compliance_data.audit_activities.internal_audits.completed_ytd }} Audits YTD</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Products -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-area me-2"></i>
+                        Islamic Investment Products
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-light mb-3">Sukuk Portfolio</h6>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Total Issuance:</span>
+                                    <span class="fw-bold">${{ "%.1f"|format(products_data.investment_products.sukuk.total_issuance) }}B</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Outstanding:</span>
+                                    <span class="fw-bold">${{ "%.1f"|format(products_data.investment_products.sukuk.outstanding_sukuk) }}B</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Average Yield:</span>
+                                    <span class="fw-bold text-primary">{{ "%.2f"|format(products_data.investment_products.sukuk.average_yield) }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-light mb-3">Halal Investment Funds</h6>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Total AUM:</span>
+                                    <span class="fw-bold">${{ "%.1f"|format(products_data.investment_products.islamic_funds.total_aum) }}B</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">Number of Funds:</span>
+                                    <span class="fw-bold">{{ products_data.investment_products.islamic_funds.number_of_funds }}</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-light">YTD Performance:</span>
+                                    <span class="fw-bold text-success">{{ "%.2f"|format(products_data.investment_products.islamic_funds.performance_ytd) }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Sharia Board
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Chairman:</span>
+                            <span class="fw-bold">{{ compliance_data.sharia_board.chairman }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Members:</span>
+                            <span class="fw-bold">{{ compliance_data.sharia_board.members }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Meeting:</span>
+                            <span class="fw-bold">{{ compliance_data.sharia_board.meeting_frequency }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-light">Next Meeting:</span>
+                            <span class="fw-bold text-info">{{ compliance_data.sharia_board.next_meeting }}</span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        {% for cert in compliance_data.sharia_board.certifications %}
+                        <span class="badge bg-outline-primary me-1 mb-1">{{ cert }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Islamic Banking Services
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <a href="{{ url_for('islamic_banking.murabaha_financing') }}" class="btn nvc-btn nvc-btn-outline-primary w-100 mb-2">
+                                <i class="fas fa-handshake me-2"></i>
+                                Murabaha
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ url_for('islamic_banking.ijara_leasing') }}" class="btn nvc-btn nvc-btn-outline-success w-100 mb-2">
+                                <i class="fas fa-home me-2"></i>
+                                Ijara Leasing
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ url_for('islamic_banking.sukuk_management') }}" class="btn nvc-btn nvc-btn-outline-info w-100 mb-2">
+                                <i class="fas fa-certificate me-2"></i>
+                                Sukuk Bonds
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ url_for('islamic_banking.halal_investments') }}" class="btn nvc-btn nvc-btn-outline-warning w-100 mb-2">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Halal Investments
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ url_for('islamic_banking.zakat_management') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100 mb-2">
+                                <i class="fas fa-hand-holding-heart me-2"></i>
+                                Zakat
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ url_for('islamic_banking.sharia_compliance') }}" class="btn nvc-btn nvc-btn-outline-danger w-100 mb-2">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Compliance
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.badge.bg-outline-primary {
+    border: 1px solid #0d6efd;
+    color: #0d6efd;
+    background-color: transparent;
+}
+</style>
+
+<script>
+// Islamic Banking Dashboard Drilldown Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add drilldown functionality for inner metric cards (not wrapped in anchor tags)
+    const innerMetricCards = document.querySelectorAll('.text-center.p-3.border.rounded.bg-light');
+    innerMetricCards.forEach(card => {
+        card.style.cursor = 'pointer';
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+
+        // Add click handlers for drilldown navigation
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h6')?.textContent;
+            handleIslamicBankingDrilldown(cardTitle);
+        });
+    });
+});
+
+function handleIslamicBankingDrilldown(cardTitle) {
+    if (!cardTitle) return;
+
+    if (cardTitle.includes('Murabaha')) {
+        window.location.href = "{{ url_for('islamic_banking.murabaha_financing') }}?view=portfolio";
+    } else if (cardTitle.includes('Ijara')) {
+        window.location.href = "{{ url_for('islamic_banking.ijara_leasing') }}?view=active_leases";
+    } else if (cardTitle.includes('Musharaka')) {
+        window.location.href = "{{ url_for('islamic_banking.musharaka_partnerships') }}?view=active";
+    } else if (cardTitle.includes('Mudaraba')) {
+        window.location.href = "{{ url_for('islamic_banking.mudaraba_investments') }}?view=portfolio";
+    }
+}
+</script>
+</div>
+{% endblock %}

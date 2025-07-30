@@ -1,0 +1,636 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Cards & Payments Settings - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <style>
+    /* Page-specific enhancements for form elements */
+    .form-check-input {
+        background-color: #2d3748 !important;
+        border: 1px solid #4a5568 !important;
+    }
+    
+    .form-check-input:checked {
+        background-color: #3182ce !important;
+        border-color: #3182ce !important;
+    }
+    
+    .form-range {
+        background-color: transparent !important;
+    }
+    
+    .form-range::-webkit-slider-track {
+        background-color: #4a5568 !important;
+    }
+    
+    .form-range::-webkit-slider-thumb {
+        background-color: #3182ce !important;
+    }
+    
+    .small, .text-light.small {
+        color: #718096 !important;
+    }
+    
+    .bg-secondary {
+        background-color: #2d3748 !important;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-white mb-1">
+                        <i class="fas fa-cog me-2 text-warning"></i>Cards & Payments Settings
+                    </h2>
+                    <p class="text-light mb-0">Configure payment processing parameters and security settings</p>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn nvc-btn nvc-btn-success" id="saveSettingsBtn">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-secondary" id="resetSettingsBtn">
+                        <i class="fas fa-undo me-2"></i>Reset to Defaults
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav>
+                <div class="nav nav-pills nav-fill bg-dark border rounded" id="nav-tab" role="tablist">
+                    <button class="nav-link active text-white" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+                        <i class="fas fa-globe me-2"></i>General Settings
+                    </button>
+                    <button class="nav-link text-white" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+                        <i class="fas fa-shield-alt me-2"></i>Security & Fraud
+                    </button>
+                    <button class="nav-link text-white" id="processing-tab" data-bs-toggle="tab" data-bs-target="#processing" type="button" role="tab">
+                        <i class="fas fa-credit-nvc-card me-2"></i>Processing Rules
+                    </button>
+                    <button class="nav-link text-white" id="compliance-tab" data-bs-toggle="tab" data-bs-target="#compliance" type="button" role="tab">
+                        <i class="fas fa-balance-scale me-2"></i>Compliance
+                    </button>
+                    <button class="nav-link text-white" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab">
+                        <i class="fas fa-bell me-2"></i>Notifications
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="tab-content" id="nav-tabContent">
+        <!-- General Settings Tab -->
+        <div class="tab-pane fade show active" id="general" role="tabpanel">
+            <div class="row">
+                <div class="col-xl-6 mb-4">
+                    <div class="nvc-card bg-dark border-primary h-100">
+                        <div class="nvc-nvc-card-header border-bottom border-primary">
+                            <h5 class="text-white mb-0">
+                                <i class="fas fa-sliders-h me-2"></i>Transaction Limits
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <form>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label text-white">Daily Transaction Limit</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="25000" min="1000" max="100000">
+                                        </div>
+                                        <small class="text-light">Maximum daily transaction amount per card</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label text-white">Monthly Transaction Limit</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="500000" min="10000" max="2000000">
+                                        </div>
+                                        <small class="text-light">Maximum monthly transaction amount per card</small>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label text-white">ATM Withdrawal Limit</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="1500" min="100" max="5000">
+                                        </div>
+                                        <small class="text-light">Daily ATM withdrawal limit</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label text-white">International Transaction Limit</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="10000" min="500" max="50000">
+                                        </div>
+                                        <small class="text-light">Daily international transaction limit</small>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-6 mb-4">
+                    <div class="nvc-card bg-dark border-info h-100">
+                        <div class="nvc-nvc-card-header border-bottom border-info">
+                            <h5 class="text-white mb-0">
+                                <i class="fas fa-clock me-2"></i>Processing Timeouts
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label class="nvc-form-label text-white">Transaction Timeout</label>
+                                    <select class="nvc-form-select bg-dark text-white border-secondary">
+                                        <option value="30">30 seconds</option>
+                                        <option value="60" selected>60 seconds</option>
+                                        <option value="90">90 seconds</option>
+                                        <option value="120">2 minutes</option>
+                                    </select>
+                                    <small class="text-light">Maximum time to wait for transaction response</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="nvc-form-label text-white">Settlement Cut-off Time</label>
+                                    <input type="time" class="nvc-form-input bg-dark text-white border-secondary" value="17:00">
+                                    <small class="text-light">Daily settlement processing cut-off time</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="nvc-form-label text-white">Batch Processing Interval</label>
+                                    <select class="nvc-form-select bg-dark text-white border-secondary">
+                                        <option value="15">Every 15 minutes</option>
+                                        <option value="30" selected>Every 30 minutes</option>
+                                        <option value="60">Every hour</option>
+                                    </select>
+                                    <small class="text-light">Frequency of batch transaction processing</small>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security & Fraud Tab -->
+        <div class="tab-pane fade" id="security" role="tabpanel">
+            <div class="row">
+                <div class="col-xl-8 mb-4">
+                    <div class="nvc-card bg-dark border-danger h-100">
+                        <div class="nvc-nvc-card-header border-bottom border-danger">
+                            <h5 class="text-white mb-0">
+                                <i class="fas fa-shield-alt me-2"></i>Fraud Detection Rules
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="velocityCheck" checked>
+                                        <label class="form-check-label text-white" for="velocityCheck">
+                                            Velocity Checking
+                                        </label>
+                                        <div class="text-light small">Monitor rapid successive transactions</div>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="geoCheck" checked>
+                                        <label class="form-check-label text-white" for="geoCheck">
+                                            Geographic Anomaly Detection
+                                        </label>
+                                        <div class="text-light small">Flag transactions from unusual locations</div>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="amountCheck" checked>
+                                        <label class="form-check-label text-white" for="amountCheck">
+                                            Unusual Amount Detection
+                                        </label>
+                                        <div class="text-light small">Monitor atypical transaction amounts</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="deviceCheck" checked>
+                                        <label class="form-check-label text-white" for="deviceCheck">
+                                            Device Fingerprinting
+                                        </label>
+                                        <div class="text-light small">Track device characteristics and patterns</div>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="behaviorCheck" checked>
+                                        <label class="form-check-label text-white" for="behaviorCheck">
+                                            Behavioral Analysis
+                                        </label>
+                                        <div class="text-light small">Analyze spending pattern deviations</div>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="blacklistCheck" checked>
+                                        <label class="form-check-label text-white" for="blacklistCheck">
+                                            Blacklist Screening
+                                        </label>
+                                        <div class="text-light small">Check against known fraud databases</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="nvc-form-label text-white">Risk Score Threshold</label>
+                                    <input type="range" class="form-range" min="1" max="100" value="75" id="riskThreshold">
+                                    <div class="d-flex justify-content-between text-light small">
+                                        <span>Low Risk</span>
+                                        <span id="riskValue">75</span>
+                                        <span>High Risk</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="nvc-form-label text-white">Velocity Limit (transactions/hour)</label>
+                                    <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="10" min="1" max="50">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="nvc-form-label text-white">Geographic Radius (miles)</label>
+                                    <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="50" min="1" max="500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 mb-4">
+                    <div class="nvc-card bg-dark border-warning h-100">
+                        <div class="nvc-nvc-card-header border-bottom border-warning">
+                            <h5 class="text-white mb-0">
+                                <i class="fas fa-key me-2"></i>Security Parameters
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="mb-3">
+                                <label class="nvc-form-label text-white">CVV Verification</label>
+                                <select class="nvc-form-select bg-dark text-white border-secondary">
+                                    <option value="required" selected>Always Required</option>
+                                    <option value="optional">Optional</option>
+                                    <option value="disabled">Disabled</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label text-white">3D Secure</label>
+                                <select class="nvc-form-select bg-dark text-white border-secondary">
+                                    <option value="mandatory" selected>Mandatory</option>
+                                    <option value="optional">Optional</option>
+                                    <option value="risk-based">Risk-Based</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label text-white">PIN Verification Attempts</label>
+                                <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="3" min="1" max="10">
+                                <small class="text-light">Maximum failed PIN attempts before card block</small>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="tokenization" checked>
+                                    <label class="form-check-label text-white" for="tokenization">
+                                        Card Tokenization
+                                    </label>
+                                </div>
+                                <small class="text-light">Replace card numbers with secure tokens</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Rules Tab -->
+        <div class="tab-pane fade" id="processing" role="tabpanel">
+            <div class="row">
+                <div class="col-xl-6 mb-4">
+                    <div class="nvc-card bg-dark border-success h-100">
+                        <div class="nvc-nvc-card-header border-bottom border-success">
+                            <h5 class="text-white mb-0">
+                                <i class="fas fa-credit-nvc-card me-2"></i>Card Processing
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="mb-3">
+                                <label class="nvc-form-label text-white">Authorization Response Time</label>
+                                <select class="nvc-form-select bg-dark text-white border-secondary">
+                                    <option value="5">5 seconds</option>
+                                    <option value="10" selected>10 seconds</option>
+                                    <option value="15">15 seconds</option>
+                                    <option value="30">30 seconds</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label text-white">Retry Attempts</label>
+                                <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="3" min="1" max="5">
+                                <small class="text-light">Number of retry attempts for failed transactions</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label text-white">Auto-Approval Threshold</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="100" min="1" max="1000">
+                                </div>
+                                <small class="text-light">Transactions below this amount are auto-approved</small>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="offlineProcessing" checked>
+                                <label class="form-check-label text-white" for="offlineProcessing">
+                                    Enable Offline Processing
+                                </label>
+                                <div class="text-light small">Allow transactions when system is offline</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-6 mb-4">
+                    <div class="nvc-card bg-dark border-info h-100">
+                        <div class="nvc-nvc-card-header border-bottom border-info">
+                            <h5 class="text-white mb-0">
+                                <i class="fas fa-exchange-alt me-2"></i>Settlement Rules
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="mb-3">
+                                <label class="nvc-form-label text-white">Settlement Schedule</label>
+                                <select class="nvc-form-select bg-dark text-white border-secondary">
+                                    <option value="daily" selected>Daily Settlement</option>
+                                    <option value="weekly">Weekly Settlement</option>
+                                    <option value="bi-weekly">Bi-weekly Settlement</option>
+                                    <option value="monthly">Monthly Settlement</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label text-white">Settlement Currency</label>
+                                <select class="nvc-form-select bg-dark text-white border-secondary">
+                                    <option value="USD" selected>USD - US Dollar</option>
+                                    <option value="EUR">EUR - Euro</option>
+                                    <option value="GBP">GBP - British Pound</option>
+                                    <option value="CAD">CAD - Canadian Dollar</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label text-white">Minimum Settlement Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="1000" min="1" max="10000">
+                                </div>
+                                <small class="text-light">Minimum amount required for settlement processing</small>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="autoSettlement" checked>
+                                <label class="form-check-label text-white" for="autoSettlement">
+                                    Automatic Settlement
+                                </label>
+                                <div class="text-light small">Automatically process settlements</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance Tab -->
+        <div class="tab-pane fade" id="compliance" role="tabpanel">
+            <div class="row">
+                <div class="col-xl-12 mb-4">
+                    <div class="nvc-card bg-dark border-primary">
+                        <div class="nvc-nvc-card-header border-bottom border-primary">
+                            <h5 class="text-white mb-0">
+                                <i class="fas fa-balance-scale me-2"></i>Regulatory Compliance Settings
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="nvc-card bg-secondary border-success mb-3">
+                                        <div class="nvc-nvc-card-body text-center">
+                                            <h6 class="text-white">PCI DSS</h6>
+                                            <div class="form-check form-switch d-flex justify-content-center">
+                                                <input class="form-check-input" type="checkbox" id="pciCompliance" checked disabled>
+                                            </div>
+                                            <small class="text-success">Compliant</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="nvc-card bg-secondary border-success mb-3">
+                                        <div class="nvc-nvc-card-body text-center">
+                                            <h6 class="text-white">GDPR</h6>
+                                            <div class="form-check form-switch d-flex justify-content-center">
+                                                <input class="form-check-input" type="checkbox" id="gdprCompliance" checked disabled>
+                                            </div>
+                                            <small class="text-success">Compliant</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="nvc-card bg-secondary border-success mb-3">
+                                        <div class="nvc-nvc-card-body text-center">
+                                            <h6 class="text-white">SOX</h6>
+                                            <div class="form-check form-switch d-flex justify-content-center">
+                                                <input class="form-check-input" type="checkbox" id="soxCompliance" checked disabled>
+                                            </div>
+                                            <small class="text-success">Compliant</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="nvc-card bg-secondary border-success mb-3">
+                                        <div class="nvc-nvc-card-body text-center">
+                                            <h6 class="text-white">AML/KYC</h6>
+                                            <div class="form-check form-switch d-flex justify-content-center">
+                                                <input class="form-check-input" type="checkbox" id="amlCompliance" checked disabled>
+                                            </div>
+                                            <small class="text-success">Compliant</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6 class="text-white mb-3">Audit Settings</h6>
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-white">Audit Log Retention</label>
+                                        <select class="nvc-form-select bg-dark text-white border-secondary">
+                                            <option value="1">1 year</option>
+                                            <option value="3">3 years</option>
+                                            <option value="7" selected>7 years</option>
+                                            <option value="10">10 years</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="realTimeLogging" checked>
+                                        <label class="form-check-label text-white" for="realTimeLogging">
+                                            Real-time Transaction Logging
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-white mb-3">Reporting</h6>
+                                    <div class="mb-3">
+                                        <label class="nvc-form-label text-white">Suspicious Activity Threshold</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="10000" min="1000" max="100000">
+                                        </div>
+                                        <small class="text-light">Auto-generate SAR for transactions above this amount</small>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="autoReporting" checked>
+                                        <label class="form-check-label text-white" for="autoReporting">
+                                            Automatic Regulatory Reporting
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div class="tab-pane fade" id="notifications" role="tabpanel">
+            <div class="row">
+                <div class="col-xl-6 mb-4">
+                    <div class="nvc-card bg-dark border-info h-100">
+                        <div class="nvc-nvc-card-header border-bottom border-info">
+                            <h5 class="text-white mb-0">
+                                <i class="fas fa-envelope me-2"></i>Email Notifications
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="transactionEmails" checked>
+                                <label class="form-check-label text-white" for="transactionEmails">
+                                    Transaction Confirmations
+                                </label>
+                                <div class="text-light small">Send email for each transaction</div>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="fraudEmails" checked>
+                                <label class="form-check-label text-white" for="fraudEmails">
+                                    Fraud Alerts
+                                </label>
+                                <div class="text-light small">Immediate fraud detection alerts</div>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="systemEmails" checked>
+                                <label class="form-check-label text-white" for="systemEmails">
+                                    System Status Updates
+                                </label>
+                                <div class="text-light small">Maintenance and system notifications</div>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="reportEmails">
+                                <label class="form-check-label text-white" for="reportEmails">
+                                    Daily Reports
+                                </label>
+                                <div class="text-light small">Daily transaction summary reports</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-6 mb-4">
+                    <div class="nvc-card bg-dark border-warning h-100">
+                        <div class="nvc-nvc-card-header border-bottom border-warning">
+                            <h5 class="text-white mb-0">
+                                <i class="fas fa-mobile me-2"></i>SMS & Push Notifications
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="transactionSMS" checked>
+                                <label class="form-check-label text-white" for="transactionSMS">
+                                    Transaction SMS
+                                </label>
+                                <div class="text-light small">SMS alerts for large transactions</div>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="fraudSMS" checked>
+                                <label class="form-check-label text-white" for="fraudSMS">
+                                    Fraud SMS Alerts
+                                </label>
+                                <div class="text-light small">Immediate SMS for suspected fraud</div>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="cardBlockSMS" checked>
+                                <label class="form-check-label text-white" for="cardBlockSMS">
+                                    Card Status Changes
+                                </label>
+                                <div class="text-light small">SMS when cards are blocked/unblocked</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="nvc-form-label text-white">SMS Threshold Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input bg-dark text-white border-secondary" value="500" min="1" max="10000">
+                                </div>
+                                <small class="text-light">Send SMS for transactions above this amount</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Interactive Elements -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Risk threshold slider
+    const riskSlider = document.getElementById('riskThreshold');
+    const riskValue = document.getElementById('riskValue');
+    
+    if (riskSlider && riskValue) {
+        riskSlider.addEventListener('input', function() {
+            riskValue.textContent = this.value;
+        });
+    }
+    
+    // Save settings button
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            // Simulate saving
+            this.innerHTML = '<i class="fas fa-check me-2"></i>Saved!';
+            this.classList.remove('btn-success');
+            this.classList.add('btn-outline-success');
+            
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-save me-2"></i>Save Changes';
+                this.classList.remove('btn-outline-success');
+                this.classList.add('btn-success');
+            }, 2000);
+        });
+    }
+    
+    // Reset settings button
+    const resetBtn = document.getElementById('resetSettingsBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all settings to defaults? This action cannot be undone.')) {
+                // Reset logic would go here
+                alert('Settings have been reset to defaults.');
+            }
+        });
+    }
+});
+</script>
+</div>
+{% endblock %}

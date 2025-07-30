@@ -1,0 +1,481 @@
+<!-- Live Crypto Prices Component -->
+<!-- 
+This component displays the top 5 cryptocurrency prices with live updates from Binance API
+Features:
+- Real-time price updates via WebSocket
+- WCAG AA+ accessibility compliance
+- Responsive design
+- Error handling and fallback data
+-->
+
+{% macro live_crypto_prices(show_header=true, compact_mode=false) %}
+<div class="nvc-crypto-prices-widget" id="cryptoPricesWidget">
+    {% if show_header %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0 text-white">
+            <i class="fab fa-bitcoin me-2 text-warning" aria-hidden="true"></i>
+            Live Crypto Prices
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+            <span class="nvc-status-indicator" id="cryptoStatus" aria-label="Connection status">
+                <i class="fas fa-circle text-success" aria-hidden="true"></i>
+                <small class="text-muted">Live</small>
+            </span>
+            <button type="button" 
+                    class="btn btn-outline-light btn-sm nvc-wcag-focus" 
+                    onclick="refreshCryptoPrices()" 
+                    aria-label="Refresh crypto prices">
+                <i class="fas fa-sync-alt" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Crypto Prices Table -->
+    <div class="nvc-crypto-table-container">
+        <div class="table-responsive">
+            <table class="table table-sm nvc-crypto-table" role="table" aria-label="Live cryptocurrency prices">
+                <thead>
+                    <tr role="row">
+                        <th scope="col" class="text-white-50">Asset</th>
+                        <th scope="col" class="text-white-50 text-end">Price</th>
+                        <th scope="col" class="text-white-50 text-end">24h Change</th>
+                        {% if not compact_mode %}
+                        <th scope="col" class="text-white-50 text-end d-none d-md-table-cell">Volume</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody id="cryptoPricesBody">
+                    <!-- Loading state -->
+                    <tr class="crypto-loading">
+                        <td colspan="{% if compact_mode %}3{% else %}4{% endif %}" class="text-center py-4">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                                    <span class="visually-hidden">Loading crypto prices...</span>
+                                </div>
+                                <span class="text-muted">Loading live prices...</span>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Fallback data (will be replaced by live data) -->
+                    <tr class="crypto-row d-none" data-symbol="BTCUSDT">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fab fa-bitcoin text-warning me-2" aria-hidden="true"></i>
+                                <div>
+                                    <span class="fw-medium text-white">BTC</span>
+                                    {% if not compact_mode %}
+                                    <br><small class="text-muted">Bitcoin</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <span class="crypto-price text-white fw-medium">$--,---</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="crypto-change badge">--%</span>
+                        </td>
+                        {% if not compact_mode %}
+                        <td class="text-end d-none d-md-table-cell">
+                            <small class="crypto-volume text-muted">$--B</small>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    
+                    <tr class="crypto-row d-none" data-symbol="ETHUSDT">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fab fa-ethereum text-info me-2" aria-hidden="true"></i>
+                                <div>
+                                    <span class="fw-medium text-white">ETH</span>
+                                    {% if not compact_mode %}
+                                    <br><small class="text-muted">Ethereum</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <span class="crypto-price text-white fw-medium">$--,---</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="crypto-change badge">--%</span>
+                        </td>
+                        {% if not compact_mode %}
+                        <td class="text-end d-none d-md-table-cell">
+                            <small class="crypto-volume text-muted">$--B</small>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    
+                    <tr class="crypto-row d-none" data-symbol="BNBUSDT">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-coins text-warning me-2" aria-hidden="true"></i>
+                                <div>
+                                    <span class="fw-medium text-white">BNB</span>
+                                    {% if not compact_mode %}
+                                    <br><small class="text-muted">Binance Coin</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <span class="crypto-price text-white fw-medium">$---</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="crypto-change badge">--%</span>
+                        </td>
+                        {% if not compact_mode %}
+                        <td class="text-end d-none d-md-table-cell">
+                            <small class="crypto-volume text-muted">$--B</small>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    
+                    <tr class="crypto-row d-none" data-symbol="ADAUSDT">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-circle text-primary me-2" aria-hidden="true"></i>
+                                <div>
+                                    <span class="fw-medium text-white">ADA</span>
+                                    {% if not compact_mode %}
+                                    <br><small class="text-muted">Cardano</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <span class="crypto-price text-white fw-medium">$-.--</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="crypto-change badge">--%</span>
+                        </td>
+                        {% if not compact_mode %}
+                        <td class="text-end d-none d-md-table-cell">
+                            <small class="crypto-volume text-muted">$--B</small>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    
+                    <tr class="crypto-row d-none" data-symbol="SOLUSDT">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-sun text-success me-2" aria-hidden="true"></i>
+                                <div>
+                                    <span class="fw-medium text-white">SOL</span>
+                                    {% if not compact_mode %}
+                                    <br><small class="text-muted">Solana</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <span class="crypto-price text-white fw-medium">$---</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="crypto-change badge">--%</span>
+                        </td>
+                        {% if not compact_mode %}
+                        <td class="text-end d-none d-md-table-cell">
+                            <small class="crypto-volume text-muted">$--B</small>
+                        </td>
+                        {% endif %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="nvc-crypto-error d-none" id="cryptoError">
+        <div class="text-center py-4">
+            <i class="fas fa-exclamation-triangle text-warning mb-2" aria-hidden="true"></i>
+            <p class="text-muted mb-2">Unable to load live prices</p>
+            <button type="button" 
+                    class="btn btn-outline-light btn-sm nvc-wcag-focus" 
+                    onclick="refreshCryptoPrices()"
+                    aria-label="Retry loading crypto prices">
+                <i class="fas fa-redo me-1" aria-hidden="true"></i>
+                Retry
+            </button>
+        </div>
+    </div>
+
+    <!-- Last Updated -->
+    <div class="text-center mt-2">
+        <small class="text-muted" id="cryptoLastUpdated">
+            <i class="fas fa-clock me-1" aria-hidden="true"></i>
+            Last updated: --:--
+        </small>
+    </div>
+</div>
+
+<script>
+// Live Crypto Prices Widget JavaScript
+class LiveCryptoPrices {
+    constructor() {
+        this.socket = null;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 5;
+        this.updateInterval = null;
+        this.isConnected = false;
+        
+        this.init();
+    }
+    
+    init() {
+        this.connectWebSocket();
+        this.startPeriodicUpdates();
+        
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.pauseUpdates();
+            } else {
+                this.resumeUpdates();
+            }
+        });
+    }
+    
+    connectWebSocket() {
+        try {
+            // Connect to Binance WebSocket namespace
+            this.socket = io('/binance', {
+                transports: ['websocket', 'polling'],
+                timeout: 10000
+            });
+            
+            this.socket.on('connect', () => {
+                console.log('Connected to crypto price stream');
+                this.isConnected = true;
+                this.reconnectAttempts = 0;
+                this.updateStatus('connected');
+                this.requestInitialData();
+            });
+            
+            this.socket.on('disconnect', () => {
+                console.log('Disconnected from crypto price stream');
+                this.isConnected = false;
+                this.updateStatus('disconnected');
+                this.attemptReconnect();
+            });
+            
+            this.socket.on('market_data_update', (data) => {
+                this.updatePrices(data);
+            });
+            
+            this.socket.on('connect_error', (error) => {
+                console.error('WebSocket connection error:', error);
+                this.updateStatus('error');
+                this.fallbackToHTTP();
+            });
+            
+        } catch (error) {
+            console.error('Failed to initialize WebSocket:', error);
+            this.fallbackToHTTP();
+        }
+    }
+    
+    requestInitialData() {
+        if (this.socket && this.isConnected) {
+            this.socket.emit('request_market_data');
+        }
+    }
+    
+    updatePrices(data) {
+        if (!data || !data.data) return;
+        
+        const tbody = document.getElementById('cryptoPricesBody');
+        const loadingRow = tbody.querySelector('.crypto-loading');
+        const errorDiv = document.getElementById('cryptoError');
+        
+        // Hide loading and error states
+        if (loadingRow) loadingRow.classList.add('d-none');
+        if (errorDiv) errorDiv.classList.add('d-none');
+        
+        // Show crypto rows
+        const cryptoRows = tbody.querySelectorAll('.crypto-row');
+        cryptoRows.forEach(row => row.classList.remove('d-none'));
+        
+        // Update each crypto price
+        const topCryptos = data.data.slice(0, 5);
+        topCryptos.forEach((crypto, index) => {
+            const row = cryptoRows[index];
+            if (row) {
+                this.updateCryptoRow(row, crypto);
+            }
+        });
+        
+        // Update last updated time
+        this.updateLastUpdated();
+        this.updateStatus('connected');
+    }
+    
+    updateCryptoRow(row, crypto) {
+        const priceElement = row.querySelector('.crypto-price');
+        const changeElement = row.querySelector('.crypto-change');
+        const volumeElement = row.querySelector('.crypto-volume');
+        
+        if (priceElement) {
+            const price = parseFloat(crypto.lastPrice || crypto.price);
+            priceElement.textContent = this.formatPrice(price);
+        }
+        
+        if (changeElement) {
+            const change = parseFloat(crypto.priceChangePercent || crypto.change_24h);
+            changeElement.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+            changeElement.className = `crypto-change badge ${change >= 0 ? 'bg-success' : 'bg-danger'}`;
+        }
+        
+        if (volumeElement) {
+            const volume = parseFloat(crypto.volume || crypto.volume_24h);
+            volumeElement.textContent = this.formatVolume(volume);
+        }
+    }
+    
+    formatPrice(price) {
+        if (price >= 1000) {
+            return `$${price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        } else if (price >= 1) {
+            return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        } else {
+            return `$${price.toFixed(4)}`;
+        }
+    }
+    
+    formatVolume(volume) {
+        if (volume >= 1e9) {
+            return `$${(volume / 1e9).toFixed(1)}B`;
+        } else if (volume >= 1e6) {
+            return `$${(volume / 1e6).toFixed(1)}M`;
+        } else if (volume >= 1e3) {
+            return `$${(volume / 1e3).toFixed(1)}K`;
+        } else {
+            return `$${volume.toFixed(0)}`;
+        }
+    }
+    
+    updateStatus(status) {
+        const statusIndicator = document.getElementById('cryptoStatus');
+        if (!statusIndicator) return;
+        
+        const icon = statusIndicator.querySelector('i');
+        const text = statusIndicator.querySelector('small');
+        
+        switch (status) {
+            case 'connected':
+                icon.className = 'fas fa-circle text-success';
+                text.textContent = 'Live';
+                break;
+            case 'disconnected':
+                icon.className = 'fas fa-circle text-warning';
+                text.textContent = 'Reconnecting...';
+                break;
+            case 'error':
+                icon.className = 'fas fa-circle text-danger';
+                text.textContent = 'Error';
+                break;
+        }
+    }
+    
+    updateLastUpdated() {
+        const lastUpdatedElement = document.getElementById('cryptoLastUpdated');
+        if (lastUpdatedElement) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            lastUpdatedElement.innerHTML = `<i class="fas fa-clock me-1" aria-hidden="true"></i>Last updated: ${timeString}`;
+        }
+    }
+    
+    startPeriodicUpdates() {
+        // Fallback HTTP updates every 30 seconds
+        this.updateInterval = setInterval(() => {
+            if (!this.isConnected) {
+                this.fetchHTTPPrices();
+            }
+        }, 30000);
+    }
+    
+    async fetchHTTPPrices() {
+        try {
+            const response = await fetch('/services/integrations/blockchain/binance/live-prices');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status === 'success') {
+                    this.updatePrices({ data: data.ticker_data });
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch HTTP prices:', error);
+            this.showError();
+        }
+    }
+    
+    fallbackToHTTP() {
+        console.log('Falling back to HTTP polling');
+        this.fetchHTTPPrices();
+    }
+    
+    showError() {
+        const tbody = document.getElementById('cryptoPricesBody');
+        const loadingRow = tbody.querySelector('.crypto-loading');
+        const errorDiv = document.getElementById('cryptoError');
+        
+        if (loadingRow) loadingRow.classList.add('d-none');
+        if (errorDiv) errorDiv.classList.remove('d-none');
+        
+        this.updateStatus('error');
+    }
+    
+    attemptReconnect() {
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            setTimeout(() => {
+                console.log(`Reconnection attempt ${this.reconnectAttempts}`);
+                this.connectWebSocket();
+            }, 2000 * this.reconnectAttempts);
+        }
+    }
+    
+    pauseUpdates() {
+        if (this.socket) {
+            this.socket.disconnect();
+        }
+    }
+    
+    resumeUpdates() {
+        if (!this.isConnected) {
+            this.connectWebSocket();
+        }
+    }
+    
+    refresh() {
+        this.fetchHTTPPrices();
+        if (this.socket && this.isConnected) {
+            this.requestInitialData();
+        }
+    }
+}
+
+// Global function for refresh button
+function refreshCryptoPrices() {
+    if (window.liveCryptoPrices) {
+        window.liveCryptoPrices.refresh();
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Delay initialization to improve page load performance
+    setTimeout(() => {
+        window.liveCryptoPrices = new LiveCryptoPrices();
+    }, 1500);
+});
+</script>
+{% endmacro %}

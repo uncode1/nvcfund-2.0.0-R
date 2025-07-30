@@ -1,0 +1,213 @@
+ {% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Banking Preferences - NVC Banking{% endblock %}
+
+{% block page_title %}Banking Preferences{% endblock %}
+{% block page_description %}Customize your banking experience and account settings{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <!-- General Preferences -->
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>General Preferences
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="language" class="nvc-form-label">Language</label>
+                                    <select class="nvc-form-select" id="language">
+                                        <option value="en" {% if preferences_data.language == 'en' %}selected{% endif %}>English</option>
+                                        <option value="es" {% if preferences_data.language == 'es' %}selected{% endif %}>Español</option>
+                                        <option value="fr" {% if preferences_data.language == 'fr' %}selected{% endif %}>Français</option>
+                                        <option value="de" {% if preferences_data.language == 'de' %}selected{% endif %}>Deutsch</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="currency" class="nvc-form-label">Default Currency</label>
+                                    <select class="nvc-form-select" id="currency">
+                                        <option value="USD" {% if preferences_data.currency == 'USD' %}selected{% endif %}>USD - US Dollar</option>
+                                        <option value="EUR" {% if preferences_data.currency == 'EUR' %}selected{% endif %}>EUR - Euro</option>
+                                        <option value="GBP" {% if preferences_data.currency == 'GBP' %}selected{% endif %}>GBP - British Pound</option>
+                                        <option value="CAD" {% if preferences_data.currency == 'CAD' %}selected{% endif %}>CAD - Canadian Dollar</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="timezone" class="nvc-form-label">Timezone</label>
+                                    <select class="nvc-form-select" id="timezone">
+                                        <option value="UTC" {% if preferences_data.timezone == 'UTC' %}selected{% endif %}>UTC</option>
+                                        <option value="EST" {% if preferences_data.timezone == 'EST' %}selected{% endif %}>Eastern Time</option>
+                                        <option value="CST" {% if preferences_data.timezone == 'CST' %}selected{% endif %}>Central Time</option>
+                                        <option value="MST" {% if preferences_data.timezone == 'MST' %}selected{% endif %}>Mountain Time</option>
+                                        <option value="PST" {% if preferences_data.timezone == 'PST' %}selected{% endif %}>Pacific Time</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="dateFormat" class="nvc-form-label">Date Format</label>
+                                    <select class="nvc-form-select" id="dateFormat">
+                                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                        <option value="YYYY-MM-DD" selected>YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="numberFormat" class="nvc-form-label">Number Format</label>
+                                    <select class="nvc-form-select" id="numberFormat">
+                                        <option value="1,234.56" selected>1,234.56</option>
+                                        <option value="1.234,56">1.234,56</option>
+                                        <option value="1 234.56">1 234.56</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="theme" class="nvc-form-label">Theme</label>
+                                    <select class="nvc-form-select" id="theme">
+                                        <option value="auto" selected>Auto (System)</option>
+                                        <option value="light">Light</option>
+                                        <option value="dark">Dark</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6>Dashboard Preferences</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="showBalances" checked>
+                                    <label class="form-check-label" for="showBalances">
+                                        Show account balances on dashboard
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="showRecentTransactions" checked>
+                                    <label class="form-check-label" for="showRecentTransactions">
+                                        Show recent transactions
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="showQuickActions" checked>
+                                    <label class="form-check-label" for="showQuickActions">
+                                        Show quick action buttons
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="autoRefresh">
+                                    <label class="form-check-label" for="autoRefresh">
+                                        Auto-refresh dashboard data
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="compactView">
+                                    <label class="form-check-label" for="compactView">
+                                        Use compact view
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="showTips" checked>
+                                    <label class="form-check-label" for="showTips">
+                                        Show helpful tips
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6>Security Preferences</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="sessionTimeout" class="nvc-form-label">Session Timeout</label>
+                                    <select class="nvc-form-select" id="sessionTimeout">
+                                        <option value="15">15 minutes</option>
+                                        <option value="30" selected>30 minutes</option>
+                                        <option value="60">1 hour</option>
+                                        <option value="120">2 hours</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="requireMFA" checked>
+                                    <label class="form-check-label" for="requireMFA">
+                                        Require MFA for sensitive operations
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="loginAlerts" checked>
+                                    <label class="form-check-label" for="loginAlerts">
+                                        Send login alerts
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="button" class="btn nvc-btn nvc-btn-secondary me-2">Reset to Defaults</button>
+                            <button type="submit" class="btn nvc-btn nvc-btn-primary">Save Preferences</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Settings -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Quick Settings</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                            <i class="fas fa-palette me-2"></i>Customize Dashboard
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                            <i class="fas fa-bell me-2"></i>Notification Settings
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                            <i class="fas fa-shield-alt me-2"></i>Security Settings
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-sm">
+                            <i class="fas fa-download me-2"></i>Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Account Information</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <p><strong>Account Type:</strong> Premium Banking</p>
+                    <p><strong>Member Since:</strong> January 2023</p>
+                    <p><strong>Last Updated:</strong> {{ now.strftime('%B %d, %Y') }}</p>
+                    <p><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

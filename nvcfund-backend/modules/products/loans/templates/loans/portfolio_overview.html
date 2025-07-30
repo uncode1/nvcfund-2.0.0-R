@@ -1,0 +1,284 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Loan Portfolio Overview - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Loan Portfolio Overview{% endblock %}
+{% block page_description %}Comprehensive analysis and management of the complete loan portfolio{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Portfolio
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="navigate">
+    <i class="fas fa-clock"></i>
+    Pending Applications
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="enterprise-dashboard-container">
+    <!-- Portfolio Summary Cards with Drilldown -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-metric-card portfolio-drilldown-nvc-card" data-drilldown="total-loans" >
+                <div class="metric-icon bg-primary">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>{{ portfolio_data.total_loans if portfolio_data else '0' }}</h3>
+                    <p>Total Loans</p>
+                    <small class="text-muted"><i class="fas fa-mouse-pointer"></i> Click for details</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-metric-card portfolio-drilldown-nvc-card" data-drilldown="portfolio-value">
+                <div class="metric-icon bg-success">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>${{ "{:,.0f}".format(portfolio_data.total_value) if portfolio_data else '0' }}</h3>
+                    <p>Portfolio Value</p>
+                    <small class="text-muted"><i class="fas fa-mouse-pointer"></i> Click for breakdown</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-metric-card portfolio-drilldown-nvc-card" data-drilldown="performance">
+                <div class="metric-icon bg-info">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>{{ "{:.1f}%".format(portfolio_data.performance) if portfolio_data else '0.0%' }}</h3>
+                    <p>Performance</p>
+                    <small class="text-muted"><i class="fas fa-mouse-pointer"></i> Click for trends</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-metric-card portfolio-drilldown-nvc-card" data-drilldown="risk-analysis">
+                <div class="metric-icon bg-warning">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>{{ "{:.1f}%".format(portfolio_data.risk_score) if portfolio_data else '0.0%' }}</h3>
+                    <p>Risk Score</p>
+                    <small class="text-muted"><i class="fas fa-mouse-pointer"></i> Click for analysis</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Analytics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="enterprise-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-chart-pie"></i> Loan Distribution by Type</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="loanTypeChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="enterprise-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-chart-bar"></i> Monthly Performance</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Analysis -->
+    <div class="enterprise-nvc-card">
+        <div class="nvc-nvc-card-header">
+            <h5><i class="fas fa-exclamation-triangle"></i> Risk Analysis</h5>
+        </div>
+        <div class="nvc-nvc-card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="risk-metric">
+                        <h6>Credit Risk</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-75">Low (75%)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="risk-metric">
+                        <h6>Market Risk</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" class="progress-bar-45">Medium (45%)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="risk-metric">
+                        <h6>Operational Risk</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" class="progress-bar-30">Low (30%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="enterprise-nvc-card mt-4">
+        <div class="nvc-nvc-card-header">
+            <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+        </div>
+        <div class="nvc-nvc-card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-block" data-action="navigate">
+                        <i class="fas fa-plus"></i> New Application
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-block" data-action="navigate">
+                        <i class="fas fa-check"></i> Approved Loans
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-block" data-action="custom-action">
+                        <i class="fas fa-file-alt"></i> Generate Report
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-block" data-action="custom-action">
+                        <i class="fas fa-calculator"></i> Risk Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enhanced Portfolio Drilldown Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add drilldown functionality for portfolio cards
+    const portfolioCards = document.querySelectorAll('.portfolio-drilldown-card');
+    portfolioCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const drilldownType = this.getAttribute('data-drilldown');
+            handlePortfolioDrilldown(drilldownType);
+        });
+    });
+
+    // Initialize charts
+    console.log('Portfolio charts initialized');
+});
+
+function handlePortfolioDrilldown(type) {
+    switch(type) {
+        case 'total-loans':
+            window.location.href = "{{ url_for('loans.approved_loans') }}?view=detailed&filter=all";
+            break;
+        case 'portfolio-value':
+            window.location.href = "{{ url_for('loans.portfolio_breakdown') }}?metric=value";
+            break;
+        case 'performance':
+            window.location.href = "{{ url_for('loans.performance_analysis') }}?period=ytd";
+            break;
+        case 'risk-analysis':
+            window.location.href = "{{ url_for('loans.risk_dashboard') }}?analysis=detailed";
+            break;
+        default:
+            console.log('Unknown drilldown type:', type);
+    }
+}
+
+function exportPortfolioData() {
+    // Enhanced export with security token
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ url_for('loans.export_portfolio') }}";
+
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = 'csrf_token';
+    csrfToken.value = "{{ csrf_token() }}";
+    form.appendChild(csrfToken);
+
+    const exportType = document.createElement('input');
+    exportType.type = 'hidden';
+    exportType.name = 'export_type';
+    exportType.value = 'portfolio_overview';
+    form.appendChild(exportType);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function generatePortfolioReport() {
+    // Secure report generation
+    window.location.href = "{{ url_for('loans.generate_report') }}?type=portfolio&format=pdf";
+}
+
+function runRiskAnalysis() {
+    // Navigate to detailed risk analysis
+    window.location.href = "{{ url_for('loans.risk_analysis') }}?scope=portfolio&depth=comprehensive";
+}
+
+// Loan-specific drilldown functions
+function viewLoansByType(loanType) {
+    window.location.href = `{{ url_for('loans.approved_loans') }}?filter=type&value=${encodeURIComponent(loanType)}`;
+}
+
+function viewLoansByRisk(riskLevel) {
+    window.location.href = `{{ url_for('loans.approved_loans') }}?filter=risk&value=${encodeURIComponent(riskLevel)}`;
+}
+
+function viewLoansByStatus(status) {
+    window.location.href = `{{ url_for('loans.approved_loans') }}?filter=status&value=${encodeURIComponent(status)}`;
+}
+
+function viewPerformanceDetails(metric) {
+    window.location.href = `{{ url_for('loans.performance_analysis') }}?metric=${encodeURIComponent(metric)}`;
+}
+</script>
+
+<style>
+.portfolio-drilldown-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.portfolio-drilldown-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.risk-metric {
+    margin-bottom: 1rem;
+}
+
+.risk-metric h6 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.progress-bar {
+    border-radius: 4px;
+}
+</style>
+</div>
+{% endblock %}

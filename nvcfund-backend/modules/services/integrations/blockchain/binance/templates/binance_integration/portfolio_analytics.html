@@ -1,0 +1,338 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Portfolio Analytics - Cryptocurrency Trading{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Portfolio Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-success">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="h2 text-white mb-2">
+                                <i class="fas fa-chart-pie me-2"></i>Portfolio Analytics
+                            </h1>
+                            <p class="text-light mb-0">Comprehensive portfolio performance and risk analysis</p>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-light btn-sm" data-action="custom-action">
+                                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm" data-action="custom-action">
+                                    <i class="fas fa-download me-1"></i>Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-primary">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-wallet fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Portfolio Value</h4>
+                    <h2 class="text-white" id="portfolioValue">-</h2>
+                    <small class="text-light">Total USD Value</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">24h PnL</h4>
+                    <h2 class="text-white" id="dailyPnL">-</h2>
+                    <small class="text-light">Daily Change</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-coins fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Active Assets</h4>
+                    <h2 class="text-white" id="activeAssets">-</h2>
+                    <small class="text-light">Holdings > $1</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-shield-alt fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Risk Score</h4>
+                    <h2 class="text-white" id="riskScore">-</h2>
+                    <small class="text-light">Risk Assessment</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Status -->
+    {% if account_info.get('status') == 'success' %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-user-check me-2"></i>Account Status
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Can Trade:</strong> 
+                                <span class="badge bg-{{ 'success' if account_info.account_data.canTrade else 'danger' }}">
+                                    {{ 'Yes' if account_info.account_data.canTrade else 'No' }}
+                                </span>
+                            </p>
+                            <p><strong>Can Withdraw:</strong> 
+                                <span class="badge bg-{{ 'success' if account_info.account_data.canWithdraw else 'danger' }}">
+                                    {{ 'Yes' if account_info.account_data.canWithdraw else 'No' }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <p><strong>Can Deposit:</strong> 
+                                <span class="badge bg-{{ 'success' if account_info.account_data.canDeposit else 'danger' }}">
+                                    {{ 'Yes' if account_info.account_data.canDeposit else 'No' }}
+                                </span>
+                            </p>
+                            <p><strong>Account Type:</strong> 
+                                <span class="badge bg-info">{{ account_info.account_data.accountType }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-percentage me-2"></i>Trading Fees
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Maker:</strong> {{ "%.4f"|format(account_info.account_data.makerCommission / 10000) }}%</p>
+                            <p><strong>Taker:</strong> {{ "%.4f"|format(account_info.account_data.takerCommission / 10000) }}%</p>
+                        </div>
+                        <div class="col-6">
+                            <p><strong>Buyer:</strong> {{ "%.4f"|format(account_info.account_data.buyerCommission / 10000) }}%</p>
+                            <p><strong>Seller:</strong> {{ "%.4f"|format(account_info.account_data.sellerCommission / 10000) }}%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Holdings -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-briefcase me-2"></i>Portfolio Holdings
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% set active_balances = account_info.account_data.balances | selectattr('free', 'float') | selectattr('free', '>', '0') | list %}
+                    {% if active_balances %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th>Free</th>
+                                        <th>Locked</th>
+                                        <th>Total</th>
+                                        <th>USD Value</th>
+                                        <th>Allocation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for balance in active_balances[:20] %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ balance.asset }}</strong>
+                                        </td>
+                                        <td>{{ "%.8f"|format(balance.free|float) }}</td>
+                                        <td>{{ "%.8f"|format(balance.locked|float) }}</td>
+                                        <td>{{ "%.8f"|format((balance.free|float) + (balance.locked|float)) }}</td>
+                                        <td id="value-{{ balance.asset }}">-</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar" role="progressbar" class="progress-bar-0" id="allocation-{{ balance.asset }}">
+                                                    0%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-light py-4">
+                            <i class="fas fa-info-circle fa-3x mb-3"></i>
+                            <h5>No Holdings Found</h5>
+                            <p>Your portfolio appears to be empty or balances are below display threshold.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Account Not Connected -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body text-center py-5">
+                    <i class="fas fa-plug fa-4x text-light mb-4"></i>
+                    <h4>Account Not Connected</h4>
+                    <p class="text-light">Connect your Binance account to view portfolio analytics and holdings.</p>
+                    <a href="{{ url_for('binance.binance_dashboard') }}" class="btn nvc-btn nvc-btn-primary">
+                        <i class="fas fa-link me-1"></i>Connect Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Market Comparison -->
+    {% if market_data.get('status') == 'success' %}
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Market Performance Comparison
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Current Price</th>
+                                    <th>24h Change</th>
+                                    <th>Market Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticker in market_data.ticker_data[:10] %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ ticker.get('name', ticker.symbol.replace('USDT', '')) }}</strong>
+                                        <br><small class="text-light">{{ ticker.symbol }}</small>
+                                    </td>
+                                    <td>${{ "%.2f"|format(ticker.lastPrice|float) }}</td>
+                                    <td>
+                                        {% set change = ticker.priceChangePercent|float %}
+                                        <span class="badge bg-{{ 'success' if change >= 0 else 'danger' }}">
+                                            {{ "%+.2f"|format(change) }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% set change = ticker.priceChangePercent|float %}
+                                        {% if change > 5 %}
+                                            <span class="badge bg-success">Strong Bull</span>
+                                        {% elif change > 0 %}
+                                            <span class="badge bg-success">Bullish</span>
+                                        {% elif change > -5 %}
+                                            <span class="badge bg-danger">Bearish</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Strong Bear</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function refreshPortfolio() {
+    location.reload();
+}
+
+function exportData() {
+    // Export portfolio data to CSV
+    const data = [];
+    // Add export functionality here
+    alert('Export functionality will be implemented');
+}
+
+// Calculate portfolio metrics
+function calculatePortfolioMetrics() {
+    // This would normally use real market data
+    // For demo purposes, showing sample calculations
+    
+    // Sample portfolio calculations
+    document.getElementById('portfolioValue').textContent = '$0.00';
+    document.getElementById('dailyPnL').textContent = '+$0.00 (0.00%)';
+    document.getElementById('activeAssets').textContent = '0';
+    document.getElementById('riskScore').textContent = 'Low';
+}
+
+// Initialize portfolio metrics
+calculatePortfolioMetrics();
+
+// Auto-refresh every 5 minutes
+setInterval(refreshPortfolio, 300000);
+</script>
+
+<style>
+.progress {
+    background-color: #374151;
+}
+
+.card {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+}
+
+.card-header {
+    background-color: #334155;
+    border-bottom: 1px solid #475569;
+}
+
+.table {
+    color: #e2e8f0;
+}
+
+.table thead th {
+    border-bottom: 2px solid #475569;
+    color: #f1f5f9;
+}
+
+.table td {
+    border-top: 1px solid #475569;
+}
+</style>
+</div>
+{% endblock %}

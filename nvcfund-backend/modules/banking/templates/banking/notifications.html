@@ -1,0 +1,170 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Banking Notifications - NVC Banking{% endblock %}
+
+{% block page_title %}Banking Notifications{% endblock %}
+{% block page_description %}Manage your banking alerts and notification preferences{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <!-- Notification Settings -->
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bell me-2"></i>Notification Preferences
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Transaction Alerts</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="largeTransactions" checked>
+                                    <label class="form-check-label" for="largeTransactions">
+                                        Large transactions (>$1,000)
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="allTransactions">
+                                    <label class="form-check-label" for="allTransactions">
+                                        All transactions
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="failedTransactions" checked>
+                                    <label class="form-check-label" for="failedTransactions">
+                                        Failed transactions
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Account Alerts</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="lowBalance" checked>
+                                    <label class="form-check-label" for="lowBalance">
+                                        Low balance warnings
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="monthlyStatements" checked>
+                                    <label class="form-check-label" for="monthlyStatements">
+                                        Monthly statements
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="securityAlerts" checked>
+                                    <label class="form-check-label" for="securityAlerts">
+                                        Security alerts
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Delivery Methods</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                    <label class="form-check-label" for="emailNotifications">
+                                        Email notifications
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="smsNotifications">
+                                    <label class="form-check-label" for="smsNotifications">
+                                        SMS notifications
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="pushNotifications" checked>
+                                    <label class="form-check-label" for="pushNotifications">
+                                        Push notifications
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Frequency</h6>
+                                <div class="mb-3">
+                                    <label for="notificationFrequency" class="nvc-form-label">Alert frequency</label>
+                                    <select class="nvc-form-select" id="notificationFrequency">
+                                        <option value="immediate" selected>Immediate</option>
+                                        <option value="daily">Daily digest</option>
+                                        <option value="weekly">Weekly summary</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="quietHours" class="nvc-form-label">Quiet hours</label>
+                                    <select class="nvc-form-select" id="quietHours">
+                                        <option value="none">No quiet hours</option>
+                                        <option value="night" selected>10 PM - 8 AM</option>
+                                        <option value="custom">Custom hours</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="submit" class="btn nvc-btn nvc-btn-primary">Save Preferences</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Notifications -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Recent Notifications</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if notifications_data.unread_notifications %}
+                        {% for notification in notifications_data.unread_notifications %}
+                        <div class="d-flex align-items-start mb-3 p-2 border rounded">
+                            <i class="fas fa-{{ notification.icon }} text-{{ notification.type }} me-2 mt-1"></i>
+                            <div class="flex-grow-1">
+                                <small class="text-muted">{{ notification.timestamp }}</small>
+                                <p class="mb-0">{{ notification.message }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recent notifications</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                            <i class="fas fa-check-double me-2"></i>Mark All as Read
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary btn-sm">
+                            <i class="fas fa-history me-2"></i>View All Notifications
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                            <i class="fas fa-cog me-2"></i>Advanced Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

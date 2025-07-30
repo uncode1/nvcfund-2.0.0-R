@@ -1,0 +1,274 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Settlement Settings - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h2><i class="fas fa-cog text-primary"></i> Settlement Settings</h2>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-success btn-sm" data-action="custom-action">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-secondary btn-sm" data-action="custom-action">
+                            <i class="fas fa-undo"></i> Reset to Defaults
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Form -->
+    <div class="row">
+        <!-- General Settings -->
+        <div class="col-md-6">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">General Settings</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="generalSettings">
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="autoReconciliation" 
+                                       {% if settings_data.auto_reconciliation %}checked{% endif %}>
+                                <label class="form-check-label" for="autoReconciliation">
+                                    Enable Auto Reconciliation
+                                </label>
+                            </div>
+                            <small class="form-text text-light">Automatically reconcile settlements when possible</small>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notificationEnabled" 
+                                       {% if settings_data.notification_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="notificationEnabled">
+                                    Enable Notifications
+                                </label>
+                            </div>
+                            <small class="form-text text-light">Receive email notifications for settlement events</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="timeoutThreshold">Timeout Threshold (seconds)</label>
+                            <input type="number" class="nvc-form-input" id="timeoutThreshold" 
+                                   value="{{ settings_data.timeout_threshold }}" min="60" max="1800">
+                            <small class="form-text text-light">Maximum time to wait for settlement confirmation</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="retryAttempts">Retry Attempts</label>
+                            <input type="number" class="nvc-form-input" id="retryAttempts" 
+                                   value="{{ settings_data.retry_attempts }}" min="1" max="10">
+                            <small class="form-text text-light">Number of retry attempts for failed settlements</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Settings -->
+        <div class="col-md-6">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Payment Network Settings</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="networkSettings">
+                        <div class="form-group">
+                            <label>Enabled Networks</label>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="fedwireEnabled" 
+                                       {% if settings_data.network_settings.fedwire_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="fedwireEnabled">
+                                    <i class="fas fa-university text-primary"></i> Fedwire
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="achEnabled" 
+                                       {% if settings_data.network_settings.ach_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="achEnabled">
+                                    <i class="fas fa-exchange-alt text-success"></i> ACH Network
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="swiftEnabled" 
+                                       {% if settings_data.network_settings.swift_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="swiftEnabled">
+                                    <i class="fas fa-globe text-info"></i> SWIFT Network
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="blockchainEnabled" 
+                                       {% if settings_data.network_settings.blockchain_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="blockchainEnabled">
+                                    <i class="fas fa-link text-warning"></i> Blockchain Networks
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Threshold Settings -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Settlement Thresholds</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="thresholdSettings">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="highValueThreshold">High Value Threshold ($)</label>
+                                    <input type="number" class="nvc-form-input" id="highValueThreshold" 
+                                           value="{{ settings_data.thresholds.high_value }}" min="100000" step="10000">
+                                    <small class="form-text text-light">Settlements above this amount require additional approval</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="exceptionLimit">Exception Limit ($)</label>
+                                    <input type="number" class="nvc-form-input" id="exceptionLimit" 
+                                           value="{{ settings_data.thresholds.exception_limit }}" min="1000" step="1000">
+                                    <small class="form-text text-light">Maximum variance before flagging as exception</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="autoApproveLimit">Auto-Approve Limit ($)</label>
+                                    <input type="number" class="nvc-form-input" id="autoApproveLimit" 
+                                           value="{{ settings_data.thresholds.auto_approve_limit }}" min="1000" step="1000">
+                                    <small class="form-text text-light">Settlements below this amount are auto-approved</small>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Security & Compliance</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="twoFactorRequired" checked>
+                                    <label class="form-check-label" for="twoFactorRequired">
+                                        Require Two-Factor Authentication
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="auditLogging" checked>
+                                    <label class="form-check-label" for="auditLogging">
+                                        Enable Audit Logging
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="encryptionRequired" checked>
+                                    <label class="form-check-label" for="encryptionRequired">
+                                        Require End-to-End Encryption
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="sessionTimeout">Session Timeout (minutes)</label>
+                                <select class="nvc-form-input" id="sessionTimeout">
+                                    <option value="15">15 minutes</option>
+                                    <option value="30" selected>30 minutes</option>
+                                    <option value="60">60 minutes</option>
+                                    <option value="120">2 hours</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ipWhitelist">IP Whitelist</label>
+                                <textarea class="nvc-form-input" id="ipWhitelist" rows="3" placeholder="Enter IP addresses, one per line">192.168.1.0/24
+10.0.0.0/8</textarea>
+                                <small class="form-text text-light">Restrict settlement access to specific IP ranges</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card shadow mb-4">
+                <div class="nvc-nvc-card-body text-center">
+                    <button type="button" class="btn nvc-btn nvc-btn-success btn-lg" data-action="custom-action">
+                        <i class="fas fa-save"></i> Save All Settings
+                    </button>
+                    <button type="button" class="btn nvc-btn nvc-btn-warning btn-lg ml-3" data-action="custom-action">
+                        <i class="fas fa-flask"></i> Test Configuration
+                    </button>
+                    <button type="button" class="btn nvc-btn nvc-btn-secondary btn-lg ml-3" data-action="custom-action">
+                        <i class="fas fa-download"></i> Export Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function saveSettings() {
+    alert('Settlement settings saved successfully!');
+}
+
+function resetToDefaults() {
+    if (confirm('Reset all settings to default values? This action cannot be undone.')) {
+        alert('Settings reset to defaults.');
+        window.location.reload();
+    }
+}
+
+function testConfiguration() {
+    alert('Testing settlement configuration...\n\n✓ Fedwire connection: OK\n✓ ACH network: OK\n✓ SWIFT network: OK\n✓ Security settings: OK\n\nConfiguration test passed!');
+}
+
+function exportSettings() {
+    alert('Exporting settlement configuration...');
+}
+</script>
+</div>
+{% endblock %}

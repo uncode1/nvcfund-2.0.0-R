@@ -1,0 +1,706 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Security Center - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Security Center{% endblock %}
+{% block page_description %}Comprehensive security monitoring and threat management for banking and cryptocurrency operations{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-shield-alt"></i>
+    Security Scan
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-eye"></i>
+    Threat Intel
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Security Center Specific Styles */
+    .security-metric-card {
+        background: linear-gradient(135deg, var(--danger-bg) 0%, var(--danger-hover) 100%);
+        border: 2px solid var(--danger-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .security-metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+    }
+
+    .threat-level-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--border-radius);
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .threat-level-high {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid #dc3545;
+    }
+
+    .threat-level-medium {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid #ffc107;
+    }
+
+    .threat-level-low {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid #28a745;
+    }
+
+    .security-status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+    }
+
+    .status-secure {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .status-warning {
+        background: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .status-danger {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+    }
+
+    .security-alert-card {
+        background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+        border-left: 4px solid var(--danger-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .security-alert-card:hover {
+        border-left-width: 6px;
+        transform: translateX(3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- Security Overview Cards -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Security Operations Center</h3>
+                        <p>Real-time security monitoring and threat intelligence</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Security Metrics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('security_center.investigation_tools') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card security-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>Secure</h3>
+                        <p>System Status</p>
+                        <span class="security-status-indicator status-secure">
+                            <i class="fas fa-shield-alt"></i>
+                            All Systems Green
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Investigation Tools
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('security_center.threat_monitoring') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card security-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ "3"|default("0") }}</h3>
+                        <p>Active Threats</p>
+                        <span class="threat-level-indicator threat-level-medium">
+                            <i class="fas fa-eye"></i>
+                            Being Monitored
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Threat Monitoring
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('security_center.investigation_tools') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card security-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon info">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ "47"|default("0") }}</h3>
+                        <p>Failed Logins</p>
+                        <span class="security-status-indicator status-warning">
+                            <i class="fas fa-clock"></i>
+                            Last 24 Hours
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Login Analysis
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('security_center.incident_response_dropdown') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card security-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon primary">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>{{ "98.7%"|default("0%") }}</h3>
+                        <p>Security Score</p>
+                        <span class="security-status-indicator status-secure">
+                            <i class="fas fa-star"></i>
+                            Excellent
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Incident Response
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Level 2 Drilldown: Threat Category Breakdown -->
+<div class="row mb-4">
+    <div class="col-xl-2 col-md-4 mb-3">
+        <div class="nvc-card metric-card threat-category-nvc-card" data-threat-type="malware" >
+            <div class="metric-content">
+                <div class="metric-icon danger">
+                    <i class="fas fa-virus"></i>
+                </div>
+                <div class="metric-details">
+                    <h4>{{ security_data.threats.malware_count if security_data else '12' }}</h4>
+                    <p>Malware Threats</p>
+                    <small class="text-muted"><i class="fas fa-search"></i> View incidents</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 mb-3">
+        <div class="nvc-card metric-card threat-category-nvc-card" data-threat-type="phishing" >
+            <div class="metric-content">
+                <div class="metric-icon warning">
+                    <i class="fas fa-fish"></i>
+                </div>
+                <div class="metric-details">
+                    <h4>{{ security_data.threats.phishing_count if security_data else '8' }}</h4>
+                    <p>Phishing Attempts</p>
+                    <small class="text-muted"><i class="fas fa-search"></i> View incidents</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 mb-3">
+        <div class="nvc-card metric-card threat-category-nvc-card" data-threat-type="ddos" >
+            <div class="metric-content">
+                <div class="metric-icon info">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="metric-details">
+                    <h4>{{ security_data.threats.ddos_count if security_data else '3' }}</h4>
+                    <p>DDoS Attacks</p>
+                    <small class="text-muted"><i class="fas fa-search"></i> View incidents</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 mb-3">
+        <div class="nvc-card metric-card threat-category-nvc-card" data-threat-type="intrusion" >
+            <div class="metric-content">
+                <div class="metric-icon primary">
+                    <i class="fas fa-user-secret"></i>
+                </div>
+                <div class="metric-details">
+                    <h4>{{ security_data.threats.intrusion_count if security_data else '5' }}</h4>
+                    <p>Intrusion Attempts</p>
+                    <small class="text-muted"><i class="fas fa-search"></i> View incidents</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 mb-3">
+        <div class="nvc-card metric-card threat-category-nvc-card" data-threat-type="fraud" >
+            <div class="metric-content">
+                <div class="metric-icon success">
+                    <i class="fas fa-credit-nvc-card"></i>
+                </div>
+                <div class="metric-details">
+                    <h4>{{ security_data.threats.fraud_count if security_data else '2' }}</h4>
+                    <p>Fraud Attempts</p>
+                    <small class="text-muted"><i class="fas fa-search"></i> View incidents</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 mb-3">
+        <div class="nvc-card metric-card threat-category-nvc-card" data-threat-type="insider" >
+            <div class="metric-content">
+                <div class="metric-icon secondary">
+                    <i class="fas fa-user-times"></i>
+                </div>
+                <div class="metric-details">
+                    <h4>{{ security_data.threats.insider_count if security_data else '1' }}</h4>
+                    <p>Insider Threats</p>
+                    <small class="text-muted"><i class="fas fa-search"></i> View incidents</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Threat Detection & Monitoring -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-radar-alt me-2"></i>Real-time Threat Detection</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Threat Type</th>
+                                    <th>Source IP</th>
+                                    <th>Severity</th>
+                                    <th>Action Taken</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ "14:35"|default("--:--") }}</td>
+                                    <td>Brute Force Attack</td>
+                                    <td>192.168.1.100</td>
+                                    <td><span class="badge bg-danger">High</span></td>
+                                    <td>IP Blocked</td>
+                                    <td><span class="badge bg-success">Mitigated</span></td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "14:22"|default("--:--") }}</td>
+                                    <td>Suspicious Login</td>
+                                    <td>10.0.0.45</td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                    <td>MFA Required</td>
+                                    <td><span class="badge bg-warning">Monitoring</span></td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "14:15"|default("--:--") }}</td>
+                                    <td>SQL Injection</td>
+                                    <td>203.0.113.5</td>
+                                    <td><span class="badge bg-danger">High</span></td>
+                                    <td>Request Blocked</td>
+                                    <td><span class="badge bg-success">Blocked</span></td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "14:08"|default("--:--") }}</td>
+                                    <td>Unusual Traffic</td>
+                                    <td>198.51.100.22</td>
+                                    <td><span class="badge bg-info">Low</span></td>
+                                    <td>Rate Limited</td>
+                                    <td><span class="badge bg-info">Monitoring</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Quick Actions -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-tools me-2"></i>Security Tools</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-danger" data-action="custom-action">
+                            <i class="fas fa-ban me-2"></i>Emergency Lockdown
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-warning" data-action="custom-action">
+                            <i class="fas fa-key me-2"></i>Force Password Reset
+                        </button>
+                        <button type="button" class="btn btn-info" data-action="custom-action">
+                            <i class="fas fa-file-alt me-2"></i>Generate Report
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-primary" data-action="custom-action">
+                            <i class="fas fa-search me-2"></i>Run Security Scan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Alerts -->
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-bell me-2"></i>Active Alerts</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="alert nvc-nvc-alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>3 failed login attempts</strong> detected for admin account in the last hour.
+                    </div>
+                    <div class="alert nvc-nvc-alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>SSL certificate</strong> expires in 30 days. Renewal recommended.
+                    </div>
+                    <div class="alert nvc-nvc-alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Security scan completed</strong> successfully. No vulnerabilities found.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Access Control & User Activity -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-users-cog me-2"></i>Access Control</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Active Sessions</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" class="progress-bar-35">1,247 Users Online</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">MFA Compliance</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-87">87% Enabled</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Password Strength</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" class="progress-bar-72">72% Strong</div>
+                        </div>
+                    </div>
+                    
+                    <h6>Recent Access Events</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>admin@nvcbank.com</td>
+                                    <td>Login</td>
+                                    <td>{{ "14:35"|default("--:--") }}</td>
+                                    <td><span class="badge bg-success">Success</span></td>
+                                </tr>
+                                <tr>
+                                    <td>user@example.com</td>
+                                    <td>Password Change</td>
+                                    <td>{{ "14:20"|default("--:--") }}</td>
+                                    <td><span class="badge bg-info">Success</span></td>
+                                </tr>
+                                <tr>
+                                    <td>unknown@suspicious.com</td>
+                                    <td>Login Attempt</td>
+                                    <td>{{ "14:15"|default("--:--") }}</td>
+                                    <td><span class="badge bg-danger">Failed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-heartbeat me-2"></i>System Health</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="securityChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance & Audit -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-clipboard-check me-2"></i>Compliance & Audit Trail</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>SOX Compliance</h6>
+                                <h4 class="text-success">100%</h4>
+                                <small class="text-light">Fully Compliant</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>PCI DSS</h6>
+                                <h4 class="text-success">Level 1</h4>
+                                <small class="text-light">Certified</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>GDPR</h6>
+                                <h4 class="text-success">Compliant</h4>
+                                <small class="text-light">Data Protected</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Audit Score</h6>
+                                <h4 class="text-primary">A+</h4>
+                                <small class="text-light">Excellent</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Security metrics chart
+    const securityCtx = document.getElementById('securityChart').getContext('2d');
+    new Chart(securityCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Secure', 'Warnings', 'Critical'],
+            datasets: [{
+                data: [87, 10, 3],
+                backgroundColor: [
+                    '#198754',
+                    '#ffc107',
+                    '#dc3545'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+
+function emergencyLockdown() {
+    if (confirm('This will immediately lock down all user access. Continue?')) {
+        alert('Emergency lockdown activated. All user sessions terminated.');
+    }
+}
+
+function forcePasswordReset() {
+    alert('Password reset notifications sent to all users.');
+}
+
+function generateSecurityReport() {
+    alert('Generating comprehensive security report...');
+}
+
+function runSecurityScan() {
+    alert('Initiating full security scan. This may take several minutes.');
+}
+
+// Enhanced template functions
+function exportSecurityData() {
+    const csvData = 'Metric,Value,Status,Timestamp\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'security_report.csv';
+    a.click();
+}
+
+function viewThreatIntel() {
+    window.location.href = "{{ url_for('security_center.threat_monitoring') }}";
+}
+
+function refreshSecurityData() {
+    location.reload();
+}
+
+// Initialize security dashboard with drilldown functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for metric cards with drilldown navigation
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.style.cursor = 'pointer';
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+
+        // Add click handlers for drilldown navigation
+        card.addEventListener('click', function() {
+            // Skip if card already has an anchor tag
+            if (this.closest('a')) return;
+
+            const cardTitle = this.querySelector('h3, h4, h5, h6, p')?.textContent;
+            handleSecurityDrilldown(cardTitle);
+        });
+    });
+
+    // Add Level 2 drilldown functionality for threat category cards
+    const threatCategoryCards = document.querySelectorAll('.threat-category-card');
+    threatCategoryCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const threatType = this.getAttribute('data-threat-type');
+            handleThreatCategoryDrilldown(threatType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+
+function handleThreatCategoryDrilldown(threatType) {
+    // Navigate to threat monitoring with specific threat type filter
+    window.location.href = `{{ url_for('security_center.threat_monitoring') }}?threat_type=${encodeURIComponent(threatType)}&view=incidents`;
+}
+
+function handleSecurityDrilldown(cardTitle) {
+    if (!cardTitle) return;
+
+    if (cardTitle.includes('Active Threats') || cardTitle.includes('Threat')) {
+        window.location.href = "{{ url_for('security_center.threat_monitoring') }}";
+    } else if (cardTitle.includes('Security Score') || cardTitle.includes('Score')) {
+        window.location.href = "{{ url_for('security_center.security_assessment') }}";
+    } else if (cardTitle.includes('Vulnerabilities') || cardTitle.includes('Vuln')) {
+        window.location.href = "{{ url_for('security_center.vulnerabilities_assessment') }}";
+    } else if (cardTitle.includes('Incidents') || cardTitle.includes('Response')) {
+        window.location.href = "{{ url_for('security_center.incident_response_dropdown') }}";
+    } else if (cardTitle.includes('Compliance') || cardTitle.includes('Audit')) {
+        window.location.href = "{{ url_for('security_center.compliance_monitoring') }}";
+    } else if (cardTitle.includes('Monitoring') || cardTitle.includes('Monitor')) {
+        window.location.href = "{{ url_for('security_center.security_monitoring') }}";
+    } else if (cardTitle.includes('Alerts') || cardTitle.includes('Alert')) {
+        window.location.href = "{{ url_for('security_center.security_alerts') }}";
+    } else if (cardTitle.includes('XDR') || cardTitle.includes('Detection')) {
+        window.location.href = "{{ url_for('security_center.xdr_dashboard') }}";
+    } else if (cardTitle.includes('Fraud') || cardTitle.includes('AML')) {
+        window.location.href = "{{ url_for('security_center.fraud_detection_aml') }}";
+    }
+}
+</script>
+</div>
+{% endblock %}
+{% endblock %}

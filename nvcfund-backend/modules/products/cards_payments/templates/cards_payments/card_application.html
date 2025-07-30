@@ -1,0 +1,324 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+{% set active_page = "cards_payments" %}
+
+{% block title %}Apply for Card - NVC Fund{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Section -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">Apply for Card</h1>
+                    <p class="text-light">Complete your application to get your new card</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('cards_payments.main_dashboard') }}" class="btn nvc-btn nvc-btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Cards
+                    </a>
+                </div>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="progress mb-3" class="nvc-h-6">
+                        <div class="progress-bar bg-primary" role="progressbar" class="progress-bar-33"></div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="badge bg-primary">1. Card Selection</span>
+                        <span class="badge bg-secondary">2. Personal Info</span>
+                        <span class="badge bg-secondary">3. Review</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Form -->
+            <div class="row">
+                <div class="col-lg-8 col-12">
+                    <div class="nvc-card shadow-sm">
+                        <div class="nvc-nvc-card-header bg-dark">
+                            <h5 class="nvc-card-title mb-0">Card Application Form</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <form method="POST" id="cardApplicationForm">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+
+                                <!-- Card Type Selection -->
+                                <div class="mb-4">
+                                    <label class="nvc-form-label fw-bold">Select Card Type *</label>
+                                    <div class="row">
+                                        {% for card in card_types %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card nvc-card-option" data-card-type="{{ card.name }}">
+                                                <div class="nvc-nvc-card-body">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="card_type" 
+                                                               id="card_{{ loop.index }}" value="{{ card.name }}" required>
+                                                        <label class="form-check-label w-100" for="card_{{ loop.index }}">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <div>
+                                                                    <h6 class="mb-1">{{ card.name }}</h6>
+                                                                    <small class="text-light">APR: {{ card.apr }}</small>
+                                                                </div>
+                                                                <div class="text-end">
+                                                                    <span class="badge bg-info">{{ card.annual_fee }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Personal Information -->
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-3">Personal Information</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="annual_income" class="nvc-form-label">Annual Income *</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" class="nvc-form-input" id="annual_income" 
+                                                       name="annual_income" placeholder="50000" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="employment_status" class="nvc-form-label">Employment Status *</label>
+                                            <select class="nvc-form-select" id="employment_status" name="employment_status" required>
+                                                <option value="">Select employment status</option>
+                                                <option value="employed">Employed</option>
+                                                <option value="self_employed">Self-Employed</option>
+                                                <option value="retired">Retired</option>
+                                                <option value="student">Student</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Credit Limit -->
+                                <div class="mb-4">
+                                    <label for="requested_limit" class="nvc-form-label">Requested Credit Limit *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="nvc-form-input" id="requested_limit" 
+                                               name="requested_limit" placeholder="5000" required>
+                                    </div>
+                                    <div class="form-text">
+                                        Minimum: $500 • Maximum: $50,000
+                                    </div>
+                                </div>
+
+                                <!-- Quick Amount Selection -->
+                                <div class="mb-4">
+                                    <label class="nvc-form-label">Quick Select Credit Limit</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm quick-limit" data-amount="1000">$1,000</button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm quick-limit" data-amount="2500">$2,500</button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm quick-limit" data-amount="5000">$5,000</button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm quick-limit" data-amount="10000">$10,000</button>
+                                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary btn-sm quick-limit" data-amount="25000">$25,000</button>
+                                    </div>
+                                </div>
+
+                                <!-- Terms and Conditions -->
+                                <div class="mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="terms_agreement" required>
+                                        <label class="form-check-label" for="terms_agreement">
+                                            I agree to the <a href="#" class="text-primary">Terms and Conditions</a> and 
+                                            <a href="#" class="text-primary">Privacy Policy</a> *
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn nvc-btn nvc-btn-primary btn-lg">
+                                        <i class="fas fa-paper-plane me-2"></i>Submit Application
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Application Summary -->
+                <div class="col-lg-4 col-12">
+                    <div class="nvc-card shadow-sm">
+                        <div class="nvc-nvc-card-header bg-light">
+                            <h6 class="nvc-card-title mb-0">Application Summary</h6>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div id="applicationSummary">
+                                <p class="text-light">Please select a card type to see the summary</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Benefits Card -->
+                    <div class="nvc-card shadow-sm mt-4">
+                        <div class="nvc-nvc-card-header bg-success text-white">
+                            <h6 class="nvc-card-title mb-0">
+                                <i class="fas fa-star me-2"></i>Card Benefits
+                            </h6>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Instant decision in 24 hours
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    No foreign transaction fees
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    24/7 customer support
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Fraud protection
+                                </li>
+                                <li class="mb-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Mobile app access
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-option {
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.card-option:hover {
+    border-color: #0d6efd;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-option.selected {
+    border-color: #0d6efd;
+    background-color: #f8f9ff;
+}
+
+.quick-limit:hover {
+    transform: translateY(-1px);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Card selection handling
+    const cardOptions = document.querySelectorAll('.card-option');
+    const summaryDiv = document.getElementById('applicationSummary');
+
+    cardOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+
+            // Update visual selection
+            cardOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+
+            // Update summary
+            updateSummary();
+        });
+    });
+
+    // Quick limit buttons
+    document.querySelectorAll('.quick-limit').forEach(button => {
+        button.addEventListener('click', function() {
+            const amount = this.dataset.amount;
+            document.getElementById('requested_limit').value = amount;
+
+            // Update button states
+            document.querySelectorAll('.quick-limit').forEach(btn => btn.classList.remove('btn-primary'));
+            this.classList.add('btn-primary');
+
+            updateSummary();
+        });
+    });
+
+    // Form inputs change handler
+    document.getElementById('cardApplicationForm').addEventListener('change', updateSummary);
+    document.getElementById('cardApplicationForm').addEventListener('input', updateSummary);
+
+    function updateSummary() {
+        const selectedCard = document.querySelector('input[name="card_type"]:checked');
+        const income = document.getElementById('annual_income').value;
+        const limit = document.getElementById('requested_limit').value;
+
+        if (selectedCard) {
+            let summaryHTML = `
+                <div class="mb-3">
+                    <h6 class="fw-bold text-primary">Selected Card</h6>
+                    <p class="mb-0">${selectedCard.value}</p>
+                </div>
+            `;
+
+            if (income) {
+                summaryHTML += `
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-primary">Annual Income</h6>
+                        <p class="mb-0">$${parseInt(income).toLocaleString()}</p>
+                    </div>
+                `;
+            }
+
+            if (limit) {
+                summaryHTML += `
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-primary">Requested Limit</h6>
+                        <p class="mb-0">$${parseInt(limit).toLocaleString()}</p>
+                    </div>
+                `;
+            }
+
+            summaryDiv.innerHTML = summaryHTML;
+        }
+    }
+
+    // Form validation
+    document.getElementById('cardApplicationForm').addEventListener('submit', function(e) {
+        const requiredFields = this.querySelectorAll('[required]');
+        let isValid = true;
+
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+            alert('Please fill in all required fields');
+        }
+    });
+});
+</script>
+</div>
+{% endblock %}

@@ -1,0 +1,326 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Payment Gateways Dashboard - NVC Banking{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Section -->
+            <div class="card dashboard-stat-nvc-card mb-4">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">Payment Gateways</h3>
+                            <p class="text-light mb-0">Manage and monitor payment gateway integrations</p>
+                        </div>
+                        <div class="text-end">
+                            <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                <i class="fas fa-arrow-left"></i> Back to Banking
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Overview -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card dashboard-stat-nvc-card">
+                        <div class="nvc-nvc-card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-light mb-2">Total Gateways</h6>
+                                    <h3 class="mb-0">{{ total_gateways }}</h3>
+                                </div>
+                                <div class="text-primary">
+                                    <i class="fas fa-credit-nvc-card fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card dashboard-stat-nvc-card">
+                        <div class="nvc-nvc-card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-light mb-2">Active Gateways</h6>
+                                    <h3 class="mb-0">{{ active_gateways }}</h3>
+                                </div>
+                                <div class="text-success">
+                                    <i class="fas fa-check-circle fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card dashboard-stat-nvc-card">
+                        <div class="nvc-nvc-card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-light mb-2">Daily Volume</h6>
+                                    <h3 class="mb-0">${{ "{:,.2f}".format(statistics.total_volume_today if statistics and statistics.total_volume_today else 0) }}</h3>
+                                </div>
+                                <div class="text-info">
+                                    <i class="fas fa-dollar-sign fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card dashboard-stat-nvc-card">
+                        <div class="nvc-nvc-card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-light mb-2">Success Rate</h6>
+                                    <h3 class="mb-0">{{ statistics.success_rate if statistics and statistics.success_rate else 99.8 }}%</h3>
+                                </div>
+                                <div class="text-warning">
+                                    <i class="fas fa-chart-line fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Payment Gateways -->
+            <div class="row">
+                {% for gateway in gateways %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card dashboard-stat-card gateway-nvc-card">
+                        <div class="nvc-nvc-card-body">
+                            <!-- Gateway Header -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="gateway-logo-small {{ gateway.id }}-logo">
+                                    {% if gateway.id == 'paypal' %}
+                                    <div class="paypal-p">P</div>
+                                    <span class="logo-text">PAYPAL</span>
+                                    {% elif gateway.id == 'stripe' %}
+                                    <div class="stripe-s">S</div>
+                                    <span class="logo-text">STRIPE</span>
+                                    {% elif gateway.id == 'flutterwave' %}
+                                    <div class="flutter-icon">▲</div>
+                                    <span class="logo-text">FLUTTER</span>
+                                    {% elif gateway.id == 'mojaloop' %}
+                                    <div class="moja-icon">○</div>
+                                    <span class="logo-text">MOJA</span>
+                                    {% elif gateway.id == 'mobile' %}
+                                    <div class="mobile-icon">📱</div>
+                                    <span class="logo-text">MOBILE</span>
+                                    {% endif %}
+                                </div>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-circle me-1"></i>LIVE
+                                </span>
+                            </div>
+
+                            <!-- Gateway Info -->
+                            <h5 class="nvc-card-title text-light">{{ gateway.name }}</h5>
+                            <p class="text-light small mb-3">{{ gateway.description }}</p>
+
+                            <!-- Gateway Details -->
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="text-light small">Processing Time</div>
+                                    <div class="fw-bold">{{ gateway.processing_time }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-light small">Fee</div>
+                                    <div class="fw-bold">{{ gateway.fee_info }}</div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="text-light small">Max Amount</div>
+                                    <div class="fw-bold">${{ "{:,}".format(gateway.max_amount) }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-light small">Min Amount</div>
+                                    <div class="fw-bold">${{ gateway.min_amount }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Features -->
+                            <div class="mb-3">
+                                <div class="text-light small mb-2">Features</div>
+                                {% for feature in gateway.features[:2] %}
+                                <span class="badge bg-secondary me-1 mb-1">{{ feature }}</span>
+                                {% endfor %}
+                                {% if gateway.features|length > 2 %}
+                                <span class="badge bg-info">+{{ gateway.features|length - 2 }} more</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('payment_gateways.gateway_transfer', gateway_id=gateway.id) }}" class="btn nvc-btn nvc-btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Start Transfer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Gateway Performance -->
+            {% if statistics and statistics.gateway_performance %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card dashboard-stat-nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Gateway Performance
+                            </h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="table-responsive">
+                                <table class="table table-dark">
+                                    <thead>
+                                        <tr>
+                                            <th>Gateway</th>
+                                            <th>Uptime</th>
+                                            <th>Avg Response</th>
+                                            <th>Success Rate</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for gateway_id, performance in statistics.gateway_performance.items() %}
+                                        <tr>
+                                            <td>{{ gateway_id.title() }}</td>
+                                            <td>
+                                                <span class="badge bg-success">{{ performance.uptime }}%</span>
+                                            </td>
+                                            <td>{{ performance.avg_response }}</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-success" style="width: {{ performance.success_rate }}%">
+                                                        {{ performance.success_rate }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle"></i> Active
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Gateway Card Styles */
+.gateway-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gateway-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+}
+
+/* Gateway Logo Styles */
+.gateway-logo-small {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    width: fit-content;
+}
+
+/* PayPal */
+.paypal-logo {
+    background: linear-gradient(135deg, #003087 0%, #009cde 100%);
+}
+
+.paypal-p {
+    width: 16px;
+    height: 16px;
+    background: #ffc439;
+    color: #003087;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+/* Stripe */
+.stripe-logo {
+    background: linear-gradient(135deg, #635bff 0%, #5851e6 100%);
+}
+
+.stripe-s {
+    width: 14px;
+    height: 14px;
+    background: white;
+    color: #635bff;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+/* Flutterwave */
+.flutterwave-logo {
+    background: linear-gradient(135deg, #f5a623 0%, #f39019 100%);
+}
+
+.flutter-icon {
+    font-size: 12px;
+    transform: rotate(90deg);
+}
+
+/* Mojaloop */
+.mojaloop-logo {
+    background: linear-gradient(135deg, #00a651 0%, #007d3c 100%);
+}
+
+.moja-icon {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6px;
+}
+
+/* Mobile */
+.mobile-logo {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.mobile-icon {
+    font-size: 12px;
+}
+</style>
+</div>
+{% endblock %}

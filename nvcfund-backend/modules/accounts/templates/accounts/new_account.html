@@ -1,0 +1,325 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Open New Account - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Open New Account{% endblock %}
+{% block page_description %}Start your banking journey with us - choose from our range of account types{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('accounts.main_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        Accounts
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-plus" aria-hidden="true"></i>
+    New Account
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Get help with account opening">
+    <i class="fas fa-question-circle" aria-hidden="true"></i>
+    Get Help
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Save application draft">
+    <i class="fas fa-save" aria-hidden="true"></i>
+    Save Draft
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Submit account application">
+    <i class="fas fa-check" aria-hidden="true"></i>
+    Submit Application
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Account Application Progress -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    Open New Account
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">Step 1 of 3</span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-progress-tracker">
+                    <div class="nvc-progress-step nvc-progress-active">
+                        <div class="nvc-progress-icon">
+                            <i class="fas fa-university" aria-hidden="true"></i>
+                        </div>
+                        <span class="nvc-progress-label">Account Type</span>
+                    </div>
+                    <div class="nvc-progress-step">
+                        <div class="nvc-progress-icon">
+                            <i class="fas fa-user" aria-hidden="true"></i>
+                        </div>
+                        <span class="nvc-progress-label">Personal Info</span>
+                    </div>
+                    <div class="nvc-progress-step">
+                        <div class="nvc-progress-icon">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                        </div>
+                        <span class="nvc-progress-label">Review & Submit</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Account Type Selection -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h3 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-university" aria-hidden="true"></i>
+                    Choose Your Account Type
+                </h3>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-secondary">Required</span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-account-type-grid">
+                    <div class="nvc-account-type-card nvc-account-type-primary" data-account-type="checking">
+                        <div class="nvc-account-type-header">
+                            <div class="nvc-account-type-icon">
+                                <i class="fas fa-credit-card" aria-hidden="true"></i>
+                            </div>
+                            <h4 class="nvc-account-type-title nvc-wcag-high-contrast">Checking Account</h4>
+                        </div>
+                        <div class="nvc-account-type-body">
+                            <ul class="nvc-account-type-features">
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">No monthly fees</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Free debit card</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Online banking</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Mobile deposits</span>
+                                </li>
+                            </ul>
+                            <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-block nvc-wcag-focus" data-account-type="checking" aria-label="Select checking account">
+                                Select Checking
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="nvc-account-type-card nvc-account-type-success" data-account-type="savings">
+                        <div class="nvc-account-type-header">
+                            <div class="nvc-account-type-icon">
+                                <i class="fas fa-piggy-bank" aria-hidden="true"></i>
+                            </div>
+                            <h4 class="nvc-account-type-title nvc-wcag-high-contrast">Savings Account</h4>
+                        </div>
+                        <div class="nvc-account-type-body">
+                            <ul class="nvc-account-type-features">
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">2.5% APY</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">No minimum balance</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Automatic savings</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Goal tracking</span>
+                                </li>
+                            </ul>
+                            <button type="button" class="nvc-btn nvc-btn-success nvc-btn-block nvc-wcag-focus" data-account-type="savings" aria-label="Select savings account">
+                                Select Savings
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="nvc-account-type-card nvc-account-type-info" data-account-type="investment">
+                        <div class="nvc-account-type-header">
+                            <div class="nvc-account-type-icon">
+                                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                            </div>
+                            <h4 class="nvc-account-type-title nvc-wcag-high-contrast">Investment Account</h4>
+                        </div>
+                        <div class="nvc-account-type-body">
+                            <ul class="nvc-account-type-features">
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Portfolio management</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Low trading fees</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Research tools</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Expert advice</span>
+                                </li>
+                            </ul>
+                            <button type="button" class="nvc-btn nvc-btn-info nvc-btn-block nvc-wcag-focus" data-account-type="investment" aria-label="Select investment account">
+                                Select Investment
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="nvc-account-type-card nvc-account-type-warning" data-account-type="business">
+                        <div class="nvc-account-type-header">
+                            <div class="nvc-account-type-icon">
+                                <i class="fas fa-briefcase" aria-hidden="true"></i>
+                            </div>
+                            <h4 class="nvc-account-type-title nvc-wcag-high-contrast">Business Account</h4>
+                        </div>
+                        <div class="nvc-account-type-body">
+                            <ul class="nvc-account-type-features">
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Business banking</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Merchant services</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Payroll integration</span>
+                                </li>
+                                <li class="nvc-feature-item">
+                                    <i class="fas fa-check nvc-feature-check" aria-hidden="true"></i>
+                                    <span class="nvc-wcag-medium-contrast">Tax reporting</span>
+                                </li>
+                            </ul>
+                            <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-block nvc-wcag-focus" data-account-type="business" aria-label="Select business account">
+                                Select Business
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional New Account Application Interactions
+
+    // Account type selection
+    const accountTypeCards = document.querySelectorAll('.nvc-account-type-card');
+    const accountTypeButtons = document.querySelectorAll('[data-account-type]');
+    let selectedAccountType = null;
+
+    accountTypeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const accountType = this.getAttribute('data-account-type');
+
+            // Remove active state from all cards
+            accountTypeCards.forEach(card => {
+                card.classList.remove('nvc-account-type-selected');
+            });
+
+            // Add active state to selected card
+            const selectedCard = document.querySelector(`.nvc-account-type-card[data-account-type="${accountType}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('nvc-account-type-selected');
+                selectedAccountType = accountType;
+            }
+
+            // Update progress
+            updateProgress();
+        });
+    });
+
+    // Progress tracker updates
+    function updateProgress() {
+        const progressSteps = document.querySelectorAll('.nvc-progress-step');
+
+        if (selectedAccountType) {
+            // Mark step 1 as complete
+            if (progressSteps[0]) {
+                progressSteps[0].classList.add('nvc-progress-complete');
+                progressSteps[0].classList.remove('nvc-progress-active');
+            }
+
+            // Activate step 2
+            if (progressSteps[1]) {
+                progressSteps[1].classList.add('nvc-progress-active');
+            }
+        }
+    }
+
+    // Form validation and auto-save
+    const formInputs = document.querySelectorAll('input, select');
+    formInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Add visual feedback for changes
+            this.classList.add('nvc-form-changed');
+
+            // Auto-save after 2 seconds of inactivity
+            clearTimeout(this.saveTimeout);
+            this.saveTimeout = setTimeout(() => {
+                console.log('Auto-saving:', this.name, this.value);
+                this.classList.remove('nvc-form-changed');
+                this.classList.add('nvc-form-saved');
+                setTimeout(() => {
+                    this.classList.remove('nvc-form-saved');
+                }, 1000);
+            }, 2000);
+        });
+    });
+
+    // Account type card hover effects
+    accountTypeCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            if (!this.classList.contains('nvc-account-type-selected')) {
+                this.style.transform = 'translateY(-4px)';
+                this.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.15)';
+            }
+        });
+
+        card.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('nvc-account-type-selected')) {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '';
+            }
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

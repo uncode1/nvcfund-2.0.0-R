@@ -1,0 +1,489 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}External Exchange - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- External Exchange Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header bg-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0">
+                                <i class="fas fa-globe me-2"></i>
+                                External Exchange - Binance Integration
+                            </h3>
+                            <p class="mb-0">Trade cryptocurrencies on global markets via Binance</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-success fs-6">
+                                <i class="fas fa-check me-1"></i>Connected
+                            </span>
+                            <a href="{{ url_for('exchange.exchange_dashboard') }}" class="btn nvc-btn nvc-btn-outline-dark">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Exchange
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Trading Interface -->
+        <div class="col-lg-8">
+            <div class="nvc-card bg-dark border-light">
+                <div class="nvc-nvc-card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-white">
+                            <i class="fas fa-chart-candlestick me-2"></i>Binance Trading
+                        </h5>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="tradeType" id="buyOrder" autocomplete="off" checked>
+                            <label class="btn nvc-btn nvc-btn-outline-success" for="buyOrder">Buy</label>
+                            
+                            <input type="radio" class="btn-check" name="tradeType" id="sellOrder" autocomplete="off">
+                            <label class="btn nvc-btn nvc-btn-outline-danger" for="sellOrder">Sell</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="tradingForm">
+                        <div class="row">
+                            <!-- Trading Pair Selection -->
+                            <div class="col-md-6 mb-3">
+                                <label class="nvc-form-label text-light">Trading Pair</label>
+                                <select class="nvc-form-select bg-dark text-light border-warning" id="tradingPair" required>
+                                    <option value="">Select Trading Pair</option>
+                                    {% if trading_pairs %}
+                                        {% for pair in trading_pairs %}
+                                        <option value="{{ pair.symbol }}" 
+                                                data-base="{{ pair.baseAsset }}" 
+                                                data-quote="{{ pair.quoteAsset }}"
+                                                data-min-qty="{{ pair.filters.minQty if pair.filters else '0.001' }}">
+                                            {{ pair.symbol }} ({{ pair.baseAsset }}/{{ pair.quoteAsset }})
+                                        </option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+
+                            <!-- Order Type -->
+                            <div class="col-md-6 mb-3">
+                                <label class="nvc-form-label text-light">Order Type</label>
+                                <select class="nvc-form-select bg-dark text-light border-warning" id="orderType" required>
+                                    <option value="MARKET">Market Order</option>
+                                    <option value="LIMIT">Limit Order</option>
+                                    <option value="STOP_LOSS">Stop Loss</option>
+                                    <option value="STOP_LOSS_LIMIT">Stop Loss Limit</option>
+                                </select>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="col-md-6 mb-3">
+                                <label class="nvc-form-label text-light">Quantity</label>
+                                <div class="input-group">
+                                    <input type="number" class="nvc-form-input bg-dark text-light border-warning" 
+                                           id="quantity" step="0.00000001" min="0" placeholder="0.00000000" required>
+                                    <span class="input-group-text bg-warning text-dark" id="baseCurrency">Base</span>
+                                </div>
+                                <div class="form-text text-light">
+                                    Available: <span id="availableBalance">0.00000000</span>
+                                    <button type="button" class="btn btn-link btn-sm text-warning p-0 ms-2" id="use25">25%</button>
+                                    <button type="button" class="btn btn-link btn-sm text-warning p-0 ms-1" id="use50">50%</button>
+                                    <button type="button" class="btn btn-link btn-sm text-warning p-0 ms-1" id="use75">75%</button>
+                                    <button type="button" class="btn btn-link btn-sm text-warning p-0 ms-1" id="useMax">Max</button>
+                                </div>
+                            </div>
+
+                            <!-- Price (for limit orders) -->
+                            <div class="col-md-6 mb-3" id="priceSection" class="d-none">
+                                <label class="nvc-form-label text-light">Price</label>
+                                <div class="input-group">
+                                    <input type="number" class="nvc-form-input bg-dark text-light border-warning" 
+                                           id="price" step="0.00000001" min="0" placeholder="0.00000000">
+                                    <span class="input-group-text bg-warning text-dark" id="quoteCurrency">Quote</span>
+                                </div>
+                                <div class="form-text text-light">
+                                    Current Price: <span id="currentPrice">--</span>
+                                </div>
+                            </div>
+
+                            <!-- Stop Price (for stop orders) -->
+                            <div class="col-md-6 mb-3" id="stopPriceSection" class="d-none">
+                                <label class="nvc-form-label text-light">Stop Price</label>
+                                <div class="input-group">
+                                    <input type="number" class="nvc-form-input bg-dark text-light border-warning" 
+                                           id="stopPrice" step="0.00000001" min="0" placeholder="0.00000000">
+                                    <span class="input-group-text bg-warning text-dark" id="stopQuoteCurrency">Quote</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Summary -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="nvc-card bg-secondary border-info" id="orderSummary" class="d-none">
+                                    <div class="nvc-nvc-card-header bg-info text-white">
+                                        <h6 class="mb-0">Order Summary</h6>
+                                    </div>
+                                    <div class="nvc-nvc-card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <small class="text-light">Order Type</small>
+                                                <div class="h6 text-warning" id="summaryOrderType">--</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-light">Quantity</small>
+                                                <div class="h6 text-info" id="summaryQuantity">--</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-light">Estimated Total</small>
+                                                <div class="h6 text-success" id="summaryTotal">--</div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-light">Est. Fee</small>
+                                                <div class="h6 text-light" id="summaryFee">0.1%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="button" class="btn nvc-btn nvc-btn-outline-secondary me-md-2" id="previewOrderBtn">
+                                        <i class="fas fa-eye me-2"></i>Preview Order
+                                    </button>
+                                    <button type="submit" class="btn nvc-btn nvc-btn-warning" id="placeOrderBtn" disabled>
+                                        <i class="fas fa-paper-plane me-2"></i>Place Order
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Info & Market Data -->
+        <div class="col-lg-4">
+            <!-- Account Balance -->
+            <div class="nvc-card bg-dark border-success mb-4">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-wallet me-2"></i>Binance Account Balance
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if account_info and account_info.balances %}
+                        <div class="table-responsive nvc-style-3db978" >
+                            <table class="table table-dark table-sm">
+                                <thead class="sticky-top">
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th class="text-end">Free</th>
+                                        <th class="text-end">Locked</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for balance in account_info.balances %}
+                                        {% if balance.free|float > 0 or balance.locked|float > 0 %}
+                                        <tr>
+                                            <td><strong>{{ balance.asset }}</strong></td>
+                                            <td class="text-end">{{ "{:.8f}".format(balance.free|float) }}</td>
+                                            <td class="text-end">{{ "{:.8f}".format(balance.locked|float) }}</td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-light">Unable to load account balance</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Market Prices -->
+            <div class="nvc-card bg-dark border-info mb-4">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Market Prices (24h)
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if ticker_prices %}
+                        <div class="table-responsive nvc-style-3db978" >
+                            <table class="table table-dark table-sm">
+                                <thead class="sticky-top">
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-end">Change</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ticker in ticker_prices[:20] %}
+                                    <tr>
+                                        <td><strong>{{ ticker.symbol }}</strong></td>
+                                        <td class="text-end">{{ "{:.8f}".format(ticker.price|float) }}</td>
+                                        <td class="text-end">
+                                            <span class="{% if ticker.priceChangePercent|float >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                {{ "{:.2f}".format(ticker.priceChangePercent|float) }%}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-light">Unable to load market prices</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Trading Information -->
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Trading Information
+                    </h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <ul class="list-unstyled text-light mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-chart-bar text-warning me-2"></i>
+                            Real-time market data from Binance
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-shield-alt text-success me-2"></i>
+                            Secure API integration
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-percentage text-info me-2"></i>
+                            Standard Binance trading fees apply
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            24/7 global market access
+                        </li>
+                        <li>
+                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                            Trading involves risk
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Confirmation Modal -->
+<div class="modal fade" id="confirmOrderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark border-warning">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Confirm Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert nvc-nvc-alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Please review your order details carefully before confirming.
+                </div>
+                <div id="orderConfirmationDetails"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn nvc-btn nvc-btn-warning" id="confirmOrderBtn">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tradingPair = document.getElementById('tradingPair');
+    const orderType = document.getElementById('orderType');
+    const quantity = document.getElementById('quantity');
+    const price = document.getElementById('price');
+    const stopPrice = document.getElementById('stopPrice');
+    const priceSection = document.getElementById('priceSection');
+    const stopPriceSection = document.getElementById('stopPriceSection');
+    const baseCurrency = document.getElementById('baseCurrency');
+    const quoteCurrency = document.getElementById('quoteCurrency');
+    const stopQuoteCurrency = document.getElementById('stopQuoteCurrency');
+    const currentPrice = document.getElementById('currentPrice');
+    const availableBalance = document.getElementById('availableBalance');
+
+    // Show/hide price fields based on order type
+    orderType.addEventListener('change', function() {
+        const type = this.value;
+        
+        if (type === 'LIMIT' || type === 'STOP_LOSS_LIMIT') {
+            priceSection.style.display = 'block';
+            price.required = true;
+        } else {
+            priceSection.style.display = 'none';
+            price.required = false;
+        }
+        
+        if (type === 'STOP_LOSS' || type === 'STOP_LOSS_LIMIT') {
+            stopPriceSection.style.display = 'block';
+            stopPrice.required = true;
+        } else {
+            stopPriceSection.style.display = 'none';
+            stopPrice.required = false;
+        }
+    });
+
+    // Update currency symbols when trading pair changes
+    tradingPair.addEventListener('change', function() {
+        const option = this.selectedOptions[0];
+        if (option.value) {
+            const baseAsset = option.dataset.base;
+            const quoteAsset = option.dataset.quote;
+            
+            baseCurrency.textContent = baseAsset;
+            quoteCurrency.textContent = quoteAsset;
+            stopQuoteCurrency.textContent = quoteAsset;
+            
+            // Update current price from ticker data
+            updateCurrentPrice(option.value);
+            updateAvailableBalance(baseAsset);
+        }
+    });
+
+    // Percentage buttons
+    document.getElementById('use25').addEventListener('click', () => setPercentage(0.25));
+    document.getElementById('use50').addEventListener('click', () => setPercentage(0.5));
+    document.getElementById('use75').addEventListener('click', () => setPercentage(0.75));
+    document.getElementById('useMax').addEventListener('click', () => setPercentage(1.0));
+
+    // Preview order
+    document.getElementById('previewOrderBtn').addEventListener('click', previewOrder);
+
+    // Form submission
+    document.getElementById('tradingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        showOrderConfirmation();
+    });
+
+    function updateCurrentPrice(symbol) {
+        {% if ticker_prices %}
+        const tickerData = {{ ticker_prices|tojson }};
+        const ticker = tickerData.find(t => t.symbol === symbol);
+        if (ticker) {
+            currentPrice.textContent = parseFloat(ticker.price).toFixed(8);
+        }
+        {% endif %}
+    }
+
+    function updateAvailableBalance(asset) {
+        {% if account_info and account_info.balances %}
+        const balances = {{ account_info.balances|tojson }};
+        const balance = balances.find(b => b.asset === asset);
+        if (balance) {
+            availableBalance.textContent = parseFloat(balance.free).toFixed(8);
+        } else {
+            availableBalance.textContent = '0.00000000';
+        }
+        {% endif %}
+    }
+
+    function setPercentage(percent) {
+        const available = parseFloat(availableBalance.textContent);
+        quantity.value = (available * percent).toFixed(8);
+        previewOrder();
+    }
+
+    function previewOrder() {
+        if (!tradingPair.value || !quantity.value) return;
+
+        const tradeType = document.querySelector('input[name="tradeType"]:checked').id;
+        const orderTypeValue = orderType.value;
+        const quantityValue = parseFloat(quantity.value);
+        
+        let estimatedTotal = '--';
+        if (orderTypeValue === 'MARKET') {
+            const marketPrice = parseFloat(currentPrice.textContent);
+            if (marketPrice > 0) {
+                estimatedTotal = (quantityValue * marketPrice).toFixed(8) + ' ' + quoteCurrency.textContent;
+            }
+        } else if (orderTypeValue === 'LIMIT' && price.value) {
+            const limitPrice = parseFloat(price.value);
+            estimatedTotal = (quantityValue * limitPrice).toFixed(8) + ' ' + quoteCurrency.textContent;
+        }
+
+        document.getElementById('summaryOrderType').textContent = `${tradeType.toUpperCase()} ${orderTypeValue}`;
+        document.getElementById('summaryQuantity').textContent = quantityValue.toFixed(8) + ' ' + baseCurrency.textContent;
+        document.getElementById('summaryTotal').textContent = estimatedTotal;
+
+        document.getElementById('orderSummary').style.display = 'block';
+        document.getElementById('placeOrderBtn').disabled = false;
+    }
+
+    function showOrderConfirmation() {
+        const orderDetails = `
+            <table class="table table-dark">
+                <tr><td><strong>Trading Pair:</strong></td><td>${tradingPair.value}</td></tr>
+                <tr><td><strong>Order Type:</strong></td><td>${orderType.value}</td></tr>
+                <tr><td><strong>Side:</strong></td><td>${document.querySelector('input[name="tradeType"]:checked').id.replace('Order', '').toUpperCase()}</td></tr>
+                <tr><td><strong>Quantity:</strong></td><td>${quantity.value} ${baseCurrency.textContent}</td></tr>
+                ${price.value ? `<tr><td><strong>Price:</strong></td><td>${price.value} ${quoteCurrency.textContent}</td></tr>` : ''}
+                ${stopPrice.value ? `<tr><td><strong>Stop Price:</strong></td><td>${stopPrice.value} ${quoteCurrency.textContent}</td></tr>` : ''}
+            </table>
+        `;
+        
+        document.getElementById('orderConfirmationDetails').innerHTML = orderDetails;
+        new bootstrap.Modal(document.getElementById('confirmOrderModal')).show();
+    }
+
+    // Confirm order execution
+    document.getElementById('confirmOrderBtn').addEventListener('click', function() {
+        const orderData = {
+            exchange_type: 'external',
+            symbol: tradingPair.value,
+            side: document.querySelector('input[name="tradeType"]:checked').id.replace('Order', '').toUpperCase(),
+            type: orderType.value,
+            quantity: parseFloat(quantity.value),
+            price: price.value ? parseFloat(price.value) : null,
+            stopPrice: stopPrice.value ? parseFloat(stopPrice.value) : null
+        };
+
+        fetch('/exchange/execute', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Order placed successfully!');
+                window.location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Order failed'));
+            }
+        })
+        .catch(error => {
+            alert('Error placing order: ' + error.message);
+        });
+
+        bootstrap.Modal.getInstance(document.getElementById('confirmOrderModal')).hide();
+    });
+});
+</script>
+</div>
+{% endblock %}

@@ -1,0 +1,527 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Exchange Rates - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Exchange Rates Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Exchange Rates
+                            </h3>
+                            <p class="mb-0">Real-time internal and external exchange rates</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-success fs-6" id="lastUpdated">
+                                <i class="fas fa-sync-alt me-1"></i>Live
+                            </span>
+                            <a href="{{ url_for('exchange.exchange_dashboard') }}" class="btn nvc-btn nvc-btn-outline-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Exchange
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Internal Rates -->
+        <div class="col-lg-6">
+            <div class="nvc-card bg-dark border-primary mb-4">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-university me-2"></i>Internal Exchange Rates
+                        </h5>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm" data-action="custom-action">
+                            <i class="fas fa-refresh me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if internal_rates %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>Currency Pair</th>
+                                        <th class="text-end">Rate</th>
+                                        <th class="text-end">Spread</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="internalRatesTable">
+                                    {% for rate in internal_rates %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-2">
+                                                    <div class="badge bg-success">{{ rate.from_currency }}</div>
+                                                    <i class="fas fa-arrow-right text-light mx-1"></i>
+                                                    <div class="badge bg-info">{{ rate.to_currency }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong class="text-success">{{ "{:.6f}".format(rate.rate) }}</strong>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="text-warning">{{ "{:.2f}".format(rate.spread_percentage or 0.25) }%}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge {% if rate.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                                {% if rate.is_active %}Active{% else %}Inactive{% endif %}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Internal Rates Summary -->
+                        <div class="row mt-3">
+                            <div class="col-md-4 text-center">
+                                <small class="text-light">Available Pairs</small>
+                                <div class="h5 text-primary">{{ internal_rates|length }}</div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <small class="text-light">Average Spread</small>
+                                <div class="h5 text-warning">0.25%</div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <small class="text-light">Last Update</small>
+                                <div class="h6 text-success">Just now</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-line text-light" class="nvc-fs-3rem"></i>
+                            <h5 class="text-light mt-3">No Internal Rates Available</h5>
+                            <p class="text-light">Internal exchange rates are currently unavailable.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- External Rates (Binance) -->
+        <div class="col-lg-6">
+            <div class="nvc-card bg-dark border-warning mb-4">
+                <div class="nvc-nvc-card-header bg-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-globe me-2"></i>External Rates (Binance)
+                        </h5>
+                        <div class="d-flex gap-2">
+                            {% if binance_connected %}
+                                <span class="badge bg-success">Connected</span>
+                            {% else %}
+                                <span class="badge bg-danger">Disconnected</span>
+                            {% endif %}
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-dark btn-sm" data-action="custom-action">
+                                <i class="fas fa-refresh me-1"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if binance_connected and external_rates %}
+                        <!-- Search and Filter -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="nvc-form-input bg-dark text-light border-warning" 
+                                       id="searchPairs" placeholder="Search currency pairs..." onkeyup="filterPairs()">
+                                <span class="input-group-text bg-warning text-dark">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive nvc-style-f4d939" >
+                            <table class="table table-dark table-hover table-sm">
+                                <thead class="table-warning sticky-top">
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-end">24h Change</th>
+                                        <th class="text-end">Volume</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="externalRatesTable">
+                                    {% for ticker in external_rates[:50] %}
+                                    <tr data-symbol="{{ ticker.symbol }}">
+                                        <td>
+                                            <strong>{{ ticker.symbol }}</strong>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong>{{ "{:.8f}".format(ticker.price|float) }}</strong>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="{% if ticker.priceChangePercent|float >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                <i class="fas fa-{% if ticker.priceChangePercent|float >= 0 %}arrow-up{% else %}arrow-down{% endif %} me-1"></i>
+                                                {{ "{:.2f}".format(ticker.priceChangePercent|float) }%}
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <small class="text-light">{{ "{:,.0f}".format(ticker.volume|float) }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- External Rates Summary -->
+                        <div class="row mt-3">
+                            <div class="col-md-4 text-center">
+                                <small class="text-light">Total Pairs</small>
+                                <div class="h5 text-warning">{{ external_rates|length }}</div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <small class="text-light">Gainers</small>
+                                <div class="h5 text-success">{{ external_rates|selectattr('priceChangePercent', 'match', '^[0-9]')|list|length }}</div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <small class="text-light">Losers</small>
+                                <div class="h5 text-danger">{{ external_rates|selectattr('priceChangePercent', 'match', '^-')|list|length }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            {% if not binance_connected %}
+                                <i class="fas fa-plug text-light" class="nvc-fs-3rem"></i>
+                                <h5 class="text-light mt-3">Binance Not Connected</h5>
+                                <p class="text-light mb-3">Connect your Binance account to view external rates.</p>
+                                <a href="{{ url_for('binance_integration.connect') }}" class="btn nvc-btn nvc-btn-warning">
+                                    <i class="fas fa-link me-2"></i>Connect Binance
+                                </a>
+                            {% else %}
+                                <i class="fas fa-chart-line text-light" class="nvc-fs-3rem"></i>
+                                <h5 class="text-light mt-3">No External Rates Available</h5>
+                                <p class="text-light">Unable to load external rates at this time.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Analysis -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Market Analysis
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <!-- Top Gainers -->
+                        <div class="col-lg-4">
+                            <h6 class="text-success">
+                                <i class="fas fa-arrow-up me-2"></i>Top Gainers (24h)
+                            </h6>
+                            {% if external_rates %}
+                                <div class="list-group list-group-flush">
+                                    {% for ticker in external_rates|sort(attribute='priceChangePercent', reverse=true)[:5] %}
+                                        {% if ticker.priceChangePercent|float > 0 %}
+                                        <div class="list-group-item bg-dark border-success d-flex justify-content-between">
+                                            <span class="text-light">{{ ticker.symbol }}</span>
+                                            <span class="text-success">+{{ "{:.2f}".format(ticker.priceChangePercent|float) }%}</span>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-light">Connect Binance to view gainers</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Top Losers -->
+                        <div class="col-lg-4">
+                            <h6 class="text-danger">
+                                <i class="fas fa-arrow-down me-2"></i>Top Losers (24h)
+                            </h6>
+                            {% if external_rates %}
+                                <div class="list-group list-group-flush">
+                                    {% for ticker in external_rates|sort(attribute='priceChangePercent')[:5] %}
+                                        {% if ticker.priceChangePercent|float < 0 %}
+                                        <div class="list-group-item bg-dark border-danger d-flex justify-content-between">
+                                            <span class="text-light">{{ ticker.symbol }}</span>
+                                            <span class="text-danger">{{ "{:.2f}".format(ticker.priceChangePercent|float) }%}</span>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-light">Connect Binance to view losers</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- High Volume -->
+                        <div class="col-lg-4">
+                            <h6 class="text-info">
+                                <i class="fas fa-chart-area me-2"></i>High Volume (24h)
+                            </h6>
+                            {% if external_rates %}
+                                <div class="list-group list-group-flush">
+                                    {% for ticker in external_rates|sort(attribute='volume', reverse=true)[:5] %}
+                                    <div class="list-group-item bg-dark border-info d-flex justify-content-between">
+                                        <span class="text-light">{{ ticker.symbol }}</span>
+                                        <span class="text-info">{{ "{:,.0f}".format(ticker.volume|float) }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-light">Connect Binance to view volume data</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-light">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ url_for('exchange.internal_exchange') }}" class="btn nvc-btn nvc-btn-primary w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-university mb-2" class="nvc-fs-2rem"></i>
+                                <span>Internal Exchange</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ url_for('exchange.external_exchange') }}" class="btn nvc-btn nvc-btn-warning w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-globe mb-2" class="nvc-fs-2rem"></i>
+                                <span>External Exchange</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ url_for('exchange.exchange_history') }}" class="btn nvc-btn nvc-btn-secondary w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-history mb-2" class="nvc-fs-2rem"></i>
+                                <span>Exchange History</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <button type="button" class="btn btn-info w-100 h-100 d-flex flex-column justify-content-center" data-action="custom-action">
+                                <i class="fas fa-bell mb-2" class="nvc-fs-2rem"></i>
+                                <span>Set Rate Alerts</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rate Alert Modal -->
+<div class="modal fade" id="rateAlertModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border-info">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Set Rate Alert</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rateAlertForm">
+                    <div class="mb-3">
+                        <label class="nvc-form-label text-light">Currency Pair</label>
+                        <select class="nvc-form-select bg-dark text-light border-info" id="alertPair" required>
+                            <option value="">Select Currency Pair</option>
+                            {% if internal_rates %}
+                                {% for rate in internal_rates %}
+                                <option value="{{ rate.from_currency }}/{{ rate.to_currency }}">
+                                    {{ rate.from_currency }}/{{ rate.to_currency }}
+                                </option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label text-light">Alert Type</label>
+                        <select class="nvc-form-select bg-dark text-light border-info" id="alertType" required>
+                            <option value="above">Rate Above</option>
+                            <option value="below">Rate Below</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label text-light">Target Rate</label>
+                        <input type="number" class="nvc-form-input bg-dark text-light border-info" 
+                               id="targetRate" step="0.000001" placeholder="0.000000" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info" data-action="custom-action">Create Alert</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh rates every 30 seconds
+setInterval(function() {
+    refreshInternalRates();
+    refreshExternalRates();
+}, 30000);
+
+function refreshInternalRates() {
+    fetch('/exchange/api/internal-rates')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateInternalRatesTable(data.rates);
+                updateLastUpdated();
+            }
+        })
+        .catch(error => console.error('Error refreshing internal rates:', error));
+}
+
+function refreshExternalRates() {
+    {% if binance_connected %}
+    fetch('/exchange/api/external-rates')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateExternalRatesTable(data.rates);
+                updateLastUpdated();
+            }
+        })
+        .catch(error => console.error('Error refreshing external rates:', error));
+    {% endif %}
+}
+
+function updateInternalRatesTable(rates) {
+    const tbody = document.getElementById('internalRatesTable');
+    if (!tbody || !rates) return;
+    
+    tbody.innerHTML = rates.map(rate => `
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="me-2">
+                        <div class="badge bg-success">${rate.from_currency}</div>
+                        <i class="fas fa-arrow-right text-light mx-1"></i>
+                        <div class="badge bg-info">${rate.to_currency}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="text-end">
+                <strong class="text-success">${parseFloat(rate.rate).toFixed(6)}</strong>
+            </td>
+            <td class="text-end">
+                <span class="text-warning">${(rate.spread_percentage || 0.25).toFixed(2)%}</span>
+            </td>
+            <td class="text-center">
+                <span class="badge ${rate.is_active ? 'bg-success' : 'bg-danger'}">
+                    ${rate.is_active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updateExternalRatesTable(rates) {
+    const tbody = document.getElementById('externalRatesTable');
+    if (!tbody || !rates) return;
+    
+    tbody.innerHTML = rates.slice(0, 50).map(ticker => `
+        <tr data-symbol="${ticker.symbol}">
+            <td><strong>${ticker.symbol}</strong></td>
+            <td class="text-end">
+                <strong>${parseFloat(ticker.price).toFixed(8)}</strong>
+            </td>
+            <td class="text-end">
+                <span class="${parseFloat(ticker.priceChangePercent) >= 0 ? 'text-success' : 'text-danger'}">
+                    <i class="fas fa-${parseFloat(ticker.priceChangePercent) >= 0 ? 'arrow-up' : 'arrow-down'} me-1"></i>
+                    ${parseFloat(ticker.priceChangePercent).toFixed(2)%}
+                </span>
+            </td>
+            <td class="text-end">
+                <small class="text-light">${parseInt(ticker.volume).toLocaleString()}</small>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updateLastUpdated() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString();
+    document.getElementById('lastUpdated').innerHTML = `<i class="fas fa-sync-alt me-1"></i>Updated ${timeString}`;
+}
+
+function filterPairs() {
+    const searchTerm = document.getElementById('searchPairs').value.toLowerCase();
+    const rows = document.querySelectorAll('#externalRatesTable tr');
+    
+    rows.forEach(row => {
+        const symbol = row.dataset.symbol?.toLowerCase() || '';
+        row.style.display = symbol.includes(searchTerm) ? '' : 'none';
+    });
+}
+
+function setRateAlerts() {
+    new bootstrap.Modal(document.getElementById('rateAlertModal')).show();
+}
+
+function createRateAlert() {
+    const form = document.getElementById('rateAlertForm');
+    const formData = new FormData(form);
+    
+    const alertData = {
+        pair: document.getElementById('alertPair').value,
+        type: document.getElementById('alertType').value,
+        target_rate: parseFloat(document.getElementById('targetRate').value)
+    };
+    
+    fetch('/exchange/api/rate-alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(alertData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Rate alert created successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('rateAlertModal')).hide();
+            form.reset();
+        } else {
+            alert('Error creating rate alert: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    });
+}
+
+// Update timestamp on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateLastUpdated();
+});
+</script>
+</div>
+{% endblock %}

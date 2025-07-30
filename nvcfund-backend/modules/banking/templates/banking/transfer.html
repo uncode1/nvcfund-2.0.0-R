@@ -1,0 +1,530 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Smart Transfer Center - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Transfer Center{% endblock %}
+{% block page_description %}Seamless transfers between traditional banking and digital asset accounts{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-history"></i>
+    Transfer History
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-save"></i>
+    Save Template
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-paper-plane"></i>
+    Execute Transfer
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Transfer Functions
+function viewTransferHistory() {
+    window.location.href = "{{ url_for('banking.transfer_history') }}";
+}
+
+function saveAsTemplate() {
+    alert('Save as template functionality will be implemented');
+}
+
+function executeTransfer() {
+    const form = document.getElementById('smartTransferForm');
+    if (form.checkValidity()) {
+        alert('Transfer execution will be implemented');
+    } else {
+        form.reportValidity();
+    }
+}
+
+function selectTransferType(type) {
+    // Remove active class from all cards
+    document.querySelectorAll('.transfer-type-card').forEach(card => {
+        card.classList.remove('active');
+    });
+
+    // Add active class to selected card
+    document.querySelector(`[data-type="${type}"]`).classList.add('active');
+
+    // Update form based on type
+    updateFormForType(type);
+}
+
+function updateFormForType(type) {
+    const currencySelect = document.getElementById('currency');
+    const fromAccount = document.getElementById('fromAccount');
+    const toAccount = document.getElementById('toAccount');
+
+    if (type === 'crypto') {
+        // Show crypto options
+        currencySelect.innerHTML = `
+            <option value="BTC">Bitcoin (BTC)</option>
+            <option value="ETH">Ethereum (ETH)</option>
+            <option value="NVCT">NVCT Stablecoin</option>
+            <option value="USDC">USD Coin (USDC)</option>
+        `;
+    } else {
+        // Show traditional currencies
+        currencySelect.innerHTML = `
+            <option value="USD">US Dollar (USD)</option>
+            <option value="EUR">Euro (EUR)</option>
+            <option value="GBP">British Pound (GBP)</option>
+            <option value="CAD">Canadian Dollar (CAD)</option>
+        `;
+    }
+}
+
+// Add event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Transfer type selection
+    document.querySelectorAll('.transfer-type-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const type = this.dataset.type;
+            selectTransferType(type);
+        });
+    });
+
+    // Amount input formatting
+    const amountInput = document.getElementById('amount');
+    const amountInWords = document.getElementById('amountInWords');
+
+    amountInput.addEventListener('input', function() {
+        const amount = parseFloat(this.value);
+        if (!isNaN(amount)) {
+            amountInWords.textContent = `Amount: ${amount.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            })}`;
+        } else {
+            amountInWords.textContent = '';
+        }
+    });
+
+    // Currency symbol update
+    const currencySelect = document.getElementById('currency');
+    const currencySymbol = document.getElementById('currencySymbol');
+
+    currencySelect.addEventListener('change', function() {
+        const symbols = {
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£',
+            'BTC': '₿',
+            'ETH': 'Ξ',
+            'NVCT': '🪙',
+            'USDC': '💎'
+        };
+        currencySymbol.textContent = symbols[this.value] || '$';
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Smart Transfer Center -->
+<div class="row g-4">
+    <!-- Transfer Type Selection -->
+    <div class="col-12">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-exchange-alt text-primary me-2"></i>
+                    Choose Transfer Type
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="row g-3">
+                    <!-- Internal Transfer -->
+                    <div class="col-md-4">
+                        <div class="transfer-type-nvc-card" data-type="internal" data-action="custom-action">
+                            <div class="transfer-icon bg-primary">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="transfer-info">
+                                <h6>Internal Transfer</h6>
+                                <p class="text-muted small">Between your own accounts</p>
+                                <div class="transfer-features">
+                                    <span class="badge bg-success">Instant</span>
+                                    <span class="badge bg-info">No Fees</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- External Transfer -->
+                    <div class="col-md-4">
+                        <div class="transfer-type-nvc-card" data-type="external" data-action="custom-action">
+                            <div class="transfer-icon bg-success">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="transfer-info">
+                                <h6>External Transfer</h6>
+                                <p class="text-muted small">To other banks & institutions</p>
+                                <div class="transfer-features">
+                                    <span class="badge bg-warning">1-3 Days</span>
+                                    <span class="badge bg-primary">Secure</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crypto Transfer -->
+                    <div class="col-md-4">
+                        <div class="transfer-type-nvc-card" data-type="crypto" data-action="custom-action">
+                            <div class="transfer-icon bg-warning">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="transfer-info">
+                                <h6>Crypto Transfer</h6>
+                                <p class="text-muted small">Digital asset transactions</p>
+                                <div class="transfer-features">
+                                    <span class="badge bg-warning">10-60 min</span>
+                                    <span class="badge bg-info">Blockchain</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Form -->
+    <div class="col-xl-8">
+        <div class="nvc-card border-0 shadow-sm">
+            <div class="nvc-nvc-card-header bg-transparent">
+                <h5 class="nvc-card-title mb-0">
+                    <i class="fas fa-paper-plane text-primary me-2"></i>
+                    Transfer Details
+                </h5>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <form id="smartTransferForm" class="needs-validation" novalidate>
+                    <!-- Account Selection -->
+                    <div class="form-section mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-wallet text-primary me-2"></i>
+                            Account Selection
+                        </h6>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="fromAccount" class="nvc-form-label">From Account</label>
+                                <select class="form-select nvc-form-select-lg" id="fromAccount" name="fromAccount" required>
+                                    <option value="">Select source account</option>
+                                    <optgroup label="Traditional Banking">
+                                        <option value="checking-1234">🏦 Checking - ****1234 ($15,250.00)</option>
+                                        <option value="savings-5678">💰 Savings - ****5678 ($75,500.00)</option>
+                                        <option value="business-9012">🏢 Business - ****9012 ($125,750.00)</option>
+                                    </optgroup>
+                                    <optgroup label="Digital Wallets">
+                                        <option value="btc-wallet">₿ Bitcoin Wallet (2.5 BTC)</option>
+                                        <option value="eth-wallet">⟠ Ethereum Wallet (15.7 ETH)</option>
+                                        <option value="nvct-wallet">🪙 NVCT Wallet (10,000 NVCT)</option>
+                                        <option value="usdc-wallet">💎 USDC Wallet (25,000 USDC)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="toAccount" class="nvc-form-label">To Account</label>
+                                <select class="form-select nvc-form-select-lg" id="toAccount" name="toAccount" required>
+                                    <option value="">Select destination account</option>
+                                    <optgroup label="Internal Accounts">
+                                        <option value="checking-1234">🏦 Checking - ****1234</option>
+                                        <option value="savings-5678">💰 Savings - ****5678</option>
+                                        <option value="business-9012">🏢 Business - ****9012</option>
+                                        <option value="btc-wallet">₿ Bitcoin Wallet</option>
+                                        <option value="eth-wallet">⟠ Ethereum Wallet</option>
+                                        <option value="nvct-wallet">🪙 NVCT Wallet</option>
+                                    </optgroup>
+                                    <optgroup label="External Transfers">
+                                        <option value="external-bank">🏦 External Bank Account</option>
+                                        <option value="external-crypto">₿ External Crypto Wallet</option>
+                                        <option value="paypal">🅿️ PayPal Account</option>
+                                        <option value="wire">📡 Wire Transfer</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transfer Amount -->
+                    <div class="form-section mb-4">
+                        <h6 class="text-success mb-3">
+                            <i class="fas fa-dollar-sign text-success me-2"></i>
+                            Transfer Amount
+                        </h6>
+
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label for="amount" class="nvc-form-label">Amount</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text" id="currencySymbol">$</span>
+                                    <input type="number" class="nvc-form-input" id="amount" name="amount"
+                                           required step="0.01" min="0.01" placeholder="0.00">
+                                    <div class="invalid-feedback">
+                                        Please enter a valid amount.
+                                    </div>
+                                </div>
+                                <div class="form-text">
+                                    <span id="amountInWords" class="text-muted"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="currency" class="nvc-form-label">Currency</label>
+                                <select class="form-select nvc-form-select-lg" id="currency" name="currency" required>
+                                    <option value="USD">US Dollar (USD)</option>
+                                    <option value="EUR">Euro (EUR)</option>
+                                    <option value="GBP">British Pound (GBP)</option>
+                                    <option value="BTC">Bitcoin (BTC)</option>
+                                    <option value="ETH">Ethereum (ETH)</option>
+                                    <option value="NVCT">NVCT Stablecoin</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transfer Options -->
+                    <div class="form-section mb-4">
+                        <h6 class="text-info mb-3">
+                            <i class="fas fa-cogs text-info me-2"></i>
+                            Transfer Options
+                        </h6>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="transferSpeed" class="nvc-form-label">Transfer Speed</label>
+                                <select class="nvc-form-select" id="transferSpeed" name="transferSpeed">
+                                    <option value="standard">Standard (1-3 business days) - Free</option>
+                                    <option value="express">Express (Same day) - $5.00</option>
+                                    <option value="instant">Instant (Within minutes) - $10.00</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="transferDate" class="nvc-form-label">Transfer Date</label>
+                                <input type="date" class="nvc-form-input" id="transferDate" name="transferDate"
+                                       value="{{ today }}" min="{{ today }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transfer Description -->
+                    <div class="form-section mb-4">
+                        <label for="description" class="nvc-form-label">
+                            <i class="fas fa-comment text-secondary me-2"></i>
+                            Description (Optional)
+                        </label>
+                        <textarea class="nvc-form-input" id="description" name="description" rows="3"
+                                  placeholder="Enter a description for this transfer..."></textarea>
+                    </div>
+
+                    <!-- Security Verification -->
+                    <div class="form-section mb-4">
+                        <h6 class="text-warning mb-3">
+                            <i class="fas fa-shield-alt text-warning me-2"></i>
+                            Security Verification
+                        </h6>
+
+                        <div class="security-options">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="verification"
+                                       id="passwordVerification" value="password" checked>
+                                <label class="form-check-label" for="passwordVerification">
+                                    <i class="fas fa-key text-primary me-1"></i>
+                                    Password verification
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="verification"
+                                       id="mfaVerification" value="mfa">
+                                <label class="form-check-label" for="mfaVerification">
+                                    <i class="fas fa-mobile-alt text-success me-1"></i>
+                                    Multi-factor authentication
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="verification"
+                                       id="biometricVerification" value="biometric">
+                                <label class="form-check-label" for="biometricVerification">
+                                    <i class="fas fa-fingerprint text-info me-1"></i>
+                                    Biometric verification
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn nvc-btn nvc-btn-primary btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Review & Execute Transfer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+            padding: 1.5rem;
+        }
+        
+        .card-title {
+            color: #f1f5f9 !important;
+            font-weight: 600;
+        }
+        
+        .form-control, .form-select {
+            background: #334155 !important;
+            border: 1px solid #475569 !important;
+            color: #e2e8f0 !important;
+            border-radius: 6px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: #334155 !important;
+            border-color: #3b82f6 !important;
+            color: #f1f5f9 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+        
+        .btn-primary {
+            background: #3b82f6 !important;
+            border-color: #3b82f6 !important;
+            color: #ffffff !important;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb !important;
+            border-color: #2563eb !important;
+        }
+        
+        .btn-secondary {
+            background: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: #ffffff !important;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1) !important;
+            border-color: #10b981 !important;
+            color: #10b981 !important;
+        }
+        
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+        }
+        
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1) !important;
+            border-color: #f59e0b !important;
+            color: #f59e0b !important;
+        }
+        
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1) !important;
+            border-color: #3b82f6 !important;
+            color: #3b82f6 !important;
+        }
+        
+        .text-light {
+            color: #e2e8f0 !important;
+        }
+        
+        .text-info {
+            color: #3b82f6 !important;
+        }
+        
+        .breadcrumb {
+            background: #334155 !important;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+        }
+        
+        .breadcrumb-item a {
+            color: #3b82f6 !important;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item.active {
+            color: #e2e8f0 !important;
+        }
+        
+        .text-gray-800 {
+            color: #f1f5f9 !important;
+        }
+        
+        .form-label {
+            color: #f1f5f9 !important;
+            font-weight: 500;
+        }
+        
+        .small {
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Transfer Funds</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard_home') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('banking.banking_dashboard') }}">Banking</a></li>
+                        <li class="breadcrumb-item active">Transfer</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} nvc-alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Transfer Form -->
+            {% include 'banking/forms/transfer_form.html' %}
+            
+            <!-- Security Notice -->
+            <div class="nvc-card mt-4">
+                <div class="nvc-nvc-card-body">
+                    <h6 class="nvc-card-title"><i class="fas fa-shield-alt text-info"></i> Transfer Security</h6>
+                    <p class="nvc-card-text small text-light">
+                        All transfers are protected by multi-factor authentication and real-time fraud monitoring.
+                        Internal transfers between your accounts are processed immediately.
+                        External transfers may take 1-3 business days depending on the receiving institution.
+                        Transfer limits help protect your account from unauthorized activity.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

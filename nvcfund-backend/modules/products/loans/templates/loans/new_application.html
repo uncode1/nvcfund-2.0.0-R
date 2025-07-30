@@ -1,0 +1,211 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}New Loan Application - NVC Banking Platform{% endblock %}
+
+{% block page_title %}New Loan Application{% endblock %}
+{% block page_description %}Submit a new loan application with comprehensive evaluation and processing{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-save"></i>
+    Save Draft
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="navigate">
+    <i class="fas fa-list"></i>
+    View Applications
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="enterprise-dashboard-container">
+    <!-- Application Form -->
+    <div class="enterprise-nvc-card">
+        <div class="nvc-nvc-card-header">
+            <h5><i class="fas fa-file-alt"></i> Loan Application Form</h5>
+        </div>
+        <div class="nvc-nvc-card-body">
+            <form id="loanApplicationForm" method="POST" action="{{ url_for('loans.submit_application') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="application_id" value="{{ application_id or '' }}"/>
+                <input type="hidden" name="timestamp" value="{{ timestamp }}"/>
+                
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h6><i class="fas fa-user"></i> Personal Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="firstName">First Name *</label>
+                                <input type="text" class="nvc-form-input" id="firstName" name="first_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="lastName">Last Name *</label>
+                                <input type="text" class="nvc-form-input" id="lastName" name="last_name" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" class="nvc-form-input" id="email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" class="nvc-form-input" id="phone" name="phone" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loan Details -->
+                <div class="form-section">
+                    <h6><i class="fas fa-dollar-sign"></i> Loan Details</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="loanType">Loan Type *</label>
+                                <select class="nvc-form-input" id="loanType" name="loan_type" required>
+                                    <option value="">Select Loan Type</option>
+                                    <option value="personal">Personal Loan</option>
+                                    <option value="business">Business Loan</option>
+                                    <option value="mortgage">Mortgage</option>
+                                    <option value="auto">Auto Loan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="loanAmount">Loan Amount *</label>
+                                <input type="number" class="nvc-form-input" id="loanAmount" name="loan_amount" min="1000" step="100" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="loanTerm">Loan Term (months) *</label>
+                                <select class="nvc-form-input" id="loanTerm" name="loan_term" required>
+                                    <option value="">Select Term</option>
+                                    <option value="12">12 months</option>
+                                    <option value="24">24 months</option>
+                                    <option value="36">36 months</option>
+                                    <option value="48">48 months</option>
+                                    <option value="60">60 months</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="purpose">Loan Purpose *</label>
+                                <input type="text" class="nvc-form-input" id="purpose" name="purpose" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Information -->
+                <div class="form-section">
+                    <h6><i class="fas fa-chart-line"></i> Financial Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="annualIncome">Annual Income *</label>
+                                <input type="number" class="nvc-form-input" id="annualIncome" name="annual_income" min="0" step="1000" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="employmentStatus">Employment Status *</label>
+                                <select class="nvc-form-input" id="employmentStatus" name="employment_status" required>
+                                    <option value="">Select Status</option>
+                                    <option value="employed">Employed</option>
+                                    <option value="self_employed">Self-Employed</option>
+                                    <option value="unemployed">Unemployed</option>
+                                    <option value="retired">Retired</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="monthlyExpenses">Monthly Expenses</label>
+                                <input type="number" class="nvc-form-input" id="monthlyExpenses" name="monthly_expenses" min="0" step="100">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="creditScore">Credit Score</label>
+                                <input type="number" class="nvc-form-input" id="creditScore" name="credit_score" min="300" max="850">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="form-actions">
+                    <button type="button" class="btn nvc-btn nvc-btn-secondary" data-action="navigate">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                        <i class="fas fa-save"></i> Save Draft
+                    </button>
+                    <button type="submit" class="btn nvc-btn nvc-btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function saveDraft() {
+    console.log('Saving application draft...');
+    // Implementation for saving draft
+}
+
+document.getElementById('loanApplicationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    console.log('Submitting loan application...');
+    // Implementation for form submission
+});
+</script>
+
+<style>
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h6 {
+    color: #495057;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    text-align: right;
+}
+
+.form-actions .btn {
+    margin-left: 0.5rem;
+}
+</style>
+</div>
+{% endblock %}

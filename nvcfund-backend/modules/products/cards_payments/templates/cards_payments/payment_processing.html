@@ -1,0 +1,524 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Payment Processing - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body {
+            background-color: #0a2447;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .main-content {
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid #66ccff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 204, 255, 0.3);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #0a2447 0%, #1e3c72 100%);
+            border-bottom: 1px solid #66ccff;
+            color: #66ccff;
+            font-weight: bold;
+        }
+        .payment-method {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .payment-method:hover {
+            background: rgba(30, 60, 114, 0.5);
+            transform: translateY(-2px);
+        }
+        .payment-method.selected {
+            border-color: #66ccff;
+            background: rgba(102, 204, 255, 0.1);
+        }
+        .gateway-item {
+            background: rgba(30, 60, 114, 0.2);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-live { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .status-test { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .status-inactive { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+        .form-control, .form-select {
+            background: #1e3c72;
+            border: 1px solid #66ccff;
+            color: #ffffff;
+        }
+        .form-control:focus, .form-select:focus {
+            background: #1e3c72;
+            border-color: #66ccff;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(102, 204, 255, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #66ccff 0%, #4da6d9 100%);
+            border: none;
+            color: #0a2447;
+            font-weight: bold;
+        }
+        .transaction-item {
+            background: rgba(30, 60, 114, 0.2);
+            border: 1px solid rgba(102, 204, 255, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        .amount-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #66ccff;
+            text-align: center;
+            padding: 20px;
+            background: rgba(30, 60, 114, 0.3);
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .progress-step {
+            background: rgba(30, 60, 114, 0.3);
+            border: 2px solid #66ccff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+        }
+        .progress-step.active {
+            background: #66ccff;
+            color: #0a2447;
+        }
+        .progress-step.completed {
+            background: #28a745;
+            border-color: #28a745;
+        }
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1><i class="fas fa-credit-nvc-card"></i> Payment Processing</h1>
+                            <p class="mb-0">Secure payment processing with multiple gateway options</p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn nvc-btn nvc-btn-outline-primary me-2">
+                                <i class="fas fa-history"></i> Transaction History
+                            </button>
+                            <button type="button" class="btn nvc-btn nvc-btn-primary">
+                                <i class="fas fa-plus"></i> New Payment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Payment Form -->
+                <div class="col-md-8">
+                    <div class="nvc-card mb-4">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-money-bill-wave"></i> Process Payment</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <!-- Amount Section -->
+                            <div class="amount-display">
+                                $<input type="text" id="paymentAmount" placeholder="0.00" class="text-center" onchange="updateAmount()">
+                            </div>
+
+                            <!-- Payment Methods -->
+                            <h6 class="mb-3">Select Payment Method</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="payment-method" data-action="custom-action">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-credit-nvc-card fa-2x me-3"></i>
+                                            <div>
+                                                <h6>Credit/Debit Card</h6>
+                                                <p class="mb-0 small text-light">Visa, Mastercard, American Express</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="payment-method" data-action="custom-action">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-university fa-2x me-3"></i>
+                                            <div>
+                                                <h6>Bank Transfer</h6>
+                                                <p class="mb-0 small text-light">ACH, Wire Transfer</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="payment-method" data-action="custom-action">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fab fa-paypal fa-2x me-3"></i>
+                                            <div>
+                                                <h6>Digital Wallets</h6>
+                                                <p class="mb-0 small text-light">PayPal, Apple Pay, Google Pay</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="payment-method" data-action="custom-action">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fab fa-bitcoin fa-2x me-3"></i>
+                                            <div>
+                                                <h6>Cryptocurrency</h6>
+                                                <p class="mb-0 small text-light">Bitcoin, NVCT, Ethereum</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Details Form -->
+                            <div id="paymentDetails" class="mt-4" class="d-none">
+                                <h6>Payment Details</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label">Recipient Name</label>
+                                        <input type="text" class="nvc-form-input" placeholder="Enter recipient name">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label">Reference/Memo</label>
+                                        <input type="text" class="nvc-form-input" placeholder="Payment reference">
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label">Gateway</label>
+                                        <select class="nvc-form-select" id="gatewaySelect">
+                                            <option>Select payment gateway...</option>
+                                            <option value="stripe">Stripe</option>
+                                            <option value="paypal">PayPal</option>
+                                            <option value="square">Square</option>
+                                            <option value="flutterwave">Flutterwave</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="nvc-form-label">Processing Priority</label>
+                                        <select class="nvc-form-select">
+                                            <option>Standard (3-5 business days)</option>
+                                            <option>Express (1-2 business days) +$5</option>
+                                            <option>Instant (Within minutes) +$15</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label class="nvc-form-label">Special Instructions</label>
+                                        <textarea class="nvc-form-input" rows="3" placeholder="Any special instructions for this payment..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 text-center">
+                                    <button type="button" class="btn nvc-btn nvc-btn-primary btn-lg" data-action="custom-action">
+                                        <i class="fas fa-lock"></i> Process Secure Payment
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Gateways & Status -->
+                <div class="col-md-4">
+                    <div class="nvc-card mb-4">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-plug"></i> Payment Gateways</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="gateway-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong><i class="fab fa-stripe"></i> Stripe</strong>
+                                        <div class="text-light small">Credit/Debit Cards</div>
+                                    </div>
+                                    <span class="status-badge status-live">Live</span>
+                                </div>
+                                <div class="mt-2 small">
+                                    Fee: 2.9% + $0.30 | Response: 0.2s
+                                </div>
+                            </div>
+
+                            <div class="gateway-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong><i class="fab fa-paypal"></i> PayPal</strong>
+                                        <div class="text-light small">Digital Wallet</div>
+                                    </div>
+                                    <span class="status-badge status-live">Live</span>
+                                </div>
+                                <div class="mt-2 small">
+                                    Fee: 3.5% + $0.15 | Response: 0.4s
+                                </div>
+                            </div>
+
+                            <div class="gateway-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong><i class="fas fa-square"></i> Square</strong>
+                                        <div class="text-light small">POS & Online</div>
+                                    </div>
+                                    <span class="status-badge status-test">Test</span>
+                                </div>
+                                <div class="mt-2 small">
+                                    Fee: 2.6% + $0.10 | Response: 0.3s
+                                </div>
+                            </div>
+
+                            <div class="gateway-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong><i class="fas fa-globe-africa"></i> Flutterwave</strong>
+                                        <div class="text-light small">African Markets</div>
+                                    </div>
+                                    <span class="status-badge status-live">Live</span>
+                                </div>
+                                <div class="mt-2 small">
+                                    Fee: 1.4% + $0.05 | Response: 0.6s
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing Status -->
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-tasks"></i> Processing Status</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="text-center">
+                                <div class="progress-step completed">1</div>
+                                <small>Payment Initiated</small>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <div class="progress-step active">2</div>
+                                <small>Gateway Processing</small>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <div class="progress-step">3</div>
+                                <small>Bank Authorization</small>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <div class="progress-step">4</div>
+                                <small>Funds Transfer</small>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <div class="progress-step">5</div>
+                                <small>Confirmation</small>
+                            </div>
+
+                            <div class="mt-4 p-3" class="rounded">
+                                <div class="text-center">
+                                    <i class="fas fa-check-circle text-success fa-2x"></i>
+                                    <h6 class="mt-2">Payment Successful</h6>
+                                    <p class="mb-0 small">Transaction ID: TXN-789456123</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-receipt"></i> Recent Transactions</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="transaction-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>$2,450.00 - Business Payment</strong>
+                                        <div class="text-light small">
+                                            <i class="fab fa-stripe"></i> Stripe | TXN-789456123 | 2025-07-04 06:42
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-success">Completed</span>
+                                        <div class="text-light small">Fee: $76.85</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="transaction-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>$875.50 - Online Purchase</strong>
+                                        <div class="text-light small">
+                                            <i class="fab fa-paypal"></i> PayPal | TXN-789456122 | 2025-07-04 04:15
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-warning">Pending</span>
+                                        <div class="text-light small">Fee: $31.14</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="transaction-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>$156.78 - Subscription</strong>
+                                        <div class="text-light small">
+                                            <i class="fas fa-square"></i> Square | TXN-789456121 | 2025-07-03 22:30
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-success">Completed</span>
+                                        <div class="text-light small">Fee: $4.18</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View All Transactions
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedMethod = null;
+
+        function selectPaymentMethod(method) {
+            // Remove previous selection
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Select new method
+            event.currentTarget.classList.add('selected');
+            selectedMethod = method;
+
+            // Show payment details form
+            document.getElementById('paymentDetails').style.display = 'block';
+
+            // Update gateway options based on method
+            updateGatewayOptions(method);
+        }
+
+        function updateGatewayOptions(method) {
+            const gatewaySelect = document.getElementById('gatewaySelect');
+            let options = '';
+
+            switch(method) {
+                case 'card':
+                    options = `
+                        <option>Select payment gateway...</option>
+                        <option value="stripe">Stripe</option>
+                        <option value="square">Square</option>
+                    `;
+                    break;
+                case 'bank':
+                    options = `
+                        <option>Select payment gateway...</option>
+                        <option value="ach">ACH Direct</option>
+                        <option value="wire">Wire Transfer</option>
+                    `;
+                    break;
+                case 'digital':
+                    options = `
+                        <option>Select payment gateway...</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="applepay">Apple Pay</option>
+                        <option value="googlepay">Google Pay</option>
+                    `;
+                    break;
+                case 'crypto':
+                    options = `
+                        <option>Select payment gateway...</option>
+                        <option value="coinbase">Coinbase Commerce</option>
+                        <option value="binance">Binance Pay</option>
+                        <option value="nvct">NVCT Direct</option>
+                    `;
+                    break;
+            }
+
+            gatewaySelect.innerHTML = options;
+        }
+
+        function updateAmount() {
+            const amount = document.getElementById('paymentAmount').value;
+            console.log('Payment amount updated:', amount);
+        }
+
+        function processPayment() {
+            const amount = document.getElementById('paymentAmount').value;
+            const gateway = document.getElementById('gatewaySelect').value;
+
+            if (!selectedMethod || !amount || !gateway) {
+                alert('Please complete all required fields before processing payment.');
+                return;
+            }
+
+            alert(`Processing $${amount} payment via ${gateway} using ${selectedMethod} method...`);
+            
+            // In production, this would integrate with the selected payment gateway
+            console.log('Processing payment:', {
+                method: selectedMethod,
+                amount: amount,
+                gateway: gateway
+            });
+        }
+
+        // Real-time gateway status monitoring
+        setInterval(function() {
+            console.log('Checking gateway status...');
+        }, 30000);
+    </script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

@@ -1,0 +1,386 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Edit Account - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Edit Account{% endblock %}
+{% block page_description %}Modify account settings, preferences, and personal information{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('accounts.main_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        Accounts
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-edit" aria-hidden="true"></i>
+    Edit Account
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Cancel editing">
+    <i class="fas fa-times" aria-hidden="true"></i>
+    Cancel
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Save as draft">
+    <i class="fas fa-save" aria-hidden="true"></i>
+    Save Draft
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Save changes">
+    <i class="fas fa-check" aria-hidden="true"></i>
+    Save Changes
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Account Edit Form -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-edit" aria-hidden="true"></i>
+                    Edit Account Information
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">Auto-Save Enabled</span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <form class="nvc-edit-form" id="account-edit-form">
+                    <div class="nvc-form-grid">
+                        <div class="nvc-form-group">
+                            <label for="account-name" class="nvc-form-label nvc-wcag-high-contrast">Account Name</label>
+                            <input type="text" id="account-name" name="account_name" class="nvc-form-input nvc-wcag-focus" value="{{ account.name or 'Premium Checking Account' }}" aria-describedby="account-name-help">
+                            <small id="account-name-help" class="nvc-form-help">Descriptive name for your account</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="account-type" class="nvc-form-label nvc-wcag-high-contrast">Account Type</label>
+                            <select id="account-type" name="account_type" class="nvc-form-select nvc-wcag-focus" aria-describedby="account-type-help">
+                                <option value="checking" selected>Checking</option>
+                                <option value="savings">Savings</option>
+                                <option value="investment">Investment</option>
+                                <option value="business">Business</option>
+                            </select>
+                            <small id="account-type-help" class="nvc-form-help">Type of banking account</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="account-number" class="nvc-form-label nvc-wcag-high-contrast">Account Number</label>
+                            <input type="text" id="account-number" name="account_number" class="nvc-form-input nvc-form-readonly nvc-wcag-focus" value="{{ account.number or '****-****-****-1234' }}" readonly aria-describedby="account-number-help">
+                            <small id="account-number-help" class="nvc-form-help">Account number cannot be changed</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="routing-number" class="nvc-form-label nvc-wcag-high-contrast">Routing Number</label>
+                            <input type="text" id="routing-number" name="routing_number" class="nvc-form-input nvc-form-readonly nvc-wcag-focus" value="{{ account.routing or '021000021' }}" readonly aria-describedby="routing-number-help">
+                            <small id="routing-number-help" class="nvc-form-help">Bank routing number</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="currency" class="nvc-form-label nvc-wcag-high-contrast">Currency</label>
+                            <select id="currency" name="currency" class="nvc-form-select nvc-wcag-focus" aria-describedby="currency-help">
+                                <option value="USD" selected>USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                                <option value="CAD">CAD - Canadian Dollar</option>
+                            </select>
+                            <small id="currency-help" class="nvc-form-help">Account currency</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="branch" class="nvc-form-label nvc-wcag-high-contrast">Branch</label>
+                            <select id="branch" name="branch" class="nvc-form-select nvc-wcag-focus" aria-describedby="branch-help">
+                                <option value="downtown" selected>Downtown Branch</option>
+                                <option value="uptown">Uptown Branch</option>
+                                <option value="westside">Westside Branch</option>
+                                <option value="online">Online Only</option>
+                            </select>
+                            <small id="branch-help" class="nvc-form-help">Primary branch location</small>
+                        </div>
+                    </div>
+
+                    <div class="nvc-form-group nvc-form-group-full">
+                        <label for="account-description" class="nvc-form-label nvc-wcag-high-contrast">Account Description</label>
+                        <textarea id="account-description" name="account_description" class="nvc-form-textarea nvc-wcag-focus" rows="3" aria-describedby="description-help">{{ account.description or 'Primary checking account for daily transactions and bill payments.' }}</textarea>
+                        <small id="description-help" class="nvc-form-help">Brief description of account purpose</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Personal Information Section -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-id-card" aria-hidden="true"></i>
+                    Personal Information
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Verify identity">
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        Verify Identity
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <form class="nvc-edit-form" id="personal-info-form">
+                    <div class="nvc-form-grid">
+                        <div class="nvc-form-group">
+                            <label for="first-name" class="nvc-form-label nvc-wcag-high-contrast">First Name</label>
+                            <input type="text" id="first-name" name="first_name" class="nvc-form-input nvc-wcag-focus" value="{{ user.first_name or 'John' }}" aria-describedby="first-name-help">
+                            <small id="first-name-help" class="nvc-form-help">Legal first name</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="last-name" class="nvc-form-label nvc-wcag-high-contrast">Last Name</label>
+                            <input type="text" id="last-name" name="last_name" class="nvc-form-input nvc-wcag-focus" value="{{ user.last_name or 'Doe' }}" aria-describedby="last-name-help">
+                            <small id="last-name-help" class="nvc-form-help">Legal last name</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="email" class="nvc-form-label nvc-wcag-high-contrast">Email Address</label>
+                            <input type="email" id="email" name="email" class="nvc-form-input nvc-wcag-focus" value="{{ user.email or 'john.doe@example.com' }}" aria-describedby="email-help">
+                            <small id="email-help" class="nvc-form-help">Primary email for notifications</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="phone" class="nvc-form-label nvc-wcag-high-contrast">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" class="nvc-form-input nvc-wcag-focus" value="{{ user.phone or '+1 (555) 123-4567' }}" aria-describedby="phone-help">
+                            <small id="phone-help" class="nvc-form-help">Primary contact number</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="date-of-birth" class="nvc-form-label nvc-wcag-high-contrast">Date of Birth</label>
+                            <input type="date" id="date-of-birth" name="date_of_birth" class="nvc-form-input nvc-wcag-focus" value="{{ user.date_of_birth or '1990-01-01' }}" aria-describedby="dob-help">
+                            <small id="dob-help" class="nvc-form-help">Required for identity verification</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="ssn" class="nvc-form-label nvc-wcag-high-contrast">Social Security Number</label>
+                            <input type="text" id="ssn" name="ssn" class="nvc-form-input nvc-form-readonly nvc-wcag-focus" value="XXX-XX-1234" readonly aria-describedby="ssn-help">
+                            <small id="ssn-help" class="nvc-form-help">Contact support to update SSN</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+                    <div class="nvc-form-group nvc-form-group-full">
+                        <label for="address" class="nvc-form-label nvc-wcag-high-contrast">Street Address</label>
+                        <input type="text" id="address" name="address" class="nvc-form-input nvc-wcag-focus" value="{{ user.address or '123 Main Street' }}" aria-describedby="address-help">
+                        <small id="address-help" class="nvc-form-help">Primary residential address</small>
+                    </div>
+
+                    <div class="nvc-form-grid nvc-form-grid-thirds">
+                        <div class="nvc-form-group">
+                            <label for="city" class="nvc-form-label nvc-wcag-high-contrast">City</label>
+                            <input type="text" id="city" name="city" class="nvc-form-input nvc-wcag-focus" value="{{ user.city or 'New York' }}" aria-describedby="city-help">
+                            <small id="city-help" class="nvc-form-help">City name</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="state" class="nvc-form-label nvc-wcag-high-contrast">State</label>
+                            <select id="state" name="state" class="nvc-form-select nvc-wcag-focus" aria-describedby="state-help">
+                                <option value="NY" selected>New York</option>
+                                <option value="CA">California</option>
+                                <option value="TX">Texas</option>
+                                <option value="FL">Florida</option>
+                            </select>
+                            <small id="state-help" class="nvc-form-help">State or province</small>
+                        </div>
+
+                        <div class="nvc-form-group">
+                            <label for="zip-code" class="nvc-form-label nvc-wcag-high-contrast">ZIP Code</label>
+                            <input type="text" id="zip-code" name="zip_code" class="nvc-form-input nvc-wcag-focus" value="{{ user.zip_code or '10001' }}" aria-describedby="zip-help">
+                            <small id="zip-help" class="nvc-form-help">Postal code</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Account Summary and Settings -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-cog" aria-hidden="true"></i>
+                    Account Settings & Summary
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-success">Active Account</span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-settings-grid">
+                    <!-- Account Summary Card -->
+                    <div class="nvc-summary-card">
+                        <div class="nvc-summary-header">
+                            <h3 class="nvc-summary-title nvc-wcag-high-contrast">Account Summary</h3>
+                            <div class="nvc-summary-icon">
+                                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="nvc-summary-content">
+                            <div class="nvc-summary-item">
+                                <span class="nvc-summary-label nvc-wcag-medium-contrast">Account Status</span>
+                                <span class="nvc-status nvc-status-success">Active</span>
+                            </div>
+                            <div class="nvc-summary-item">
+                                <span class="nvc-summary-label nvc-wcag-medium-contrast">Current Balance</span>
+                                <span class="nvc-summary-value nvc-amount-positive">${{ account.balance or '45,892.30' }}</span>
+                            </div>
+                            <div class="nvc-summary-item">
+                                <span class="nvc-summary-label nvc-wcag-medium-contrast">Account Age</span>
+                                <span class="nvc-summary-value nvc-wcag-high-contrast">{{ account.age or '3 years' }}</span>
+                            </div>
+                            <div class="nvc-summary-item">
+                                <span class="nvc-summary-label nvc-wcag-medium-contrast">Last Activity</span>
+                                <span class="nvc-summary-value nvc-wcag-high-contrast">{{ account.last_activity or 'Today' }}</span>
+                            </div>
+                            <div class="nvc-summary-item">
+                                <span class="nvc-summary-label nvc-wcag-medium-contrast">Interest Rate</span>
+                                <span class="nvc-summary-value nvc-amount-info">{{ account.interest_rate or '0.5% APY' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Settings Card -->
+                    <div class="nvc-settings-card">
+                        <div class="nvc-settings-header">
+                            <h3 class="nvc-settings-title nvc-wcag-high-contrast">Account Preferences</h3>
+                        </div>
+                        <div class="nvc-settings-content">
+                            <div class="nvc-setting-item">
+                                <input type="checkbox" id="email-notifications" class="nvc-toggle nvc-wcag-focus" checked aria-describedby="email-help">
+                                <label for="email-notifications" class="nvc-toggle-label nvc-wcag-high-contrast">Email Notifications</label>
+                                <small id="email-help" class="nvc-setting-help">Receive account updates via email</small>
+                            </div>
+
+                            <div class="nvc-setting-item">
+                                <input type="checkbox" id="sms-alerts" class="nvc-toggle nvc-wcag-focus" checked aria-describedby="sms-help">
+                                <label for="sms-alerts" class="nvc-toggle-label nvc-wcag-high-contrast">SMS Alerts</label>
+                                <small id="sms-help" class="nvc-setting-help">Receive transaction alerts via SMS</small>
+                            </div>
+
+                            <div class="nvc-setting-item">
+                                <input type="checkbox" id="paper-statements" class="nvc-toggle nvc-wcag-focus" aria-describedby="paper-help">
+                                <label for="paper-statements" class="nvc-toggle-label nvc-wcag-high-contrast">Paper Statements</label>
+                                <small id="paper-help" class="nvc-setting-help">Receive printed monthly statements</small>
+                            </div>
+
+                            <div class="nvc-setting-item">
+                                <input type="checkbox" id="overdraft-protection" class="nvc-toggle nvc-wcag-focus" checked aria-describedby="overdraft-help">
+                                <label for="overdraft-protection" class="nvc-toggle-label nvc-wcag-high-contrast">Overdraft Protection</label>
+                                <small id="overdraft-help" class="nvc-setting-help">Prevent overdraft fees</small>
+                            </div>
+
+                            <div class="nvc-setting-item">
+                                <input type="checkbox" id="auto-save" class="nvc-toggle nvc-wcag-focus" checked aria-describedby="autosave-help">
+                                <label for="auto-save" class="nvc-toggle-label nvc-wcag-high-contrast">Auto-Save Round-ups</label>
+                                <small id="autosave-help" class="nvc-setting-help">Round up purchases and save the difference</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Limits Card -->
+                    <div class="nvc-limits-card">
+                        <div class="nvc-limits-header">
+                            <h3 class="nvc-limits-title nvc-wcag-high-contrast">Transaction Limits</h3>
+                        </div>
+                        <div class="nvc-limits-content">
+                            <div class="nvc-limit-item">
+                                <label for="atm-limit" class="nvc-limit-label nvc-wcag-high-contrast">Daily ATM Limit</label>
+                                <div class="nvc-limit-input-group">
+                                    <span class="nvc-limit-currency">$</span>
+                                    <input type="number" id="atm-limit" name="atm_limit" class="nvc-limit-input nvc-wcag-focus" value="1000" aria-describedby="atm-limit-help">
+                                </div>
+                                <small id="atm-limit-help" class="nvc-limit-help">Maximum daily ATM withdrawal</small>
+                            </div>
+
+                            <div class="nvc-limit-item">
+                                <label for="transfer-limit" class="nvc-limit-label nvc-wcag-high-contrast">Daily Transfer Limit</label>
+                                <div class="nvc-limit-input-group">
+                                    <span class="nvc-limit-currency">$</span>
+                                    <input type="number" id="transfer-limit" name="transfer_limit" class="nvc-limit-input nvc-wcag-focus" value="5000" aria-describedby="transfer-limit-help">
+                                </div>
+                                <small id="transfer-limit-help" class="nvc-limit-help">Maximum daily transfer amount</small>
+                            </div>
+
+                            <div class="nvc-limit-item">
+                                <label for="monthly-limit" class="nvc-limit-label nvc-wcag-high-contrast">Monthly Transfer Limit</label>
+                                <div class="nvc-limit-input-group">
+                                    <span class="nvc-limit-currency">$</span>
+                                    <input type="number" id="monthly-limit" name="monthly_limit" class="nvc-limit-input nvc-wcag-focus" value="25000" aria-describedby="monthly-limit-help">
+                                </div>
+                                <small id="monthly-limit-help" class="nvc-limit-help">Maximum monthly transfer amount</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Account Edit Form Interactions
+
+    // Form validation and auto-save
+    const formInputs = document.querySelectorAll('.nvc-form-input, .nvc-form-select, .nvc-form-textarea');
+    formInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Add visual feedback for changes
+            this.classList.add('nvc-form-changed');
+
+            // Auto-save after 2 seconds of inactivity
+            clearTimeout(this.saveTimeout);
+            this.saveTimeout = setTimeout(() => {
+                console.log('Auto-saving:', this.name, this.value);
+                this.classList.remove('nvc-form-changed');
+                this.classList.add('nvc-form-saved');
+                setTimeout(() => {
+                    this.classList.remove('nvc-form-saved');
+                }, 1000);
+            }, 2000);
+        });
+    });
+
+    // Toggle switches functionality
+    const toggles = document.querySelectorAll('.nvc-toggle');
+    toggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            console.log('Setting changed:', this.id, this.checked);
+            // Add visual feedback
+            this.parentElement.classList.add('nvc-setting-changed');
+            setTimeout(() => {
+                this.parentElement.classList.remove('nvc-setting-changed');
+            }, 1000);
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

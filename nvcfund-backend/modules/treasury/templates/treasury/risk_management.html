@@ -1,0 +1,313 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Treasury Risk Management{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-danger">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0">
+                                <i class="fas fa-shield-alt me-2"></i>Treasury Risk Management
+                            </h3>
+                            <small class="text-light">Comprehensive risk monitoring and mitigation</small>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{{ url_for('treasury.main_dashboard') }}" class="btn nvc-btn nvc-btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Treasury
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                    <h5 class="text-light">Overall Risk Score</h5>
+                    <h3 class="text-warning">85.5</h3>
+                    <small class="text-light">Acceptable Range</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-info mb-3"></i>
+                    <h5 class="text-light">Active Incidents</h5>
+                    <h3 class="text-info">2</h3>
+                    <small class="text-light">This Month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-light">Mitigation Status</h5>
+                    <h3 class="text-success">Active</h3>
+                    <small class="text-light">All Systems</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card bg-dark border-primary">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                    <h5 class="text-light">Compliance Level</h5>
+                    <h3 class="text-primary">98.5%</h3>
+                    <small class="text-light">Regulatory</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Categories -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="nvc-card bg-dark border-danger">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-user-tie me-2"></i>Credit Risk
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <h6 class="text-danger">Total Exposure</h6>
+                        <h4 class="text-warning">$750.0M</h4>
+                        <small class="text-light">Portfolio value</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-danger">Average Credit Rating</h6>
+                        <h4 class="text-info">BBB+</h4>
+                        <small class="text-light">Investment grade</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-danger">NPL Ratio</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" class="progress-bar-20"></div>
+                        </div>
+                        <small class="text-light">0.8% (Target: <2%)</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-danger">Concentration Risk</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" role="progressbar" class="progress-bar-75"></div>
+                        </div>
+                        <small class="text-light">15.2% (Limit: 20%)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Market Risk
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <h6 class="text-warning">Value at Risk (1-day)</h6>
+                        <h4 class="text-danger">$2.5M</h4>
+                        <small class="text-light">99% confidence</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-warning">Expected Shortfall</h6>
+                        <h4 class="text-info">$3.2M</h4>
+                        <small class="text-light">Conditional VaR</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-warning">Interest Rate Risk</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" role="progressbar" class="progress-bar-65"></div>
+                        </div>
+                        <small class="text-light">Moderate exposure</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-warning">FX Risk (Daily VaR)</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" role="progressbar" class="progress-bar-45"></div>
+                        </div>
+                        <small class="text-light">$650K / $1M limit</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-cogs me-2"></i>Operational Risk
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <h6 class="text-info">System Availability</h6>
+                        <h4 class="text-success">99.8%</h4>
+                        <small class="text-light">This month</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-info">Process Efficiency</h6>
+                        <h4 class="text-primary">94.2%</h4>
+                        <small class="text-light">STP rate</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-info">Security Score</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" class="progress-bar-95"></div>
+                        </div>
+                        <small class="text-light">High security level</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-info">Compliance Score</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" class="progress-bar-98"></div>
+                        </div>
+                        <small class="text-light">Regulatory compliance</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stress Testing & Scenarios -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-vials me-2"></i>Stress Testing Results
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Scenario</th>
+                                    <th>Probability</th>
+                                    <th>Potential Loss</th>
+                                    <th>Impact</th>
+                                    <th>Mitigation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Interest Rate Shock (+200bp)</td>
+                                    <td class="text-warning">15%</td>
+                                    <td class="text-danger">$8.5M</td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                    <td><span class="badge bg-success">Hedged</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Credit Default (Major)</td>
+                                    <td class="text-info">5%</td>
+                                    <td class="text-danger">$12.0M</td>
+                                    <td><span class="badge bg-danger">High</span></td>
+                                    <td><span class="badge bg-warning">Monitored</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Market Volatility (+50%)</td>
+                                    <td class="text-warning">25%</td>
+                                    <td class="text-warning">$5.2M</td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                    <td><span class="badge bg-success">Diversified</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Liquidity Crisis</td>
+                                    <td class="text-info">8%</td>
+                                    <td class="text-danger">$15.0M</td>
+                                    <td><span class="badge bg-danger">High</span></td>
+                                    <td><span class="badge bg-info">Contingency Plan</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-bell me-2"></i>Risk Alerts
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="alert nvc-nvc-alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Credit Concentration:</strong> Single counterparty exposure approaching limit
+                    </div>
+                    <div class="alert nvc-nvc-alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Market Update:</strong> VaR utilization increased to 65%
+                    </div>
+                    <div class="alert nvc-nvc-alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Compliance:</strong> All regulatory requirements met
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Management Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-primary">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-tools me-2"></i>Risk Management Tools
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn nvc-btn nvc-btn-danger">
+                                    <i class="fas fa-vials me-2"></i>Run Stress Test
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn nvc-btn nvc-btn-warning">
+                                    <i class="fas fa-shield-alt me-2"></i>Risk Mitigation
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-info">
+                                    <i class="fas fa-chart-bar me-2"></i>Risk Analytics
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn nvc-btn nvc-btn-success">
+                                    <i class="fas fa-file-pdf me-2"></i>Risk Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

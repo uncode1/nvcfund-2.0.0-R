@@ -1,0 +1,528 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Smart Contracts Monitoring - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Contracts Monitoring{% endblock %}
+{% block page_description %}Real-time monitoring and analytics for deployed smart contracts{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-line"></i>
+    Real-time
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-sync-alt"></i>
+    Refresh
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportMonitorData() {
+    const csvData = 'Contract,Network,Status,Gas Used,Transactions,Uptime\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'smart_contracts_monitor.csv';
+    a.click();
+}
+
+function viewRealTimeMonitor() {
+    window.location.href = "{{ url_for('smart_contracts.realtime_monitor') }}";
+}
+
+function refreshMonitor() {
+    location.reload();
+}
+
+function pauseContract(contractAddress) {
+    if (confirm(`Pause contract ${contractAddress}?`)) {
+        fetch('/smart-contracts/pause', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: JSON.stringify({ address: contractAddress })
+        }).then(response => {
+            if (response.ok) {
+                alert('Contract paused successfully');
+                location.reload();
+            } else {
+                alert('Error pausing contract');
+            }
+        });
+    }
+}
+
+function resumeContract(contractAddress) {
+    if (confirm(`Resume contract ${contractAddress}?`)) {
+        fetch('/smart-contracts/resume', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value
+            },
+            body: JSON.stringify({ address: contractAddress })
+        }).then(response => {
+            if (response.ok) {
+                alert('Contract resumed successfully');
+                location.reload();
+            } else {
+                alert('Error resuming contract');
+            }
+        });
+    }
+}
+
+function viewContractDetails(contractAddress) {
+    window.location.href = `/smart-contracts/details/${contractAddress}`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const monitorCards = document.querySelectorAll('.card, .monitor-card');
+    monitorCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Active Contracts')) {
+                window.location.href = "{{ url_for('smart_contracts.active_contracts') }}";
+            } else if (cardTitle?.includes('Gas Usage')) {
+                window.location.href = "{{ url_for('smart_contracts.gas_analytics') }}";
+            } else if (cardTitle?.includes('Transactions')) {
+                window.location.href = "{{ url_for('smart_contracts.transaction_analytics') }}";
+            } else if (cardTitle?.includes('Real-time')) {
+                viewRealTimeMonitor();
+            }
+        });
+    });
+
+    // Auto-refresh every 30 seconds
+    setInterval(function() {
+        location.reload();
+    }, 30000);
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header bg-gradient-success text-white">
+                    <h2 class="nvc-card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Smart Contracts Real-Time Monitoring
+                    </h2>
+                    <p class="nvc-card-text mb-0">Real-time analytics and performance monitoring for deployed smart contracts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Status -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-success">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Network Status</h6>
+                            <h4>{{ monitoring_data.network_status }}</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-network-wired fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-info">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Avg Gas Price</h6>
+                            <h4>{{ monitoring_data.avg_gas_price }} gwei</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-fire fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-warning">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Block Time</h6>
+                            <h4>{{ monitoring_data.block_time }}s</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-cube fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card text-white bg-primary">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-title">Active Contracts</h6>
+                            <h4>{{ monitoring_data.active_contracts }}</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-code fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Metrics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-tachometer-alt me-2"></i>Real-Time Metrics
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        {% for metric in monitoring_data.real_time_metrics %}
+                        <div class="col-md-3 mb-3">
+                            <div class="nvc-card bg-light">
+                                <div class="nvc-nvc-card-body text-center">
+                                    <h5 class="nvc-card-title text-primary">{{ metric.metric }}</h5>
+                                    <h3 class="text-dark">{{ metric.value }}</h3>
+                                    <p class="nvc-card-text">
+                                        <span class="badge {% if metric.change.startswith('+') %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ metric.change }}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contract Performance Dashboard -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-chart-area me-2"></i>Transaction Volume (24h)
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="transactionChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Gas Usage Distribution
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="gasChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contract Activity Log -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-list me-2"></i>Live Contract Activity
+                    </h5>
+                    <div>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                            <i class="fas fa-sync" id="refreshIcon"></i> Auto Refresh
+                        </button>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="activityTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Contract</th>
+                                    <th>Function</th>
+                                    <th>Transaction Hash</th>
+                                    <th>Gas Used</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityBody">
+                                <!-- Dynamic content will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Health Status -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-heartbeat me-2"></i>Network Health
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Ethereum Mainnet</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-98">98%</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Polygon</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-96">96%</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">BSC</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" class="progress-bar-89">89%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Security Alerts
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="alert nvc-alert-success nvc-alert-sm">
+                        <strong>All Clear</strong><br>
+                        No security threats detected
+                    </div>
+                    <div class="alert nvc-alert-info nvc-alert-sm">
+                        <strong>Info</strong><br>
+                        High transaction volume on NVCT contract
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary" data-action="custom-action">
+                            <i class="fas fa-pause"></i> Emergency Pause
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info" data-action="custom-action">
+                            <i class="fas fa-arrow-up"></i> Upgrade Contract
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-success" data-action="custom-action">
+                            <i class="fas fa-check-double"></i> Verify Contract
+                        </button>
+                        <a href="{{ url_for('smart_contracts.smart_contracts_dashboard') }}" class="btn nvc-btn nvc-btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let autoRefresh = false;
+let refreshInterval;
+
+// Initialize charts
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    loadActivityData();
+    
+    // Start real-time updates
+    setInterval(updateMetrics, 5000);
+});
+
+function initializeCharts() {
+    // Transaction Volume Chart
+    const txCtx = document.getElementById('transactionChart').getContext('2d');
+    new Chart(txCtx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+            datasets: [{
+                label: 'Transactions',
+                data: [1200, 1800, 2400, 3200, 2800, 3600, 3100],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Gas Usage Chart
+    const gasCtx = document.getElementById('gasChart').getContext('2d');
+    new Chart(gasCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['NVCT Token', 'Multi-Sig', 'Treasury Bond', 'DeFi Protocol', 'Others'],
+            datasets: [{
+                data: [45, 20, 15, 12, 8],
+                backgroundColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(153, 102, 255)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function loadActivityData() {
+    const activityData = [
+        {
+            timestamp: '2025-07-02 21:45:23',
+            contract: 'NVCT Stablecoin',
+            function: 'transfer',
+            hash: '0x1a2b3c...8f9g0h',
+            gas: '21,000',
+            status: 'Success'
+        },
+        {
+            timestamp: '2025-07-02 21:45:18',
+            contract: 'Treasury Multi-Sig',
+            function: 'executeTransaction',
+            hash: '0x2b3c4d...9g0h1i',
+            gas: '45,000',
+            status: 'Success'
+        },
+        {
+            timestamp: '2025-07-02 21:45:12',
+            contract: 'Government Bond',
+            function: 'payInterest',
+            hash: '0x3c4d5e...0h1i2j',
+            gas: '67,000',
+            status: 'Pending'
+        }
+    ];
+
+    const tbody = document.getElementById('activityBody');
+    tbody.innerHTML = '';
+    
+    activityData.forEach(item => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${item.timestamp}</td>
+            <td>${item.contract}</td>
+            <td><code>${item.function}</code></td>
+            <td><code class="text-primary">${item.hash}</code></td>
+            <td>${item.gas}</td>
+            <td><span class="badge ${item.status === 'Success' ? 'bg-success' : 'bg-warning'}">${item.status}</span></td>
+        `;
+    });
+}
+
+function toggleAutoRefresh() {
+    autoRefresh = !autoRefresh;
+    const icon = document.getElementById('refreshIcon');
+    
+    if (autoRefresh) {
+        icon.classList.add('fa-spin');
+        refreshInterval = setInterval(loadActivityData, 3000);
+    } else {
+        icon.classList.remove('fa-spin');
+        clearInterval(refreshInterval);
+    }
+}
+
+function updateMetrics() {
+    // Simulate real-time metric updates
+    // In a real implementation, this would fetch from the API
+    console.log('Updating real-time metrics...');
+}
+
+function pauseContract() {
+    if (confirm('Are you sure you want to pause the contract? This will stop all contract operations.')) {
+        alert('Contract paused successfully. All operations have been halted.');
+    }
+}
+
+function upgradeContract() {
+    alert('Contract upgrade initiated. This will deploy a new implementation while preserving state.');
+}
+
+function verifyContract() {
+    alert('Contract verification started. Source code will be published to the blockchain explorer.');
+}
+
+function exportLogs() {
+    alert('Activity logs exported successfully. Check your downloads folder.');
+}
+</script>
+</div>
+{% endblock %}

@@ -1,0 +1,329 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Ijara Leasing{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-white">Ijara Leasing Management</h2>
+                <div>
+                    <button type="button" class="btn nvc-btn nvc-btn-primary">New Lease Agreement</button>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-light">Generate Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ijara Portfolio Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-building me-2"></i>
+                        Total Lease Portfolio
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">$28.7M</h3>
+                <p class="text-light small mb-0">Active leases</p>
+                <div class="mt-2">
+                    <span class="badge bg-success">+8.1%</span>
+                    <small class="text-light ms-2">vs last quarter</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-percentage me-2"></i>
+                        Average Rental Yield
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">5.2%</h3>
+                <p class="text-light small mb-0">Annual return</p>
+                <div class="mt-2">
+                    <span class="badge bg-info">+0.4%</span>
+                    <small class="text-light ms-2">vs market</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-file-contract me-2"></i>
+                        Active Contracts
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">247</h3>
+                <p class="text-light small mb-0">Lease agreements</p>
+                <div class="mt-2">
+                    <span class="badge bg-warning">+18</span>
+                    <small class="text-light ms-2">new this month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-white mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        Collection Rate
+                    </h6>
+                </div>
+                <h3 class="text-white mb-2">97.8%</h3>
+                <p class="text-light small mb-0">On-time payments</p>
+                <div class="mt-2">
+                    <span class="badge bg-success">+1.2%</span>
+                    <small class="text-light ms-2">vs last month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lease Portfolio by Category -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-list me-2"></i>
+                    Active Lease Agreements
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Lessee</th>
+                                <th>Lease Value</th>
+                                <th>Monthly Rental</th>
+                                <th>Term</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Commercial Building</td>
+                                <td>ABC Trading LLC</td>
+                                <td>$2.5M</td>
+                                <td>$12,500</td>
+                                <td>5 years</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary">Renew</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Manufacturing Equipment</td>
+                                <td>Industrial Solutions</td>
+                                <td>$850K</td>
+                                <td>$4,250</td>
+                                <td>3 years</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning">Maintenance</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Office Complex</td>
+                                <td>Tech Innovations</td>
+                                <td>$1.8M</td>
+                                <td>$9,000</td>
+                                <td>7 years</td>
+                                <td><span class="badge bg-warning">Review</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info">Inspect</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Fleet Vehicles</td>
+                                <td>Logistics Express</td>
+                                <td>$650K</td>
+                                <td>$3,250</td>
+                                <td>4 years</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary">Track</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Retail Space</td>
+                                <td>Fashion Boutique</td>
+                                <td>$420K</td>
+                                <td>$2,100</td>
+                                <td>2 years</td>
+                                <td><span class="badge bg-info">Expiring</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">View</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success">Renew</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Asset Distribution
+                </h5>
+                <canvas id="assetDistributionChart" height="200"></canvas>
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-success me-2"></i>Real Estate</span>
+                        <span>45%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-info me-2"></i>Equipment</span>
+                        <span>30%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light mb-2">
+                        <span><i class="fas fa-circle text-warning me-2"></i>Vehicles</span>
+                        <span>15%</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-light">
+                        <span><i class="fas fa-circle text-primary me-2"></i>Technology</span>
+                        <span>10%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics and Payment Schedule -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Rental Income Trend
+                </h5>
+                <canvas id="rentalIncomeChart" height="150"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <h5 class="text-white mb-4">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Upcoming Lease Payments
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Lessee</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>ABC Trading LLC</td>
+                                <td>2025-07-15</td>
+                                <td>$12,500</td>
+                                <td><span class="badge bg-warning">Due</span></td>
+                            </tr>
+                            <tr>
+                                <td>Tech Innovations</td>
+                                <td>2025-07-20</td>
+                                <td>$9,000</td>
+                                <td><span class="badge bg-info">Upcoming</span></td>
+                            </tr>
+                            <tr>
+                                <td>Industrial Solutions</td>
+                                <td>2025-07-25</td>
+                                <td>$4,250</td>
+                                <td><span class="badge bg-info">Upcoming</span></td>
+                            </tr>
+                            <tr>
+                                <td>Logistics Express</td>
+                                <td>2025-07-30</td>
+                                <td>$3,250</td>
+                                <td><span class="badge bg-secondary">Scheduled</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Asset Distribution Chart
+if (document.getElementById('assetDistributionChart')) {
+    const ctx = document.getElementById('assetDistributionChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Real Estate', 'Equipment', 'Vehicles', 'Technology'],
+            datasets: [{
+                data: [45, 30, 15, 10],
+                backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#007bff'],
+                borderWidth: 2,
+                borderColor: '#1e293b'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+// Rental Income Chart
+if (document.getElementById('rentalIncomeChart')) {
+    const ctx = document.getElementById('rentalIncomeChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Monthly Rental Income',
+                data: [125, 128, 132, 135, 138, 142],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#e2e8f0' }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#e2e8f0' }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#e2e8f0' } }
+            }
+        }
+    });
+}
+</script>
+</div>
+{% endblock %}

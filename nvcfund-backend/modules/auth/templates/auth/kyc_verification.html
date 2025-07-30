@@ -1,0 +1,705 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}KYC Verification - NVC Banking Platform{% endblock %}
+
+{% block page_title %}KYC Verification{% endblock %}
+{% block page_description %}FINRA-compliant Know Your Customer verification and identity management{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('main.dashboard') if url_for else '#' }}" class="nvc-wcag-focus">
+        <i class="fas fa-home" aria-hidden="true"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('auth.auth_dashboard') if url_for else '#' }}" class="nvc-wcag-focus">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        Authentication
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-user-check" aria-hidden="true"></i>
+    KYC Verification
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export KYC verification report">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Filter KYC results">
+    <i class="fas fa-filter" aria-hidden="true"></i>
+    Filter Results
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh KYC data">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh Data
+</button>
+{% endblock %}
+                <a href="#compliance-reports" class="nvc-sidebar-nav-link">
+                    <i class="fas fa-file-alt"></i> Compliance Reports
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- FINRA-Compliant KYC Overview Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-user-check" aria-hidden="true"></i>
+                    KYC Verification Overview
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-info">
+                        <i class="fas fa-sync" aria-hidden="true"></i>
+                        Real-time Data
+                    </span>
+                    <span class="nvc-badge nvc-badge-success">
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        FINRA Compliant
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- KYC Metrics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-user-check" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>{{ kyc_stats.verified_percentage or '87.3' }}%</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ kyc_stats.verified or '1,089' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Verified Users</p>
+                                <p class="nvc-metric-subtitle">Of total customers</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-clock" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+                                    <span>Pending</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ kyc_stats.pending or '89' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Pending Review</p>
+                                <p class="nvc-metric-subtitle">Awaiting verification</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-danger">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-danger">
+                                    <i class="fas fa-user-times" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-negative">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                    <span>Review Required</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ kyc_stats.rejected or '23' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Rejected</p>
+                                <p class="nvc-metric-subtitle">Failed verification</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-stopwatch" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    <span>Under Target</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ kyc_stats.avg_time or '2.3h' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Avg Processing Time</p>
+                                <p class="nvc-metric-subtitle">Target: < 4 hours</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant KYC Process Flow Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-route" aria-hidden="true"></i>
+                    KYC Verification Process Flow
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="View process documentation">
+                        <i class="fas fa-book" aria-hidden="true"></i>
+                        Documentation
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-process-flow">
+                    <div class="nvc-process-steps">
+                        <!-- Step 1: Registration -->
+                        <div class="nvc-process-step nvc-step-completed">
+                            <div class="nvc-step-icon">
+                                <i class="fas fa-user-plus" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-step-content">
+                                <h3 class="nvc-step-title nvc-wcag-high-contrast">Registration</h3>
+                                <p class="nvc-step-description nvc-wcag-medium-contrast">User signs up and provides basic information</p>
+                                <div class="nvc-step-status">
+                                    <span class="nvc-status-indicator nvc-status-success">
+                                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="nvc-step-connector"></div>
+                        </div>
+
+                        <!-- Step 2: Document Upload -->
+                        <div class="nvc-process-step nvc-step-active">
+                            <div class="nvc-step-icon">
+                                <i class="fas fa-id-card" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-step-content">
+                                <h3 class="nvc-step-title nvc-wcag-high-contrast">Document Upload</h3>
+                                <p class="nvc-step-description nvc-wcag-medium-contrast">ID verification and proof of address</p>
+                                <div class="nvc-step-status">
+                                    <span class="nvc-status-indicator nvc-status-info">
+                                        <i class="fas fa-clock" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="nvc-step-connector"></div>
+                        </div>
+
+                        <!-- Step 3: Biometric Scan -->
+                        <div class="nvc-process-step nvc-step-pending">
+                            <div class="nvc-step-icon">
+                                <i class="fas fa-camera" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-step-content">
+                                <h3 class="nvc-step-title nvc-wcag-high-contrast">Biometric Scan</h3>
+                                <p class="nvc-step-description nvc-wcag-medium-contrast">Facial recognition and liveness detection</p>
+                                <div class="nvc-step-status">
+                                    <span class="nvc-status-indicator nvc-status-warning">
+                                        <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="nvc-step-connector"></div>
+                        </div>
+
+                        <!-- Step 4: AI Verification -->
+                        <div class="nvc-process-step nvc-step-pending">
+                            <div class="nvc-step-icon">
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-step-content">
+                                <h3 class="nvc-step-title nvc-wcag-high-contrast">AI Verification</h3>
+                                <p class="nvc-step-description nvc-wcag-medium-contrast">Automated document and identity checks</p>
+                                <div class="nvc-step-status">
+                                    <span class="nvc-status-indicator nvc-status-secondary">
+                                        <i class="fas fa-robot" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="nvc-step-connector"></div>
+                        </div>
+
+                        <!-- Step 5: Manual Review -->
+                        <div class="nvc-process-step nvc-step-pending">
+                            <div class="nvc-step-icon">
+                                <i class="fas fa-user-tie" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-step-content">
+                                <h3 class="nvc-step-title nvc-wcag-high-contrast">Manual Review</h3>
+                                <p class="nvc-step-description nvc-wcag-medium-contrast">Human verification for complex cases</p>
+                                <div class="nvc-step-status">
+                                    <span class="nvc-status-indicator nvc-status-secondary">
+                                        <i class="fas fa-user-check" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="nvc-step-connector"></div>
+                        </div>
+
+                        <!-- Step 6: Approval -->
+                        <div class="nvc-process-step nvc-step-pending">
+                            <div class="nvc-step-icon">
+                                <i class="fas fa-check" aria-hidden="true"></i>
+                            </div>
+                            <div class="nvc-step-content">
+                                <h3 class="nvc-step-title nvc-wcag-high-contrast">Approval</h3>
+                                <p class="nvc-step-description nvc-wcag-medium-contrast">Account activation and access granted</p>
+                                <div class="nvc-step-status">
+                                    <span class="nvc-status-indicator nvc-status-secondary">
+                                        <i class="fas fa-flag-checkered" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Pending KYC Reviews Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-list" aria-hidden="true"></i>
+                    Pending KYC Reviews ({{ kyc_stats.pending or '89' }} items)
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Filter KYC applications">
+                        <i class="fas fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Sort by priority">
+                        <i class="fas fa-sort" aria-hidden="true"></i>
+                        Sort by Priority
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-kyc-reviews">
+                    <!-- FINRA-Compliant KYC Applications Table -->
+                    <div class="nvc-finra-table-container">
+                        <table class="nvc-finra-table" role="table" aria-label="Pending KYC applications">
+                            <thead>
+                                <tr>
+                                    <th scope="col">
+                                        <input type="checkbox" class="nvc-checkbox nvc-wcag-focus" aria-label="Select all applications">
+                                    </th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Application ID</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">User Information</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Submitted</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Documents</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Risk Level</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in pending_applications or [
+                                    {'id': 'KYC-001234', 'user': 'John Doe', 'email': 'john.doe@email.com', 'submitted': '2024-01-15 09:30', 'documents': '3/3', 'risk': 'Low', 'status': 'Under Review'},
+                                    {'id': 'KYC-001235', 'user': 'Jane Smith', 'email': 'jane.smith@email.com', 'submitted': '2024-01-15 08:15', 'documents': '2/3', 'risk': 'Medium', 'status': 'Pending Documents'},
+                                    {'id': 'KYC-001236', 'user': 'Mike Johnson', 'email': 'mike.j@email.com', 'submitted': '2024-01-15 07:45', 'documents': '3/3', 'risk': 'High', 'status': 'Manual Review'},
+                                    {'id': 'KYC-001237', 'user': 'Sarah Wilson', 'email': 'sarah.w@email.com', 'submitted': '2024-01-14 16:20', 'documents': '3/3', 'risk': 'Low', 'status': 'AI Verification'},
+                                    {'id': 'KYC-001238', 'user': 'David Brown', 'email': 'david.b@email.com', 'submitted': '2024-01-14 15:10', 'documents': '1/3', 'risk': 'Medium', 'status': 'Incomplete'}
+                                ] %}
+                                <tr class="nvc-finra-row">
+                                    <td>
+                                        <input type="checkbox" class="nvc-checkbox nvc-wcag-focus" aria-label="Select application {{ application.id }}">
+                                    </td>
+                                    <td>
+                                        <div class="nvc-application-id">
+                                            <h4 class="nvc-id-number nvc-wcag-high-contrast">{{ application.id }}</h4>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="nvc-user-info">
+                                            <div class="nvc-user-avatar">
+                                                <span class="nvc-avatar-initials">{{ application.user.split()[0][0] }}{{ application.user.split()[1][0] if application.user.split()|length > 1 else '' }}</span>
+                                            </div>
+                                            <div class="nvc-user-details">
+                                                <h4 class="nvc-user-name nvc-wcag-high-contrast">{{ application.user }}</h4>
+                                                <p class="nvc-user-email nvc-wcag-medium-contrast">{{ application.email }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="nvc-wcag-medium-contrast">{{ application.submitted }}</td>
+                                    <td>
+                                        <span class="nvc-document-status nvc-status-{{ 'success' if application.documents == '3/3' else 'warning' if '2/3' in application.documents else 'danger' }}">
+                                            <i class="fas fa-{{ 'check-circle' if application.documents == '3/3' else 'exclamation-triangle' if '2/3' in application.documents else 'times-circle' }}" aria-hidden="true"></i>
+                                            {{ application.documents }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="nvc-risk-level nvc-risk-{{ application.risk.lower() }}">
+                                            <i class="fas fa-{{ 'shield-alt' if application.risk == 'Low' else 'exclamation-triangle' if application.risk == 'Medium' else 'exclamation-circle' }}" aria-hidden="true"></i>
+                                            {{ application.risk }} Risk
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="nvc-kyc-status nvc-status-info">
+                                            <i class="fas fa-{{ 'clock' if 'Pending' in application.status else 'search' if 'Review' in application.status else 'robot' if 'AI' in application.status else 'times' if 'Incomplete' in application.status else 'info-circle' }}" aria-hidden="true"></i>
+                                            {{ application.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="nvc-action-buttons">
+                                            <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="Review application {{ application.id }}">
+                                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                            </button>
+                                            <button type="button" class="nvc-btn nvc-btn-success nvc-btn-xs nvc-wcag-focus" aria-label="Approve application {{ application.id }}">
+                                                <i class="fas fa-check" aria-hidden="true"></i>
+                                            </button>
+                                            <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-xs nvc-wcag-focus" aria-label="Request more information for {{ application.id }}">
+                                                <i class="fas fa-question" aria-hidden="true"></i>
+                                            </button>
+                                            <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-xs nvc-wcag-focus" aria-label="Reject application {{ application.id }}">
+                                                <i class="fas fa-times" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Bulk Actions Panel -->
+                    <div class="nvc-bulk-actions">
+                        <div class="nvc-bulk-info">
+                            <span class="nvc-selection-count nvc-wcag-medium-contrast">0 applications selected</span>
+                        </div>
+                        <div class="nvc-bulk-buttons">
+                            <button type="button" class="nvc-btn nvc-btn-success nvc-btn-sm nvc-wcag-focus" disabled aria-label="Bulk approve selected applications">
+                                <i class="fas fa-check" aria-hidden="true"></i>
+                                Bulk Approve
+                            </button>
+                            <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-sm nvc-wcag-focus" disabled aria-label="Request information for selected applications">
+                                <i class="fas fa-question" aria-hidden="true"></i>
+                                Request Info
+                            </button>
+                            <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-sm nvc-wcag-focus" disabled aria-label="Bulk reject selected applications">
+                                <i class="fas fa-times" aria-hidden="true"></i>
+                                Bulk Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KYC Analytics and Risk Assessment Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-quaternary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-area" aria-hidden="true"></i>
+                    KYC Analytics & Risk Assessment
+                </h2>
+                <div class="nvc-section-actions">
+                    <select class="nvc-chart-select nvc-wcag-focus" aria-label="Select analytics time range">
+                        <option value="30d" selected>Last 30 Days</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-analytics-dashboard">
+                    <div class="nvc-analytics-grid">
+                        <!-- KYC Trends Chart -->
+                        <div class="nvc-chart-container">
+                            <div class="nvc-chart-header">
+                                <h3 class="nvc-chart-title nvc-wcag-high-contrast">Verification Trends</h3>
+                            </div>
+                            <div class="nvc-chart-content">
+                                <canvas id="kycTrendsChart" aria-label="KYC verification trends chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Risk Distribution Panel -->
+                        <div class="nvc-risk-panel">
+                            <div class="nvc-risk-header">
+                                <h3 class="nvc-risk-title nvc-wcag-high-contrast">
+                                    <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                                    Risk Level Distribution
+                                </h3>
+                            </div>
+                            <div class="nvc-risk-content">
+                                <div class="nvc-risk-metrics">
+                                    <div class="nvc-risk-metric">
+                                        <div class="nvc-metric-info">
+                                            <span class="nvc-metric-icon nvc-risk-low">
+                                                <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                            </span>
+                                            <span class="nvc-metric-label nvc-wcag-medium-contrast">Low Risk</span>
+                                            <span class="nvc-metric-value nvc-wcag-high-contrast">{{ risk_distribution.low or '67%' }}</span>
+                                        </div>
+                                        <div class="nvc-metric-progress">
+                                            <div class="nvc-progress-bar">
+                                                <div class="nvc-progress-fill nvc-progress-success" style="width: {{ risk_distribution.low or '67' }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-risk-metric">
+                                        <div class="nvc-metric-info">
+                                            <span class="nvc-metric-icon nvc-risk-medium">
+                                                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                            </span>
+                                            <span class="nvc-metric-label nvc-wcag-medium-contrast">Medium Risk</span>
+                                            <span class="nvc-metric-value nvc-wcag-high-contrast">{{ risk_distribution.medium or '28%' }}</span>
+                                        </div>
+                                        <div class="nvc-metric-progress">
+                                            <div class="nvc-progress-bar">
+                                                <div class="nvc-progress-fill nvc-progress-warning" style="width: {{ risk_distribution.medium or '28' }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-risk-metric">
+                                        <div class="nvc-metric-info">
+                                            <span class="nvc-metric-icon nvc-risk-high">
+                                                <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                                            </span>
+                                            <span class="nvc-metric-label nvc-wcag-medium-contrast">High Risk</span>
+                                            <span class="nvc-metric-value nvc-wcag-high-contrast">{{ risk_distribution.high or '5%' }}</span>
+                                        </div>
+                                        <div class="nvc-metric-progress">
+                                            <div class="nvc-progress-bar">
+                                                <div class="nvc-progress-fill nvc-progress-danger" style="width: {{ risk_distribution.high or '5' }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-compliance-summary">
+                                    <h4 class="nvc-compliance-title nvc-wcag-high-contrast">FINRA Compliance Summary</h4>
+                                    <div class="nvc-compliance-items">
+                                        <div class="nvc-compliance-item nvc-compliance-success">
+                                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                            <span class="nvc-wcag-medium-contrast">Customer identification procedures compliant</span>
+                                        </div>
+                                        <div class="nvc-compliance-item nvc-compliance-success">
+                                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                            <span class="nvc-wcag-medium-contrast">Beneficial ownership verification active</span>
+                                        </div>
+                                        <div class="nvc-compliance-item nvc-compliance-warning">
+                                            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                            <span class="nvc-wcag-medium-contrast">{{ kyc_stats.pending or '89' }} applications pending review</span>
+                                        </div>
+                                        <div class="nvc-compliance-item nvc-compliance-info">
+                                            <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                            <span class="nvc-wcag-medium-contrast">Average processing time: {{ kyc_stats.avg_time or '2.3h' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional KYC Verification Dashboard Interactions
+
+    // Initialize KYC charts
+    initializeKYCCharts();
+
+    function initializeKYCCharts() {
+        // KYC Trends Chart
+        const trendsCtx = document.getElementById('kycTrendsChart');
+        if (trendsCtx) {
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Verified',
+                        data: [45, 52, 48, 61],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Pending',
+                        data: [23, 28, 25, 22],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Rejected',
+                        data: [5, 3, 7, 4],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Process step hover effects
+    const processSteps = document.querySelectorAll('.nvc-process-step');
+    processSteps.forEach(step => {
+        step.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.02)';
+        });
+
+        step.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+
+    // Checkbox selection functionality
+    const selectAllCheckbox = document.querySelector('thead .nvc-checkbox');
+    const applicationCheckboxes = document.querySelectorAll('tbody .nvc-checkbox');
+    const selectionCount = document.querySelector('.nvc-selection-count');
+    const bulkButtons = document.querySelectorAll('.nvc-bulk-buttons .nvc-btn');
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            applicationCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateSelectionCount();
+        });
+    }
+
+    applicationCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectionCount();
+
+            // Update select all checkbox state
+            if (selectAllCheckbox) {
+                const checkedCount = document.querySelectorAll('tbody .nvc-checkbox:checked').length;
+                selectAllCheckbox.checked = checkedCount === applicationCheckboxes.length;
+                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < applicationCheckboxes.length;
+            }
+        });
+    });
+
+    function updateSelectionCount() {
+        const checkedCount = document.querySelectorAll('tbody .nvc-checkbox:checked').length;
+        if (selectionCount) {
+            selectionCount.textContent = `${checkedCount} applications selected`;
+        }
+
+        // Enable/disable bulk action buttons
+        bulkButtons.forEach(button => {
+            button.disabled = checkedCount === 0;
+        });
+    }
+
+    // Action button handlers
+    const actionButtons = document.querySelectorAll('.nvc-action-buttons .nvc-btn');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.getAttribute('aria-label');
+            console.log(`Executing action: ${action}`);
+
+            // Show loading state for approval/rejection actions
+            if (action.includes('Approve') || action.includes('Reject')) {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>';
+                this.disabled = true;
+
+                // Simulate processing
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    console.log(`${action} completed`);
+                }, 2000);
+            }
+        });
+    });
+
+    // Page action buttons
+    const refreshButton = document.querySelector('[aria-label="Refresh KYC data"]');
+    const exportButton = document.querySelector('[aria-label="Export KYC verification report"]');
+    const filterButton = document.querySelector('[aria-label="Filter KYC results"]');
+
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            console.log('Refreshing KYC data...');
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Refreshing...';
+            this.disabled = true;
+
+            // Simulate refresh operation
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                console.log('KYC data refreshed');
+            }, 2000);
+        });
+    }
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,424 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Sovereign Banking Operations - Priority Access{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a; color: #e2e8f0; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif; }
+        .card { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; }
+        .card-header { background: #1e293b; border-bottom: 1px solid #334155; }
+        .card-body { background: #1e293b; }
+        .bg-gradient-primary { background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); }
+        .bg-primary { background: #3b82f6 !important; }
+        .bg-success { background: #10b981 !important; }
+        .bg-info { background: #06b6d4 !important; }
+        .bg-warning { background: #f59e0b !important; }
+        .bg-danger { background: #ef4444 !important; }
+        .text-white { color: #ffffff !important; }
+        .text-light { color: #f8fafc !important; }
+        .text-light { color: #e2e8f0 !important; }
+        .btn-light { background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; }
+        .btn-light:hover { background: #e2e8f0; border-color: #cbd5e1; }
+        .border-0 { border: 0 !important; }
+        .main-content { padding: 20px; }
+        .container-fluid { padding: 0; }
+        .sovereign-action-card { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            color: white; 
+            transition: transform 0.2s ease; 
+            min-height: 100px; 
+        }
+        .sovereign-action-card:hover { 
+            transform: translateY(-2px); 
+            text-decoration: none; 
+            color: white; 
+        }
+        .sovereign-action-card i { 
+            font-size: 2rem; 
+            margin-bottom: 10px; 
+        }
+        .sovereign-action-card span { 
+            font-size: 0.9rem; 
+            text-align: center; 
+        }
+        .badge { font-size: 0.75rem; }
+        .me-2 { margin-right: 0.5rem; }
+        .me-1 { margin-right: 0.25rem; }
+        .mb-0 { margin-bottom: 0; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .fs-6 { font-size: 1rem; }
+        .g-3 { gap: 1rem; }
+        .rounded { border-radius: 0.375rem; }
+        .p-2 { padding: 0.5rem; }
+        .bg-opacity-20 { background-color: rgba(255, 255, 255, 0.2) !important; }
+        .align-items-center { align-items: center; }
+        .justify-content-between { justify-content: space-between; }
+        .d-flex { display: flex; }
+        .flex-grow-1 { flex-grow: 1; }
+        .text-center { text-align: center; }
+        .fw-bold { font-weight: 700; }
+    
+{% endblock %}
+
+{% block content %}
+
+<div class="main-content">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="nvc-card bg-gradient-primary border-0">
+                    <div class="nvc-nvc-card-header border-0">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h1 class="nvc-card-title text-white mb-0">
+                                    <i class="fas fa-crown me-2"></i>Sovereign Banking Operations
+                                </h1>
+                                <p class="nvc-card-description text-light mb-0">Priority Access</p>
+                            </div>
+                            <div class="col-auto">
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-check-circle me-1"></i>All Systems Operational
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sovereign Operations Grid -->
+        <div class="row g-3">
+            <!-- Row 1 -->
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.trade_credits') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-handshake"></i>
+                    <span>Trade Credits</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.cross_clearing') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Cross-Clearing</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.treasury') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-university"></i>
+                    <span>Treasury</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.cash_transfer') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-money-bill-transfer"></i>
+                    <span>Cash Transfer</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.apis_transfers') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-code-branch"></i>
+                    <span>APIs Transfers</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.fed_liquidity') }}" class="sovereign-action-nvc-card bg-warning">
+                    <i class="fas fa-water"></i>
+                    <span>Fed Liquidity</span>
+                </a>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.currencies') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-coins"></i>
+                    <span>Currencies</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.settlement_networks') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Settlement Networks</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.stc_integration') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-plug"></i>
+                    <span>STC Integration</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.trust_links') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-link"></i>
+                    <span>Trust Links</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.transfer_agent') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Transfer Agent</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.fdic_compliance') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>FDIC Compliance</span>
+                </a>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.retail_network') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-store"></i>
+                    <span>Retail Network</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.liquidity_access') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-tint"></i>
+                    <span>Liquidity Access</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.bank_capital') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-building"></i>
+                    <span>Bank Capital</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.trade_links') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-shipping-fast"></i>
+                    <span>Trade Links</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.sovereign_rights') }}" class="sovereign-action-nvc-card bg-warning">
+                    <i class="fas fa-crown"></i>
+                    <span>Sovereign Rights</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.ibis_icr') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-chart-line"></i>
+                    <span>IBIS & ICR</span>
+                </a>
+            </div>
+
+            <!-- Row 4 -->
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.un_framework') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-globe"></i>
+                    <span>UN Framework</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.nvct_stablecoin') }}" class="sovereign-action-nvc-card bg-warning">
+                    <i class="fas fa-coins"></i>
+                    <span>NVCT Stablecoin</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.loan_registry') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Loan Registry</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.fedwire_treasury') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-university"></i>
+                    <span>Fedwire Treasury</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.spdr_treasury') }}" class="sovereign-action-nvc-card bg-warning">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>SPDR Treasury</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.fed_treasury') }}" class="sovereign-action-nvc-card bg-warning">
+                    <i class="fas fa-landmark"></i>
+                    <span>Fed Treasury</span>
+                </a>
+            </div>
+
+            <!-- Row 5 -->
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.credit_misc') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-credit-nvc-card"></i>
+                    <span>Credit MISC</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.uedc_bridge') }}" class="sovereign-action-nvc-card bg-success">
+                    <i class="fas fa-bridge"></i>
+                    <span>UEDC Bridge</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.bank_of_america') }}" class="sovereign-action-nvc-card bg-danger">
+                    <i class="fas fa-flag-usa"></i>
+                    <span>Bank of America</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.routing_info') }}" class="sovereign-action-nvc-card bg-warning">
+                    <i class="fas fa-route"></i>
+                    <span>Routing Info</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.uba_treasury') }}" class="sovereign-action-nvc-card bg-info">
+                    <i class="fas fa-building"></i>
+                    <span>UBA Treasury</span>
+                </a>
+            </div>
+
+            <!-- Row 6 -->
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.fidelity_treasury') }}" class="sovereign-action-nvc-card bg-info">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Fidelity Treasury</span>
+                </a>
+            </div>
+
+            <!-- Core Operations -->
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.central_bank') }}" class="sovereign-action-nvc-card bg-primary">
+                    <i class="fas fa-university"></i>
+                    <span>Central Bank</span>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('sovereign.monetary_policy') }}" class="sovereign-action-nvc-card bg-primary">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Monetary Policy</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Stats Row -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="nvc-card border-0">
+                    <div class="nvc-nvc-card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            System Status Overview
+                        </h5>
+                    </div>
+                    <div class="nvc-nvc-card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="stat-item">
+                                    <h3 class="text-success">32</h3>
+                                    <p class="text-light mb-0">Active Operations</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-item">
+                                    <h3 class="text-primary">$56.7T</h3>
+                                    <p class="text-light mb-0">Total Assets</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-item">
+                                    <h3 class="text-info">24/7</h3>
+                                    <p class="text-light mb-0">Network Uptime</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-item">
+                                    <h3 class="text-warning">AAA+</h3>
+                                    <p class="text-light mb-0">Credit Rating</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.sovereign-action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    min-height: 120px;
+}
+
+.sovereign-action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    color: white;
+    text-decoration: none;
+}
+
+.sovereign-action-card i {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.9;
+}
+
+.sovereign-action-card span {
+    font-size: 0.9rem;
+    line-height: 1.2;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+
+.stat-item {
+    padding: 1rem;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.02);
+    margin-bottom: 1rem;
+}
+
+.stat-item h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .sovereign-action-card {
+        min-height: 100px;
+        padding: 1rem 0.5rem;
+    }
+    
+    .sovereign-action-card i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .sovereign-action-card span {
+        font-size: 0.8rem;
+    }
+}
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

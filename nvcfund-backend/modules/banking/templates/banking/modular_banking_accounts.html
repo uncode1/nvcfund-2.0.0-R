@@ -1,0 +1,678 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Banking Accounts - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Banking Accounts{% endblock %}
+{% block page_description %}Comprehensive account management and banking services{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise">
+    <i class="fas fa-download"></i>
+    Export Accounts
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise">
+    <i class="fas fa-search"></i>
+    Search Accounts
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise">
+    <i class="fas fa-plus"></i>
+    New Account
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="banking-container">
+    <!-- Quick Action Bar -->
+    <div class="banking-nvc-card mb-4">
+        <div class="banking-nvc-nvc-card-body">
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-6">
+                    <a href="{{ url_for('banking.create_account') }}" class="banking-action-nvc-card">
+                        <div class="banking-action-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="banking-action-content">
+                            <h6 class="mb-1">Open Account</h6>
+                            <small class="text-light">New checking, savings, or business</small>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <a href="{{ url_for('banking.transfers') }}" class="banking-action-nvc-card">
+                        <div class="banking-action-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="banking-action-content">
+                            <h6 class="mb-1">Transfer Money</h6>
+                            <small class="text-light">Between accounts & external</small>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <a href="{{ url_for('banking.apply_card') }}" class="banking-action-nvc-card">
+                        <div class="banking-action-icon">
+                            <i class="fas fa-credit-nvc-card"></i>
+                        </div>
+                        <div class="banking-action-content">
+                            <h6 class="mb-1">Apply for Card</h6>
+                            <small class="text-light">Debit, credit, or prepaid</small>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <a href="{{ url_for('crypto.create_wallet') }}" class="nvc-action-card crypto-nvc-card">
+                        <div class="banking-action-icon">
+                            <i class="fab fa-bitcoin"></i>
+                        </div>
+                        <div class="banking-action-content">
+                            <h6 class="mb-1">Crypto Wallet</h6>
+                            <small class="text-light">Bitcoin, Ethereum, NVCT</small>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <a href="{{ url_for('banking.statements') }}" class="banking-action-nvc-card">
+                        <div class="banking-action-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="banking-action-content">
+                            <h6 class="mb-1">View Statements</h6>
+                            <small class="text-light">Monthly & quarterly</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Overview Section -->
+    <div class="row g-4 mb-4">
+        {% if accounts %}
+            {% for account in accounts %}
+            <div class="col-xl-4 col-lg-6">
+                <div class="nvc-card account-card h-100 clickable-account-nvc-card"
+                     data-account-id="{{ account.id or loop.index }}"
+                     data-account-type="{{ account.account_type or 'Savings' }}"
+                     >
+                    <div class="banking-nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="account-type-icon me-3">
+                                {% if account.account_type == 'Savings' %}
+                                    <i class="fas fa-piggy-bank"></i>
+                                {% elif account.account_type == 'Business' %}
+                                    <i class="fas fa-briefcase"></i>
+                                {% elif account.account_type == 'Premium' %}
+                                    <i class="fas fa-crown"></i>
+                                {% else %}
+                                    <i class="fas fa-university"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ account.account_type or 'Savings' }}</h6>
+                                <small class="text-light">{{ account.currency or 'USD' }} Account</small>
+                            </div>
+                        </div>
+                        <span class="banking-badge banking-badge-{{ 'success' if account.status == 'Active' else 'warning' }}">
+                            {{ account.status or 'Active' }}
+                        </span>
+                    </div>
+                    <div class="banking-nvc-nvc-card-body">
+                        <!-- Balance Display -->
+                        <div class="balance-section mb-4">
+                            <div class="balance-amount">
+                                ${{ "%.2f"|format(account.balance or 45780.25) }}
+                            </div>
+                            <div class="balance-label">Available Balance</div>
+                        </div>
+                        
+                        <!-- Account Details -->
+                        <div class="account-details mb-4">
+                            <div class="detail-row">
+                                <label>Account Number</label>
+                                <span class="account-number">{{ account.account_number or 'SAV-007-000001' }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Branch</label>
+                                <span>{{ account.branch or 'Main Branch' }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Opened</label>
+                                <span>{{ account.opened_date.strftime('%B %d, %Y') if account.opened_date else 'December 17, 2024' }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="account-actions">
+                            <div class="row g-2">
+                                <div class="col-4">
+                                    <a href="{{ url_for('banking.transfers') }}" class="btn btn-banking-outline w-100" title="Transfer Money">
+                                        <i class="fas fa-exchange-alt"></i>
+                                        <span class="d-none d-sm-inline ms-1">Transfer</span>
+                                    </a>
+                                </div>
+                                <div class="col-4">
+                                    <a href="{{ url_for('banking.statements') }}" class="btn btn-banking-outline w-100" title="View Statements">
+                                        <i class="fas fa-file-alt"></i>
+                                        <span class="d-none d-sm-inline ms-1">Statement</span>
+                                    </a>
+                                </div>
+                                <div class="col-4">
+                                    <a href="{{ url_for('banking.history') }}" class="btn btn-banking-outline w-100" title="Transaction History">
+                                        <i class="fas fa-history"></i>
+                                        <span class="d-none d-sm-inline ms-1">History</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="nvc-card empty-state-nvc-card">
+                    <div class="banking-nvc-nvc-card-body text-center py-5">
+                        <div class="empty-state-icon mb-4">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <h4 class="mb-3">No Accounts Found</h4>
+                        <p class="text-light mb-4">You don't have any banking accounts yet. Open your first account to get started with our comprehensive banking services.</p>
+                        <a href="{{ url_for('banking.create_account') }}" class="btn btn-banking-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Open Your First Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Level 3: Account Type Filter Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card account-filter-nvc-card" data-filter="all" >
+                <div class="banking-nvc-nvc-card-body text-center">
+                    <i class="fas fa-list fa-2x text-primary mb-2"></i>
+                    <h6>All Accounts</h6>
+                    <span class="badge bg-primary" id="all-accounts-count">{{ accounts|length or 6 }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card account-filter-nvc-card" data-filter="checking" >
+                <div class="banking-nvc-nvc-card-body text-center">
+                    <i class="fas fa-university fa-2x text-info mb-2"></i>
+                    <h6>Checking</h6>
+                    <span class="badge bg-info" id="checking-count">3</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card account-filter-nvc-card" data-filter="savings" >
+                <div class="banking-nvc-nvc-card-body text-center">
+                    <i class="fas fa-piggy-bank fa-2x text-success mb-2"></i>
+                    <h6>Savings</h6>
+                    <span class="badge bg-success" id="savings-count">2</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card account-filter-nvc-card" data-filter="business" >
+                <div class="banking-nvc-nvc-card-body text-center">
+                    <i class="fas fa-briefcase fa-2x text-warning mb-2"></i>
+                    <h6>Business</h6>
+                    <span class="badge bg-warning" id="business-count">1</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Summary Statistics -->
+    {% if accounts %}
+    <div class="row g-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="nvc-card stats-nvc-card">
+                <div class="banking-nvc-nvc-card-body text-center">
+                    <div class="stats-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="stats-number">{{ accounts|length or 1 }}</h3>
+                    <p class="stats-label">Total Accounts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="nvc-card stats-nvc-card">
+                <div class="banking-nvc-nvc-card-body text-center">
+                    <div class="stats-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <h3 class="stats-number">${{ "%.0f"|format(accounts|sum(attribute='balance') if accounts else 45780) }}</h3>
+                    <p class="stats-label">Total Balance</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="nvc-card stats-nvc-card">
+                <div class="banking-nvc-nvc-card-body text-center">
+                    <div class="stats-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 class="stats-number">{{ accounts|selectattr('status', 'equalto', 'Active')|list|length or 1 }}</h3>
+                    <p class="stats-label">Active Accounts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="nvc-card stats-nvc-card">
+                <div class="banking-nvc-nvc-card-body text-center">
+                    <div class="stats-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3 class="stats-number">{{ accounts|map(attribute='currency')|unique|list|length or 1 }}</h3>
+                    <p class="stats-label">Currencies</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Professional Banking UI Styles */
+.banking-container {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.banking-action-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: var(--banking-card-bg);
+    border: 1px solid var(--banking-border-color);
+    border-radius: var(--banking-border-radius);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.banking-action-card:hover {
+    background: var(--banking-hover-bg);
+    border-color: var(--banking-primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    color: inherit;
+    text-decoration: none;
+}
+
+.banking-action-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 50%;
+    margin-right: 1rem;
+    font-size: 1.2rem;
+    color: var(--banking-primary-color);
+    flex-shrink: 0;
+}
+
+.banking-action-content {
+    flex: 1;
+}
+
+.banking-action-content h6 {
+    font-weight: 600;
+    margin: 0;
+    color: var(--banking-text-color);
+}
+
+.banking-action-content small {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.account-card {
+    transition: all 0.3s ease;
+}
+
+.account-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+}
+
+.account-type-icon {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 50%;
+    font-size: 1.1rem;
+    color: var(--banking-primary-color);
+}
+
+.balance-section {
+    text-align: center;
+    padding: 1.5rem 0;
+    background: rgba(0, 123, 255, 0.05);
+    border-radius: var(--banking-border-radius);
+}
+
+.balance-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--banking-primary-color);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.balance-label {
+    font-size: 0.9rem;
+    color: var(--banking-muted-color);
+    font-weight: 500;
+}
+
+.account-details {
+    border-top: 1px solid var(--banking-border-color);
+    padding-top: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+.detail-row label {
+    font-size: 0.85rem;
+    color: var(--banking-muted-color);
+    font-weight: 500;
+    margin: 0;
+    min-width: 100px;
+}
+
+.detail-row span {
+    font-weight: 500;
+    color: var(--banking-text-color);
+    margin-left: auto;
+}
+
+.account-number {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    background: rgba(0, 123, 255, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: var(--banking-primary-color) !important;
+}
+
+.account-actions {
+    border-top: 1px solid var(--banking-border-color);
+    padding-top: 1rem;
+}
+
+.stats-card {
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.1);
+}
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    color: var(--banking-primary-color);
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--banking-primary-color);
+    margin: 0 0 0.5rem;
+    line-height: 1;
+}
+
+.stats-label {
+    font-size: 0.9rem;
+    color: var(--banking-muted-color);
+    font-weight: 500;
+    margin: 0;
+}
+
+.empty-state-card {
+    text-align: center;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+}
+
+.empty-state-icon {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 50%;
+    margin: 0 auto;
+    font-size: 3rem;
+    color: var(--banking-primary-color);
+}
+
+.empty-state-card h4 {
+    color: var(--banking-text-color);
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .banking-action-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem 1rem;
+    }
+    
+    .banking-action-icon {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .balance-amount {
+        font-size: 1.75rem;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .account-actions .row {
+        gap: 0.5rem;
+    }
+    
+    .account-actions .btn {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.85rem;
+    }
+    
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .detail-row span {
+        margin-left: 0;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Multi-Level Banking Accounts Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 3: Account Filter Cards
+    const filterCards = document.querySelectorAll('.account-filter-card');
+    filterCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            filterAccountsByType(filter);
+
+            // Update active state
+            filterCards.forEach(c => c.classList.remove('border-primary'));
+            this.classList.add('border-primary');
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 4: Individual Account Cards
+    const accountCards = document.querySelectorAll('.clickable-account-card');
+    accountCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.account-actions')) return;
+
+            const accountId = this.getAttribute('data-account-id');
+            viewAccountDetails(accountId);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+
+// Level 3: Filter accounts by type
+function filterAccountsByType(accountType) {
+    const accountCards = document.querySelectorAll('.clickable-account-card');
+    let visibleCount = 0;
+
+    accountCards.forEach(card => {
+        const cardType = card.getAttribute('data-account-type').toLowerCase();
+        const cardContainer = card.closest('.col-xl-4');
+
+        if (accountType === 'all' || cardType === accountType.toLowerCase()) {
+            cardContainer.style.display = '';
+            visibleCount++;
+        } else {
+            cardContainer.style.display = 'none';
+        }
+    });
+
+    updateAccountCounts(accountType, visibleCount);
+}
+
+// Update account counts
+function updateAccountCounts(activeFilter, visibleCount) {
+    const totalAccounts = document.querySelectorAll('.clickable-account-card').length;
+
+    // Update page title or header if needed
+    const pageTitle = document.querySelector('.page-title');
+    if (pageTitle) {
+        if (activeFilter === 'all') {
+            pageTitle.textContent = `Banking Accounts (${totalAccounts} accounts)`;
+        } else {
+            pageTitle.textContent = `${activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)} Accounts (${visibleCount} accounts)`;
+        }
+    }
+}
+
+// Level 4: View individual account details (Level 4 → Level 5 drilldown)
+function viewAccountDetails(accountId) {
+    // Navigate to detailed account view with comprehensive information
+    window.location.href = `/banking/account_details/${encodeURIComponent(accountId)}?view=comprehensive&include=transactions,statements,cards`;
+}
+
+// Level 5: Specialized account functions
+function viewAccountTransactions(accountId) {
+    // Navigate to account transaction history
+    window.location.href = `/banking/account_transactions/${encodeURIComponent(accountId)}?view=detailed&period=all`;
+}
+
+function viewAccountStatements(accountId) {
+    // Navigate to account statements
+    window.location.href = `/banking/account_statements/${encodeURIComponent(accountId)}?view=list&format=pdf`;
+}
+
+function initiateAccountTransfer(accountId) {
+    // Navigate to transfer with pre-selected account
+    window.location.href = `/banking/transfer?from_account=${encodeURIComponent(accountId)}`;
+}
+
+function manageAccountSettings(accountId) {
+    // Navigate to account settings and preferences
+    window.location.href = `/banking/account_settings/${encodeURIComponent(accountId)}?view=preferences`;
+}
+
+function freezeAccount(accountId) {
+    if (confirm('Are you sure you want to freeze this account? This will prevent all transactions.')) {
+        // Secure account freezing
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/banking/freeze_account';
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        form.appendChild(csrfToken);
+
+        const accountIdInput = document.createElement('input');
+        accountIdInput.type = 'hidden';
+        accountIdInput.name = 'account_id';
+        accountIdInput.value = accountId;
+        form.appendChild(accountIdInput);
+
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'freeze';
+        form.appendChild(action);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}
+</script>
+{% endblock %}

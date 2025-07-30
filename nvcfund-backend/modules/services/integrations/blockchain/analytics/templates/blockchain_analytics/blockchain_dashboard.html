@@ -1,0 +1,506 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Blockchain Analytics - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Blockchain Analytics Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-dark text-white">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="h2 text-white mb-2">
+                                <i class="fab fa-ethereum me-2"></i>Blockchain Analytics
+                            </h1>
+                            <p class="text-light mb-0">Real-time blockchain monitoring, transaction analysis, and DeFi insights</p>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-light btn-sm">
+                                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                                </button>
+                                <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm">
+                                    <i class="fas fa-chart-bar me-1"></i>Reports
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Overview - Now Clickable for Drill-Down -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('blockchain_analytics.network_analysis') }}" class="text-decoration-none">
+                <div class="card bg-primary dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fab fa-ethereum fa-3x text-white-50 mb-3"></i>
+                        <h4 class="text-white">Ethereum</h4>
+                        <h2 class="text-white">${{ "3,847"|default("0") }}</h2>
+                        <small class="text-light">Current Price</small>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Network Analysis</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('blockchain_analytics.transaction_tracking') }}" class="text-decoration-none">
+                <div class="card bg-info dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fab fa-bitcoin fa-3x text-white-50 mb-3"></i>
+                        <h4 class="text-white">Bitcoin</h4>
+                        <h2 class="text-white">${{ "67,845"|default("0") }}</h2>
+                        <small class="text-light">Current Price</small>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Transaction Tracking</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('blockchain_analytics.defi_analytics') }}" class="text-decoration-none">
+                <div class="card bg-warning dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fas fa-cubes fa-3x text-white-50 mb-3"></i>
+                        <h4 class="text-white">Total Blocks</h4>
+                        <h2 class="text-white">{{ "18.7M"|default("0") }}</h2>
+                        <small class="text-light">Ethereum Blocks</small>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>DeFi Analytics</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <a href="{{ url_for('blockchain_analytics.smart_contract_analysis') }}" class="text-decoration-none">
+                <div class="card bg-success dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <i class="fas fa-exchange-alt fa-3x text-white-50 mb-3"></i>
+                        <h4 class="text-white">Gas Price</h4>
+                        <h2 class="text-white">{{ "25"|default("0") }} Gwei</h2>
+                        <small class="text-light">Current Gas</small>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Smart Contract Analysis</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Network Selection & Real-time Data -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between">
+                    <h5><i class="fas fa-network-wired me-2"></i>Network Analysis</h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary active">Ethereum</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">Bitcoin</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">Polygon</button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">BSC</button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Block Height</h6>
+                                <h4 class="text-primary">{{ "18,734,567"|default("0") }}</h4>
+                                <small class="text-light">Latest Block</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Block Time</h6>
+                                <h4 class="text-success">{{ "12.1s"|default("0s") }}</h4>
+                                <small class="text-light">Average Time</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Network Hash Rate</h6>
+                                <h4 class="text-info">{{ "847 TH/s"|default("0") }}</h4>
+                                <small class="text-light">Total Hashrate</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Difficulty</h6>
+                                <h4 class="text-warning">{{ "56.2T"|default("0") }}</h4>
+                                <small class="text-light">Current Difficulty</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Live Transaction Feed -->
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Transaction Hash</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Value (ETH)</th>
+                                    <th>Gas Used</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="liveTransactions">
+                                <tr>
+                                    <td><code>0x7a8f...9e2d</code></td>
+                                    <td><code>0x1234...5678</code></td>
+                                    <td><code>0xabcd...efgh</code></td>
+                                    <td>2.5847</td>
+                                    <td>21,000</td>
+                                    <td><span class="badge bg-success">Confirmed</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code>0x4b2c...7f8a</code></td>
+                                    <td><code>0x5678...9012</code></td>
+                                    <td><code>0xefgh...ijkl</code></td>
+                                    <td>0.0847</td>
+                                    <td>65,432</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code>0x9d5e...3a7b</code></td>
+                                    <td><code>0x9012...3456</code></td>
+                                    <td><code>0xijkl...mnop</code></td>
+                                    <td>15.2847</td>
+                                    <td>21,000</td>
+                                    <td><span class="badge bg-success">Confirmed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DeFi Analytics -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-coins me-2"></i>DeFi Analytics</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Total Value Locked (TVL)</label>
+                        <div class="d-flex justify-content-between">
+                            <span class="h5">${{ "156.7B"|default("0") }}</span>
+                            <span class="badge bg-success">+2.4%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Top DeFi Protocols</label>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between align-items-center p-2">
+                                <span>Uniswap V3</span>
+                                <span class="badge bg-primary">${{ "4.2B"|default("0") }}</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center p-2">
+                                <span>Aave</span>
+                                <span class="badge bg-success">${{ "3.8B"|default("0") }}</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center p-2">
+                                <span>Compound</span>
+                                <span class="badge bg-info">${{ "2.1B"|default("0") }}</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center p-2">
+                                <span>MakerDAO</span>
+                                <span class="badge bg-warning">${{ "1.9B"|default("0") }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="nvc-form-label">DEX Volume (24h)</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" class="w-100">${{ "8.4B"|default("0") }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Address Analytics & Smart Contract Analysis -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-search me-2"></i>Address Analytics</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form id="addressAnalysisForm">
+                        <div class="mb-3">
+                            <label class="nvc-form-label">Analyze Address or Transaction</label>
+                            <div class="input-group">
+                                <input type="text" class="nvc-form-input" placeholder="0x... address or transaction hash" id="addressInput">
+                                <button class="btn nvc-btn nvc-btn-primary" type="submit">Analyze</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div id="addressResults" class="d-none">
+                        <div class="alert nvc-nvc-alert-info">
+                            <h6><i class="fas fa-wallet me-2"></i>Address Analysis Results</h6>
+                            <div class="row mt-3">
+                                <div class="col-6">
+                                    <strong>Balance:</strong><br>
+                                    <span class="text-primary">125.847 ETH</span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Transaction Count:</strong><br>
+                                    <span class="text-success">1,247</span>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-6">
+                                    <strong>First Seen:</strong><br>
+                                    <span class="text-light">Jan 15, 2023</span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Last Activity:</strong><br>
+                                    <span class="text-light">2 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Popular Addresses -->
+                    <h6>Trending Addresses</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Address</th>
+                                    <th>Label</th>
+                                    <th>Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>0x1234...5678</code></td>
+                                    <td><span class="badge bg-info">Binance Hot Wallet</span></td>
+                                    <td><i class="fas fa-circle text-success"></i> High</td>
+                                </tr>
+                                <tr>
+                                    <td><code>0xabcd...efgh</code></td>
+                                    <td><span class="badge bg-warning">Uniswap V3</span></td>
+                                    <td><i class="fas fa-circle text-warning"></i> Medium</td>
+                                </tr>
+                                <tr>
+                                    <td><code>0x9876...5432</code></td>
+                                    <td><span class="badge bg-success">Vitalik.eth</span></td>
+                                    <td><i class="fas fa-circle text-danger"></i> Low</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-file-contract me-2"></i>Smart Contract Analysis</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Contract Verification Status</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-78">
+                                78% Verified
+                            </div>
+                        </div>
+                        <small class="text-light">Of all smart contracts on network</small>
+                    </div>
+
+                    <h6>Top Smart Contracts by Gas Usage</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Contract</th>
+                                    <th>Gas Used (24h)</th>
+                                    <th>Transactions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>Uniswap V3 Router</strong><br>
+                                        <small class="text-light">0x68b3...465E</small>
+                                    </td>
+                                    <td>847.2M</td>
+                                    <td>15,847</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>OpenSea</strong><br>
+                                        <small class="text-light">0x7Be8...1763</small>
+                                    </td>
+                                    <td>623.4M</td>
+                                    <td>8,456</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>1inch Router</strong><br>
+                                        <small class="text-light">0x1111...1111</small>
+                                    </td>
+                                    <td>421.7M</td>
+                                    <td>12,394</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Security Alerts -->
+                    <div class="alert nvc-nvc-alert-warning mt-3">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Security Alert</h6>
+                        <p class="mb-0">3 suspicious contracts detected in the last 24 hours. 
+                        <a href="#" class="nvc-alert-link">View details</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MEV Analytics & Block Analysis -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-chart-area me-2"></i>MEV & Block Analytics</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="mevChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-cube me-2"></i>Latest Blocks</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Block</th>
+                                    <th>Miner</th>
+                                    <th>Txns</th>
+                                    <th>Gas Used</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>18734567</strong></td>
+                                    <td>Flashbots</td>
+                                    <td>247</td>
+                                    <td>98.7%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>18734566</strong></td>
+                                    <td>F2Pool</td>
+                                    <td>189</td>
+                                    <td>87.3%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>18734565</strong></td>
+                                    <td>Ethermine</td>
+                                    <td>203</td>
+                                    <td>91.2%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>18734564</strong></td>
+                                    <td>Binance Pool</td>
+                                    <td>156</td>
+                                    <td>75.8%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>18734563</strong></td>
+                                    <td>Nanopool</td>
+                                    <td>134</td>
+                                    <td>68.9%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // MEV Analytics Chart
+    const mevCtx = document.getElementById('mevChart').getContext('2d');
+    new Chart(mevCtx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+            datasets: [{
+                label: 'MEV Value (ETH)',
+                data: [156, 234, 189, 345, 287, 412, 376],
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                tension: 0.4
+            }, {
+                label: 'Block Rewards (ETH)',
+                data: [1890, 1956, 1834, 2045, 1987, 2134, 2087],
+                borderColor: '#198754',
+                backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Address analysis form
+    document.getElementById('addressAnalysisForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const address = document.getElementById('addressInput').value;
+        if (address.length > 10) {
+            document.getElementById('addressResults').style.display = 'block';
+        } else {
+            alert('Please enter a valid address or transaction hash.');
+        }
+    });
+
+    // Simulate live transaction updates
+    setInterval(function() {
+        // In production, this would fetch real data via WebSocket
+        console.log('Updating live transactions...');
+    }, 5000);
+});
+</script>
+</div>
+{% endblock %}

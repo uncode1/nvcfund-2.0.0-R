@@ -1,0 +1,687 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Banking Dashboard - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Banking Dashboard{% endblock %}
+{% block page_description %}Comprehensive banking operations and account management{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise">
+    <i class="fas fa-plus"></i>
+    New Account
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise">
+    <i class="fas fa-exchange-alt"></i>
+    Quick Transfer
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-banking-cards.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <!-- Key Metrics Section -->
+    <div class="nvc-content-section" id="metrics">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-chart-line"></i> Key Performance Metrics
+            </h3>
+            <div class="nvc-content-section-actions">
+                <span class="nvc-badge nvc-badge-info">
+                    <i class="fas fa-clock"></i> Real-time data
+                </span>
+            </div>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-primary">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">$2.4M</div>
+                                    <div class="nvc-metric-label">Total Deposits</div>
+                                    <div class="nvc-metric-status nvc-status-success">+12.5% growth</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-success">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">1,247</div>
+                                    <div class="nvc-metric-label">Daily Transactions</div>
+                                    <div class="nvc-metric-status nvc-status-success">+8.3% increase</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-warning">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">89</div>
+                                    <div class="nvc-metric-label">Active Cards</div>
+                                    <div class="nvc-metric-status nvc-status-info">+5 new cards</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-info">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">99.8%</div>
+                                    <div class="nvc-metric-label">Security Score</div>
+                                    <div class="nvc-metric-status nvc-status-success">+0.2% improvement</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-warning">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fab fa-bitcoin"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">$45.7K</div>
+                                    <div class="nvc-metric-label">Crypto Portfolio</div>
+                                    <div class="nvc-metric-status nvc-status-success">+15.8% growth</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="nvc-card nvc-card-metric nvc-card-secondary">
+                        <div class="nvc-card-body">
+                            <div class="nvc-metric-content">
+                                <div class="nvc-metric-icon">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="nvc-metric-details">
+                                    <div class="nvc-metric-value">10,000</div>
+                                    <div class="nvc-metric-label">NVCT Balance</div>
+                                    <div class="nvc-metric-status nvc-status-info">+500 NVCT added</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="nvc-content-section" id="quick-actions">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-bolt"></i> Quick Actions
+            </h3>
+            <div class="nvc-content-section-actions">
+                <span class="nvc-badge nvc-badge-secondary">Frequently used</span>
+            </div>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="row">
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="{{ url_for('banking.transfers') }}" class="nvc-quick-action">
+                        <div class="nvc-quick-action-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="nvc-quick-action-content">
+                            <h6 class="nvc-quick-action-title">Transfer Money</h6>
+                            <p class="nvc-quick-action-desc">Send funds between accounts</p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="{{ url_for('banking.create_account') }}" class="nvc-quick-action">
+                        <div class="nvc-quick-action-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="nvc-quick-action-content">
+                            <h6 class="nvc-quick-action-title">Open Account</h6>
+                            <p class="nvc-quick-action-desc">Create new accounts</p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="{{ url_for('banking.apply_card') }}" class="nvc-quick-action">
+                        <div class="nvc-quick-action-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="nvc-quick-action-content">
+                            <h6 class="nvc-quick-action-title">Apply for Card</h6>
+                            <p class="nvc-quick-action-desc">Get debit or credit cards</p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="{{ url_for('banking.payments') }}" class="nvc-quick-action">
+                        <div class="nvc-quick-action-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="nvc-quick-action-content">
+                            <h6 class="nvc-quick-action-title">Make Payment</h6>
+                            <p class="nvc-quick-action-desc">Pay bills instantly</p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="{{ url_for('banking.statements') }}" class="nvc-quick-action">
+                        <div class="nvc-quick-action-icon">
+                            <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="quick-action-title">View Statements</div>
+            <div class="quick-action-desc">Download monthly and quarterly reports</div>
+        </a>
+
+        <a href="{{ url_for('banking.transaction_history') }}" class="quick-action-nvc-card">
+            <div class="quick-action-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="quick-action-title">Transaction History</div>
+            <div class="quick-action-desc">Review detailed transaction history</div>
+        </a>
+    </div>
+
+    <!-- Account Summary Cards - Now Clickable for Drill-Down -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <a href="{{ url_for('banking.accounts_detailed') }}" class="text-decoration-none">
+                <div class="card dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign text-success"></i>
+                        </div>
+                        <h5 class="nvc-card-title text-light">Total Balance</h5>
+                        <h2 class="text-success">${{ "%.2f"|format(total_balance) }}</h2>
+                        <small class="text-light">Across {{ accounts|length }} accounts</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>View Details</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('banking.cards_management') }}" class="text-decoration-none">
+                <div class="card dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <div class="stat-icon">
+                            <i class="fas fa-credit-nvc-card text-primary"></i>
+                        </div>
+                        <h5 class="nvc-card-title text-light">Active Cards</h5>
+                        <h2 class="text-primary">{{ active_cards }}</h2>
+                        <small class="text-light">Payment cards</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Manage Cards</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('banking.transfers_management') }}" class="text-decoration-none">
+                <div class="card dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body text-center">
+                        <div class="stat-icon">
+                            <i class="fas fa-exchange-alt text-warning"></i>
+                        </div>
+                        <h5 class="nvc-card-title text-light">Recent Transfers</h5>
+                        <h2 class="text-warning">{{ recent_transfers|length }}</h2>
+                        <small class="text-light">Last 30 days</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>View Transfers</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('banking.transactions_analysis') }}" class="text-decoration-none">
+                <div class="card dashboard-stat-card hover-nvc-card bg-dark border-info">
+                    <div class="nvc-nvc-card-body text-center">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line text-info"></i>
+                        </div>
+                        <h5 class="nvc-card-title text-info">Transactions</h5>
+                        <h2 class="text-warning">{{ accounts|length }}</h2>
+                        <small class="text-light">Active accounts</small>
+                        <div class="mt-2">
+                            <small class="text-info"><i class="fas fa-arrow-right me-1"></i>Analyze Data</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Level 2 Drilldown: Account Type Breakdown -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="nvc-card account-type-nvc-card" data-account-type="checking" >
+                <div class="metric-content">
+                    <div class="metric-icon primary">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h4>{{ account_data.checking_count if account_data else '3' }}</h4>
+                        <p>Checking Accounts</p>
+                        <small class="text-muted">{{ account_data.checking_balance if account_data else '$45,230.50' }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card account-type-nvc-card" data-account-type="savings" >
+                <div class="metric-content">
+                    <div class="metric-icon success">
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h4>{{ account_data.savings_count if account_data else '2' }}</h4>
+                        <p>Savings Accounts</p>
+                        <small class="text-muted">{{ account_data.savings_balance if account_data else '$125,750.00' }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card account-type-nvc-card" data-account-type="investment" >
+                <div class="metric-content">
+                    <div class="metric-icon warning">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h4>{{ account_data.investment_count if account_data else '1' }}</h4>
+                        <p>Investment Accounts</p>
+                        <small class="text-muted">{{ account_data.investment_balance if account_data else '$89,420.75' }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="nvc-card account-type-nvc-card" data-account-type="credit" >
+                <div class="metric-content">
+                    <div class="metric-icon danger">
+                        <i class="fas fa-credit-nvc-card"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h4>{{ account_data.credit_count if account_data else '2' }}</h4>
+                        <p>Credit Accounts</p>
+                        <small class="text-muted">Available: {{ account_data.credit_available if account_data else '$15,000.00' }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-primary w-100">
+                                <i class="fas fa-exchange-alt d-block mb-2"></i>
+                                <small>Transfer Money</small>
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('banking.create_account') }}" class="btn nvc-btn nvc-btn-outline-success w-100">
+                                <i class="fas fa-plus-circle d-block mb-2"></i>
+                                <small>New Account</small>
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('banking.apply_card') }}" class="btn nvc-btn nvc-btn-outline-info w-100">
+                                <i class="fas fa-credit-nvc-card d-block mb-2"></i>
+                                <small>Apply for Card</small>
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('banking.payments') }}" class="btn nvc-btn nvc-btn-outline-warning w-100">
+                                <i class="fas fa-money-bill-wave d-block mb-2"></i>
+                                <small>Send Payment</small>
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('banking.statements') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100">
+                                <i class="fas fa-file-alt d-block mb-2"></i>
+                                <small>Statements</small>
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <a href="{{ url_for('banking.transaction_history') }}" class="btn nvc-btn nvc-btn-outline-light w-100">
+                                <i class="fas fa-history d-block mb-2"></i>
+                                <small>History</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Account Overview -->
+        <div class="col-md-6 mb-4">
+            <div class="nvc-card bg-dark border-primary">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-wallet me-2"></i>Account Overview
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if accounts %}
+                        {% for account in accounts %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                            <div>
+                                <h6 class="mb-1 text-light">{{ account.account_type }}</h6>
+                                <small class="text-light">{{ account.account_number }}</small>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="mb-1 text-success">${{ "%.2f"|format(account.balance) }}</h6>
+                                <small class="text-{{ 'success' if account.status == 'Active' else 'warning' }}">
+                                    {{ account.status }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('banking.accounts') }}" class="btn nvc-btn nvc-btn-primary btn-sm">
+                                View All Accounts
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-wallet fa-3x text-light mb-3"></i>
+                            <p class="text-light">No accounts found</p>
+                            <a href="{{ url_for('banking.create_account') }}" class="btn nvc-btn nvc-btn-success">
+                                Create Your First Account
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transfers -->
+        <div class="col-md-6 mb-4">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>Recent Transfers
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if recent_transfers %}
+                        {% for transfer in recent_transfers %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                            <div>
+                                <h6 class="mb-1 text-light">{{ transfer.type }}</h6>
+                                <small class="text-light">{{ transfer.description or 'No description' }}</small>
+                                <br>
+                                <small class="text-light">{{ transfer.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="mb-1 text-{{ 'success' if transfer.type == 'Deposit' else 'warning' }}">
+                                    {{ '+' if transfer.type == 'Deposit' else '-' }}${{ "%.2f"|format(transfer.amount) }}
+                                </h6>
+                                <small class="text-{{ 'success' if transfer.status == 'Completed' else 'warning' }}">
+                                    {{ transfer.status }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('banking.transaction_history') }}" class="btn nvc-btn nvc-btn-success btn-sm">
+                                View All Transfers
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-exchange-alt fa-3x text-light mb-3"></i>
+                            <p class="text-light">No recent transfers</p>
+                            <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-primary">
+                                Make a Transfer
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Cards Section -->
+    {% if cards %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-header bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-nvc-card me-2"></i>Active Cards
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        {% for card in cards %}
+                        <div class="col-md-4 mb-3">
+                            <div class="nvc-card bg-gradient border-info">
+                                <div class="nvc-nvc-card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-light">{{ card.network }} {{ card.card_type }}</h6>
+                                            <p class="mb-1 text-light">{{ card.card_number }}</p>
+                                            <small class="text-light">Expires: {{ card.expiry_date }}</small>
+                                        </div>
+                                        <span class="badge bg-{{ 'success' if card.status == 'Active' else 'warning' }}">
+                                            {{ card.status }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-light">Daily Limit: ${{ "%.2f"|format(card.daily_limit) }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ url_for('banking.cards') }}" class="btn nvc-btn nvc-btn-warning btn-sm">
+                            Manage All Cards
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+</div> <!-- End enhanced-card-container -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Banking Dashboard Interactive Functions
+function drillDownTotalBalance() {
+    window.location.href = "{{ url_for('banking.accounts_detailed') }}";
+}
+
+function drillDownActiveCards() {
+    window.location.href = "{{ url_for('banking.cards_management') }}";
+}
+
+function drillDownRecentTransfers() {
+    window.location.href = "{{ url_for('banking.transfers_management') }}";
+}
+
+function drillDownTransactions() {
+    window.location.href = "{{ url_for('banking.transactions_analysis') }}";
+}
+
+function refreshDashboard() {
+    location.reload();
+}
+
+function quickTransfer() {
+    window.location.href = "{{ url_for('banking.transfer') }}";
+}
+
+function viewAccountDetails(accountId) {
+    window.location.href = "{{ url_for('banking.account_details', account_id='ACCOUNT_ID') }}".replace('ACCOUNT_ID', accountId);
+}
+
+function viewTransactionDetails(transactionId) {
+    window.location.href = "{{ url_for('banking.transaction_details') }}?id=" + transactionId;
+}
+
+// Enhanced Banking Dashboard Interactive System
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Enhanced Metric Card Interactions
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach((card, index) => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.05)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(-4px) scale(1.02)';
+        });
+        
+        // Add click interaction
+        card.addEventListener('click', function() {
+            this.classList.add('card-pulse');
+            setTimeout(() => {
+                this.classList.remove('card-pulse');
+            }, 1000);
+        });
+    });
+    
+    // Quick Action Card Interactions
+    const quickActionCards = document.querySelectorAll('.quick-action-card');
+    quickActionCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-4px) scale(1.02)';
+            const icon = this.querySelector('.quick-action-icon');
+            if (icon) {
+                icon.style.transform = 'scale(1.1) rotate(-5deg)';
+            }
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+            const icon = this.querySelector('.quick-action-icon');
+            if (icon) {
+                icon.style.transform = 'scale(1) rotate(0deg)';
+            }
+        });
+    });
+    
+    // Stagger animation for cards
+    setTimeout(() => {
+        document.querySelectorAll('.card-slide-in').forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+    }, 100);
+
+    // Make legacy stat cards clickable (backwards compatibility)
+    const statCards = document.querySelectorAll('.dashboard-stat-card');
+    statCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const link = this.querySelector('a');
+            if (link) {
+                window.location.href = link.href;
+            }
+        });
+    });
+
+    // Level 2: Account Type Cards
+    const accountTypeCards = document.querySelectorAll('.account-type-card');
+    accountTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const accountType = this.getAttribute('data-account-type');
+            handleAccountTypeDrilldown(accountType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Add hover effects for stat cards
+    statCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+
+// Level 2: Account Type Drilldown
+function handleAccountTypeDrilldown(accountType) {
+    // Navigate to accounts page with specific type filter
+    window.location.href = `{{ url_for('banking.modular_banking_accounts') }}?account_type=${encodeURIComponent(accountType)}&view=detailed`;
+}
+</script>
+{% endblock %}

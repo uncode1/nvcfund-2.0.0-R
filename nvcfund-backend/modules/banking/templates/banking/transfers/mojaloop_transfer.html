@@ -1,0 +1,596 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Mojaloop Transfer - NVC Banking{% endblock %}
+
+{% block extra_css %}
+
+        body { background: #0f172a !important; color: #e2e8f0 !important; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif !important; margin: 0; padding: 20px; }
+        .dashboard-stat-card { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 8px !important; padding: 1.5rem; margin-bottom: 1rem; }
+        .card { background: #1e293b !important; border: 1px solid #334155 !important; color: #e2e8f0 !important; }
+        .btn-primary { background: #3b82f6 !important; border-color: #3b82f6 !important; }
+        .table-dark { background: #1e293b !important; }
+        .table-dark td, .table-dark th { border-color: #334155 !important; color: #e2e8f0 !important; }
+    
+{% endblock %}
+
+{% block content %}
+
+
+
+<style>
+.mojaloop-gradient {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.mojaloop-card {
+    border: 2px solid #10b981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.mojaloop-badge {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.mojaloop-button {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.mojaloop-button:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+
+.mojaloop-icon {
+    color: #10b981;
+}
+</style>
+
+<div class="container-fluid">
+    <!-- Mojaloop Transfer Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card mojaloop-nvc-card">
+                <div class="nvc-nvc-card-body text-center py-4">
+                    <div class="mojaloop-logo d-inline-flex align-items-center justify-content-center mb-3" 
+                         class="nvc-h-60">
+                        <img src="{{ url_for('static', filename='images/logos/mojaloop-logo.svg') }}" 
+                             alt="Mojaloop Logo" 
+                             class="nvc-style-ce791c"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="nvc-style-ef27e2">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-handshake nvc-colored-2effc2" ></i>
+                            </div>
+                            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 700; font-size: 18px; color: #10b981;">
+                                Mojaloop
+                            </div>
+                        </div>
+                    </div>
+                    <h2 class="mb-2" style="color: #10b981; font-weight: 600;">{{ channel_config.title }}</h2>
+                    <p class="text-light mb-3">{{ channel_config.description }}</p>
+                    <div class="row justify-content-center">
+                        {% for feature in channel_config.features %}
+                        <div class="col-auto">
+                            <span class="badge mojaloop-badge me-2 mb-2">{{ feature }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Form -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header mojaloop-gradient text-white">
+                    <h5 class="mb-0"><i class="fas fa-handshake me-2"></i>Mojaloop Transfer Details</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="POST" action="{{ url_for('banking.process_send_transfer') }}">
+                        <input type="hidden" name="transfer_channel" value="mojaloop">
+                        
+                        <!-- Financial Inclusion Notice -->
+                        <div class="alert nvc-nvc-alert-info">
+                            <h6><i class="fas fa-users me-2"></i>Financial Inclusion Platform</h6>
+                            <p class="mb-0">Mojaloop enables secure, low-cost transfers between different financial service providers, promoting financial inclusion worldwide.</p>
+                        </div>
+
+                        <!-- Sender Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="sender_identifier_type" class="nvc-form-label">
+                                    <i class="fas fa-id-nvc-card mojaloop-icon me-2"></i>Sender Identifier Type
+                                </label>
+                                <select class="nvc-form-select" id="sender_identifier_type" name="sender_identifier_type" required>
+                                    <option value="">Select identifier</option>
+                                    <option value="MSISDN">Mobile Number (MSISDN)</option>
+                                    <option value="EMAIL">Email Address</option>
+                                    <option value="PERSONAL_ID">Personal ID</option>
+                                    <option value="BUSINESS_ID">Business ID</option>
+                                    <option value="DEVICE_ID">Device ID</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="from_account" class="nvc-form-label">From Account</label>
+                                <select class="nvc-form-select" name="from_account" required>
+                                    <option value="">Select source account</option>
+                                    {% for account in accounts %}
+                                    <option value="{{ account.account_number }}">
+                                        {{ account.account_type.title() }} - ****{{ account.account_number[-4:] }} 
+                                        (${{ "%.2f"|format(account.balance) }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Recipient Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="recipient_identifier_type" class="nvc-form-label">Recipient Identifier Type</label>
+                                <select class="nvc-form-select" id="recipient_identifier_type" name="recipient_identifier_type" required>
+                                    <option value="">Select identifier</option>
+                                    <option value="MSISDN">Mobile Number (MSISDN)</option>
+                                    <option value="EMAIL">Email Address</option>
+                                    <option value="PERSONAL_ID">Personal ID</option>
+                                    <option value="BUSINESS_ID">Business ID</option>
+                                    <option value="ALIAS">Account Alias</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="recipient_identifier" class="nvc-form-label">Recipient Identifier</label>
+                                <input type="text" class="nvc-form-input" id="recipient_identifier" name="recipient_identifier" 
+                                       placeholder="Enter identifier value" required>
+                            </div>
+                        </div>
+
+                        <!-- Financial Service Provider -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="recipient_fsp" class="nvc-form-label">Recipient Financial Service Provider</label>
+                                <select class="nvc-form-select" id="recipient_fsp" name="recipient_fsp" required>
+                                    <option value="">Select FSP</option>
+                                    <option value="mobile_money_1">Mobile Money Provider 1</option>
+                                    <option value="mobile_money_2">Mobile Money Provider 2</option>
+                                    <option value="bank_1">Commercial Bank 1</option>
+                                    <option value="bank_2">Commercial Bank 2</option>
+                                    <option value="microfinance_1">Microfinance Institution 1</option>
+                                    <option value="savings_group">Savings Group</option>
+                                    <option value="cooperative">Financial Cooperative</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="recipient_country" class="nvc-form-label">Recipient Country</label>
+                                <select class="nvc-form-select" name="recipient_country" required>
+                                    <option value="">Select country</option>
+                                    <option value="KE">🇰🇪 Kenya</option>
+                                    <option value="UG">🇺🇬 Uganda</option>
+                                    <option value="TZ">🇹🇿 Tanzania</option>
+                                    <option value="RW">🇷🇼 Rwanda</option>
+                                    <option value="MW">🇲🇼 Malawi</option>
+                                    <option value="ZM">🇿🇲 Zambia</option>
+                                    <option value="GH">🇬🇭 Ghana</option>
+                                    <option value="SN">🇸🇳 Senegal</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Amount and Currency -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="amount" class="nvc-form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" id="amount" name="amount" 
+                                           min="{{ channel_config.limits.min }}" 
+                                           max="{{ channel_config.limits.max }}" 
+                                           step="0.01" placeholder="0.00" required>
+                                </div>
+                                <div class="form-text">
+                                    Limits: ${{ channel_config.limits.min }} - ${{ "{:,}".format(channel_config.limits.max) }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="send_currency" class="nvc-form-label">Send Currency</label>
+                                <select class="nvc-form-select" name="send_currency" required>
+                                    <option value="USD" selected>USD - US Dollar</option>
+                                    <option value="EUR">EUR - Euro</option>
+                                    <option value="KES">KES - Kenyan Shilling</option>
+                                    <option value="UGX">UGX - Ugandan Shilling</option>
+                                    <option value="TZS">TZS - Tanzanian Shilling</option>
+                                    <option value="RWF">RWF - Rwandan Franc</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="receive_currency" class="nvc-form-label">Receive Currency</label>
+                                <select class="nvc-form-select" name="receive_currency" required>
+                                    <option value="">Auto-detect</option>
+                                    <option value="KES">KES - Kenyan Shilling</option>
+                                    <option value="UGX">UGX - Ugandan Shilling</option>
+                                    <option value="TZS">TZS - Tanzanian Shilling</option>
+                                    <option value="RWF">RWF - Rwandan Franc</option>
+                                    <option value="USD">USD - US Dollar</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Transaction Type -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="transaction_type" class="nvc-form-label">Transaction Type</label>
+                                <select class="nvc-form-select" name="transaction_type" required>
+                                    <option value="TRANSFER">Person-to-Person Transfer</option>
+                                    <option value="DEPOSIT">Cash Deposit</option>
+                                    <option value="WITHDRAWAL">Cash Withdrawal</option>
+                                    <option value="PAYMENT">Payment for Goods/Services</option>
+                                    <option value="REFUND">Refund</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="transfer_purpose" class="nvc-form-label">Purpose</label>
+                                <select class="nvc-form-select" name="transfer_purpose" required>
+                                    <option value="">Select purpose</option>
+                                    <option value="family_support">Family Support</option>
+                                    <option value="education">Education</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="business">Business Payment</option>
+                                    <option value="savings">Savings</option>
+                                    <option value="emergency">Emergency</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Quote and Fees -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="quote_validity" class="nvc-form-label">Quote Validity</label>
+                                <select class="nvc-form-select" name="quote_validity">
+                                    <option value="300">5 minutes</option>
+                                    <option value="600" selected>10 minutes</option>
+                                    <option value="1800">30 minutes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="fee_information" class="nvc-form-label">Fee Structure</label>
+                                <select class="nvc-form-select" name="fee_information" required>
+                                    <option value="send">Sender pays fees</option>
+                                    <option value="receive">Recipient pays fees</option>
+                                    <option value="shared">Shared fees</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <div class="mb-3">
+                            <label for="transfer_note" class="nvc-form-label">Transfer Note (Optional)</label>
+                            <textarea class="nvc-form-input" id="transfer_note" name="transfer_note" rows="2" 
+                                      placeholder="Message for recipient" maxlength="200"></textarea>
+                            <div class="form-text">Maximum 200 characters</div>
+                        </div>
+
+                        <!-- Interoperability Information -->
+                        <div class="alert nvc-nvc-alert-success">
+                            <h6><i class="fas fa-network-wired me-2"></i>Mojaloop Features</h6>
+                            <ul class="mb-0">
+                                <li><strong>Fee:</strong> ${{ "%.2f"|format(channel_config.fee) }} + FSP charges</li>
+                                <li><strong>Processing:</strong> {{ channel_config.processing_time }}</li>
+                                <li><strong>Interoperability:</strong> Connect any FSP to any FSP</li>
+                                <li><strong>Open Source:</strong> Transparent, secure, and inclusive</li>
+                            </ul>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('banking.transfers') }}" class="btn nvc-btn nvc-btn-outline-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Transfers
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn mojaloop-button w-100">
+                                    <i class="fas fa-handshake me-2"></i>Send via Mojaloop
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mojaloop Benefits -->
+    <div class="row mt-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <h6 class="nvc-card-title"><i class="fas fa-globe-africa mojaloop-icon me-2"></i>Financial Inclusion Benefits</h6>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-users mojaloop-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Inclusive</h6>
+                            <p class="text-light small">Connecting underserved populations</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-link mojaloop-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Interoperable</h6>
+                            <p class="text-light small">Connect different payment systems</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-code mojaloop-icon" class="nvc-fs-2rem"></i>
+                            <h6 class="mt-2">Open Source</h6>
+                            <p class="text-light small">Transparent and collaborative</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const recipientTypeSelect = document.getElementById('recipient_identifier_type');
+    const recipientIdentifierInput = document.getElementById('recipient_identifier');
+    const amountInput = document.getElementById('amount');
+    const sendCurrencySelect = document.querySelector('select[name="send_currency"]');
+    const receiveCurrencySelect = document.querySelector('select[name="receive_currency"]');
+    
+    // Update placeholder and validation based on identifier type
+    recipientTypeSelect.addEventListener('change', function() {
+        const identifierType = this.value;
+        
+        switch(identifierType) {
+            case 'MSISDN':
+                recipientIdentifierInput.placeholder = '+254712345678';
+                recipientIdentifierInput.type = 'tel';
+                break;
+            case 'EMAIL':
+                recipientIdentifierInput.placeholder = 'recipient@example.com';
+                recipientIdentifierInput.type = 'email';
+                break;
+            case 'PERSONAL_ID':
+                recipientIdentifierInput.placeholder = 'National ID number';
+                recipientIdentifierInput.type = 'text';
+                break;
+            case 'BUSINESS_ID':
+                recipientIdentifierInput.placeholder = 'Business registration number';
+                recipientIdentifierInput.type = 'text';
+                break;
+            case 'ALIAS':
+                recipientIdentifierInput.placeholder = 'Account alias or nickname';
+                recipientIdentifierInput.type = 'text';
+                break;
+            default:
+                recipientIdentifierInput.placeholder = 'Enter identifier value';
+                recipientIdentifierInput.type = 'text';
+        }
+    });
+    
+    // Validate identifier format
+    recipientIdentifierInput.addEventListener('blur', function() {
+        const identifierType = recipientTypeSelect.value;
+        const value = this.value;
+        
+        if (value && identifierType) {
+            let isValid = true;
+            
+            switch(identifierType) {
+                case 'MSISDN':
+                    isValid = /^\+?[1-9]\d{7,14}$/.test(value);
+                    break;
+                case 'EMAIL':
+                    isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                    break;
+                case 'PERSONAL_ID':
+                    isValid = /^[A-Z0-9]{5,20}$/.test(value);
+                    break;
+            }
+            
+            if (!isValid) {
+                this.setCustomValidity(`Invalid ${identifierType} format`);
+            } else {
+                this.setCustomValidity('');
+            }
+        }
+    });
+    
+    // Calculate conversion rates and fees
+    function updateQuote() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const sendCurrency = sendCurrencySelect.value;
+        const receiveCurrency = receiveCurrencySelect.value;
+        
+        if (amount > 0 && sendCurrency && receiveCurrency) {
+            // Mock conversion rates
+            const rates = {
+                'USD': {'KES': 145, 'UGX': 3700, 'TZS': 2600, 'RWF': 1300},
+                'EUR': {'USD': 1.1, 'KES': 160, 'UGX': 4070, 'TZS': 2860}
+            };
+            
+            let convertedAmount = amount;
+            if (rates[sendCurrency] && rates[sendCurrency][receiveCurrency]) {
+                convertedAmount = amount * rates[sendCurrency][receiveCurrency];
+            }
+            
+            const fee = {{ channel_config.fee }};
+            
+            let quoteDisplay = document.getElementById('quote-display');
+            if (!quoteDisplay) {
+                quoteDisplay = document.createElement('div');
+                quoteDisplay.id = 'quote-display';
+                quoteDisplay.className = 'alert alert-info mt-2';
+                amountInput.parentElement.parentElement.appendChild(quoteDisplay);
+            }
+            
+            quoteDisplay.innerHTML = `
+                <strong>Transfer Quote:</strong><br>
+                Send: ${amount.toFixed(2)} ${sendCurrency}<br>
+                Receive: ${convertedAmount.toLocaleString()} ${receiveCurrency}<br>
+                Fee: $${fee.toFixed(2)}
+            `;
+        }
+    }
+    
+    amountInput.addEventListener('input', updateQuote);
+    sendCurrencySelect.addEventListener('change', updateQuote);
+    receiveCurrencySelect.addEventListener('change', updateQuote);
+    
+    // Character counter for transfer note
+    const transferNoteTextarea = document.getElementById('transfer_note');
+    transferNoteTextarea.addEventListener('input', function() {
+        const remaining = 200 - this.value.length;
+        let counter = document.getElementById('char-counter');
+        
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.id = 'char-counter';
+            counter.className = 'form-text';
+            this.parentElement.appendChild(counter);
+        }
+        
+        counter.textContent = `${remaining} characters remaining`;
+        counter.style.color = remaining < 20 ? '#dc2626' : '#6b7280';
+    });
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
+
+{% block extra_js %}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const recipientTypeSelect = document.getElementById('recipient_identifier_type');
+    const recipientIdentifierInput = document.getElementById('recipient_identifier');
+    const amountInput = document.getElementById('amount');
+    const sendCurrencySelect = document.querySelector('select[name="send_currency"]');
+    const receiveCurrencySelect = document.querySelector('select[name="receive_currency"]');
+    
+    // Update placeholder and validation based on identifier type
+    recipientTypeSelect.addEventListener('change', function() {
+        const identifierType = this.value;
+        
+        switch(identifierType) {
+            case 'MSISDN':
+                recipientIdentifierInput.placeholder = '+254712345678';
+                recipientIdentifierInput.type = 'tel';
+                break;
+            case 'EMAIL':
+                recipientIdentifierInput.placeholder = 'recipient@example.com';
+                recipientIdentifierInput.type = 'email';
+                break;
+            case 'PERSONAL_ID':
+                recipientIdentifierInput.placeholder = 'National ID number';
+                recipientIdentifierInput.type = 'text';
+                break;
+            case 'BUSINESS_ID':
+                recipientIdentifierInput.placeholder = 'Business registration number';
+                recipientIdentifierInput.type = 'text';
+                break;
+            case 'ALIAS':
+                recipientIdentifierInput.placeholder = 'Account alias or nickname';
+                recipientIdentifierInput.type = 'text';
+                break;
+            default:
+                recipientIdentifierInput.placeholder = 'Enter identifier value';
+                recipientIdentifierInput.type = 'text';
+        }
+    });
+    
+    // Validate identifier format
+    recipientIdentifierInput.addEventListener('blur', function() {
+        const identifierType = recipientTypeSelect.value;
+        const value = this.value;
+        
+        if (value && identifierType) {
+            let isValid = true;
+            
+            switch(identifierType) {
+                case 'MSISDN':
+                    isValid = /^\+?[1-9]\d{7,14}$/.test(value);
+                    break;
+                case 'EMAIL':
+                    isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                    break;
+                case 'PERSONAL_ID':
+                    isValid = /^[A-Z0-9]{5,20}$/.test(value);
+                    break;
+            }
+            
+            if (!isValid) {
+                this.setCustomValidity(`Invalid ${identifierType} format`);
+            } else {
+                this.setCustomValidity('');
+            }
+        }
+    });
+    
+    // Calculate conversion rates and fees
+    function updateQuote() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const sendCurrency = sendCurrencySelect.value;
+        const receiveCurrency = receiveCurrencySelect.value;
+        
+        if (amount > 0 && sendCurrency && receiveCurrency) {
+            // Mock conversion rates
+            const rates = {
+                'USD': {'KES': 145, 'UGX': 3700, 'TZS': 2600, 'RWF': 1300},
+                'EUR': {'USD': 1.1, 'KES': 160, 'UGX': 4070, 'TZS': 2860}
+            };
+            
+            let convertedAmount = amount;
+            if (rates[sendCurrency] && rates[sendCurrency][receiveCurrency]) {
+                convertedAmount = amount * rates[sendCurrency][receiveCurrency];
+            }
+            
+            const fee = {{ channel_config.fee }};
+            
+            let quoteDisplay = document.getElementById('quote-display');
+            if (!quoteDisplay) {
+                quoteDisplay = document.createElement('div');
+                quoteDisplay.id = 'quote-display';
+                quoteDisplay.className = 'alert alert-info mt-2';
+                amountInput.parentElement.parentElement.appendChild(quoteDisplay);
+            }
+            
+            quoteDisplay.innerHTML = `
+                <strong>Transfer Quote:</strong><br>
+                Send: ${amount.toFixed(2)} ${sendCurrency}<br>
+                Receive: ${convertedAmount.toLocaleString()} ${receiveCurrency}<br>
+                Fee: $${fee.toFixed(2)}
+            `;
+        }
+    }
+    
+    amountInput.addEventListener('input', updateQuote);
+    sendCurrencySelect.addEventListener('change', updateQuote);
+    receiveCurrencySelect.addEventListener('change', updateQuote);
+    
+    // Character counter for transfer note
+    const transferNoteTextarea = document.getElementById('transfer_note');
+    transferNoteTextarea.addEventListener('input', function() {
+        const remaining = 200 - this.value.length;
+        let counter = document.getElementById('char-counter');
+        
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.id = 'char-counter';
+            counter.className = 'form-text';
+            this.parentElement.appendChild(counter);
+        }
+        
+        counter.textContent = `${remaining} characters remaining`;
+        counter.style.color = remaining < 20 ? '#dc2626' : '#6b7280';
+    });
+});
+
+{% endblock %}

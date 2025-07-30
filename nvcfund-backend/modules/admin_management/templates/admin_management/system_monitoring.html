@@ -1,0 +1,591 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}System Monitoring - NVC Banking Platform{% endblock %}
+
+{% block page_title %}System Monitoring{% endblock %}
+{% block page_description %}Real-time system performance monitoring and health dashboard{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('admin_management.admin_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        Administration
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-chart-line" aria-hidden="true"></i>
+    System Monitoring
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export monitoring report">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Configure system alerts">
+    <i class="fas fa-cog" aria-hidden="true"></i>
+    Configure Alerts
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh monitoring data">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- System Monitoring Overview -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-heartbeat" aria-hidden="true"></i>
+                    System Health Overview
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-success">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        All Systems Operational
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- System Monitoring Metrics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-heartbeat" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>{{ system_health.uptime or '99.98%' }}</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ system_health.status or 'Healthy' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">System Status</p>
+                                <p class="nvc-metric-subtitle">Uptime: {{ system_health.uptime or '99.98%' }}</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-microchip" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-minus" aria-hidden="true"></i>
+                                    <span>{{ system_metrics.cpu_cores or '8' }}</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ system_metrics.cpu or '45' }}%</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">CPU Usage</p>
+                                <p class="nvc-metric-subtitle">{{ system_metrics.cpu_cores or '8' }} cores</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-memory" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-warning">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                    <span>{{ system_metrics.memory_total or '32' }}GB</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ system_metrics.memory or '67' }}%</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Memory Usage</p>
+                                <p class="nvc-metric-subtitle">{{ system_metrics.memory_total or '32' }} GB total</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-primary">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-primary">
+                                    <i class="fas fa-users" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>{{ system_metrics.peak_sessions or '1,892' }}</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ system_metrics.active_sessions or '1,247' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Active Sessions</p>
+                                <p class="nvc-metric-subtitle">{{ system_metrics.peak_sessions or '1,892' }} peak today</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Performance Charts Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-line" aria-hidden="true"></i>
+                    Performance Analytics
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Configure chart settings">
+                        <i class="fas fa-cog" aria-hidden="true"></i>
+                        Settings
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-performance-analytics">
+                    <div class="nvc-analytics-grid">
+                        <div class="nvc-analytics-chart">
+                            <div class="nvc-chart-header">
+                                <h3 class="nvc-chart-title nvc-wcag-high-contrast">System Performance (24 Hours)</h3>
+                                <div class="nvc-chart-controls">
+                                    <select class="nvc-chart-select nvc-wcag-focus" aria-label="Select time range">
+                                        <option value="24h" selected>Last 24 Hours</option>
+                                        <option value="7d">Last 7 Days</option>
+                                        <option value="30d">Last 30 Days</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="nvc-chart-container">
+                                <canvas id="systemPerformanceChart" aria-label="System performance chart showing CPU, memory, and network usage over time"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="nvc-alerts-panel">
+                            <div class="nvc-alerts-header">
+                                <h3 class="nvc-alerts-title nvc-wcag-high-contrast">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                    System Alerts
+                                </h3>
+                                <span class="nvc-alerts-count nvc-badge nvc-badge-warning">{{ system_alerts|length if system_alerts else '4' }}</span>
+                            </div>
+                            <div class="nvc-alerts-content">
+                                {% for alert in system_alerts or [
+                                    {'type': 'warning', 'title': 'High Memory Usage', 'message': 'Memory usage at 78%. Consider optimization.', 'time': '5 min ago'},
+                                    {'type': 'info', 'title': 'Scheduled Maintenance', 'message': 'System maintenance scheduled for tonight.', 'time': '1 hour ago'},
+                                    {'type': 'success', 'title': 'Backup Completed', 'message': 'Daily backup completed successfully.', 'time': '2 hours ago'},
+                                    {'type': 'danger', 'title': 'Disk Space Low', 'message': 'Disk usage at 85%. Cleanup required.', 'time': '3 hours ago'}
+                                ] %}
+                                <div class="nvc-alert-item nvc-alert-{{ alert.type }}">
+                                    <div class="nvc-alert-icon">
+                                        <i class="fas fa-{{ 'exclamation-triangle' if alert.type == 'warning' else 'info-circle' if alert.type == 'info' else 'check-circle' if alert.type == 'success' else 'exclamation-circle' }}" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="nvc-alert-content">
+                                        <h4 class="nvc-alert-title nvc-wcag-high-contrast">{{ alert.title }}</h4>
+                                        <p class="nvc-alert-message nvc-wcag-medium-contrast">{{ alert.message }}</p>
+                                        <span class="nvc-alert-time nvc-wcag-medium-contrast">{{ alert.time }}</span>
+                                    </div>
+                                    <div class="nvc-alert-actions">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="Dismiss alert: {{ alert.title }}">
+                                            <i class="fas fa-times" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant System Monitoring Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-server" aria-hidden="true"></i>
+                    System Resources Monitor
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export system metrics">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        Export
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Configure monitoring thresholds">
+                        <i class="fas fa-cog" aria-hidden="true"></i>
+                        Configure
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- System Resources Progress Indicators -->
+                <div class="nvc-system-resources">
+                    <div class="nvc-resource-grid">
+                        <div class="nvc-resource-item">
+                            <div class="nvc-resource-header">
+                                <h3 class="nvc-resource-title nvc-wcag-high-contrast">CPU Usage</h3>
+                                <span class="nvc-resource-value nvc-wcag-high-contrast">{{ detailed_metrics.cpu or '45%' }}</span>
+                            </div>
+                            <div class="nvc-resource-progress">
+                                <div class="nvc-progress-bar">
+                                    <div class="nvc-progress-fill nvc-progress-info" style="width: {{ detailed_metrics.cpu or '45' }}%"></div>
+                                </div>
+                                <span class="nvc-resource-detail nvc-wcag-medium-contrast">Load Average: {{ detailed_metrics.load_avg or '2.34' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="nvc-resource-item">
+                            <div class="nvc-resource-header">
+                                <h3 class="nvc-resource-title nvc-wcag-high-contrast">Memory Usage</h3>
+                                <span class="nvc-resource-value nvc-wcag-high-contrast">{{ detailed_metrics.memory or '67%' }}</span>
+                            </div>
+                            <div class="nvc-resource-progress">
+                                <div class="nvc-progress-bar">
+                                    <div class="nvc-progress-fill nvc-progress-warning" style="width: {{ detailed_metrics.memory or '67' }}%"></div>
+                                </div>
+                                <span class="nvc-resource-detail nvc-wcag-medium-contrast">{{ detailed_metrics.memory_used or '21.4' }} GB / {{ detailed_metrics.memory_total or '32' }} GB</span>
+                            </div>
+                        </div>
+
+                        <div class="nvc-resource-item">
+                            <div class="nvc-resource-header">
+                                <h3 class="nvc-resource-title nvc-wcag-high-contrast">Disk Usage</h3>
+                                <span class="nvc-resource-value nvc-wcag-high-contrast">{{ detailed_metrics.disk or '85%' }}</span>
+                            </div>
+                            <div class="nvc-resource-progress">
+                                <div class="nvc-progress-bar">
+                                    <div class="nvc-progress-fill nvc-progress-danger" style="width: {{ detailed_metrics.disk or '85' }}%"></div>
+                                </div>
+                                <span class="nvc-resource-detail nvc-wcag-medium-contrast">{{ detailed_metrics.disk_used or '425' }} GB / {{ detailed_metrics.disk_total or '500' }} GB</span>
+                            </div>
+                        </div>
+
+                        <div class="nvc-resource-item">
+                            <div class="nvc-resource-header">
+                                <h3 class="nvc-resource-title nvc-wcag-high-contrast">Network I/O</h3>
+                                <span class="nvc-resource-value nvc-wcag-high-contrast">{{ detailed_metrics.network or '34%' }}</span>
+                            </div>
+                            <div class="nvc-resource-progress">
+                                <div class="nvc-progress-bar">
+                                    <div class="nvc-progress-fill nvc-progress-success" style="width: {{ detailed_metrics.network or '34' }}%"></div>
+                                </div>
+                                <span class="nvc-resource-detail nvc-wcag-medium-contrast">In: {{ detailed_metrics.network_in or '125' }} MB/s | Out: {{ detailed_metrics.network_out or '89' }} MB/s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FINRA-Compliant System Monitoring Table -->
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="System monitoring and performance metrics">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">Service</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Response Time</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Uptime</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Load</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Last Check</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service in system_services or [
+                                {'name': 'Web Server', 'status': 'Healthy', 'response_time': '12ms', 'uptime': '99.98%', 'load': '45%', 'last_check': '30 seconds ago'},
+                                {'name': 'Database Server', 'status': 'Healthy', 'response_time': '8ms', 'uptime': '99.95%', 'load': '67%', 'last_check': '30 seconds ago'},
+                                {'name': 'API Gateway', 'status': 'Healthy', 'response_time': '15ms', 'uptime': '99.99%', 'load': '23%', 'last_check': '30 seconds ago'},
+                                {'name': 'Authentication Service', 'status': 'Healthy', 'response_time': '6ms', 'uptime': '99.97%', 'load': '34%', 'last_check': '30 seconds ago'},
+                                {'name': 'Payment Processor', 'status': 'Warning', 'response_time': '45ms', 'uptime': '99.89%', 'load': '78%', 'last_check': '30 seconds ago'},
+                                {'name': 'Backup Service', 'status': 'Healthy', 'response_time': '25ms', 'uptime': '99.92%', 'load': '12%', 'last_check': '30 seconds ago'},
+                                {'name': 'Monitoring Agent', 'status': 'Healthy', 'response_time': '3ms', 'uptime': '99.99%', 'load': '8%', 'last_check': '30 seconds ago'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td>
+                                    <div class="nvc-service-info">
+                                        <h4 class="nvc-service-name nvc-wcag-high-contrast">{{ service.name }}</h4>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'success' if service.status == 'Healthy' else 'warning' if service.status == 'Warning' else 'danger' }}">
+                                        <i class="fas fa-{{ 'check-circle' if service.status == 'Healthy' else 'exclamation-triangle' if service.status == 'Warning' else 'times-circle' }}" aria-hidden="true"></i>
+                                        {{ service.status }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ service.response_time }}</td>
+                                <td class="nvc-wcag-medium-contrast">{{ service.uptime }}</td>
+                                <td>
+                                    <span class="nvc-load-indicator nvc-load-{{ 'success' if service.load|replace('%', '')|int < 50 else 'warning' if service.load|replace('%', '')|int < 80 else 'danger' }}">
+                                        {{ service.load }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ service.last_check }}</td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View details for {{ service.name }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-info nvc-btn-xs nvc-wcag-focus" aria-label="View logs for {{ service.name }}">
+                                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-xs nvc-wcag-focus" aria-label="Restart {{ service.name }}">
+                                            <i class="fas fa-redo" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Real-time Status Footer -->
+                <div class="nvc-monitoring-footer">
+                    <div class="nvc-monitoring-status">
+                        <span class="nvc-status-indicator nvc-status-success">
+                            <i class="fas fa-circle" aria-hidden="true"></i>
+                            Real-time monitoring active
+                        </span>
+                        <span class="nvc-last-update nvc-wcag-medium-contrast">
+                            Last updated: {{ now.strftime('%H:%M:%S') if now else '15:42:30' }}
+                        </span>
+                    </div>
+                    <div class="nvc-monitoring-actions">
+                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Pause monitoring">
+                            <i class="fas fa-pause" aria-hidden="true"></i>
+                            Pause
+                        </button>
+                        <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Force refresh all metrics">
+                            <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                            Force Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional System Monitoring Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Initialize system performance chart
+    const chartCanvas = document.getElementById('systemPerformanceChart');
+    if (chartCanvas) {
+        const ctx = chartCanvas.getContext('2d');
+
+        // Sample data for demonstration
+        const chartData = {
+            labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+            datasets: [
+                {
+                    label: 'CPU Usage (%)',
+                    data: Array.from({length: 24}, () => Math.floor(Math.random() * 40) + 30),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Memory Usage (%)',
+                    data: Array.from({length: 24}, () => Math.floor(Math.random() * 30) + 50),
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Network I/O (%)',
+                    data: Array.from({length: 24}, () => Math.floor(Math.random() * 20) + 20),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4
+                }
+            ]
+        };
+
+        new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'System Performance Over Time'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Alert dismissal functionality
+    const alertDismissButtons = document.querySelectorAll('.nvc-alert-actions .nvc-btn');
+    alertDismissButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const alertItem = this.closest('.nvc-alert-item');
+            if (alertItem) {
+                alertItem.style.opacity = '0';
+                alertItem.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    alertItem.remove();
+                }, 300);
+            }
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            console.log('Sorting by:', this.textContent);
+            // Add actual sorting logic here
+        });
+    });
+
+    // Service action buttons functionality
+    const serviceActionButtons = document.querySelectorAll('.nvc-action-buttons .nvc-btn');
+    serviceActionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.getAttribute('aria-label');
+            console.log(`Executing service action: ${action}`);
+
+            // Show loading state for restart actions
+            if (action.includes('Restart')) {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>';
+                this.disabled = true;
+
+                // Simulate restart operation
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    console.log(`${action} completed`);
+                }, 3000);
+            }
+        });
+    });
+
+    // Real-time monitoring updates
+    function updateMonitoringData() {
+        // Update timestamps
+        const timestampElements = document.querySelectorAll('.nvc-last-update');
+        timestampElements.forEach(element => {
+            const now = new Date();
+            element.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+        });
+
+        // Simulate metric updates
+        const metricValues = document.querySelectorAll('.nvc-metric-value');
+        metricValues.forEach(value => {
+            if (value.textContent.includes('%')) {
+                // Simulate small fluctuations in percentage values
+                const currentValue = parseInt(value.textContent);
+                const variation = Math.floor(Math.random() * 6) - 3; // -3 to +3
+                const newValue = Math.max(0, Math.min(100, currentValue + variation));
+                value.textContent = newValue + '%';
+            }
+        });
+
+        console.log('Monitoring data updated');
+    }
+
+    // Update monitoring data every 30 seconds
+    setInterval(updateMonitoringData, 30000);
+
+    // Chart time range selector
+    const chartSelect = document.querySelector('.nvc-chart-select');
+    if (chartSelect) {
+        chartSelect.addEventListener('change', function() {
+            console.log('Chart time range changed to:', this.value);
+            // Add logic to update chart data based on selected time range
+        });
+    }
+
+    // Monitoring control buttons
+    const pauseButton = document.querySelector('[aria-label="Pause monitoring"]');
+    const refreshButton = document.querySelector('[aria-label="Force refresh all metrics"]');
+
+    if (pauseButton) {
+        pauseButton.addEventListener('click', function() {
+            const isPaused = this.textContent.includes('Pause');
+            if (isPaused) {
+                this.innerHTML = '<i class="fas fa-play" aria-hidden="true"></i> Resume';
+                this.setAttribute('aria-label', 'Resume monitoring');
+                console.log('Monitoring paused');
+            } else {
+                this.innerHTML = '<i class="fas fa-pause" aria-hidden="true"></i> Pause';
+                this.setAttribute('aria-label', 'Pause monitoring');
+                console.log('Monitoring resumed');
+            }
+        });
+    }
+
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            console.log('Force refreshing all metrics...');
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Refreshing...';
+            this.disabled = true;
+
+            // Simulate refresh operation
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                updateMonitoringData();
+                console.log('All metrics refreshed');
+            }, 2000);
+        });
+    }
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

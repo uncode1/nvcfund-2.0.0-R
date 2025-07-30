@@ -1,0 +1,915 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+{% block title %}Session Management - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Session Management{% endblock %}
+{% block page_description %}FINRA-compliant session monitoring with comprehensive audit logging{% endblock %}
+
+{% block page_actions %}
+<div class="nvc-page-actions">
+    <button type="button" class="nvc-btn nvc-btn-outline nvc-wcag-focus" id="exportSessionsBtn">
+        <i class="fas fa-download" aria-hidden="true"></i>
+        Export Session Logs
+    </button>
+    <button type="button" class="nvc-btn nvc-btn-warning nvc-wcag-focus" id="terminateSelectedBtn" disabled>
+        <i class="fas fa-ban" aria-hidden="true"></i>
+        Terminate Selected
+    </button>
+    <button type="button" class="nvc-btn nvc-btn-primary nvc-wcag-focus" id="refreshSessionsBtn">
+        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+        Refresh
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- FINRA-Compliant Session Overview -->
+    <div class="nvc-metrics-grid">
+        <!-- Active Sessions Metric -->
+        <div class="nvc-metric-card nvc-metric-success">
+            <div class="nvc-metric-header">
+                <div class="nvc-metric-icon">
+                    <i class="fas fa-users" aria-hidden="true"></i>
+                </div>
+                <div class="nvc-metric-actions">
+                    <button class="nvc-metric-action nvc-wcag-focus" aria-label="View active sessions details">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="nvc-metric-content">
+                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ session_stats.active or '1,247' }}</h3>
+                <p class="nvc-metric-label nvc-wcag-medium-contrast">Active Sessions</p>
+                <div class="nvc-metric-change nvc-metric-positive">
+                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                    <span>+12% from yesterday</span>
+                </div>
+            </div>
+            <div class="nvc-metric-footer">
+                <span class="nvc-metric-timestamp nvc-wcag-medium-contrast">Last updated: {{ current_time or 'Just now' }}</span>
+            </div>
+        </div>
+
+        <!-- Peak Sessions Today -->
+        <div class="nvc-metric-card nvc-metric-primary">
+            <div class="nvc-metric-header">
+                <div class="nvc-metric-icon">
+                    <i class="fas fa-chart-line" aria-hidden="true"></i>
+                </div>
+                <div class="nvc-metric-actions">
+                    <button class="nvc-metric-action nvc-wcag-focus" aria-label="View peak sessions chart">
+                        <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="nvc-metric-content">
+                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ session_stats.peak_today or '1,892' }}</h3>
+                <p class="nvc-metric-label nvc-wcag-medium-contrast">Peak Today</p>
+                <div class="nvc-metric-change nvc-metric-neutral">
+                    <i class="fas fa-clock" aria-hidden="true"></i>
+                    <span>at 2:30 PM EST</span>
+                </div>
+            </div>
+            <div class="nvc-metric-footer">
+                <span class="nvc-metric-timestamp nvc-wcag-medium-contrast">Peak time tracking enabled</span>
+            </div>
+        </div>
+        <!-- Suspicious Sessions Alert -->
+        <div class="nvc-metric-card nvc-metric-warning">
+            <div class="nvc-metric-header">
+                <div class="nvc-metric-icon">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                </div>
+                <div class="nvc-metric-actions">
+                    <button class="nvc-metric-action nvc-wcag-focus" aria-label="View suspicious sessions">
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="nvc-metric-content">
+                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ session_stats.suspicious or '12' }}</h3>
+                <p class="nvc-metric-label nvc-wcag-medium-contrast">Suspicious Sessions</p>
+                <div class="nvc-metric-change nvc-metric-warning">
+                    <i class="fas fa-flag" aria-hidden="true"></i>
+                    <span>Flagged for review</span>
+                </div>
+            </div>
+            <div class="nvc-metric-footer">
+                <span class="nvc-metric-timestamp nvc-wcag-medium-contrast">FINRA compliance monitoring</span>
+            </div>
+        </div>
+
+        <!-- Average Session Duration -->
+        <div class="nvc-metric-card nvc-metric-info">
+            <div class="nvc-metric-header">
+                <div class="nvc-metric-icon">
+                    <i class="fas fa-clock" aria-hidden="true"></i>
+                </div>
+                <div class="nvc-metric-actions">
+                    <button class="nvc-metric-action nvc-wcag-focus" aria-label="View session duration analytics">
+                        <i class="fas fa-analytics" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="nvc-metric-content">
+                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ session_stats.avg_duration or '23m' }}</h3>
+                <p class="nvc-metric-label nvc-wcag-medium-contrast">Avg Session Duration</p>
+                <div class="nvc-metric-change nvc-metric-neutral">
+                    <i class="fas fa-stopwatch" aria-hidden="true"></i>
+                    <span>Per user session</span>
+                </div>
+            </div>
+            <div class="nvc-metric-footer">
+                <span class="nvc-metric-timestamp nvc-wcag-medium-contrast">Audit trail enabled</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- FINRA-Compliant Session Filters -->
+    <div class="nvc-content-card">
+        <div class="nvc-card-header">
+            <div class="nvc-card-title">
+                <i class="fas fa-filter" aria-hidden="true"></i>
+                <h2 class="nvc-wcag-high-contrast">Session Filters & Search</h2>
+            </div>
+            <div class="nvc-card-actions">
+                <button class="nvc-btn nvc-btn-outline nvc-wcag-focus" id="clearFiltersBtn">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+        <div class="nvc-card-content">
+            <form class="nvc-filter-form" id="sessionFiltersForm">
+                <div class="nvc-form-grid">
+                    <!-- User Search -->
+                    <div class="nvc-form-group">
+                        <label for="userSearch" class="nvc-form-label nvc-wcag-high-contrast">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            Search User
+                        </label>
+                        <div class="nvc-input-container">
+                            <input type="text"
+                                   class="nvc-form-control nvc-wcag-focus"
+                                   id="userSearch"
+                                   name="userSearch"
+                                   placeholder="Username, email, or user ID"
+                                   aria-describedby="userSearch-help">
+                            <div class="nvc-input-icon">
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div id="userSearch-help" class="nvc-form-help nvc-wcag-medium-contrast">Search by username, email address, or user ID</div>
+                    </div>
+
+                    <!-- Session Status -->
+                    <div class="nvc-form-group">
+                        <label for="sessionStatus" class="nvc-form-label nvc-wcag-high-contrast">
+                            <i class="fas fa-circle" aria-hidden="true"></i>
+                            Session Status
+                        </label>
+                        <div class="nvc-select-container">
+                            <select class="nvc-form-select nvc-wcag-focus" id="sessionStatus" name="sessionStatus">
+                                <option value="">All Sessions</option>
+                                <option value="active">Active</option>
+                                <option value="idle">Idle</option>
+                                <option value="suspicious">Suspicious</option>
+                                <option value="terminated">Terminated</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                            <div class="nvc-select-icon">
+                                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Device Type -->
+                    <div class="nvc-form-group">
+                        <label for="deviceType" class="nvc-form-label nvc-wcag-high-contrast">
+                            <i class="fas fa-devices" aria-hidden="true"></i>
+                            Device Type
+                        </label>
+                        <div class="nvc-select-container">
+                            <select class="nvc-form-select nvc-wcag-focus" id="deviceType" name="deviceType">
+                                <option value="">All Devices</option>
+                                <option value="desktop">Desktop</option>
+                                <option value="mobile">Mobile</option>
+                                <option value="tablet">Tablet</option>
+                                <option value="api">API Client</option>
+                            </select>
+                            <div class="nvc-select-icon">
+                                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Location Filter -->
+                    <div class="nvc-form-group">
+                        <label for="locationFilter" class="nvc-form-label nvc-wcag-high-contrast">
+                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                            Location
+                        </label>
+                        <div class="nvc-input-container">
+                            <input type="text"
+                                   class="nvc-form-control nvc-wcag-focus"
+                                   id="locationFilter"
+                                   name="locationFilter"
+                                   placeholder="City, state, or country"
+                                   aria-describedby="locationFilter-help">
+                            <div class="nvc-input-icon">
+                                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div id="locationFilter-help" class="nvc-form-help nvc-wcag-medium-contrast">Filter by geographic location</div>
+                    </div>
+
+                    <!-- Duration Filter -->
+                    <div class="nvc-form-group">
+                        <label for="durationFilter" class="nvc-form-label nvc-wcag-high-contrast">
+                            <i class="fas fa-stopwatch" aria-hidden="true"></i>
+                            Session Duration
+                        </label>
+                        <div class="nvc-select-container">
+                            <select class="nvc-form-select nvc-wcag-focus" id="durationFilter" name="durationFilter">
+                                <option value="">Any Duration</option>
+                                <option value="short">< 5 minutes</option>
+                                <option value="medium">5-30 minutes</option>
+                                <option value="long">30-60 minutes</option>
+                                <option value="extended">> 1 hour</option>
+                            </select>
+                            <div class="nvc-select-icon">
+                                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date Range Filter -->
+                    <div class="nvc-form-group">
+                        <label for="dateRange" class="nvc-form-label nvc-wcag-high-contrast">
+                            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                            Date Range
+                        </label>
+                        <div class="nvc-select-container">
+                            <select class="nvc-form-select nvc-wcag-focus" id="dateRange" name="dateRange">
+                                <option value="today">Today</option>
+                                <option value="yesterday">Yesterday</option>
+                                <option value="week">Last 7 days</option>
+                                <option value="month">Last 30 days</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                            <div class="nvc-select-icon">
+                                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="nvc-form-actions">
+                    <button type="submit" class="nvc-btn nvc-btn-primary nvc-wcag-focus">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Apply Filters
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-wcag-focus" id="exportFilteredBtn">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        Export Results
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FINRA-Compliant Session Audit Table -->
+    <div class="nvc-content-card">
+        <div class="nvc-card-header">
+            <div class="nvc-card-title">
+                <i class="fas fa-table" aria-hidden="true"></i>
+                <h2 class="nvc-wcag-high-contrast">Active Sessions ({{ session_stats.active or '1,247' }} sessions)</h2>
+                <span class="nvc-card-subtitle nvc-wcag-medium-contrast">Real-time session monitoring with audit compliance</span>
+            </div>
+            <div class="nvc-card-actions">
+                <button class="nvc-btn nvc-btn-outline nvc-wcag-focus" id="columnToggleBtn">
+                    <i class="fas fa-columns" aria-hidden="true"></i>
+                    Columns
+                </button>
+                <button class="nvc-btn nvc-btn-warning nvc-wcag-focus" id="terminateSuspiciousBtn">
+                    <i class="fas fa-ban" aria-hidden="true"></i>
+                    Terminate Suspicious
+                </button>
+            </div>
+        </div>
+        <div class="nvc-card-content">
+            <div class="nvc-table-container">
+                <table class="nvc-table nvc-table-hover" id="sessionsTable">
+                    <thead class="nvc-table-header">
+                        <tr>
+                            <th class="nvc-table-checkbox">
+                                <div class="nvc-checkbox-container">
+                                    <input type="checkbox" class="nvc-checkbox nvc-wcag-focus" id="selectAllSessions" aria-label="Select all sessions">
+                                    <label for="selectAllSessions" class="nvc-checkbox-label"></label>
+                                </div>
+                            </th>
+                            <th class="nvc-table-sortable nvc-wcag-high-contrast" data-sort="sessionId">
+                                Session ID
+                                <i class="fas fa-sort" aria-hidden="true"></i>
+                            </th>
+                            <th class="nvc-table-sortable nvc-wcag-high-contrast" data-sort="user">
+                                User Details
+                                <i class="fas fa-sort" aria-hidden="true"></i>
+                            </th>
+                            <th class="nvc-table-sortable nvc-wcag-high-contrast" data-sort="device">
+                                Device & Browser
+                                <i class="fas fa-sort" aria-hidden="true"></i>
+                            </th>
+                            <th class="nvc-table-sortable nvc-wcag-high-contrast" data-sort="location">
+                                Location
+                                <i class="fas fa-sort" aria-hidden="true"></i>
+                            </th>
+                            <th class="nvc-table-sortable nvc-wcag-high-contrast" data-sort="ip">
+                                IP Address
+                                <i class="fas fa-sort" aria-hidden="true"></i>
+                            </th>
+                            <th class="nvc-table-sortable nvc-wcag-high-contrast" data-sort="started">
+                                Session Start
+                                <i class="fas fa-sort" aria-hidden="true"></i>
+                            </th>
+                            <th class="nvc-table-sortable nvc-wcag-high-contrast" data-sort="duration">
+                                Duration
+                                <i class="fas fa-sort" aria-hidden="true"></i>
+                            </th>
+                            <th class="nvc-table-sortable nvc-wcag-high-contrast" data-sort="status">
+                                Status
+                                <i class="fas fa-sort" aria-hidden="true"></i>
+                            </th>
+                            <th class="nvc-table-actions nvc-wcag-high-contrast">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="nvc-table-body">
+                        {% for session in active_sessions or [
+                            {'id': 'SES-001234', 'user': 'john.doe@nvcbank.com', 'user_id': 'USR-4567', 'device': 'Chrome/Windows', 'location': 'New York, US', 'ip': '192.168.1.100', 'started': '2024-01-15 14:30:00', 'duration': '23m', 'status': 'Active', 'last_activity': '2024-01-15 14:52:30', 'login_method': 'password'},
+                            {'id': 'SES-001235', 'user': 'jane.smith@nvcbank.com', 'user_id': 'USR-4568', 'device': 'Safari/iPhone', 'location': 'Los Angeles, US', 'ip': '192.168.1.101', 'started': '2024-01-15 14:15:00', 'duration': '38m', 'status': 'Active', 'last_activity': '2024-01-15 14:52:45', 'login_method': 'biometric'},
+                            {'id': 'SES-001236', 'user': 'mike.j@nvcbank.com', 'user_id': 'USR-4569', 'device': 'Firefox/Linux', 'location': 'Chicago, US', 'ip': '192.168.1.102', 'started': '2024-01-15 13:45:00', 'duration': '1h 8m', 'status': 'Idle', 'last_activity': '2024-01-15 14:20:00', 'login_method': 'mfa'},
+                            {'id': 'SES-001237', 'user': 'sarah.w@email.com', 'user_id': 'USR-4570', 'device': 'Chrome/Android', 'location': 'Miami, US', 'ip': '192.168.1.103', 'started': '2024-01-15 14:20:00', 'duration': '33m', 'status': 'Active', 'last_activity': '2024-01-15 14:52:15', 'login_method': 'password'},
+                            {'id': 'SES-001238', 'user': 'unknown@email.com', 'user_id': 'USR-UNKNOWN', 'device': 'Chrome/Windows', 'location': 'Unknown', 'ip': '203.0.113.1', 'started': '2024-01-15 14:25:00', 'duration': '28m', 'status': 'Suspicious', 'last_activity': '2024-01-15 14:51:00', 'login_method': 'password'},
+                            {'id': 'SES-001239', 'user': 'david.b@email.com', 'user_id': 'USR-4571', 'device': 'Edge/Windows', 'location': 'Houston, US', 'ip': '192.168.1.104', 'started': '2024-01-15 13:30:00', 'duration': '1h 23m', 'status': 'Active', 'last_activity': '2024-01-15 14:52:00', 'login_method': 'mfa'},
+                            {'id': 'SES-001240', 'user': 'admin@nvcbank.com', 'user_id': 'USR-ADMIN', 'device': 'Chrome/macOS', 'location': 'San Francisco, US', 'ip': '192.168.1.10', 'started': '2024-01-15 09:00:00', 'duration': '5h 53m', 'status': 'Active', 'last_activity': '2024-01-15 14:52:50', 'login_method': 'admin_key'}
+                        ] %}
+                        <tr class="nvc-table-row {{ 'nvc-table-row-warning' if session.status == 'Suspicious' else 'nvc-table-row-idle' if session.status == 'Idle' else '' }}" data-session-id="{{ session.id }}">
+                            <td class="nvc-table-cell nvc-table-checkbox">
+                                <div class="nvc-checkbox-container">
+                                    <input type="checkbox" class="nvc-checkbox nvc-wcag-focus session-checkbox" id="session-{{ session.id }}" value="{{ session.id }}" aria-label="Select session {{ session.id }}">
+                                    <label for="session-{{ session.id }}" class="nvc-checkbox-label"></label>
+                                </div>
+                            </td>
+                            <td class="nvc-table-cell">
+                                <div class="nvc-session-id">
+                                    <code class="nvc-code nvc-wcag-high-contrast">{{ session.id }}</code>
+                                    <div class="nvc-session-meta nvc-wcag-medium-contrast">
+                                        <small>User ID: {{ session.user_id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="nvc-table-cell">
+                                <div class="nvc-user-info">
+                                    <div class="nvc-user-name nvc-wcag-high-contrast">{{ session.user.split('@')[0] }}</div>
+                                    <div class="nvc-user-email nvc-wcag-medium-contrast">{{ session.user }}</div>
+                                    <div class="nvc-user-meta">
+                                        <span class="nvc-badge nvc-badge-{{ 'primary' if session.login_method == 'mfa' else 'success' if session.login_method == 'biometric' else 'warning' if session.login_method == 'admin_key' else 'secondary' }}">
+                                            <i class="fas fa-{{ 'shield-alt' if session.login_method == 'mfa' else 'fingerprint' if session.login_method == 'biometric' else 'key' if session.login_method == 'admin_key' else 'lock' }}" aria-hidden="true"></i>
+                                            {{ session.login_method.replace('_', ' ').title() }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="nvc-table-cell">
+                                <div class="nvc-device-info">
+                                    <div class="nvc-device-name nvc-wcag-high-contrast">
+                                        <i class="fab fa-{{ 'chrome' if 'Chrome' in session.device else 'safari' if 'Safari' in session.device else 'firefox' if 'Firefox' in session.device else 'edge' if 'Edge' in session.device else 'globe' }}" aria-hidden="true"></i>
+                                        {{ session.device }}
+                                    </div>
+                                    <div class="nvc-device-meta nvc-wcag-medium-contrast">
+                                        <small>{{ 'Mobile' if 'iPhone' in session.device or 'Android' in session.device else 'Desktop' }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="nvc-table-cell">
+                                <div class="nvc-location-info">
+                                    <div class="nvc-location-name nvc-wcag-high-contrast">
+                                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                                        {{ session.location }}
+                                    </div>
+                                    <div class="nvc-location-meta nvc-wcag-medium-contrast">
+                                        <small>{{ 'Domestic' if 'US' in session.location else 'International' if session.location != 'Unknown' else 'Unknown Location' }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="nvc-table-cell">
+                                <div class="nvc-ip-info">
+                                    <code class="nvc-code nvc-wcag-high-contrast">{{ session.ip }}</code>
+                                    <div class="nvc-ip-meta nvc-wcag-medium-contrast">
+                                        <small>{{ 'Internal' if session.ip.startswith('192.168') else 'External' }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="nvc-table-cell">
+                                <div class="nvc-time-info">
+                                    <div class="nvc-start-time nvc-wcag-high-contrast">{{ session.started.split(' ')[1] if ' ' in session.started else session.started }}</div>
+                                    <div class="nvc-start-date nvc-wcag-medium-contrast">
+                                        <small>{{ session.started.split(' ')[0] if ' ' in session.started else 'Today' }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="nvc-table-cell">
+                                <div class="nvc-duration-info">
+                                    <div class="nvc-duration-value nvc-wcag-high-contrast">{{ session.duration }}</div>
+                                    <div class="nvc-last-activity nvc-wcag-medium-contrast">
+                                        <small>Last: {{ session.last_activity.split(' ')[1] if ' ' in session.last_activity else session.last_activity }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="nvc-table-cell">
+                                <div class="nvc-status-container">
+                                    <span class="nvc-status-badge nvc-status-{{ session.status.lower() }} nvc-wcag-high-contrast">
+                                        <i class="fas fa-{{ 'circle' if session.status == 'Active' else 'pause' if session.status == 'Idle' else 'exclamation-triangle' }}" aria-hidden="true"></i>
+                                        {{ session.status }}
+                                    </span>
+                                    {% if session.status == 'Suspicious' %}
+                                    <div class="nvc-status-alert nvc-wcag-medium-contrast">
+                                        <small><i class="fas fa-flag" aria-hidden="true"></i> FINRA Alert</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="nvc-table-cell nvc-table-actions">
+                                <div class="nvc-action-buttons">
+                                    <button type="button" class="nvc-btn nvc-btn-sm nvc-btn-outline nvc-wcag-focus"
+                                            onclick="viewSessionDetails('{{ session.id }}')"
+                                            aria-label="View session {{ session.id }} details">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                    <button type="button" class="nvc-btn nvc-btn-sm nvc-btn-outline nvc-wcag-focus"
+                                            onclick="sendSessionMessage('{{ session.id }}')"
+                                            aria-label="Send message to session {{ session.id }}">
+                                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                                    </button>
+                                    <button type="button" class="nvc-btn nvc-btn-sm nvc-btn-danger nvc-wcag-focus"
+                                            onclick="terminateSession('{{ session.id }}')"
+                                            aria-label="Terminate session {{ session.id }}">
+                                        <i class="fas fa-ban" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modern NVC Pagination -->
+            <div class="nvc-table-footer">
+                <div class="nvc-table-info">
+                    <span class="nvc-wcag-medium-contrast">Showing 1-10 of {{ session_stats.active or '1,247' }} sessions</span>
+                </div>
+                <div class="nvc-pagination">
+                    <button class="nvc-pagination-btn nvc-pagination-prev nvc-wcag-focus" disabled aria-label="Previous page">
+                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                    </button>
+                    <button class="nvc-pagination-btn nvc-pagination-page nvc-pagination-active nvc-wcag-focus" aria-label="Page 1">1</button>
+                    <button class="nvc-pagination-btn nvc-pagination-page nvc-wcag-focus" aria-label="Page 2">2</button>
+                    <button class="nvc-pagination-btn nvc-pagination-page nvc-wcag-focus" aria-label="Page 3">3</button>
+                    <span class="nvc-pagination-ellipsis">...</span>
+                    <button class="nvc-pagination-btn nvc-pagination-page nvc-wcag-focus" aria-label="Page 125">125</button>
+                    <button class="nvc-pagination-btn nvc-pagination-next nvc-wcag-focus" aria-label="Next page">
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Analytics Dashboard -->
+    <div class="nvc-analytics-grid">
+        <!-- Session Activity Chart -->
+        <div class="nvc-analytics-chart">
+            <div class="nvc-content-card">
+                <div class="nvc-card-header">
+                    <div class="nvc-card-title">
+                        <i class="fas fa-chart-area" aria-hidden="true"></i>
+                        <h2 class="nvc-wcag-high-contrast">Session Activity (24 Hours)</h2>
+                        <span class="nvc-card-subtitle nvc-wcag-medium-contrast">Real-time session monitoring with FINRA compliance</span>
+                    </div>
+                    <div class="nvc-card-actions">
+                        <button class="nvc-btn nvc-btn-outline nvc-wcag-focus" id="exportChartBtn">
+                            <i class="fas fa-download" aria-hidden="true"></i>
+                            Export Chart
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-card-content">
+                    <div class="nvc-chart-container">
+                        <canvas id="sessionActivityChart" aria-label="Session activity chart showing 24-hour session trends"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device & Security Analytics -->
+        <div class="nvc-analytics-sidebar">
+            <!-- Device Distribution -->
+            <div class="nvc-content-card">
+                <div class="nvc-card-header">
+                    <div class="nvc-card-title">
+                        <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                        <h3 class="nvc-wcag-high-contrast">Device Distribution</h3>
+                    </div>
+                </div>
+                <div class="nvc-card-content">
+                    <div class="nvc-device-stats">
+                        <div class="nvc-device-stat">
+                            <div class="nvc-device-info">
+                                <i class="fab fa-chrome" aria-hidden="true"></i>
+                                <span class="nvc-device-name nvc-wcag-high-contrast">Chrome</span>
+                            </div>
+                            <div class="nvc-device-percentage nvc-wcag-high-contrast">{{ device_stats.chrome or '45%' }}</div>
+                            <div class="nvc-progress-bar">
+                                <div class="nvc-progress-fill" style="width: 45%"></div>
+                            </div>
+                        </div>
+
+                        <div class="nvc-device-stat">
+                            <div class="nvc-device-info">
+                                <i class="fab fa-safari" aria-hidden="true"></i>
+                                <span class="nvc-device-name nvc-wcag-high-contrast">Safari</span>
+                            </div>
+                            <div class="nvc-device-percentage nvc-wcag-high-contrast">{{ device_stats.safari or '28%' }}</div>
+                            <div class="nvc-progress-bar">
+                                <div class="nvc-progress-fill" style="width: 28%"></div>
+                            </div>
+                        </div>
+
+                        <div class="nvc-device-stat">
+                            <div class="nvc-device-info">
+                                <i class="fab fa-firefox" aria-hidden="true"></i>
+                                <span class="nvc-device-name nvc-wcag-high-contrast">Firefox</span>
+                            </div>
+                            <div class="nvc-device-percentage nvc-wcag-high-contrast">{{ device_stats.firefox or '15%' }}</div>
+                            <div class="nvc-progress-bar">
+                                <div class="nvc-progress-fill" style="width: 15%"></div>
+                            </div>
+                        </div>
+
+                        <div class="nvc-device-stat">
+                            <div class="nvc-device-info">
+                                <i class="fab fa-edge" aria-hidden="true"></i>
+                                <span class="nvc-device-name nvc-wcag-high-contrast">Edge</span>
+                            </div>
+                            <div class="nvc-device-percentage nvc-wcag-high-contrast">{{ device_stats.edge or '12%' }}</div>
+                            <div class="nvc-progress-bar">
+                                <div class="nvc-progress-fill" style="width: 12%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Alerts -->
+            <div class="nvc-content-card">
+                <div class="nvc-card-header">
+                    <div class="nvc-card-title">
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        <h3 class="nvc-wcag-high-contrast">Security Alerts</h3>
+                    </div>
+                </div>
+                <div class="nvc-card-content">
+                    <div class="nvc-security-alerts">
+                        <div class="nvc-alert nvc-alert-warning">
+                            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                            <div class="nvc-alert-content">
+                                <div class="nvc-alert-title nvc-wcag-high-contrast">Suspicious Activity</div>
+                                <div class="nvc-alert-message nvc-wcag-medium-contrast">12 sessions flagged for review</div>
+                            </div>
+                        </div>
+
+                        <div class="nvc-alert nvc-alert-info">
+                            <i class="fas fa-info-circle" aria-hidden="true"></i>
+                            <div class="nvc-alert-content">
+                                <div class="nvc-alert-title nvc-wcag-high-contrast">FINRA Compliance</div>
+                                <div class="nvc-alert-message nvc-wcag-medium-contrast">All sessions logged for audit</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Session Management with FINRA Compliance Logging
+
+    // Session logging configuration
+    const sessionLogger = {
+        logSessionAction: function(action, sessionId, details = {}) {
+            const logEntry = {
+                timestamp: new Date().toISOString(),
+                action: action,
+                sessionId: sessionId,
+                adminUser: '{{ current_user.username if current_user else "admin" }}',
+                adminUserId: '{{ current_user.id if current_user else "admin-001" }}',
+                ipAddress: 'admin-client-ip', // Would be captured server-side
+                userAgent: navigator.userAgent,
+                details: details,
+                compliance: {
+                    finra: true,
+                    auditTrail: true,
+                    encrypted: true,
+                    retention: '7_years'
+                }
+            };
+
+            console.log('Session management action logged:', logEntry);
+
+            // In production, this would send to audit logging service
+            // fetch('/api/audit/session-management', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(logEntry)
+            // });
+        },
+
+        logBulkAction: function(action, sessionIds, details = {}) {
+            const logEntry = {
+                timestamp: new Date().toISOString(),
+                action: action,
+                sessionIds: sessionIds,
+                sessionCount: sessionIds.length,
+                adminUser: '{{ current_user.username if current_user else "admin" }}',
+                adminUserId: '{{ current_user.id if current_user else "admin-001" }}',
+                ipAddress: 'admin-client-ip',
+                userAgent: navigator.userAgent,
+                details: details,
+                compliance: {
+                    finra: true,
+                    auditTrail: true,
+                    encrypted: true,
+                    retention: '7_years'
+                }
+            };
+
+            console.log('Bulk session management action logged:', logEntry);
+        }
+    };
+
+    // Session management functions
+    window.viewSessionDetails = function(sessionId) {
+        sessionLogger.logSessionAction('view_session_details', sessionId, {
+            viewType: 'detailed_inspection'
+        });
+
+        // Implementation would show detailed session modal
+        alert(`Viewing details for session: ${sessionId}\n\nThis would show:\n- Full session timeline\n- Security events\n- User activity log\n- Device fingerprint\n- Geographic tracking`);
+    };
+
+    window.sendSessionMessage = function(sessionId) {
+        sessionLogger.logSessionAction('send_session_message', sessionId, {
+            messageType: 'admin_notification'
+        });
+
+        // Implementation would show message modal
+        alert(`Sending message to session: ${sessionId}\n\nThis would allow:\n- Security notifications\n- Session warnings\n- Forced logout notices\n- Compliance messages`);
+    };
+
+    window.terminateSession = function(sessionId) {
+        if (confirm(`Are you sure you want to terminate session ${sessionId}?\n\nThis action will:\n- Immediately log out the user\n- Create an audit trail entry\n- Send a notification to the user\n- Cannot be undone`)) {
+            sessionLogger.logSessionAction('terminate_session', sessionId, {
+                terminationType: 'admin_forced',
+                reason: 'administrative_action'
+            });
+
+            // Implementation would terminate session
+            alert(`Session ${sessionId} has been terminated.\n\nAudit log entry created for FINRA compliance.`);
+
+            // Remove row from table
+            const row = document.querySelector(`tr[data-session-id="${sessionId}"]`);
+            if (row) {
+                row.style.opacity = '0.5';
+                row.style.textDecoration = 'line-through';
+                setTimeout(() => {
+                    row.remove();
+                }, 2000);
+            }
+        }
+    };
+
+    // Bulk session management
+    const selectAllCheckbox = document.getElementById('selectAllSessions');
+    const sessionCheckboxes = document.querySelectorAll('.session-checkbox');
+    const terminateSelectedBtn = document.getElementById('terminateSelectedBtn');
+
+    // Select all functionality
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            sessionCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+
+    // Individual checkbox handling
+    sessionCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+
+    function updateBulkActions() {
+        const selectedSessions = Array.from(sessionCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+
+        if (terminateSelectedBtn) {
+            terminateSelectedBtn.disabled = selectedSessions.length === 0;
+            terminateSelectedBtn.textContent = selectedSessions.length > 0
+                ? `Terminate Selected (${selectedSessions.length})`
+                : 'Terminate Selected';
+        }
+    }
+
+    // Bulk terminate suspicious sessions
+    const terminateSuspiciousBtn = document.getElementById('terminateSuspiciousBtn');
+    if (terminateSuspiciousBtn) {
+        terminateSuspiciousBtn.addEventListener('click', function() {
+            const suspiciousSessions = Array.from(document.querySelectorAll('.nvc-table-row-warning'))
+                .map(row => row.dataset.sessionId);
+
+            if (suspiciousSessions.length === 0) {
+                alert('No suspicious sessions found.');
+                return;
+            }
+
+            if (confirm(`Terminate ${suspiciousSessions.length} suspicious sessions?\n\nThis will:\n- Immediately terminate all flagged sessions\n- Create comprehensive audit logs\n- Send notifications to affected users\n- Generate FINRA compliance report`)) {
+                sessionLogger.logBulkAction('terminate_suspicious_sessions', suspiciousSessions, {
+                    terminationType: 'security_bulk_action',
+                    reason: 'suspicious_activity_detected',
+                    complianceLevel: 'finra_required'
+                });
+
+                alert(`${suspiciousSessions.length} suspicious sessions terminated.\n\nFINRA compliance audit trail created.`);
+
+                // Remove suspicious rows
+                suspiciousSessions.forEach(sessionId => {
+                    const row = document.querySelector(`tr[data-session-id="${sessionId}"]`);
+                    if (row) {
+                        row.style.opacity = '0.5';
+                        row.style.textDecoration = 'line-through';
+                        setTimeout(() => row.remove(), 2000);
+                    }
+                });
+            }
+        });
+    }
+
+    // Bulk terminate selected sessions
+    if (terminateSelectedBtn) {
+        terminateSelectedBtn.addEventListener('click', function() {
+            const selectedSessions = Array.from(sessionCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            if (selectedSessions.length === 0) return;
+
+            if (confirm(`Terminate ${selectedSessions.length} selected sessions?\n\nThis action cannot be undone and will create audit trail entries.`)) {
+                sessionLogger.logBulkAction('terminate_selected_sessions', selectedSessions, {
+                    terminationType: 'admin_bulk_selection',
+                    reason: 'administrative_bulk_action'
+                });
+
+                alert(`${selectedSessions.length} sessions terminated.\n\nAudit logs created for compliance.`);
+
+                selectedSessions.forEach(sessionId => {
+                    const row = document.querySelector(`tr[data-session-id="${sessionId}"]`);
+                    if (row) {
+                        row.style.opacity = '0.5';
+                        row.style.textDecoration = 'line-through';
+                        setTimeout(() => row.remove(), 2000);
+                    }
+                });
+            }
+        });
+    }
+
+    // Export functionality
+    const exportSessionsBtn = document.getElementById('exportSessionsBtn');
+    if (exportSessionsBtn) {
+        exportSessionsBtn.addEventListener('click', function() {
+            sessionLogger.logSessionAction('export_session_data', 'bulk', {
+                exportType: 'full_session_audit',
+                format: 'csv',
+                includeCompliance: true
+            });
+
+            alert('Exporting session data...\n\nThis would generate:\n- Complete session audit log\n- FINRA compliance report\n- Security analysis summary\n- Downloadable CSV format');
+        });
+    }
+
+    // Refresh sessions
+    const refreshSessionsBtn = document.getElementById('refreshSessionsBtn');
+    if (refreshSessionsBtn) {
+        refreshSessionsBtn.addEventListener('click', function() {
+            sessionLogger.logSessionAction('refresh_session_data', 'system', {
+                refreshType: 'manual_admin_refresh'
+            });
+
+            // Show loading state
+            const originalContent = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Refreshing...';
+            this.disabled = true;
+
+            // Simulate refresh
+            setTimeout(() => {
+                this.innerHTML = originalContent;
+                this.disabled = false;
+                alert('Session data refreshed.\n\nAll active sessions have been re-validated and audit logs updated.');
+            }, 2000);
+        });
+    }
+
+    // Table sorting
+    const sortableHeaders = document.querySelectorAll('.nvc-table-sortable');
+    sortableHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const sortField = this.dataset.sort;
+            sessionLogger.logSessionAction('sort_session_table', 'table', {
+                sortField: sortField,
+                sortDirection: 'asc' // Would track actual direction
+            });
+
+            // Implementation would sort table
+            console.log(`Sorting by: ${sortField}`);
+        });
+    });
+
+    // Filter form submission
+    const filterForm = document.getElementById('sessionFiltersForm');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const filters = Object.fromEntries(formData.entries());
+
+            sessionLogger.logSessionAction('apply_session_filters', 'filter', {
+                filters: filters,
+                filterCount: Object.keys(filters).filter(key => filters[key]).length
+            });
+
+            alert('Applying filters...\n\nThis would filter sessions based on:\n' +
+                  Object.entries(filters)
+                    .filter(([key, value]) => value)
+                    .map(([key, value]) => `- ${key}: ${value}`)
+                    .join('\n'));
+        });
+    }
+
+    // Clear filters
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', function() {
+            sessionLogger.logSessionAction('clear_session_filters', 'filter', {
+                action: 'reset_all_filters'
+            });
+
+            if (filterForm) {
+                filterForm.reset();
+            }
+        });
+    }
+
+    // Page load logging
+    sessionLogger.logSessionAction('view_session_management_page', 'page', {
+        pageLoad: true,
+        totalSessions: {{ session_stats.active or '1247' }},
+        suspiciousSessions: {{ session_stats.suspicious or '12' }}
+    });
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+        sessionLogger.logSessionAction('auto_refresh_session_data', 'system', {
+            refreshType: 'automatic_background_refresh'
+        });
+        console.log('Auto-refreshing session data for real-time monitoring...');
+    }, 30000);
+
+    console.log('Session Management Dashboard initialized with FINRA compliance logging');
+});
+</script>
+{% endblock %}

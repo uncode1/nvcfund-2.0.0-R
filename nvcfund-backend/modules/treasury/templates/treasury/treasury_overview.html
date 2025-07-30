@@ -1,0 +1,278 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Treasury Overview - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Treasury Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-gradient-primary">
+                <div class="nvc-nvc-card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="h2 text-white mb-2">
+                                <i class="fas fa-university me-2"></i>Treasury Operations Overview
+                            </h1>
+                            <p class="text-light mb-0">Comprehensive treasury management and central banking operations</p>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('treasury.main_dashboard') }}" class="btn btn-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Liquidity</h4>
+                    <h2 class="text-white">${{ "2.45B"|default("0") }}</h2>
+                    <small class="text-light">Available Funds</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-info">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Yield</h4>
+                    <h2 class="text-white">{{ "4.25%"|default("0%") }}</h2>
+                    <small class="text-light">Average Portfolio Yield</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-shield-alt fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Risk Score</h4>
+                    <h2 class="text-white">{{ "A-"|default("N/A") }}</h2>
+                    <small class="text-light">Credit Rating</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-danger">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-white-50 mb-3"></i>
+                    <h4 class="text-white">Alerts</h4>
+                    <h2 class="text-white">{{ "3"|default("0") }}</h2>
+                    <small class="text-light">Active Alerts</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Treasury Operations Grid -->
+    <div class="row">
+        <!-- Cash Management -->
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-coins me-2"></i>Cash Management</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <strong>Cash Position:</strong><br>
+                            <span class="h5 text-success">${{ "845.2M"|default("0") }}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Short-term Investments:</strong><br>
+                            <span class="h5 text-info">${{ "1.2B"|default("0") }}</span>
+                        </div>
+                    </div>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-success" class="progress-bar-35">
+                            Cash 35%
+                        </div>
+                        <div class="progress-bar bg-info" class="progress-bar-50">
+                            Investments 50%
+                        </div>
+                        <div class="progress-bar bg-warning" class="progress-bar-15">
+                            Reserves 15%
+                        </div>
+                    </div>
+                    <a href="{{ url_for('treasury.cash_management') if url_for is defined }}" class="btn nvc-btn nvc-btn-primary btn-sm">Manage Cash Flow</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Government Securities -->
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-certificate me-2"></i>Government Securities</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Security</th>
+                                    <th>Maturity</th>
+                                    <th>Yield</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>T-Bills 3M</td>
+                                    <td>90 days</td>
+                                    <td>3.85%</td>
+                                    <td>$250M</td>
+                                </tr>
+                                <tr>
+                                    <td>T-Notes 2Y</td>
+                                    <td>2 years</td>
+                                    <td>4.12%</td>
+                                    <td>$400M</td>
+                                </tr>
+                                <tr>
+                                    <td>T-Bonds 10Y</td>
+                                    <td>10 years</td>
+                                    <td>4.45%</td>
+                                    <td>$300M</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{{ url_for('treasury.securities') if url_for is defined }}" class="btn nvc-btn nvc-btn-primary btn-sm">View Portfolio</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interest Rate Management -->
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-percentage me-2"></i>Interest Rate Management</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <strong>Fed Funds Rate:</strong><br>
+                            <span class="h5">{{ "5.25%"|default("0%") }}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Prime Rate:</strong><br>
+                            <span class="h5">{{ "8.50%"|default("0%") }}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <strong>Deposit Rate:</strong><br>
+                            <span class="h5 text-success">{{ "4.75%"|default("0%") }}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Lending Rate:</strong><br>
+                            <span class="h5 text-info">{{ "7.25%"|default("0%") }}</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('interest_rate_management.main_dashboard') if url_for is defined }}" class="btn nvc-btn nvc-btn-primary btn-sm">Rate Management</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Metrics -->
+        <div class="col-lg-6 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5><i class="fas fa-shield-alt me-2"></i>Risk Metrics</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Duration Risk</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" class="progress-bar-30">Low (3.2 years)</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Credit Risk</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" class="progress-bar-15">Minimal (AAA)</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="nvc-form-label">Liquidity Risk</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" class="progress-bar-25">Low</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('compliance.assessment') if url_for is defined }}" class="btn nvc-btn nvc-btn-primary btn-sm">Risk Analysis</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-history me-2"></i>Recent Treasury Operations</h5>
+                    <span class="badge bg-primary">{{ "24"|default("0") }} Today</span>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Operation</th>
+                                    <th>Security</th>
+                                    <th>Amount</th>
+                                    <th>Rate</th>
+                                    <th>Status</th>
+                                    <th>Officer</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ "09:45"|default("--:--") }}</td>
+                                    <td><span class="badge bg-success">Purchase</span></td>
+                                    <td>3M T-Bills</td>
+                                    <td>$50,000,000</td>
+                                    <td>3.85%</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "09:30"|default("--:--") }}</td>
+                                    <td><span class="badge bg-warning">Rollover</span></td>
+                                    <td>6M T-Bills</td>
+                                    <td>$25,000,000</td>
+                                    <td>3.90%</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ "09:15"|default("--:--") }}</td>
+                                    <td><span class="badge bg-info">Sale</span></td>
+                                    <td>2Y T-Notes</td>
+                                    <td>$75,000,000</td>
+                                    <td>4.12%</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

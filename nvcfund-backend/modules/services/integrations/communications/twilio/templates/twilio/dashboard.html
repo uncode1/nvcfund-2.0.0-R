@@ -1,0 +1,243 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Twilio Integration Dashboard{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">
+                            <i class="fas fa-sms me-2" style="color: #f22f46;"></i>
+                            Twilio Communication Platform
+                        </h3>
+                        <p class="text-light mb-0">SMS, Voice, and Multi-channel Communication Services</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success px-3 py-2">{{ service_status.upper() }}</span>
+                        <div class="small text-light mt-1">{{ supported_channels }} channels supported</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Messages Sent</h6>
+                            <h3 class="text-primary">{{ "{:,}".format(total_messages) }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-envelope fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Delivery Rate</h6>
+                            <h3 class="text-success">{{ delivery_rate }}%</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Response Time</h6>
+                            <h3 class="text-info">{{ avg_response_time }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="nvc-card-subtitle mb-2">Active Numbers</h6>
+                            <h3 class="text-warning">{{ active_numbers }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-phone fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Messages & Channel Distribution -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Recent Messages</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Message ID</th>
+                                    <th>Type</th>
+                                    <th>To</th>
+                                    <th>Status</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in recent_messages %}
+                                <tr>
+                                    <td><code>{{ message.id }}</code></td>
+                                    <td>
+                                        <span class="badge bg-info">{{ message.type.upper() }}</span>
+                                    </td>
+                                    <td>{{ message.to }}</td>
+                                    <td>
+                                        {% if message.status == 'delivered' %}
+                                            <span class="badge bg-success">Delivered</span>
+                                        {% elif message.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif message.status == 'failed' %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ message.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ message.timestamp }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Channel Distribution</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="channelChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features & Configuration -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Available Features</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% for feature in communication_features %}
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>{{ feature }}</span>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="mt-4">
+                        <button type="button" class="btn nvc-btn nvc-btn-danger me-2">
+                            <i class="fas fa-cog me-1"></i>
+                            Configure Twilio
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary">
+                            <i class="fas fa-chart-bar me-1"></i>
+                            Message Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-stat-nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="mb-0">Global Reach</h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% for country in top_countries %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <strong>{{ country.name }}</strong>
+                            <div class="small text-light">{{ "{:,}".format(country.messages) }} messages</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold">{{ country.delivery_rate }}%</div>
+                            <div class="progress nvc-style-d25407" >
+                                <div class="progress-bar bg-danger" style="width: {{ country.delivery_rate }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Channel Distribution Chart
+const ctx = document.getElementById('channelChart').getContext('2d');
+const channelChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['SMS', 'Voice', 'WhatsApp', 'Email'],
+        datasets: [{
+            data: [{{ channel_distribution.sms }}, {{ channel_distribution.voice }}, {{ channel_distribution.whatsapp }}, {{ channel_distribution.email }}],
+            backgroundColor: [
+                '#f22f46',
+                '#2196f3',
+                '#25d366',
+                '#ff9800'
+            ],
+            borderWidth: 2,
+            borderColor: '#1e293b'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: '#e2e8f0',
+                    padding: 15
+                }
+            }
+        }
+    }
+});
+</script>
+</div>
+{% endblock %}

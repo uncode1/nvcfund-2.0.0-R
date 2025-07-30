@@ -1,0 +1,830 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Biometric Authentication - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Biometric Authentication{% endblock %}
+{% block page_description %}Advanced biometric authentication management and security monitoring{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('main.dashboard') if url_for else '#' }}" class="nvc-wcag-focus">
+        <i class="fas fa-home" aria-hidden="true"></i>
+        Dashboard
+    </a>
+</li>
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('auth.auth_dashboard') if url_for else '#' }}" class="nvc-wcag-focus">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        Authentication
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-fingerprint" aria-hidden="true"></i>
+    Biometric Authentication
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Export biometric authentication report">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Configure biometric settings">
+    <i class="fas fa-cog" aria-hidden="true"></i>
+    Biometric Settings
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh biometric data">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh Data
+</button>
+{% endblock %}
+                <a href="#voice-recognition" class="nvc-sidebar-nav-link">
+                    <i class="fas fa-microphone"></i> Voice Recognition
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Biometric Authentication Overview Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-fingerprint" aria-hidden="true"></i>
+                    Biometric Authentication Overview
+                </h2>
+                <div class="nvc-section-actions">
+                    <span class="nvc-badge nvc-badge-success">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        Biometrics Active
+                    </span>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <!-- Biometric Metrics Dashboard -->
+                <div class="nvc-dashboard-grid">
+                    <div class="nvc-metrics-row">
+                        <div class="nvc-metric-card nvc-metric-success">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-success">
+                                    <i class="fas fa-fingerprint" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    <span>{{ biometric_stats.enrollment_rate or '27.4' }}%</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ biometric_stats.enrolled or '342' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Enrolled Users</p>
+                                <p class="nvc-metric-subtitle">Of total users</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    <span>{{ biometric_stats.success_rate or '96.8' }}%</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ biometric_stats.daily_auths or '1,247' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Daily Authentications</p>
+                                <p class="nvc-metric-subtitle">Success rate</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-warning">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-warning">
+                                    <i class="fas fa-times-circle" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-neutral">
+                                    <i class="fas fa-calendar-day" aria-hidden="true"></i>
+                                    <span>Today</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ biometric_stats.failed_attempts or '42' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Failed Attempts</p>
+                                <p class="nvc-metric-subtitle">Requires attention</p>
+                            </div>
+                        </div>
+
+                        <div class="nvc-metric-card nvc-metric-info">
+                            <div class="nvc-metric-header">
+                                <div class="nvc-metric-icon nvc-metric-icon-info">
+                                    <i class="fas fa-stopwatch" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-metric-trend nvc-trend-positive">
+                                    <i class="fas fa-bolt" aria-hidden="true"></i>
+                                    <span>Fast</span>
+                                </div>
+                            </div>
+                            <div class="nvc-metric-content">
+                                <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ biometric_stats.avg_time or '1.2s' }}</h3>
+                                <p class="nvc-metric-label nvc-wcag-medium-contrast">Avg Auth Time</p>
+                                <p class="nvc-metric-subtitle">Authentication speed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biometric Methods Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-secondary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-hand-paper" aria-hidden="true"></i>
+                    Supported Biometric Methods
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Configure biometric methods">
+                        <i class="fas fa-cog" aria-hidden="true"></i>
+                        Configure
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-biometric-methods">
+                    <div class="nvc-methods-grid">
+                        <!-- Fingerprint Method -->
+                        <div class="nvc-method-card nvc-method-primary">
+                            <div class="nvc-method-header">
+                                <div class="nvc-method-icon">
+                                    <i class="fas fa-fingerprint" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-method-status">
+                                    <span class="nvc-status-indicator nvc-status-success">
+                                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="nvc-method-content">
+                                <h3 class="nvc-method-title nvc-wcag-high-contrast">Fingerprint</h3>
+                                <p class="nvc-method-description nvc-wcag-medium-contrast">Touch ID, Fingerprint scanners</p>
+                                <div class="nvc-method-stats">
+                                    <div class="nvc-method-stat">
+                                        <span class="nvc-stat-value nvc-wcag-high-contrast">{{ biometric_methods.fingerprint_users or '234' }}</span>
+                                        <span class="nvc-stat-label nvc-wcag-medium-contrast">Users</span>
+                                    </div>
+                                    <div class="nvc-method-stat">
+                                        <span class="nvc-stat-value nvc-wcag-high-contrast">{{ biometric_methods.fingerprint_success or '97.2' }}%</span>
+                                        <span class="nvc-stat-label nvc-wcag-medium-contrast">Success Rate</span>
+                                    </div>
+                                </div>
+                                <div class="nvc-method-toggle">
+                                    <input type="checkbox" id="fingerprint-enabled" class="nvc-switch nvc-wcag-focus" checked>
+                                    <label for="fingerprint-enabled" class="nvc-switch-label nvc-wcag-high-contrast">Enabled</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Face Recognition Method -->
+                        <div class="nvc-method-card nvc-method-success">
+                            <div class="nvc-method-header">
+                                <div class="nvc-method-icon">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-method-status">
+                                    <span class="nvc-status-indicator nvc-status-success">
+                                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="nvc-method-content">
+                                <h3 class="nvc-method-title nvc-wcag-high-contrast">Face Recognition</h3>
+                                <p class="nvc-method-description nvc-wcag-medium-contrast">Face ID, Camera-based</p>
+                                <div class="nvc-method-stats">
+                                    <div class="nvc-method-stat">
+                                        <span class="nvc-stat-value nvc-wcag-high-contrast">{{ biometric_methods.face_users or '89' }}</span>
+                                        <span class="nvc-stat-label nvc-wcag-medium-contrast">Users</span>
+                                    </div>
+                                    <div class="nvc-method-stat">
+                                        <span class="nvc-stat-value nvc-wcag-high-contrast">{{ biometric_methods.face_success or '94.8' }}%</span>
+                                        <span class="nvc-stat-label nvc-wcag-medium-contrast">Success Rate</span>
+                                    </div>
+                                </div>
+                                <div class="nvc-method-toggle">
+                                    <input type="checkbox" id="face-enabled" class="nvc-switch nvc-wcag-focus" checked>
+                                    <label for="face-enabled" class="nvc-switch-label nvc-wcag-high-contrast">Enabled</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Voice Recognition Method -->
+                        <div class="nvc-method-card nvc-method-info">
+                            <div class="nvc-method-header">
+                                <div class="nvc-method-icon">
+                                    <i class="fas fa-microphone" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-method-status">
+                                    <span class="nvc-status-indicator nvc-status-warning">
+                                        <i class="fas fa-flask" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="nvc-method-content">
+                                <h3 class="nvc-method-title nvc-wcag-high-contrast">Voice Recognition</h3>
+                                <p class="nvc-method-description nvc-wcag-medium-contrast">Voice patterns, Speech</p>
+                                <div class="nvc-method-stats">
+                                    <div class="nvc-method-stat">
+                                        <span class="nvc-stat-value nvc-wcag-high-contrast">{{ biometric_methods.voice_users or '12' }}</span>
+                                        <span class="nvc-stat-label nvc-wcag-medium-contrast">Users</span>
+                                    </div>
+                                    <div class="nvc-method-stat">
+                                        <span class="nvc-stat-value nvc-wcag-high-contrast">{{ biometric_methods.voice_success or '89.5' }}%</span>
+                                        <span class="nvc-stat-label nvc-wcag-medium-contrast">Success Rate</span>
+                                    </div>
+                                </div>
+                                <div class="nvc-method-toggle">
+                                    <input type="checkbox" id="voice-enabled" class="nvc-switch nvc-wcag-focus">
+                                    <label for="voice-enabled" class="nvc-switch-label nvc-wcag-high-contrast">Beta</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Palm Recognition Method -->
+                        <div class="nvc-method-card nvc-method-warning">
+                            <div class="nvc-method-header">
+                                <div class="nvc-method-icon">
+                                    <i class="fas fa-hand-rock" aria-hidden="true"></i>
+                                </div>
+                                <div class="nvc-method-status">
+                                    <span class="nvc-status-indicator nvc-status-info">
+                                        <i class="fas fa-rocket" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="nvc-method-content">
+                                <h3 class="nvc-method-title nvc-wcag-high-contrast">Palm Recognition</h3>
+                                <p class="nvc-method-description nvc-wcag-medium-contrast">Palm vein, Hand geometry</p>
+                                <div class="nvc-method-stats">
+                                    <div class="nvc-method-stat">
+                                        <span class="nvc-stat-value nvc-wcag-high-contrast">{{ biometric_methods.palm_users or '7' }}</span>
+                                        <span class="nvc-stat-label nvc-wcag-medium-contrast">Users</span>
+                                    </div>
+                                    <div class="nvc-method-stat">
+                                        <span class="nvc-stat-value nvc-wcag-high-contrast">{{ biometric_methods.palm_success or '98.1' }}%</span>
+                                        <span class="nvc-stat-label nvc-wcag-medium-contrast">Success Rate</span>
+                                    </div>
+                                </div>
+                                <div class="nvc-method-toggle">
+                                    <input type="checkbox" id="palm-enabled" class="nvc-switch nvc-wcag-focus">
+                                    <label for="palm-enabled" class="nvc-switch-label nvc-wcag-high-contrast">Pilot</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Enrolled Users Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-tertiary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-users" aria-hidden="true"></i>
+                    Biometric Enrolled Users ({{ biometric_stats.enrolled or '342' }} users)
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Filter enrolled users">
+                        <i class="fas fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Enroll new user">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i>
+                        Enroll User
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-enrolled-users">
+                    <!-- Advanced Filter Controls -->
+                    <div class="nvc-filter-controls">
+                        <div class="nvc-filter-row">
+                            <div class="nvc-filter-group">
+                                <label for="user-search" class="nvc-filter-label nvc-wcag-high-contrast">Search Users</label>
+                                <input type="text" id="user-search" class="nvc-filter-input nvc-wcag-focus" placeholder="Search by name or email...">
+                            </div>
+                            <div class="nvc-filter-group">
+                                <label for="method-filter" class="nvc-filter-label nvc-wcag-high-contrast">Method</label>
+                                <select id="method-filter" class="nvc-filter-select nvc-wcag-focus">
+                                    <option value="">All Methods</option>
+                                    <option value="fingerprint">Fingerprint</option>
+                                    <option value="face">Face Recognition</option>
+                                    <option value="voice">Voice Recognition</option>
+                                    <option value="palm">Palm Recognition</option>
+                                </select>
+                            </div>
+                            <div class="nvc-filter-group">
+                                <label for="status-filter" class="nvc-filter-label nvc-wcag-high-contrast">Status</label>
+                                <select id="status-filter" class="nvc-filter-select nvc-wcag-focus">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="suspended">Suspended</option>
+                                </select>
+                            </div>
+                            <div class="nvc-filter-group">
+                                <label for="device-filter" class="nvc-filter-label nvc-wcag-high-contrast">Device</label>
+                                <select id="device-filter" class="nvc-filter-select nvc-wcag-focus">
+                                    <option value="">All Devices</option>
+                                    <option value="mobile">Mobile</option>
+                                    <option value="desktop">Desktop</option>
+                                    <option value="tablet">Tablet</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FINRA-Compliant Biometric Users Table -->
+                    <div class="nvc-finra-table-container">
+                        <table class="nvc-finra-table" role="table" aria-label="Biometric enrolled users">
+                            <thead>
+                                <tr>
+                                    <th scope="col">
+                                        <input type="checkbox" class="nvc-checkbox nvc-wcag-focus" aria-label="Select all users">
+                                    </th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">User Information</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Enrolled Methods</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Primary Device</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Last Used</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Success Rate</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                    <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in enrolled_users or [
+                                    {'name': 'John Doe', 'email': 'john.doe@nvcbank.com', 'methods': ['Fingerprint', 'Face'], 'device': 'iPhone 14 Pro', 'last_used': '2024-01-15 14:30', 'success_rate': '98.5', 'status': 'Active'},
+                                    {'name': 'Jane Smith', 'email': 'jane.smith@nvcbank.com', 'methods': ['Fingerprint'], 'device': 'Samsung Galaxy S23', 'last_used': '2024-01-15 13:45', 'success_rate': '96.2', 'status': 'Active'},
+                                    {'name': 'Mike Johnson', 'email': 'mike.j@nvcbank.com', 'methods': ['Face', 'Voice'], 'device': 'MacBook Pro', 'last_used': '2024-01-15 15:20', 'success_rate': '94.8', 'status': 'Active'},
+                                    {'name': 'Sarah Wilson', 'email': 'sarah.w@email.com', 'methods': ['Fingerprint'], 'device': 'iPad Pro', 'last_used': '2024-01-14 16:10', 'success_rate': '97.1', 'status': 'Active'},
+                                    {'name': 'David Brown', 'email': 'david.b@email.com', 'methods': ['Face'], 'device': 'iPhone 13', 'last_used': '2024-01-13 09:15', 'success_rate': '89.3', 'status': 'Inactive'},
+                                    {'name': 'Lisa Garcia', 'email': 'lisa.g@nvcbank.com', 'methods': ['Fingerprint', 'Palm'], 'device': 'Surface Pro', 'last_used': '2024-01-15 12:30', 'success_rate': '99.1', 'status': 'Active'}
+                                ] %}
+                                <tr class="nvc-finra-row">
+                                    <td>
+                                        <input type="checkbox" class="nvc-checkbox nvc-wcag-focus" aria-label="Select {{ user.name }}">
+                                    </td>
+                                    <td>
+                                        <div class="nvc-user-info">
+                                            <div class="nvc-user-avatar">
+                                                <span class="nvc-avatar-initials">{{ user.name.split()[0][0] }}{{ user.name.split()[1][0] if user.name.split()|length > 1 else '' }}</span>
+                                            </div>
+                                            <div class="nvc-user-details">
+                                                <h4 class="nvc-user-name nvc-wcag-high-contrast">{{ user.name }}</h4>
+                                                <p class="nvc-user-email nvc-wcag-medium-contrast">{{ user.email }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="nvc-biometric-methods">
+                                            {% for method in user.methods %}
+                                            <span class="nvc-method-badge nvc-method-{{ method.lower() }}">
+                                                <i class="fas fa-{{ 'fingerprint' if method == 'Fingerprint' else 'eye' if method == 'Face' else 'microphone' if method == 'Voice' else 'hand-rock' }}" aria-hidden="true"></i>
+                                                {{ method }}
+                                            </span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="nvc-device-info">
+                                            <i class="fas fa-{{ 'mobile-alt' if 'iPhone' in user.device or 'Samsung' in user.device else 'laptop' if 'MacBook' in user.device or 'Surface' in user.device else 'tablet-alt' }}" aria-hidden="true"></i>
+                                            <span class="nvc-wcag-medium-contrast">{{ user.device }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="nvc-wcag-medium-contrast">{{ user.last_used }}</td>
+                                    <td>
+                                        <div class="nvc-success-rate">
+                                            <div class="nvc-progress-container">
+                                                <div class="nvc-progress-bar">
+                                                    <div class="nvc-progress-fill nvc-progress-{{ 'success' if user.success_rate|float > 95 else 'warning' if user.success_rate|float > 90 else 'danger' }}"
+                                                         style="width: {{ user.success_rate }}%"></div>
+                                                </div>
+                                                <span class="nvc-progress-text nvc-wcag-high-contrast">{{ user.success_rate }}%</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="nvc-status nvc-status-{{ 'success' if user.status == 'Active' else 'secondary' if user.status == 'Inactive' else 'danger' }}">
+                                            <i class="fas fa-{{ 'check-circle' if user.status == 'Active' else 'pause-circle' if user.status == 'Inactive' else 'times-circle' }}" aria-hidden="true"></i>
+                                            {{ user.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="nvc-action-buttons">
+                                            <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View {{ user.name }} details">
+                                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                            </button>
+                                            <button type="button" class="nvc-btn nvc-btn-info nvc-btn-xs nvc-wcag-focus" aria-label="Re-enroll {{ user.name }}">
+                                                <i class="fas fa-redo" aria-hidden="true"></i>
+                                            </button>
+                                            <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-xs nvc-wcag-focus" aria-label="Suspend {{ user.name }}">
+                                                <i class="fas fa-pause" aria-hidden="true"></i>
+                                            </button>
+                                            <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-xs nvc-wcag-focus" aria-label="Remove {{ user.name }}">
+                                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Bulk Actions Panel -->
+                    <div class="nvc-bulk-actions">
+                        <div class="nvc-bulk-info">
+                            <span class="nvc-selection-count nvc-wcag-medium-contrast">0 users selected</span>
+                        </div>
+                        <div class="nvc-bulk-buttons">
+                            <button type="button" class="nvc-btn nvc-btn-info nvc-btn-sm nvc-wcag-focus" disabled aria-label="Bulk re-enroll selected users">
+                                <i class="fas fa-redo" aria-hidden="true"></i>
+                                Bulk Re-enroll
+                            </button>
+                            <button type="button" class="nvc-btn nvc-btn-warning nvc-btn-sm nvc-wcag-focus" disabled aria-label="Suspend selected users">
+                                <i class="fas fa-pause" aria-hidden="true"></i>
+                                Suspend Selected
+                            </button>
+                            <button type="button" class="nvc-btn nvc-btn-danger nvc-btn-sm nvc-wcag-focus" disabled aria-label="Remove selected users">
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                Remove Selected
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biometric Analytics Dashboard -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-quaternary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-chart-area" aria-hidden="true"></i>
+                    Biometric Analytics & Performance
+                </h2>
+                <div class="nvc-section-actions">
+                    <select class="nvc-chart-select nvc-wcag-focus" aria-label="Select analytics time range">
+                        <option value="30d" selected>Last 30 Days</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-analytics-dashboard">
+                    <div class="nvc-analytics-grid">
+                        <!-- Biometric Trends Chart -->
+                        <div class="nvc-chart-container">
+                            <div class="nvc-chart-header">
+                                <h3 class="nvc-chart-title nvc-wcag-high-contrast">Authentication Trends</h3>
+                            </div>
+                            <div class="nvc-chart-content">
+                                <canvas id="biometricTrendsChart" aria-label="Biometric authentication trends chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Method Performance Panel -->
+                        <div class="nvc-performance-panel">
+                            <div class="nvc-performance-header">
+                                <h3 class="nvc-performance-title nvc-wcag-high-contrast">
+                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                    Method Performance
+                                </h3>
+                            </div>
+                            <div class="nvc-performance-content">
+                                <div class="nvc-performance-metrics">
+                                    <div class="nvc-performance-metric">
+                                        <div class="nvc-metric-info">
+                                            <span class="nvc-metric-icon">
+                                                <i class="fas fa-fingerprint" aria-hidden="true"></i>
+                                            </span>
+                                            <span class="nvc-metric-label nvc-wcag-medium-contrast">Fingerprint</span>
+                                            <span class="nvc-metric-value nvc-wcag-high-contrast">{{ method_performance.fingerprint or '97.2%' }}</span>
+                                        </div>
+                                        <div class="nvc-metric-progress">
+                                            <div class="nvc-progress-bar">
+                                                <div class="nvc-progress-fill nvc-progress-success" style="width: {{ method_performance.fingerprint or '97.2' }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-performance-metric">
+                                        <div class="nvc-metric-info">
+                                            <span class="nvc-metric-icon">
+                                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                            </span>
+                                            <span class="nvc-metric-label nvc-wcag-medium-contrast">Face Recognition</span>
+                                            <span class="nvc-metric-value nvc-wcag-high-contrast">{{ method_performance.face or '94.8%' }}</span>
+                                        </div>
+                                        <div class="nvc-metric-progress">
+                                            <div class="nvc-progress-bar">
+                                                <div class="nvc-progress-fill nvc-progress-info" style="width: {{ method_performance.face or '94.8' }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-performance-metric">
+                                        <div class="nvc-metric-info">
+                                            <span class="nvc-metric-icon">
+                                                <i class="fas fa-microphone" aria-hidden="true"></i>
+                                            </span>
+                                            <span class="nvc-metric-label nvc-wcag-medium-contrast">Voice Recognition</span>
+                                            <span class="nvc-metric-value nvc-wcag-high-contrast">{{ method_performance.voice or '89.5%' }}</span>
+                                        </div>
+                                        <div class="nvc-metric-progress">
+                                            <div class="nvc-progress-bar">
+                                                <div class="nvc-progress-fill nvc-progress-warning" style="width: {{ method_performance.voice or '89.5' }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="nvc-performance-metric">
+                                        <div class="nvc-metric-info">
+                                            <span class="nvc-metric-icon">
+                                                <i class="fas fa-hand-rock" aria-hidden="true"></i>
+                                            </span>
+                                            <span class="nvc-metric-label nvc-wcag-medium-contrast">Palm Recognition</span>
+                                            <span class="nvc-metric-value nvc-wcag-high-contrast">{{ method_performance.palm or '98.1%' }}</span>
+                                        </div>
+                                        <div class="nvc-metric-progress">
+                                            <div class="nvc-progress-bar">
+                                                <div class="nvc-progress-fill nvc-progress-primary" style="width: {{ method_performance.palm or '98.1' }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="nvc-security-insights">
+                                    <h4 class="nvc-insights-title nvc-wcag-high-contrast">Security Insights</h4>
+                                    <div class="nvc-insights-list">
+                                        <div class="nvc-insight-item nvc-insight-success">
+                                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                            <span class="nvc-wcag-medium-contrast">Low false positive rate</span>
+                                        </div>
+                                        <div class="nvc-insight-item nvc-insight-success">
+                                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                            <span class="nvc-wcag-medium-contrast">High user satisfaction</span>
+                                        </div>
+                                        <div class="nvc-insight-item nvc-insight-warning">
+                                            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                            <span class="nvc-wcag-medium-contrast">Weather affects face recognition</span>
+                                        </div>
+                                        <div class="nvc-insight-item nvc-insight-info">
+                                            <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                            <span class="nvc-wcag-medium-contrast">Voice recognition improving</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Biometric Authentication Dashboard Interactions
+
+    // Initialize biometric charts
+    initializeBiometricCharts();
+
+    function initializeBiometricCharts() {
+        // Biometric Trends Chart
+        const trendsCtx = document.getElementById('biometricTrendsChart');
+        if (trendsCtx) {
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Fingerprint',
+                        data: [1200, 1350, 1400, 1450],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Face Recognition',
+                        data: [800, 900, 950, 1000],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Voice Recognition',
+                        data: [50, 75, 100, 120],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Palm Recognition',
+                        data: [10, 15, 20, 25],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Method card hover effects
+    const methodCards = document.querySelectorAll('.nvc-method-card');
+    methodCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Method toggle switches
+    const methodSwitches = document.querySelectorAll('.nvc-method-toggle .nvc-switch');
+    methodSwitches.forEach(switchElement => {
+        switchElement.addEventListener('change', function() {
+            const methodName = this.id.replace('-enabled', '');
+            console.log(`${methodName} method ${this.checked ? 'enabled' : 'disabled'}`);
+
+            // Show visual feedback
+            const methodCard = this.closest('.nvc-method-card');
+            if (methodCard) {
+                if (this.checked) {
+                    methodCard.classList.add('nvc-method-enabled');
+                    methodCard.classList.remove('nvc-method-disabled');
+                } else {
+                    methodCard.classList.add('nvc-method-disabled');
+                    methodCard.classList.remove('nvc-method-enabled');
+                }
+            }
+        });
+    });
+
+    // Filter functionality
+    const searchInput = document.getElementById('user-search');
+    const methodFilter = document.getElementById('method-filter');
+    const statusFilter = document.getElementById('status-filter');
+    const deviceFilter = document.getElementById('device-filter');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            console.log(`Searching for: ${this.value}`);
+            // In a real implementation, this would filter the table
+        });
+    }
+
+    [methodFilter, statusFilter, deviceFilter].forEach(filter => {
+        if (filter) {
+            filter.addEventListener('change', function() {
+                console.log(`Filter changed: ${this.id} = ${this.value}`);
+                // In a real implementation, this would filter the table
+            });
+        }
+    });
+
+    // Checkbox selection functionality
+    const selectAllCheckbox = document.querySelector('thead .nvc-checkbox');
+    const userCheckboxes = document.querySelectorAll('tbody .nvc-checkbox');
+    const selectionCount = document.querySelector('.nvc-selection-count');
+    const bulkButtons = document.querySelectorAll('.nvc-bulk-buttons .nvc-btn');
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            userCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateSelectionCount();
+        });
+    }
+
+    userCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectionCount();
+
+            // Update select all checkbox state
+            if (selectAllCheckbox) {
+                const checkedCount = document.querySelectorAll('tbody .nvc-checkbox:checked').length;
+                selectAllCheckbox.checked = checkedCount === userCheckboxes.length;
+                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < userCheckboxes.length;
+            }
+        });
+    });
+
+    function updateSelectionCount() {
+        const checkedCount = document.querySelectorAll('tbody .nvc-checkbox:checked').length;
+        if (selectionCount) {
+            selectionCount.textContent = `${checkedCount} users selected`;
+        }
+
+        // Enable/disable bulk action buttons
+        bulkButtons.forEach(button => {
+            button.disabled = checkedCount === 0;
+        });
+    }
+
+    // Action button handlers
+    const actionButtons = document.querySelectorAll('.nvc-action-buttons .nvc-btn');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.getAttribute('aria-label');
+            console.log(`Executing action: ${action}`);
+        });
+    });
+
+    // Page action buttons
+    const refreshButton = document.querySelector('[aria-label="Refresh biometric data"]');
+    const exportButton = document.querySelector('[aria-label="Export biometric authentication report"]');
+    const settingsButton = document.querySelector('[aria-label="Configure biometric settings"]');
+
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            console.log('Refreshing biometric data...');
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Refreshing...';
+            this.disabled = true;
+
+            // Simulate refresh operation
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                console.log('Biometric data refreshed');
+            }, 2000);
+        });
+    }
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

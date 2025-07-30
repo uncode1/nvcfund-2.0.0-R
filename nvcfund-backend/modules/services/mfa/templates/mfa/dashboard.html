@@ -1,0 +1,819 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Multi-Factor Authentication - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Multi-Factor Authentication{% endblock %}
+{% block page_description %}Advanced security management and multi-factor authentication for banking and crypto operations{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-history"></i>
+    Security Logs
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-shield-alt"></i>
+    Setup MFA
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* MFA Specific Styles */
+    .mfa-metric-card {
+        background: linear-gradient(135deg, var(--danger-bg) 0%, var(--danger-hover) 100%);
+        border: 2px solid var(--danger-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .mfa-metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+    }
+    .mfa-status-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+    }
+
+    .status-enabled {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .status-disabled {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+    }
+
+    .mfa-method-card {
+        background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+        border-left: 4px solid var(--danger-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .mfa-method-card:hover {
+        border-left-width: 6px;
+        transform: translateX(3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <!-- MFA Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Multi-Factor Authentication Center</h3>
+                        <p>Advanced security management and authentication methods</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MFA Security Metrics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card mfa-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon success">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ mfa_status.enabled_methods|default('3') }}</h3>
+                    <p>Active MFA Methods</p>
+                    <span class="mfa-status-indicator {{ 'status-enabled' if mfa_status.totp_enabled else 'status-disabled' }}">
+                        <i class="fas fa-{{ 'check' if mfa_status.totp_enabled else 'times' }}"></i>
+                        {{ 'Enabled' if mfa_status.totp_enabled else 'Disabled' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card mfa-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon primary">
+                    <i class="fas fa-mobile-screen"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ mfa_status.backup_codes_count|default('8') }}</h3>
+                    <p>Backup Codes</p>
+                    <span class="mfa-status-indicator {{ 'status-enabled' if mfa_status.backup_codes_count > 0 else 'status-disabled' }}">
+                        <i class="fas fa-key"></i>
+                        Available
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card mfa-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon info">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ mfa_status.last_used|default('2 hours ago') }}</h3>
+                    <p>Last Used</p>
+                    <span class="mfa-status-indicator status-enabled">
+                        <i class="fas fa-check"></i>
+                        Recent Activity
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card mfa-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ mfa_status.failed_attempts|default('0') }}</h3>
+                    <p>Failed Attempts</p>
+                    <span class="mfa-status-indicator {{ 'status-enabled' if mfa_status.failed_attempts == 0 else 'status-disabled' }}">
+                        <i class="fas fa-{{ 'check' if mfa_status.failed_attempts == 0 else 'exclamation' }}"></i>
+                        {{ 'Secure' if mfa_status.failed_attempts == 0 else 'Alert' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Level 2: MFA Method Breakdown -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-layer-group"></i> MFA Methods</h4>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="row g-3">
+                    <div class="col-xl-2 col-md-4">
+                        <div class="mfa-method-nvc-card" data-method-type="totp" >
+                            <div class="method-icon bg-primary">
+                                <i class="fas fa-mobile-screen"></i>
+                            </div>
+                            <div class="method-content">
+                                <h4>TOTP</h4>
+                                <p>Authenticator App</p>
+                                <small class="text-success">{{ 'Enabled' if mfa_status.totp_enabled else 'Disabled' }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="mfa-method-nvc-card" data-method-type="sms" >
+                            <div class="method-icon bg-success">
+                                <i class="fas fa-sms"></i>
+                            </div>
+                            <div class="method-content">
+                                <h4>SMS</h4>
+                                <p>Text Message</p>
+                                <small class="text-info">{{ 'Enabled' if mfa_status.sms_enabled else 'Disabled' }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="mfa-method-nvc-card" data-method-type="email" >
+                            <div class="method-icon bg-warning">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="method-content">
+                                <h4>Email</h4>
+                                <p>Email Verification</p>
+                                <small class="text-warning">{{ 'Enabled' if mfa_status.email_enabled else 'Disabled' }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="mfa-method-nvc-card" data-method-type="hardware" >
+                            <div class="method-icon bg-info">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="method-content">
+                                <h4>Hardware</h4>
+                                <p>Security Key</p>
+                                <small class="text-primary">{{ 'Enabled' if mfa_status.hardware_enabled else 'Disabled' }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="mfa-method-nvc-card" data-method-type="biometric" >
+                            <div class="method-icon bg-secondary">
+                                <i class="fas fa-fingerprint"></i>
+                            </div>
+                            <div class="method-content">
+                                <h4>Biometric</h4>
+                                <p>Fingerprint/Face</p>
+                                <small class="text-secondary">{{ 'Enabled' if mfa_status.biometric_enabled else 'Disabled' }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="mfa-method-nvc-card" data-method-type="backup" >
+                            <div class="method-icon bg-danger">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="method-content">
+                                <h4>Backup</h4>
+                                <p>Recovery Codes</p>
+                                <small class="text-danger">{{ mfa_status.backup_codes_count|default('8') }} codes</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Level 3: MFA Activity Log -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-history"></i> MFA Activity Log</h4>
+                <div class="header-actions">
+                    <select id="mfa-method-filter" class="form-select nvc-form-select-sm">
+                        <option value="">All Methods</option>
+                        <option value="totp">TOTP</option>
+                        <option value="sms">SMS</option>
+                        <option value="email">Email</option>
+                        <option value="hardware">Hardware Key</option>
+                        <option value="biometric">Biometric</option>
+                        <option value="backup">Backup Codes</option>
+                    </select>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table enterprise-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Method</th>
+                                <th>Action</th>
+                                <th>Status</th>
+                                <th>IP Address</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mfa-activity-table">
+                            <tr class="mfa-activity-row" data-activity-id="MFA-001" data-method-type="totp" data-status="success" >
+                                <td>2024-01-15 14:32:15</td>
+                                <td><span class="badge bg-primary">TOTP</span></td>
+                                <td>Authentication</td>
+                                <td><span class="badge bg-success">Success</span></td>
+                                <td>192.168.1.100</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Investigate</button>
+                                </td>
+                            </tr>
+                            <tr class="mfa-activity-row" data-activity-id="MFA-002" data-method-type="sms" data-status="failed" >
+                                <td>2024-01-15 14:28:42</td>
+                                <td><span class="badge bg-success">SMS</span></td>
+                                <td>Authentication</td>
+                                <td><span class="badge bg-danger">Failed</span></td>
+                                <td>203.0.113.45</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Block IP</button>
+                                </td>
+                            </tr>
+                            <tr class="mfa-activity-row" data-activity-id="MFA-003" data-method-type="hardware" data-status="success" >
+                                <td>2024-01-15 13:45:18</td>
+                                <td><span class="badge bg-info">Hardware</span></td>
+                                <td>Setup</td>
+                                <td><span class="badge bg-success">Success</span></td>
+                                <td>192.168.1.100</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Investigate</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                                        {% endif %}
+                                        <p class="mt-2 mb-0">Last Used</p>
+                                        <small>{{ mfa_status.last_used.strftime('%Y-%m-%d %H:%M') if mfa_status.last_used else 'Never' }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Security Recommendations</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            {% if not mfa_status.totp_enabled %}
+                                <div class="alert nvc-nvc-alert-danger">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <strong>Action Required:</strong> Enable MFA to secure your account
+                                </div>
+                            {% endif %}
+                            
+                            {% if mfa_status.backup_codes_count < 3 %}
+                                <div class="alert nvc-nvc-alert-warning">
+                                    <i class="fas fa-key"></i>
+                                    <strong>Low Backup Codes:</strong> Generate more backup codes
+                                </div>
+                            {% endif %}
+                            
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Use authenticator apps like Google Authenticator</li>
+                                <li><i class="fas fa-check text-success"></i> Keep backup codes in a secure location</li>
+                                <li><i class="fas fa-check text-success"></i> Don't share your MFA codes with anyone</li>
+                                <li><i class="fas fa-check text-success"></i> Update your authenticator app regularly</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MFA Actions -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-mobile-screen"></i> Authenticator App</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body text-center">
+                            {% if mfa_status.totp_enabled %}
+                                <p>Your authenticator app is configured and ready to use.</p>
+                                <a href="{{ url_for('mfa.disable_totp') }}" class="btn nvc-btn nvc-btn-danger">
+                                    <i class="fas fa-times"></i> Disable TOTP
+                                </a>
+                            {% else %}
+                                <p>Set up an authenticator app for secure login codes.</p>
+                                <a href="{{ url_for('mfa.setup_totp') }}" class="btn nvc-btn nvc-btn-primary">
+                                    <i class="fas fa-plus"></i> Setup TOTP
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-key"></i> Backup Codes</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body text-center">
+                            <p>{{ mfa_status.backup_codes_count }} backup codes available</p>
+                            <p class="small text-light">Use these codes when your phone isn't available</p>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('mfa.view_backup_codes') }}" class="btn nvc-btn nvc-btn-outline-light">
+                                    <i class="fas fa-eye"></i> View Codes
+                                </a>
+                                <a href="{{ url_for('mfa.generate_backup_codes') }}" class="btn nvc-btn nvc-btn-success">
+                                    <i class="fas fa-refresh"></i> Generate New
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-cog"></i> Settings</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body text-center">
+                            <p>Manage your MFA preferences and security settings.</p>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('mfa.settings') }}" class="btn nvc-btn nvc-btn-outline-light">
+                                    <i class="fas fa-cog"></i> MFA Settings
+                                </a>
+                                <a href="{{ url_for('mfa.activity_log') }}" class="btn nvc-btn nvc-btn-outline-light">
+                                    <i class="fas fa-history"></i> Activity Log
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            {% if mfa_status.recent_activity %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="nvc-card">
+                        <div class="nvc-nvc-card-header">
+                            <h5><i class="fas fa-history"></i> Recent MFA Activity</h5>
+                        </div>
+                        <div class="nvc-nvc-card-body">
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Action</th>
+                                            <th>IP Address</th>
+<!-- MFA Methods -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Authentication Methods</h3>
+                        <p>Configure and manage your security authentication methods</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="mfa-methods-list">
+                    <div class="mfa-method-nvc-card">
+                        <div class="method-header">
+                            <div class="method-icon success">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="method-details">
+                                <h5>TOTP Authenticator App</h5>
+                                <p>Use Google Authenticator, Authy, or similar apps</p>
+                                <span class="mfa-status-indicator {{ 'status-enabled' if mfa_status.totp_enabled else 'status-disabled' }}">
+                                    <i class="fas fa-{{ 'check' if mfa_status.totp_enabled else 'times' }}"></i>
+                                    {{ 'Enabled' if mfa_status.totp_enabled else 'Disabled' }}
+                                </span>
+                            </div>
+                            <div class="method-actions">
+                                <button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+                                    <i class="fas fa-cog"></i>
+                                    {{ 'Reconfigure' if mfa_status.totp_enabled else 'Setup' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mfa-method-nvc-card">
+                        <div class="method-header">
+                            <div class="method-icon primary">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="method-details">
+                                <h5>Backup Codes</h5>
+                                <p>One-time use codes for emergency access</p>
+                                <span class="mfa-status-indicator {{ 'status-enabled' if mfa_status.backup_codes_count > 0 else 'status-disabled' }}">
+                                    <i class="fas fa-key"></i>
+                                    {{ mfa_status.backup_codes_count|default('0') }} codes available
+                                </span>
+                            </div>
+                            <div class="method-actions">
+                                <button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+                                    <i class="fas fa-refresh"></i>
+                                    Generate New
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mfa-method-nvc-card">
+                        <div class="method-header">
+                            <div class="method-icon info">
+                                <i class="fas fa-fingerprint"></i>
+                            </div>
+                            <div class="method-details">
+                                <h5>Biometric Authentication</h5>
+                                <p>Fingerprint and facial recognition</p>
+                                <span class="mfa-status-indicator status-enabled">
+                                    <i class="fas fa-check"></i>
+                                    Available
+                                </span>
+                            </div>
+                            <div class="method-actions">
+                                <button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+                                    <i class="fas fa-fingerprint"></i>
+                                    Setup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Recent Activity</h3>
+                        <p>MFA authentication history</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="activity-list">
+                    {% for activity in mfa_status.recent_activity|default([
+                        {'timestamp': 'now', 'action': 'TOTP Login', 'success': true},
+                        {'timestamp': '2 hours ago', 'action': 'Backup Code Used', 'success': true},
+                        {'timestamp': '1 day ago', 'action': 'Failed TOTP', 'success': false}
+                    ]) %}
+                    <div class="activity-item">
+                        <div class="activity-icon {{ 'success' if activity.success else 'danger' }}">
+                            <i class="fas fa-{{ 'check' if activity.success else 'times' }}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h6>{{ activity.action }}</h6>
+                            <p>{{ activity.timestamp }}</p>
+                            <span class="activity-status {{ 'success' if activity.success else 'danger' }}">
+                                {{ 'Success' if activity.success else 'Failed' }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// MFA Functions
+function exportMFAData() {
+    const csvData = 'Method,Status,Last Used,Success Rate\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mfa_security_report.csv';
+    a.click();
+}
+
+function viewSecurityLogs() {
+    window.location.href = "{{ url_for('mfa.security_logs') }}";
+}
+
+function setupNewMFA() {
+    window.location.href = "{{ url_for('mfa.setup') }}";
+}
+
+function setupTOTP() {
+    window.location.href = "{{ url_for('mfa.setup_totp') }}";
+}
+
+function generateBackupCodes() {
+    window.location.href = "{{ url_for('mfa.generate_backup_codes') }}";
+}
+
+function setupBiometric() {
+    alert('Biometric setup will be available in the next update.');
+}
+
+// Multi-Level MFA Dashboard Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 1: Metric cards with drilldown navigation (existing functionality enhanced)
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+
+        // Enhanced click handlers for drilldown navigation
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6, .metric-title')?.textContent;
+            handleMFADrilldown(cardTitle);
+        });
+    });
+
+    // Level 2: MFA Method Cards
+    const methodCards = document.querySelectorAll('.mfa-method-card');
+    methodCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const methodType = this.getAttribute('data-method-type');
+            handleMFAMethodDrilldown(methodType);
+        });
+
+        // Enhanced hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: MFA Activity Rows
+    const activityRows = document.querySelectorAll('.mfa-activity-row');
+    activityRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const activityId = this.getAttribute('data-activity-id');
+            viewActivityDetails(activityId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // MFA method filter
+    const methodFilter = document.getElementById('mfa-method-filter');
+    if (methodFilter) {
+        methodFilter.addEventListener('change', function() {
+            filterActivitiesByMethod(this.value);
+        });
+    }
+});
+
+// Level 2: MFA Method Drilldown
+function handleMFAMethodDrilldown(methodType) {
+    // Filter the activity log by method type
+    filterActivitiesByMethod(methodType);
+
+    // Update the filter dropdown
+    const methodFilter = document.getElementById('mfa-method-filter');
+    if (methodFilter) {
+        methodFilter.value = methodType;
+    }
+
+    // Scroll to activity table
+    document.querySelector('#mfa-activity-table').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter activities by method
+function filterActivitiesByMethod(methodType) {
+    const rows = document.querySelectorAll('.mfa-activity-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowMethod = row.getAttribute('data-method-type');
+        if (!methodType || rowMethod === methodType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updateActivityCounts(methodType, visibleCount);
+}
+
+// Update activity counts
+function updateActivityCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.mfa-activity-row').length;
+    const header = document.querySelector('.card-header-enterprise h4');
+    if (header) {
+        if (!activeFilter) {
+            header.innerHTML = `<i class="fas fa-history"></i> MFA Activity Log (${totalRows} activities)`;
+        } else {
+            const filterName = activeFilter.toUpperCase();
+            header.innerHTML = `<i class="fas fa-history"></i> ${filterName} Activity Log (${visibleCount} activities)`;
+        }
+    }
+}
+
+// Level 4: View individual activity details (Level 4 → Level 5 drilldown)
+function viewActivityDetails(activityId) {
+    // Navigate to detailed activity view with comprehensive analysis
+    const detailsUrl = "{{ url_for('mfa.activity_details', activity_id='ACTIVITY_ID') }}".replace('ACTIVITY_ID', encodeURIComponent(activityId));
+    window.location.href = detailsUrl + '?view=comprehensive&include=forensics,geolocation';
+}
+
+// Level 5: Specialized MFA functions
+function investigateActivity(activityId) {
+    // Navigate to activity investigation
+    const investigationUrl = "{{ url_for('mfa.activity_investigation', activity_id='ACTIVITY_ID') }}".replace('ACTIVITY_ID', encodeURIComponent(activityId));
+    window.location.href = investigationUrl + '?view=forensic&deep_analysis=true';
+}
+
+function blockSuspiciousIP(activityId) {
+    if (confirm('Are you sure you want to block this IP address? This will prevent all access from this IP.')) {
+        // Secure IP blocking
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/mfa/block_ip';
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        form.appendChild(csrfToken);
+
+        const activityIdInput = document.createElement('input');
+        activityIdInput.type = 'hidden';
+        activityIdInput.name = 'activity_id';
+        activityIdInput.value = activityId;
+        form.appendChild(activityIdInput);
+
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'block_ip';
+        form.appendChild(action);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}
+
+function analyzeMFAPatterns(activityId) {
+    // Navigate to MFA pattern analysis
+    const patternsUrl = "{{ url_for('mfa.pattern_analysis', activity_id='ACTIVITY_ID') }}".replace('ACTIVITY_ID', encodeURIComponent(activityId));
+    window.location.href = patternsUrl + '?view=behavioral&ml_analysis=true';
+}
+
+function generateMFAReport(activityId) {
+    // Navigate to MFA report generation
+    const reportUrl = "{{ url_for('mfa.activity_report', activity_id='ACTIVITY_ID') }}".replace('ACTIVITY_ID', encodeURIComponent(activityId));
+    window.location.href = reportUrl + '?format=comprehensive&export=pdf&period=30d';
+}
+
+function viewMFATimeline(activityId) {
+    // Navigate to MFA timeline view
+    const timelineUrl = "{{ url_for('mfa.activity_timeline', activity_id='ACTIVITY_ID') }}".replace('ACTIVITY_ID', encodeURIComponent(activityId));
+    window.location.href = timelineUrl + '?view=detailed&correlation=true';
+}
+
+function setupMFAAlert(activityId) {
+    // Navigate to MFA alert setup
+    const alertUrl = "{{ url_for('mfa.setup_alerts') }}";
+    window.location.href = alertUrl + `?activity_id=${encodeURIComponent(activityId)}&type=suspicious_activity`;
+}
+
+function handleMFADrilldown(cardTitle) {
+    if (!cardTitle) return;
+
+    if (cardTitle.includes('Active Users') || cardTitle.includes('MFA Enabled')) {
+        window.location.href = "{{ url_for('mfa.user_management') }}?filter=active";
+    } else if (cardTitle.includes('Security Score') || cardTitle.includes('Score')) {
+        window.location.href = "{{ url_for('mfa.security_analytics') }}?view=score";
+    } else if (cardTitle.includes('Failed Attempts') || cardTitle.includes('Failed')) {
+        window.location.href = "{{ url_for('mfa.security_logs') }}?filter=failed";
+    } else if (cardTitle.includes('Backup Codes') || cardTitle.includes('Recovery')) {
+        window.location.href = "{{ url_for('mfa.backup_management') }}?view=codes";
+    } else if (cardTitle.includes('TOTP') || cardTitle.includes('Authenticator')) {
+        window.location.href = "{{ url_for('mfa.totp_management') }}?view=active";
+    } else if (cardTitle.includes('Devices') || cardTitle.includes('Trusted')) {
+        window.location.href = "{{ url_for('mfa.device_management') }}?view=trusted";
+    } else if (cardTitle.includes('Activity') || cardTitle.includes('Logs')) {
+        window.location.href = "{{ url_for('mfa.activity_log') }}?view=recent";
+    }
+}
+</script>
+</div>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "macros/finra_macros.html" import finra_transaction_table, finra_compliance_summary %}
+
+{% block title %}Account Statements - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Account Statements{% endblock %}
+{% block page_description %}Generate, manage, and distribute account statements{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="nvc-breadcrumb-item">
+    <a href="{{ url_for('accounts.main_dashboard') }}" class="nvc-wcag-focus">
+        <i class="fas fa-university" aria-hidden="true"></i>
+        Accounts
+    </a>
+</li>
+<li class="nvc-breadcrumb-item active">
+    <i class="fas fa-file-alt" aria-hidden="true"></i>
+    Statements
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Bulk download statements">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    Bulk Download
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Generate new statement">
+    <i class="fas fa-plus" aria-hidden="true"></i>
+    Generate Statement
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Refresh statements">
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Refresh
+</button>
+{% endblock %}
+
+{% block sidebar %}
+<!-- No sidebar for modern dashboard layout -->
+{% endblock %}
+{% block content %}
+<div class="nvc-dashboard-content">
+    <div class="nvc-container-fluid">
+        <!-- Statement Overview Metrics -->
+        <div class="nvc-dashboard-grid">
+            <div class="nvc-metrics-row">
+                <div class="nvc-metric-card nvc-metric-success">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-success">
+                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                            <span>+8.5%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ statement_stats.monthly_generated or '12,847' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Generated This Month</p>
+                        <p class="nvc-metric-subtitle">{{ statement_stats.auto_generated or '11,923' }} automated</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-primary">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-primary">
+                            <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-positive">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                            <span>{{ statement_stats.delivery_rate or '95.2' }}%</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ statement_stats.delivered or '12,234' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Delivered</p>
+                        <p class="nvc-metric-subtitle">{{ statement_stats.delivery_rate or '95.2' }}% delivery rate</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-warning">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-warning">
+                            <i class="fas fa-clock" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-neutral">
+                            <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+                            <span>Queue</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ statement_stats.pending or '89' }}</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Pending Generation</p>
+                        <p class="nvc-metric-subtitle">In queue</p>
+                    </div>
+                </div>
+
+                <div class="nvc-metric-card nvc-metric-info">
+                    <div class="nvc-metric-header">
+                        <div class="nvc-metric-icon nvc-metric-icon-info">
+                            <i class="fas fa-hdd" aria-hidden="true"></i>
+                        </div>
+                        <div class="nvc-metric-trend nvc-trend-neutral">
+                            <i class="fas fa-database" aria-hidden="true"></i>
+                            <span>{{ statement_stats.storage_available or '7.6' }}GB</span>
+                        </div>
+                    </div>
+                    <div class="nvc-metric-content">
+                        <h3 class="nvc-metric-value nvc-wcag-high-contrast">{{ statement_stats.storage_used or '2.4' }}GB</h3>
+                        <p class="nvc-metric-label nvc-wcag-medium-contrast">Storage Used</p>
+                        <p class="nvc-metric-subtitle">{{ statement_stats.storage_available or '7.6' }}GB available</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINRA-Compliant Statements Table -->
+        <div class="nvc-dashboard-section nvc-dashboard-section-primary">
+            <div class="nvc-section-header">
+                <h2 class="nvc-section-title nvc-wcag-high-contrast">
+                    <i class="fas fa-file-alt" aria-hidden="true"></i>
+                    Account Statements
+                </h2>
+                <div class="nvc-section-actions">
+                    <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-sm nvc-wcag-focus" aria-label="Filter statements">
+                        <i class="fas fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-secondary nvc-btn-sm nvc-wcag-focus" aria-label="Bulk download statements">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        Bulk Download
+                    </button>
+                    <button type="button" class="nvc-btn nvc-btn-primary nvc-btn-sm nvc-wcag-focus" aria-label="Generate new statement">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Generate New
+                    </button>
+                </div>
+            </div>
+
+            <div class="nvc-section-content">
+                <div class="nvc-finra-table-container">
+                    <table class="nvc-finra-table" role="table" aria-label="Account statements">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="nvc-wcag-high-contrast">Statement ID</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Account</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Period</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Type</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Generated</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Status</th>
+                                <th scope="col" class="nvc-wcag-high-contrast">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for statement in statements or [
+                                {'id': 'STMT-2025-001', 'account': 'CHK-001', 'period': 'Jan 2025', 'type': 'Monthly', 'generated': '2025-01-27', 'status': 'Delivered', 'format': 'PDF'},
+                                {'id': 'STMT-2025-002', 'account': 'SAV-003', 'period': 'Jan 2025', 'type': 'Monthly', 'generated': '2025-01-26', 'status': 'Delivered', 'format': 'PDF'},
+                                {'id': 'STMT-2024-Q4', 'account': 'INV-002', 'period': 'Q4 2024', 'type': 'Quarterly', 'generated': '2025-01-15', 'status': 'Delivered', 'format': 'PDF'},
+                                {'id': 'STMT-2025-003', 'account': 'BUS-456', 'period': 'Jan 2025', 'type': 'Monthly', 'generated': '2025-01-25', 'status': 'Processing', 'format': 'PDF'},
+                                {'id': 'STMT-2024-ANN', 'account': 'CHK-001', 'period': '2024', 'type': 'Annual', 'generated': '2025-01-10', 'status': 'Delivered', 'format': 'PDF'}
+                            ] %}
+                            <tr class="nvc-finra-row">
+                                <td class="nvc-wcag-high-contrast">{{ statement.id }}</td>
+                                <td class="nvc-wcag-medium-contrast">
+                                    <span class="nvc-badge nvc-badge-secondary">{{ statement.account }}</span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ statement.period }}</td>
+                                <td>
+                                    <span class="nvc-badge nvc-badge-{{ 'primary' if statement.type == 'Monthly' else 'info' if statement.type == 'Quarterly' else 'warning' }}">
+                                        {{ statement.type }}
+                                    </span>
+                                </td>
+                                <td class="nvc-wcag-medium-contrast">{{ statement.generated }}</td>
+                                <td>
+                                    <span class="nvc-status nvc-status-{{ 'success' if statement.status == 'Delivered' else 'warning' }}">
+                                        {{ statement.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="nvc-action-buttons">
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="Download statement {{ statement.id }}">
+                                            <i class="fas fa-download" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="nvc-btn nvc-btn-outline nvc-btn-xs nvc-wcag-focus" aria-label="View statement {{ statement.id }}">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Professional Statements Dashboard Interactions
+
+    // Metric card hover effects
+    const metricCards = document.querySelectorAll('.nvc-metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // FINRA table sorting functionality
+    const tableHeaders = document.querySelectorAll('.nvc-finra-table th[scope="col"]');
+    tableHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            // Add sorting functionality here
+            console.log('Sorting by:', this.textContent);
+        });
+    });
+
+    // Accessibility enhancements
+    const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusableElements.forEach(element => {
+        element.addEventListener('focus', function() {
+            this.style.outline = '2px solid #2563eb';
+            this.style.outlineOffset = '2px';
+        });
+
+        element.addEventListener('blur', function() {
+            this.style.outline = '';
+            this.style.outlineOffset = '';
+        });
+    });
+});
+</script>
+{% endblock %}

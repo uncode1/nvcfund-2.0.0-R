@@ -1,0 +1,394 @@
+{% extends "unified_base.html" %}
+
+{% block title %}Two-Factor Authentication - NVC Banking Platform{% endblock %}
+
+{% block page_title %}Two-Factor Authentication{% endblock %}
+{% block page_description %}Manage 2FA settings and user authentication methods{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="btn btn-outline-primary">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="btn btn-secondary">
+    <i class="fas fa-cog"></i>
+    2FA Settings
+</button>
+<button type="button" class="btn btn-primary">
+    <i class="fas fa-sync-alt"></i>
+    Refresh Data
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 2FA Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">2FA Enabled</h6>
+                            <h3 class="mb-0">{{ tfa_stats.enabled_percentage or '89.2' }}%</h3>
+                            <small class="text-light">{{ tfa_stats.enabled_users or '1,112' }} users</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-shield-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Pending Setup</h6>
+                            <h3 class="mb-0">{{ tfa_stats.pending or '135' }}</h3>
+                            <small class="text-light">Users need to enable 2FA</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Daily Verifications</h6>
+                            <h3 class="mb-0">{{ tfa_stats.daily_verifications or '2,847' }}</h3>
+                            <small class="text-light">{{ tfa_stats.success_rate or '98.7' }}% success rate</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Failed Attempts</h6>
+                            <h3 class="mb-0">{{ tfa_stats.failed_attempts or '37' }}</h3>
+                            <small class="text-light">Today</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-times-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2FA Methods -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-mobile-alt me-2"></i>
+                        Available 2FA Methods
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-mobile-alt fa-3x text-primary mb-3"></i>
+                                    <h5>SMS Authentication</h5>
+                                    <p class="text-muted">Receive codes via SMS</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-success">{{ tfa_methods.sms_users or '567' }} users</span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Enabled</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-qrcode fa-3x text-success mb-3"></i>
+                                    <h5>Authenticator App</h5>
+                                    <p class="text-muted">Google Authenticator, Authy</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-success">{{ tfa_methods.app_users or '423' }} users</span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Enabled</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-envelope fa-3x text-info mb-3"></i>
+                                    <h5>Email Verification</h5>
+                                    <p class="text-muted">Receive codes via email</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-info">{{ tfa_methods.email_users or '89' }} users</span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">Enabled</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-fingerprint fa-3x text-warning mb-3"></i>
+                                    <h5>Biometric</h5>
+                                    <p class="text-muted">Fingerprint, Face ID</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-warning">{{ tfa_methods.biometric_users or '33' }} users</span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox">
+                                        <label class="form-check-label">Beta</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User 2FA Status -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        User 2FA Status
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                        <button type="button" class="btn btn-outline-primary">
+                            <i class="fas fa-envelope"></i>
+                            Send Reminder
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Filter Options -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="Search users...">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option value="">All Status</option>
+                                <option value="enabled">Enabled</option>
+                                <option value="disabled">Disabled</option>
+                                <option value="pending">Pending Setup</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option value="">All Methods</option>
+                                <option value="sms">SMS</option>
+                                <option value="app">Authenticator App</option>
+                                <option value="email">Email</option>
+                                <option value="biometric">Biometric</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option value="">All Roles</option>
+                                <option value="admin">Admin</option>
+                                <option value="manager">Manager</option>
+                                <option value="teller">Teller</option>
+                                <option value="customer">Customer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" class="form-check-input">
+                                    </th>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>2FA Status</th>
+                                    <th>Method</th>
+                                    <th>Last Used</th>
+                                    <th>Backup Codes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in tfa_users or [
+                                    {'name': 'John Doe', 'email': 'john.doe@nvcbank.com', 'role': 'Manager', 'status': 'Enabled', 'method': 'Authenticator App', 'last_used': '2024-01-15 14:30', 'backup_codes': '8/10'},
+                                    {'name': 'Jane Smith', 'email': 'jane.smith@nvcbank.com', 'role': 'Teller', 'status': 'Enabled', 'method': 'SMS', 'last_used': '2024-01-15 13:45', 'backup_codes': '10/10'},
+                                    {'name': 'Mike Johnson', 'email': 'mike.j@nvcbank.com', 'role': 'Admin', 'status': 'Enabled', 'method': 'Authenticator App', 'last_used': '2024-01-15 15:20', 'backup_codes': '5/10'},
+                                    {'name': 'Sarah Wilson', 'email': 'sarah.w@email.com', 'role': 'Customer', 'status': 'Pending Setup', 'method': 'None', 'last_used': 'Never', 'backup_codes': '0/10'},
+                                    {'name': 'David Brown', 'email': 'david.b@email.com', 'role': 'Customer', 'status': 'Disabled', 'method': 'Email', 'last_used': '2024-01-10 09:15', 'backup_codes': '10/10'},
+                                    {'name': 'Lisa Garcia', 'email': 'lisa.g@nvcbank.com', 'role': 'Compliance', 'status': 'Enabled', 'method': 'Biometric', 'last_used': '2024-01-15 12:30', 'backup_codes': '9/10'}
+                                ] %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                                {{ user.name.split()[0][0] }}{{ user.name.split()[1][0] if user.name.split()|length > 1 else '' }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ user.name }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ user.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if user.role == 'Admin' else 'warning' if user.role == 'Manager' else 'info' if user.role == 'Teller' else 'secondary' }}">
+                                            {{ user.role }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if user.status == 'Enabled' else 'warning' if user.status == 'Pending Setup' else 'danger' }}">
+                                            <i class="fas fa-{{ 'check' if user.status == 'Enabled' else 'clock' if user.status == 'Pending Setup' else 'times' }} me-1"></i>
+                                            {{ user.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if user.method != 'None' %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-{{ 'mobile-alt' if user.method == 'SMS' else 'qrcode' if user.method == 'Authenticator App' else 'envelope' if user.method == 'Email' else 'fingerprint' }} me-1"></i>
+                                            {{ user.method }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">Not configured</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.last_used }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if user.backup_codes.split('/')[0]|int > 5 else 'warning' if user.backup_codes.split('/')[0]|int > 0 else 'danger' }}">
+                                            {{ user.backup_codes }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if user.status == 'Enabled' %}
+                                            <button type="button" class="btn btn-outline-warning" title="Disable 2FA">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info" title="Reset Backup Codes">
+                                                <i class="fas fa-redo"></i>
+                                            </button>
+                                            {% elif user.status == 'Pending Setup' %}
+                                            <button type="button" class="btn btn-outline-success" title="Send Setup Instructions">
+                                                <i class="fas fa-envelope"></i>
+                                            </button>
+                                            {% else %}
+                                            <button type="button" class="btn btn-outline-success" title="Enable 2FA">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Bulk Actions -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span class="text-muted">0 users selected</span>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-primary" disabled>
+                                <i class="fas fa-envelope"></i>
+                                Send Setup Reminder
+                            </button>
+                            <button type="button" class="btn btn-outline-warning" disabled>
+                                <i class="fas fa-ban"></i>
+                                Disable 2FA
+                            </button>
+                            <button type="button" class="btn btn-outline-info" disabled>
+                                <i class="fas fa-redo"></i>
+                                Reset Backup Codes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2FA Analytics -->
+    <div class="row mt-4">
+        <!-- Usage Trends -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        2FA Usage Trends (30 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container nvc-style-342c8d" >
+                        <canvas id="tfaUsageChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Method Distribution -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Method Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container nvc-style-54d8d9" >
+                        <canvas id="methodDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

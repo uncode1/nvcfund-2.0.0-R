@@ -1,0 +1,480 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+{% from "components/unified_card_system.html" import metric_card_standard, action_card_standard, content_card_standard, account_card_standard, transaction_row_standard, stats_grid_standard, quick_actions_grid_standard, notification_banner_standard, progress_bar_standard, loading_spinner_standard, empty_state_standard, form_input_standard, form_select_standard %}
+
+
+{% block title %}Cards & Payments Overview - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Cards & Payments Overview{% endblock %}
+{% block page_description %}Comprehensive overview of card management and payment processing operations{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-bar"></i>
+    Detailed Analytics
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-credit-nvc-card"></i>
+    Manage Cards
+</button>
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-white mb-1">
+                        <i class="fas fa-credit-nvc-card me-2 text-primary"></i>Cards & Payments Overview
+                    </h2>
+                    <p class="text-light mb-0">Comprehensive payment processing and card management analytics</p>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn nvc-btn nvc-btn-primary">
+                        <i class="fas fa-download me-2"></i>Export Report
+                    </button>
+                    <button type="button" class="btn nvc-btn nvc-btn-outline-primary">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Performance Indicators -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-light text-uppercase fw-bold small">Total Transaction Volume</div>
+                            <div class="h3 text-white mb-0">$12.4M</div>
+                            <div class="text-success small">
+                                <i class="fas fa-arrow-up me-1"></i>8.2% from last month
+                            </div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-light text-uppercase fw-bold small">Active Cards</div>
+                            <div class="h3 text-white mb-0">18,547</div>
+                            <div class="text-info small">
+                                <i class="fas fa-arrow-up me-1"></i>156 new this month
+                            </div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-credit-nvc-card fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-light text-uppercase fw-bold small">Success Rate</div>
+                            <div class="h3 text-white mb-0">99.2%</div>
+                            <div class="text-warning small">
+                                <i class="fas fa-check me-1"></i>Above industry standard
+                            </div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="nvc-card h-100">
+                <div class="nvc-nvc-card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="text-light text-uppercase fw-bold small">Pending Transactions</div>
+                            <div class="h3 text-white mb-0">247</div>
+                            <div class="text-danger small">
+                                <i class="fas fa-clock me-1"></i>Requires attention
+                            </div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-hourglass-half fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Analytics Row -->
+    <div class="row mb-4">
+        <!-- Transaction Volume Chart -->
+        <div class="col-xl-8 mb-4">
+            <div class="nvc-card h-100">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-chart-area me-2"></i>Transaction Volume Trends
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="volumeChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Methods Distribution -->
+        <div class="col-xl-4 mb-4">
+            <div class="nvc-card bg-dark border-info h-100">
+                <div class="nvc-nvc-card-header border-bottom border-info">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Payment Methods
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <canvas id="paymentMethodsChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Processing and Card Management -->
+    <div class="row mb-4">
+        <!-- Real-time Transaction Processing -->
+        <div class="col-xl-6 mb-4">
+            <div class="nvc-card bg-dark border-success h-100">
+                <div class="nvc-nvc-card-header border-bottom border-success d-flex justify-content-between align-items-center">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>Real-time Processing
+                    </h5>
+                    <span class="badge bg-success">Live</span>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>14:47:15</td>
+                                    <td><span class="badge bg-primary">Purchase</span></td>
+                                    <td>$1,245.00</td>
+                                    <td><span class="badge bg-success">Approved</span></td>
+                                </tr>
+                                <tr>
+                                    <td>14:46:58</td>
+                                    <td><span class="badge bg-info">Transfer</span></td>
+                                    <td>$850.50</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>14:46:42</td>
+                                    <td><span class="badge bg-warning">ATM</span></td>
+                                    <td>$200.00</td>
+                                    <td><span class="badge bg-success">Approved</span></td>
+                                </tr>
+                                <tr>
+                                    <td>14:46:23</td>
+                                    <td><span class="badge bg-primary">Online</span></td>
+                                    <td>$75.99</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td>14:45:51</td>
+                                    <td><span class="badge bg-info">Refund</span></td>
+                                    <td>$125.00</td>
+                                    <td><span class="badge bg-success">Processed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Management Overview -->
+        <div class="col-xl-6 mb-4">
+            <div class="nvc-card bg-dark border-warning h-100">
+                <div class="nvc-nvc-card-header border-bottom border-warning">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-id-nvc-card me-2"></i>Card Management
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h4 text-primary mb-1">15,342</div>
+                                <div class="text-light small">Active Debit Cards</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h4 text-info mb-1">3,205</div>
+                                <div class="text-light small">Active Credit Cards</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between text-white mb-1">
+                            <span>Card Utilization</span>
+                            <span>78%</span>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-gradient bg-primary" class="progress-bar-78"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between text-white mb-1">
+                            <span>Payment Success Rate</span>
+                            <span>99.2%</span>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-gradient bg-success" class="nvc-w-99"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="/cards_payments/card-management" class="btn nvc-btn nvc-btn-outline-warning">
+                            <i class="fas fa-cog me-2"></i>Manage Cards
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analytics -->
+    <div class="row mb-4">
+        <!-- Fraud Detection -->
+        <div class="col-xl-4 mb-4">
+            <div class="nvc-card bg-dark border-danger h-100">
+                <div class="nvc-nvc-card-header border-bottom border-danger">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Fraud Detection
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="text-center mb-3">
+                        <div class="h2 text-success mb-1">0.08%</div>
+                        <div class="text-light">Fraud Rate</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-white">Blocked Transactions</span>
+                            <span class="text-danger">23</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-white">False Positives</span>
+                            <span class="text-warning">7</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-white">Confirmed Fraud</span>
+                            <span class="text-danger">16</span>
+                        </div>
+                    </div>
+
+                    <div class="alert nvc-nvc-alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>System Healthy</strong><br>
+                        All fraud detection systems operational
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance Status -->
+        <div class="col-xl-4 mb-4">
+            <div class="nvc-card bg-dark border-info h-100">
+                <div class="nvc-nvc-card-header border-bottom border-info">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-balance-scale me-2"></i>Compliance Status
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-white">PCI DSS</span>
+                            <span class="badge bg-success">Compliant</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-white">GDPR</span>
+                            <span class="badge bg-success">Compliant</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-white">SOX</span>
+                            <span class="badge bg-success">Compliant</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-white">AML/KYC</span>
+                            <span class="badge bg-success">Compliant</span>
+                        </div>
+                    </div>
+
+                    <div class="alert nvc-nvc-alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Next Audit:</strong><br>
+                        January 15, 2025
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-info">
+                            <i class="fas fa-file-alt me-2"></i>View Reports
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settlement Processing -->
+        <div class="col-xl-4 mb-4">
+            <div class="nvc-card bg-dark border-primary h-100">
+                <div class="nvc-nvc-card-header border-bottom border-primary">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-handshake me-2"></i>Settlement Status
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="text-center mb-3">
+                        <div class="h2 text-primary mb-1">$8.7M</div>
+                        <div class="text-light">Daily Settlement</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-white">Processed</span>
+                            <span class="text-success">$8.2M</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-white">Pending</span>
+                            <span class="text-warning">$456K</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-white">Failed</span>
+                            <span class="text-danger">$44K</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between text-white mb-1">
+                            <span>Settlement Progress</span>
+                            <span>94%</span>
+                        </div>
+                        <div class="progress" class="nvc-h-8">
+                            <div class="progress-bar bg-gradient bg-primary" class="progress-bar-94"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <a href="/settlement/" class="btn nvc-btn nvc-btn-outline-primary">
+                            <i class="fas fa-cogs me-2"></i>Settlement Center
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Integration -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Transaction Volume Chart
+    const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+    new Chart(volumeCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Transaction Volume ($M)',
+                data: [1.8, 2.1, 1.9, 2.3, 2.7, 1.6, 1.4],
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#ffffff' }
+                }
+            },
+            scales: {
+                x: { 
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                y: { 
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                }
+            }
+        }
+    });
+
+    // Payment Methods Chart
+    const methodsCtx = document.getElementById('paymentMethodsChart').getContext('2d');
+    new Chart(methodsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Debit Cards', 'Credit Cards', 'Wire Transfer', 'ACH', 'Mobile Payment'],
+            datasets: [{
+                data: [45, 25, 15, 10, 5],
+                backgroundColor: [
+                    '#0d6efd',
+                    '#198754',
+                    '#ffc107',
+                    '#dc3545',
+                    '#6f42c1'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#ffffff', padding: 20 }
+                }
+            }
+        }
+    });
+});
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

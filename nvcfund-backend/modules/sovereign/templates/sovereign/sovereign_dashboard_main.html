@@ -1,0 +1,548 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}{{ page_title|default('Sovereign Banking Operations') }} - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Sovereign Banking Operations{% endblock %}
+{% block page_description %}Central bank operations, monetary policy, and sovereign financial services{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Report
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-university"></i>
+    Monetary Policy
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-crown"></i>
+    Sovereign Operations
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Sovereign Banking Specific Styles */
+    .sovereign-metric-card {
+        background: linear-gradient(135deg, var(--primary-bg) 0%, var(--primary-hover) 100%);
+        border: 2px solid var(--primary-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .sovereign-metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    .central-bank-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary-color);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .monetary-policy-card {
+        background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+        border-left: 4px solid var(--warning-color);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .monetary-policy-card:hover {
+        border-left-width: 6px;
+        transform: translateX(3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-content-sections">
+    <!-- Sovereign Banking Overview Section -->
+    <div class="nvc-content-section" id="overview">
+        <div class="nvc-content-section-header">
+            <h3 class="nvc-content-section-title">
+                <i class="fas fa-crown"></i> Sovereign Banking Operations
+            </h3>
+            <div class="nvc-content-section-actions">
+                <span class="nvc-badge nvc-badge-primary">
+                    <i class="fas fa-university"></i> Central Bank Authority
+                </span>
+            </div>
+        </div>
+        <div class="nvc-content-section-body">
+            <div class="nvc-card nvc-card-elevated">
+                <div class="nvc-card-body">
+                    <p class="nvc-text-muted mb-0">Comprehensive sovereign banking operations and monetary policy management</p>
+                </div>
+            </div>
+        </div>
+    </div>
+                    <div class="header-text">
+                        <h3>Central Bank Operations Center</h3>
+                        <p>Real-time sovereign banking and monetary policy management</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="central-bank-indicator">
+                        <i class="fas fa-clock"></i>
+                        Last Updated: {{ current_time.strftime('%B %d, %Y %I:%M %p') if current_time else 'Real-time' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sovereign Banking Metrics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="nvc-card metric-card sovereign-metric-nvc-card">
+            <div class="metric-content">
+                <div class="metric-icon primary">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="metric-details">
+                    <h3>{{ "%.2f"|format(dashboard_data.monetary_policy.base_rate if dashboard_data and dashboard_data.monetary_policy else 2.75) }}%</h3>
+                    <p>Base Interest Rate</p>
+                    <span class="metric-trend neutral">
+                        <i class="fas fa-minus"></i> Unchanged this quarter
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('sovereign.debt_management') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card sovereign-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon success">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>${{ "%.1f"|format(dashboard_data.sovereign_debt.total_debt_trillions if dashboard_data and dashboard_data.sovereign_debt else 28.4) }}T</h3>
+                        <p>Sovereign Debt</p>
+                        <span class="metric-trend negative">
+                            <i class="fas fa-arrow-down"></i> -2.1% this year
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Debt Management
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('sovereign.treasury_management') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card sovereign-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon info">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>${{ "%.1f"|format(dashboard_data.international_reserves.total_reserves_billions if dashboard_data and dashboard_data.international_reserves else 142.8) }}B</h3>
+                        <p>International Reserves</p>
+                        <span class="metric-trend positive">
+                            <i class="fas fa-arrow-up"></i> +5.3% this quarter
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Treasury Management
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('sovereign.economic_indicators') }}" class="text-decoration-none">
+            <div class="nvc-card metric-card sovereign-metric-nvc-card">
+                <div class="metric-content">
+                    <div class="metric-icon warning">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="metric-details">
+                        <h3>${{ "%.1f"|format(dashboard_data.banking_sector.total_assets_trillions if dashboard_data and dashboard_data.banking_sector else 23.7) }}T</h3>
+                        <p>Banking Assets</p>
+                        <span class="metric-trend positive">
+                            <i class="fas fa-arrow-up"></i> +8.2% growth
+                        </span>
+                    </div>
+                </div>
+                <div class="metric-action">
+                    <span class="action-hint">
+                        <i class="fas fa-arrow-right"></i> Economic Indicators
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+    <!-- Sovereign Banking Operations -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Central Bank Operations
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-light mb-1">Policy Stance</h6>
+                                <h5 class="text-primary">{{ dashboard_data.monetary_policy.policy_stance }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-light mb-1">Inflation Target</h6>
+                                <h5 class="text-success">{{ "%.1f"|format(dashboard_data.monetary_policy.inflation_target) }%}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-light">
+                            Next Policy Meeting: {{ dashboard_data.monetary_policy.next_meeting }}
+                        </small>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('sovereign.central_bank') }}" class="btn nvc-btn nvc-btn-outline-primary btn-sm">
+                            <i class="fas fa-external-link-alt me-1"></i>
+                            View Operations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Sovereign Debt Portfolio
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-light mb-1">Debt-to-GDP</h6>
+                                <h5 class="text-warning">{{ "%.1f"|format(dashboard_data.sovereign_debt.debt_to_gdp_ratio) }%}</h5>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded">
+                                <h6 class="text-light mb-1">Credit Rating</h6>
+                                <h5 class="text-success">{{ dashboard_data.sovereign_debt.credit_rating }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-light">
+                            Status: {{ dashboard_data.sovereign_debt.debt_sustainability }}
+                        </small>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('sovereign.sovereign_debt') }}" class="btn nvc-btn nvc-btn-outline-success btn-sm">
+                            <i class="fas fa-external-link-alt me-1"></i>
+                            Manage Debt
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- International Reserves & FX Operations -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-globe me-2"></i>
+                        International Reserves
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <h6 class="text-light mb-1">Total Reserves</h6>
+                        <h4 class="text-primary">${{ "%.1f"|format(dashboard_data.international_reserves.total_reserves_billions) }}B</h4>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-light mb-1">Import Coverage</h6>
+                        <h5 class="text-success">{{ "%.1f"|format(dashboard_data.international_reserves.reserves_coverage_months) }} months</h5>
+                    </div>
+                    <div class="progress mb-2" class="nvc-h-8">
+                        <div class="progress-bar bg-warning" style="width: {{ dashboard_data.international_reserves.gold_percentage }%}"></div>
+                    </div>
+                    <small class="text-light">Gold: {{ "%.1f"|format(dashboard_data.international_reserves.gold_percentage) }%}</small>
+                    <div class="mt-3">
+                        <a href="{{ url_for('sovereign.reserves') }}" class="btn nvc-btn nvc-btn-outline-info btn-sm">
+                            <i class="fas fa-external-link-alt me-1"></i>
+                            Manage Reserves
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        Foreign Exchange
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <h6 class="text-light mb-1">Exchange Rate</h6>
+                        <h5 class="text-primary">{{ dashboard_data.international_reserves.currency_composition.USD }%} USD</h5>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-light mb-1">Rate Stability</h6>
+                        <h6 class="text-success">{{ dashboard_data.economic_indicators.exchange_rate_stability }}</h6>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('sovereign.foreign_exchange') }}" class="btn nvc-btn nvc-btn-outline-warning btn-sm">
+                            <i class="fas fa-external-link-alt me-1"></i>
+                            FX Operations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Banking Regulation
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="mb-3">
+                        <h6 class="text-light mb-1">Capital Adequacy</h6>
+                        <h5 class="text-success">{{ "%.1f"|format(dashboard_data.banking_sector.capital_adequacy_ratio) }%}</h5>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-light mb-1">Stress Test</h6>
+                        <h6 class="text-success">{{ dashboard_data.banking_sector.stress_test_results }}</h6>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('sovereign.regulatory') }}" class="btn nvc-btn nvc-btn-outline-secondary btn-sm">
+                            <i class="fas fa-external-link-alt me-1"></i>
+                            Supervision
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Indicators -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card border-0">
+                <div class="nvc-nvc-card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-area me-2"></i>
+                        Key Economic Indicators
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-2 text-center">
+                            <h6 class="text-light mb-1">GDP Growth</h6>
+                            <h5 class="text-success">{{ "%.1f"|format(dashboard_data.economic_indicators.gdp_growth) }%}</h5>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h6 class="text-light mb-1">Unemployment</h6>
+                            <h5 class="text-info">{{ "%.1f"|format(dashboard_data.economic_indicators.unemployment_rate) }%}</h5>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h6 class="text-light mb-1">Current Account</h6>
+                            <h5 class="text-primary">{{ "%.1f"|format(dashboard_data.economic_indicators.current_account_balance) }%}</h5>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h6 class="text-light mb-1">Fiscal Balance</h6>
+                            <h5 class="text-warning">{{ "%.1f"|format(dashboard_data.economic_indicators.fiscal_balance) }%}</h5>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h6 class="text-light mb-1">NPL Ratio</h6>
+<!-- Central Bank Operations -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Central Bank Operations</h3>
+                        <p>Monetary policy and banking supervision</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="monetary-policy-grid">
+                    <div class="policy-item">
+                        <div class="policy-label">Policy Stance</div>
+                        <div class="policy-value primary">{{ dashboard_data.monetary_policy.policy_stance if dashboard_data and dashboard_data.monetary_policy else 'Neutral' }}</div>
+                    </div>
+                    <div class="policy-item">
+                        <div class="policy-label">Inflation Target</div>
+                        <div class="policy-value success">{{ "%.1f"|format(dashboard_data.monetary_policy.inflation_target if dashboard_data and dashboard_data.monetary_policy else 2.0) }}%</div>
+                    </div>
+                    <div class="policy-item">
+                        <div class="policy-label">Current Inflation</div>
+                        <div class="policy-value warning">{{ "%.1f"|format(dashboard_data.monetary_policy.current_inflation if dashboard_data and dashboard_data.monetary_policy else 3.2) }}%</div>
+                    </div>
+                    <div class="policy-item">
+                        <div class="policy-label">GDP Growth</div>
+                        <div class="policy-value info">{{ "%.1f"|format(dashboard_data.economic_indicators.gdp_growth if dashboard_data and dashboard_data.economic_indicators else 2.8) }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Banking Sector Health</h3>
+                        <p>Key financial stability indicators</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body-enterprise">
+                <div class="banking-indicators">
+                    <div class="indicator-item">
+                        <div class="indicator-label">Capital Adequacy</div>
+                        <div class="indicator-value success">{{ "%.1f"|format(dashboard_data.banking_sector.capital_adequacy_ratio if dashboard_data and dashboard_data.banking_sector else 15.8) }}%</div>
+                    </div>
+                    <div class="indicator-item">
+                        <div class="indicator-label">NPL Ratio</div>
+                        <div class="indicator-value success">{{ "%.1f"|format(dashboard_data.banking_sector.non_performing_loans if dashboard_data and dashboard_data.banking_sector else 2.1) }}%</div>
+                    </div>
+                    <div class="indicator-item">
+                        <div class="indicator-label">Liquidity Coverage</div>
+                        <div class="indicator-value success">{{ "%.1f"|format(dashboard_data.banking_sector.liquidity_coverage_ratio if dashboard_data and dashboard_data.banking_sector else 142.3) }}%</div>
+                    </div>
+                    <div class="indicator-item">
+                        <div class="indicator-label">Tier 1 Capital</div>
+                        <div class="indicator-value success">{{ "%.1f"|format(dashboard_data.banking_sector.tier1_capital_ratio if dashboard_data and dashboard_data.banking_sector else 13.2) }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Sovereign Banking Functions
+function exportSovereignData() {
+    const csvData = 'Metric,Value,Change,Status\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sovereign_banking_report.csv';
+    a.click();
+}
+
+function viewMonetaryPolicy() {
+    window.location.href = "{{ url_for('sovereign.sovereign_monetary_policy') }}";
+}
+
+function manageSovereignOperations() {
+    window.location.href = "{{ url_for('sovereign.sovereign_operations_overview') }}";
+}
+
+// Initialize sovereign dashboard with drilldown functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for metric cards with drilldown navigation
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.4)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+
+        // Add click handlers for drilldown navigation (skip if already has anchor)
+        if (!card.closest('a')) {
+            card.addEventListener('click', function() {
+                const cardTitle = this.querySelector('h3, h4, h5, h6, p')?.textContent;
+                handleSovereignDrilldown(cardTitle);
+            });
+        }
+    });
+
+    // Update timestamp every minute
+    setInterval(function() {
+        const now = new Date();
+        const timestamp = now.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+        const timestampElement = document.querySelector('.central-bank-indicator');
+        if (timestampElement) {
+            timestampElement.innerHTML = '<i class="fas fa-clock"></i> Last Updated: ' + timestamp;
+        }
+    }, 60000);
+});
+
+function handleSovereignDrilldown(cardTitle) {
+    if (!cardTitle) return;
+
+    if (cardTitle.includes('Base Interest Rate') || cardTitle.includes('2.75%')) {
+        window.location.href = "{{ url_for('sovereign.monetary_policy') }}?view=interest_rates";
+    } else if (cardTitle.includes('Sovereign Debt') || cardTitle.includes('$28.4T')) {
+        window.location.href = "{{ url_for('sovereign.debt_management') }}?view=overview";
+    } else if (cardTitle.includes('International Reserves') || cardTitle.includes('$142.8B')) {
+        window.location.href = "{{ url_for('sovereign.treasury_management') }}?view=reserves";
+    } else if (cardTitle.includes('Banking Assets') || cardTitle.includes('$23.7T')) {
+        window.location.href = "{{ url_for('sovereign.economic_indicators') }}?view=banking_sector";
+    }
+}
+</script>
+</div>
+{% endblock %}
+{% endblock %}

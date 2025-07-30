@@ -1,0 +1,357 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+{% block title %}Trading Dashboard - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="row">
+    <!-- Portfolio Summary -->
+    <div class="col-12">
+        <div class="portfolio-summary">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-nvc-card">
+                        <div class="stat-label">Total Portfolio Value</div>
+                        <div class="stat-value" id="total-portfolio-value">
+                            {% if portfolio and portfolio.account_summary %}
+                                ${{ "{:,.2f}".format(portfolio.account_summary.total_value) }}
+                            {% else %}
+                                $0.00
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-nvc-card">
+                        <div class="stat-label">Available Cash</div>
+                        <div class="stat-value">
+                            {% if portfolio and portfolio.account_summary %}
+                                ${{ "{:,.2f}".format(portfolio.account_summary.cash_balance) }}
+                            {% else %}
+                                $0.00
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-nvc-card">
+                        <div class="stat-label">Day Change</div>
+                        <div class="stat-value {{ 'price-up' if portfolio and portfolio.performance and portfolio.performance.day_change >= 0 else 'price-down' }}" id="day-change">
+                            {% if portfolio and portfolio.performance %}
+                                {{ "+" if portfolio.performance.day_change >= 0 else "" }}{{ "{:.2f}".format(portfolio.performance.day_change) }%}
+                            {% else %}
+                                +0.00%
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-nvc-card">
+                        <div class="stat-label">Buying Power</div>
+                        <div class="stat-value">
+                            {% if portfolio and portfolio.account_summary %}
+                                ${{ "{:,.2f}".format(portfolio.account_summary.available_balance) }}
+                            {% else %}
+                                $0.00
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Quick Trade Panel -->
+    <div class="col-lg-4">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <i class="fas fa-bolt me-2"></i>Quick Trade
+            </div>
+            <div class="nvc-nvc-card-body">
+                <form id="quick-trade-form" method="POST" action="{{ url_for('trading.submit_equity_order') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-3">
+                        <label for="symbol" class="nvc-form-label">Symbol</label>
+                        <input type="text" class="nvc-form-input" id="symbol" name="symbol" placeholder="e.g., AAPL" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <label for="order_side" class="nvc-form-label">Side</label>
+                            <select class="nvc-form-select" id="order_side" name="order_side" required>
+                                <option value="buy">Buy</option>
+                                <option value="sell">Sell</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label for="quantity" class="nvc-form-label">Quantity</label>
+                            <input type="number" class="nvc-form-input" id="quantity" name="quantity" min="1" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label for="order_type" class="nvc-form-label">Order Type</label>
+                        <select class="nvc-form-select" id="order_type" name="order_type" required>
+                            <option value="market">Market Order</option>
+                            <option value="limit">Limit Order</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="limit-price-section" class="d-none">
+                        <label for="limit_price" class="nvc-form-label">Limit Price</label>
+                        <input type="number" class="nvc-form-input" id="limit_price" name="limit_price" step="0.01">
+                    </div>
+                    <button type="submit" class="btn nvc-btn nvc-btn-primary w-100">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Order
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Market Data Widget -->
+        <div class="nvc-card mt-3">
+            <div class="nvc-nvc-card-header">
+                <i class="fas fa-chart-bar me-2"></i>Market Watchlist
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-sm market-data-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Price</th>
+                                <th>Change</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if market_data %}
+                                {% for symbol, data in market_data.items() %}
+                                <tr>
+                                    <td><strong>{{ symbol }}</strong></td>
+                                    <td id="{{ symbol.lower() }}-price">
+                                        {% if data.current %}
+                                            ${{ "{:.2f}".format(data.current.current_price) }}
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    </td>
+                                    <td class="{{ 'price-up' if data.current and data.current.price_change >= 0 else 'price-down' }}">
+                                        {% if data.current %}
+                                            {{ "+" if data.current.price_change >= 0 else "" }}{{ "{:.2f}".format(data.current.price_change_percent) }%}
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No market data available</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Positions -->
+    <div class="col-lg-8">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <i class="fas fa-briefcase me-2"></i>Current Positions
+            </div>
+            <div class="nvc-nvc-card-body">
+                {% if portfolio and portfolio.positions %}
+                <div class="table-responsive">
+                    <table class="table table-dark">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Quantity</th>
+                                <th>Avg Cost</th>
+                                <th>Current Price</th>
+                                <th>Market Value</th>
+                                <th>P&L</th>
+                                <th>P&L %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for position in portfolio.positions %}
+                            <tr>
+                                <td><strong>{{ position.symbol }}</strong></td>
+                                <td>{{ "{:,.0f}".format(position.quantity) }}</td>
+                                <td>${{ "{:.2f}".format(position.average_cost) }}</td>
+                                <td>${{ "{:.2f}".format(position.current_price) }}</td>
+                                <td>${{ "{:,.2f}".format(position.market_value) }}</td>
+                                <td class="{{ 'price-up' if position.unrealized_pnl >= 0 else 'price-down' }}">
+                                    ${{ "{:,.2f}".format(position.unrealized_pnl) }}
+                                </td>
+                                <td class="{{ 'price-up' if position.unrealized_pnl_percent >= 0 else 'price-down' }}">
+                                    {{ "+" if position.unrealized_pnl_percent >= 0 else "" }}{{ "{:.2f}".format(position.unrealized_pnl_percent) }%}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-chart-line fa-3x text-light mb-3"></i>
+                    <h5>No positions found</h5>
+                    <p class="text-light">Start trading to build your portfolio.</p>
+                    <a href="{{ url_for('trading.securities_trading') }}" class="btn nvc-btn nvc-btn-primary">
+                        <i class="fas fa-plus me-2"></i>Start Trading
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="nvc-card mt-3">
+            <div class="nvc-nvc-card-header">
+                <i class="fas fa-list me-2"></i>Recent Orders
+                <a href="{{ url_for('trading.order_management') }}" class="btn btn-sm nvc-btn nvc-btn-outline-light float-end">View All</a>
+            </div>
+            <div class="nvc-nvc-card-body">
+                {% if recent_orders %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-sm">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Symbol</th>
+                                <th>Side</th>
+                                <th>Quantity</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>{{ order.submitted_at.strftime('%H:%M:%S') if order.submitted_at else '--' }}</td>
+                                <td>{{ order.symbol }}</td>
+                                <td>
+                                    <span class="badge {{ 'bg-success' if order.order_side == 'buy' else 'bg-danger' }}">
+                                        {{ order.order_side.title() }}
+                                    </span>
+                                </td>
+                                <td>{{ "{:,.0f}".format(order.quantity) }}</td>
+                                <td>{{ order.order_type.title() }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if order.status == 'filled' %}bg-success
+                                        {% elif order.status == 'pending' %}bg-warning
+                                        {% elif order.status == 'cancelled' %}bg-secondary
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ order.status.title() }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <p class="text-light">No recent orders</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Risk Metrics Row -->
+{% if risk_metrics %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="nvc-card">
+            <div class="nvc-nvc-card-header">
+                <i class="fas fa-shield-alt me-2"></i>Risk Overview
+                <a href="{{ url_for('trading.risk_management') }}" class="btn btn-sm nvc-btn nvc-btn-outline-light float-end">Detailed View</a>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stat-nvc-card">
+                            <div class="stat-label">Total Exposure</div>
+                            <div class="stat-value">${{ "{:,.0f}".format(risk_metrics.total_exposure) }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-nvc-card">
+                            <div class="stat-label">Leverage Ratio</div>
+                            <div class="stat-value">{{ "{:.2f}".format(risk_metrics.leverage_ratio) }}x</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-nvc-card">
+                            <div class="stat-label">1-Day VaR (95%)</div>
+                            <div class="stat-value">${{ "{:,.0f}".format(risk_metrics.var_1day_95) }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-nvc-card">
+                            <div class="stat-label">Portfolio Beta</div>
+                            <div class="stat-value">{{ "{:.2f}".format(risk_metrics.portfolio_beta) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Order type change handler
+    document.getElementById('order_type').addEventListener('change', function() {
+        const limitPriceSection = document.getElementById('limit-price-section');
+        if (this.value === 'limit') {
+            limitPriceSection.style.display = 'block';
+            document.getElementById('limit_price').required = true;
+        } else {
+            limitPriceSection.style.display = 'none';
+            document.getElementById('limit_price').required = false;
+        }
+    });
+
+    // Symbol input formatter
+    document.getElementById('symbol').addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+
+    // Quick trade form validation
+    document.getElementById('quick-trade-form').addEventListener('submit', function(e) {
+        const symbol = document.getElementById('symbol').value;
+        const quantity = document.getElementById('quantity').value;
+        
+        if (!symbol.match(/^[A-Z]{1,5}$/)) {
+            alert('Please enter a valid stock symbol (1-5 letters)');
+            e.preventDefault();
+            return;
+        }
+        
+        if (parseFloat(quantity) <= 0) {
+            alert('Quantity must be greater than 0');
+            e.preventDefault();
+            return;
+        }
+        
+        // Confirm market orders
+        if (document.getElementById('order_type').value === 'market') {
+            if (!confirm('Are you sure you want to submit a market order? The execution price may vary.')) {
+                e.preventDefault();
+                return;
+            }
+        }
+    });
+</script>
+{% endblock %}

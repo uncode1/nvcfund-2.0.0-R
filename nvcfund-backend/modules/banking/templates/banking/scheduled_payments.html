@@ -1,0 +1,125 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Scheduled Payments - NVC Banking{% endblock %}
+
+{% block page_title %}Scheduled Payments{% endblock %}
+{% block page_description %}Manage your scheduled and recurring payments{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <div class="row">
+        <!-- Upcoming Payments -->
+        <div class="col-lg-8 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Upcoming Payments
+                    </h5>
+                    <button type="button" class="btn nvc-btn nvc-btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Schedule New Payment
+                    </button>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if scheduled_data.upcoming_payments %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Payee</th>
+                                        <th>Amount</th>
+                                        <th>Due Date</th>
+                                        <th>Frequency</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in scheduled_data.upcoming_payments %}
+                                    <tr>
+                                        <td>{{ payment.payee_name }}</td>
+                                        <td>${{ payment.amount }}</td>
+                                        <td>{{ payment.due_date }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ payment.frequency|title }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if payment.status == 'Active' %}success{% else %}warning{% endif %}">
+                                                {{ payment.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn nvc-btn nvc-btn-outline-primary" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn nvc-btn nvc-btn-outline-danger" title="Cancel">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No scheduled payments found</p>
+                            <button type="button" class="btn nvc-btn nvc-btn-primary">Schedule Your First Payment</button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Templates -->
+        <div class="col-lg-4 mb-4">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Payment Templates</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if scheduled_data.payment_templates %}
+                        {% for template in scheduled_data.payment_templates %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 border rounded">
+                            <div>
+                                <strong>{{ template.name }}</strong>
+                                <br>
+                                <small class="text-muted">${{ template.amount }} - {{ template.frequency }}</small>
+                            </div>
+                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary">Use</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No payment templates available</p>
+                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-primary">Create Template</button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="nvc-card mt-3">
+                <div class="nvc-nvc-card-header">
+                    <h6 class="mb-0">Quick Stats</h6>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ scheduled_data.upcoming_payments|length if scheduled_data.upcoming_payments else 0 }}</h4>
+                            <small class="text-muted">Upcoming</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ scheduled_data.payment_templates|length if scheduled_data.payment_templates else 0 }}</h4>
+                            <small class="text-muted">Templates</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

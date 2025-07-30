@@ -1,0 +1,665 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Smart Contracts Dashboard - NVC Banking & Crypto Platform{% endblock %}
+
+{% block page_title %}Smart Contracts Dashboard{% endblock %}
+{% block page_description %}Comprehensive smart contract management and blockchain operations center{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="nvc-btn nvc-btn-outline-enterprise" data-action="custom-action">
+    <i class="fas fa-download"></i>
+    Export Data
+</button>
+<button type="button" class="nvc-btn nvc-btn-secondary-enterprise" data-action="custom-action">
+    <i class="fas fa-chart-line"></i>
+    Monitor
+</button>
+<button type="button" class="nvc-btn nvc-btn-primary-enterprise" data-action="custom-action">
+    <i class="fas fa-rocket"></i>
+    Deploy Contract
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportContractData() {
+    const csvData = 'Contract,Network,Status,Gas Used,Transactions\n';
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'smart_contracts_dashboard.csv';
+    a.click();
+}
+
+function monitorContracts() {
+    window.location.href = "{{ url_for('smart_contracts.monitor_contracts') }}";
+}
+
+function deployContract() {
+    window.location.href = "{{ url_for('smart_contracts.deploy_contract') }}";
+}
+
+function viewRealTimeMonitor() {
+    window.location.href = "{{ url_for('smart_contracts.realtime_monitor') }}";
+}
+
+function manageContracts() {
+    window.location.href = "{{ url_for('smart_contracts.manage_contracts') }}";
+}
+
+function auditContracts() {
+    window.location.href = "{{ url_for('smart_contracts.audit_contracts') }}";
+}
+
+function liquidityDashboard() {
+    window.location.href = "{{ url_for('smart_contracts.liquidity_dashboard') }}";
+}
+
+function settlementDashboard() {
+    window.location.href = "{{ url_for('smart_contracts.settlement_dashboard') }}";
+}
+
+// Multi-Level Smart Contracts Dashboard Drilldown System
+document.addEventListener('DOMContentLoaded', function() {
+    // Level 1: Contract cards with drilldown navigation (existing functionality enhanced)
+    const contractCards = document.querySelectorAll('.card, .contract-card');
+    contractCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            const cardTitle = this.querySelector('h3, h4, h5, h6')?.textContent;
+            if (cardTitle?.includes('Deploy')) {
+                deployContract();
+            } else if (cardTitle?.includes('Monitor')) {
+                monitorContracts();
+            } else if (cardTitle?.includes('Manage')) {
+                manageContracts();
+            } else if (cardTitle?.includes('Audit')) {
+                auditContracts();
+            } else if (cardTitle?.includes('Real-time')) {
+                viewRealTimeMonitor();
+            } else if (cardTitle?.includes('Liquidity')) {
+                liquidityDashboard();
+            } else if (cardTitle?.includes('Settlement')) {
+                settlementDashboard();
+            }
+        });
+    });
+
+    // Level 2: Contract Type Cards
+    const contractTypeCards = document.querySelectorAll('.contract-type-card');
+    contractTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const contractType = this.getAttribute('data-contract-type');
+            handleContractTypeDrilldown(contractType);
+        });
+
+        // Add hover effects
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Level 3: Smart Contract Rows
+    const contractRows = document.querySelectorAll('.smart-contract-row');
+    contractRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Prevent navigation if clicking on action buttons
+            if (e.target.closest('.btn')) return;
+
+            const contractId = this.getAttribute('data-contract-id');
+            viewContractDetails(contractId);
+        });
+
+        // Add hover effects
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Contract type filter
+    const contractTypeFilter = document.getElementById('contract-type-filter');
+    if (contractTypeFilter) {
+        contractTypeFilter.addEventListener('change', function() {
+            filterContractsByType(this.value);
+        });
+    }
+});
+
+// Level 2: Contract Type Drilldown
+function handleContractTypeDrilldown(contractType) {
+    // Filter the contracts table by type
+    filterContractsByType(contractType);
+
+    // Update the filter dropdown
+    const contractTypeFilter = document.getElementById('contract-type-filter');
+    if (contractTypeFilter) {
+        contractTypeFilter.value = contractType;
+    }
+
+    // Scroll to contracts table
+    document.querySelector('#smart-contracts-table').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Level 3: Filter contracts by type
+function filterContractsByType(contractType) {
+    const rows = document.querySelectorAll('.smart-contract-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowType = row.getAttribute('data-contract-type');
+        if (!contractType || rowType === contractType) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    updateContractCounts(contractType, visibleCount);
+}
+
+// Update contract counts
+function updateContractCounts(activeFilter, visibleCount) {
+    const totalRows = document.querySelectorAll('.smart-contract-row').length;
+    const header = document.querySelector('.card-header-enterprise h4');
+    if (header) {
+        if (!activeFilter) {
+            header.innerHTML = `<i class="fas fa-list"></i> Deployed Smart Contracts (${totalRows} contracts)`;
+        } else {
+            const filterName = activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
+            header.innerHTML = `<i class="fas fa-list"></i> ${filterName} Contracts (${visibleCount} contracts)`;
+        }
+    }
+}
+
+// Level 4: View individual contract details (Level 4 → Level 5 drilldown)
+function viewContractDetails(contractId) {
+    // Navigate to detailed contract view with comprehensive analysis
+    const detailsUrl = "{{ url_for('smart_contracts.contract_details', contract_id='CONTRACT_ID') }}".replace('CONTRACT_ID', encodeURIComponent(contractId));
+    window.location.href = detailsUrl + '?view=comprehensive&include=code,events,transactions';
+}
+
+// Level 5: Specialized smart contract functions
+function auditContract(contractId) {
+    // Navigate to contract audit
+    const auditUrl = "{{ url_for('smart_contracts.contract_audit', contract_id='CONTRACT_ID') }}".replace('CONTRACT_ID', encodeURIComponent(contractId));
+    window.location.href = auditUrl + '?view=security&automated=true';
+}
+
+function resumeContract(contractId) {
+    if (confirm('Are you sure you want to resume this smart contract? This will make it active again.')) {
+        // Secure contract resumption
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ url_for('smart_contracts.resume_contract') }}";
+
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        form.appendChild(csrfToken);
+
+        const contractIdInput = document.createElement('input');
+        contractIdInput.type = 'hidden';
+        contractIdInput.name = 'contract_id';
+        contractIdInput.value = contractId;
+        form.appendChild(contractIdInput);
+
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'resume';
+        form.appendChild(action);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}
+
+function analyzeContractGas(contractId) {
+    // Navigate to contract gas analysis
+    const gasUrl = "{{ url_for('smart_contracts.gas_analysis', contract_id='CONTRACT_ID') }}".replace('CONTRACT_ID', encodeURIComponent(contractId));
+    window.location.href = gasUrl + '?view=optimization&recommendations=true';
+}
+
+function viewContractEvents(contractId) {
+    // Navigate to contract events
+    const eventsUrl = "{{ url_for('smart_contracts.contract_events', contract_id='CONTRACT_ID') }}".replace('CONTRACT_ID', encodeURIComponent(contractId));
+    window.location.href = eventsUrl + '?view=decoded&realtime=true';
+}
+
+function upgradeContract(contractId) {
+    // Navigate to contract upgrade
+    const upgradeUrl = "{{ url_for('smart_contracts.contract_upgrade', contract_id='CONTRACT_ID') }}".replace('CONTRACT_ID', encodeURIComponent(contractId));
+    window.location.href = upgradeUrl + '?view=proxy&safety_check=true';
+}
+
+function generateContractReport(contractId) {
+    // Navigate to contract report generation
+    const reportUrl = "{{ url_for('smart_contracts.contract_report', contract_id='CONTRACT_ID') }}".replace('CONTRACT_ID', encodeURIComponent(contractId));
+    window.location.href = reportUrl + '?format=security&export=pdf&audit_trail=true';
+}
+
+function monitorContractRealtime(contractId) {
+    // Navigate to real-time contract monitoring
+    const monitorUrl = "{{ url_for('smart_contracts.realtime_monitor', contract_id='CONTRACT_ID') }}".replace('CONTRACT_ID', encodeURIComponent(contractId));
+    window.location.href = monitorUrl + '?alerts=true&dashboard=true';
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header bg-gradient-primary text-white">
+                    <h2 class="nvc-card-title mb-0">
+                        <i class="fas fa-code me-2"></i>Smart Contracts Dashboard
+                    </h2>
+                    <p class="nvc-card-text mb-0">Blockchain Smart Contract Management & Deployment Center</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contract Overview Cards - Now Clickable for Drill-Down -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <a href="{{ url_for('smart_contracts.monitor') }}" class="text-decoration-none">
+                <div class="card bg-success text-white dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="nvc-card-title">{{ contracts_data.active_contracts }}</h4>
+                                <p class="nvc-card-text">Active Contracts</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Monitor Contracts</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('smart_contracts.deploy') }}" class="text-decoration-none">
+                <div class="card bg-info text-white dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="nvc-card-title">{{ contracts_data.deployed_contracts }}</h4>
+                                <p class="nvc-card-text">Total Deployed</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-rocket fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Deploy Contract</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('smart_contracts.realtime') }}" class="text-decoration-none">
+                <div class="card bg-warning text-white dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="nvc-card-title">{{ contracts_data.pending_deployments }}</h4>
+                                <p class="nvc-card-text">Pending</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Real-time Status</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('smart_contracts.monitor') }}" class="text-decoration-none">
+                <div class="card bg-primary text-white dashboard-stat-card hover-nvc-card">
+                    <div class="nvc-nvc-card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="nvc-card-title">{{ '{:,}'.format(contracts_data.total_gas_used) }}</h4>
+                                <p class="nvc-card-text">Total Gas Used</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-fire fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-light"><i class="fas fa-arrow-right me-1"></i>Gas Analysis</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+<!-- Level 2: Smart Contract Type Categories -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-layer-group"></i> Smart Contract Types</h4>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="row g-3">
+                    <div class="col-xl-2 col-md-4">
+                        <div class="contract-type-nvc-card" data-contract-type="defi" >
+                            <div class="contract-icon bg-primary">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="contract-content">
+                                <h4>47</h4>
+                                <p>DeFi Contracts</p>
+                                <small class="text-success">Lending, DEX, Yield</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="contract-type-nvc-card" data-contract-type="nft" >
+                            <div class="contract-icon bg-success">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            <div class="contract-content">
+                                <h4>23</h4>
+                                <p>NFT Contracts</p>
+                                <small class="text-info">ERC-721, ERC-1155</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="contract-type-nvc-card" data-contract-type="governance" >
+                            <div class="contract-icon bg-warning">
+                                <i class="fas fa-vote-yea"></i>
+                            </div>
+                            <div class="contract-content">
+                                <h4>12</h4>
+                                <p>Governance</p>
+                                <small class="text-warning">DAO, Voting</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="contract-type-nvc-card" data-contract-type="stablecoin" >
+                            <div class="contract-icon bg-info">
+                                <i class="fas fa-anchor"></i>
+                            </div>
+                            <div class="contract-content">
+                                <h4>8</h4>
+                                <p>Stablecoin</p>
+                                <small class="text-primary">NVCT, Backing</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="contract-type-nvc-card" data-contract-type="bridge" >
+                            <div class="contract-icon bg-secondary">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="contract-content">
+                                <h4>15</h4>
+                                <p>Bridge Contracts</p>
+                                <small class="text-secondary">Cross-chain</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="contract-type-nvc-card" data-contract-type="security" >
+                            <div class="contract-icon bg-danger">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="contract-content">
+                                <h4>31</h4>
+                                <p>Security</p>
+                                <small class="text-danger">Multisig, Proxy</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Level 3: Smart Contracts Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="enterprise-nvc-card">
+            <div class="nvc-nvc-card-header-enterprise">
+                <h4><i class="fas fa-list"></i> Deployed Smart Contracts</h4>
+                <div class="header-actions">
+                    <select id="contract-type-filter" class="form-select nvc-form-select-sm">
+                        <option value="">All Contract Types</option>
+                        <option value="defi">DeFi Contracts</option>
+                        <option value="nft">NFT Contracts</option>
+                        <option value="governance">Governance</option>
+                        <option value="stablecoin">Stablecoin</option>
+                        <option value="bridge">Bridge Contracts</option>
+                        <option value="security">Security</option>
+                    </select>
+                </div>
+            </div>
+            <div class="nvc-nvc-card-body">
+                <div class="table-responsive">
+                    <table class="table enterprise-table">
+                        <thead>
+                            <tr>
+                                <th>Contract Address</th>
+                                <th>Type</th>
+                                <th>Network</th>
+                                <th>Status</th>
+                                <th>Gas Used</th>
+                                <th>Transactions</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="smart-contracts-table">
+                            <tr class="smart-contract-row" data-contract-id="0x1234...abcd" data-contract-type="defi" data-status="active" >
+                                <td><strong>0x1234...abcd</strong></td>
+                                <td><span class="badge bg-primary">DeFi</span></td>
+                                <td><span class="badge bg-success">Ethereum</span></td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td class="text-info">2.5M</td>
+                                <td class="text-success">15,847</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Audit</button>
+                                </td>
+                            </tr>
+                            <tr class="smart-contract-row" data-contract-id="0x5678...efgh" data-contract-type="nft" data-status="active" >
+                                <td><strong>0x5678...efgh</strong></td>
+                                <td><span class="badge bg-success">NFT</span></td>
+                                <td><span class="badge bg-warning">Polygon</span></td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td class="text-info">890K</td>
+                                <td class="text-success">3,247</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" data-action="custom-action">Audit</button>
+                                </td>
+                            </tr>
+                            <tr class="smart-contract-row" data-contract-id="0x9abc...def0" data-contract-type="stablecoin" data-status="paused" >
+                                <td><strong>0x9abc...def0</strong></td>
+                                <td><span class="badge bg-info">Stablecoin</span></td>
+                                <td><span class="badge bg-primary">BSC</span></td>
+                                <td><span class="badge bg-warning">Paused</span></td>
+                                <td class="text-info">5.2M</td>
+                                <td class="text-success">89,456</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" data-action="custom-action">Details</button>
+                                    <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-warning" data-action="custom-action">Resume</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('smart_contracts.deploy_contract') }}" class="btn nvc-btn nvc-btn-primary btn-lg w-100">
+                                <i class="fas fa-plus-circle me-2"></i>Deploy New Contract
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('smart_contracts.manage_contracts') }}" class="btn btn-info btn-lg w-100">
+                                <i class="fas fa-cogs me-2"></i>Manage Contracts
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('smart_contracts.audit_contracts') }}" class="btn nvc-btn nvc-btn-warning btn-lg w-100">
+                                <i class="fas fa-shield-alt me-2"></i>Security Audits
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('smart_contracts.monitor_contracts') }}" class="btn nvc-btn nvc-btn-success btn-lg w-100">
+                                <i class="fas fa-chart-line me-2"></i>Monitor Activity
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Deployments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Contract Deployments
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Contract Name</th>
+                                    <th>Address</th>
+                                    <th>Deployed</th>
+                                    <th>Gas Used</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for deployment in contracts_data.recent_deployments %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ deployment.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <code class="text-primary">{{ deployment.address }}</code>
+                                        <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-secondary ms-2" data-action="custom-action">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </td>
+                                    <td>{{ deployment.deployed_at }}</td>
+                                    <td>{{ '{:,}'.format(deployment.gas_used) }}</td>
+                                    <td>
+                                        {% if deployment.status == 'Active' %}
+                                            <span class="badge bg-success">{{ deployment.status }}</span>
+                                        {% elif deployment.status == 'Pending' %}
+                                            <span class="badge bg-warning">{{ deployment.status }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ deployment.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-info" title="Interact">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm nvc-btn nvc-btn-outline-success" title="Verify">
+                                                <i class="fas fa-check-double"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success notification
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed';
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    Address copied to clipboard!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-action="custom-action"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        // Remove toast after 3 seconds
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                document.body.removeChild(toast);
+            }
+        }, 3000);
+    }).catch(function() {
+        alert('Failed to copy address to clipboard');
+    });
+}
+</script>
+</div>
+{% endblock %}

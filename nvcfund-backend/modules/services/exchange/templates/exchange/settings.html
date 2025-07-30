@@ -1,0 +1,247 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Exchange Settings - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="exchange-settings-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-cog me-2"></i>
+            Exchange Settings
+        </h1>
+        <p class="page-subtitle">Configure your exchange preferences and trading parameters</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Trading Preferences -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Trading Preferences
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="nvc-form-label">Default Trading Pair</label>
+                                <select class="nvc-form-select">
+                                    <option>USD/EUR</option>
+                                    <option>USD/GBP</option>
+                                    <option>BTC/USD</option>
+                                    <option>ETH/USD</option>
+                                    <option>NVCT/USD</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="nvc-form-label">Default Order Type</label>
+                                <select class="nvc-form-select">
+                                    <option>Market Order</option>
+                                    <option>Limit Order</option>
+                                    <option>Stop Loss</option>
+                                    <option>Take Profit</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="nvc-form-label">Maximum Trade Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" value="10000">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="nvc-form-label">Daily Trading Limit</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="nvc-form-input" value="50000">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Risk Management -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Risk Management
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="nvc-form-label">Stop Loss Percentage</label>
+                                <div class="input-group">
+                                    <input type="number" class="nvc-form-input" value="5" min="1" max="20">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="nvc-form-label">Take Profit Percentage</label>
+                                <div class="input-group">
+                                    <input type="number" class="nvc-form-input" value="10" min="1" max="50">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="autoStopLoss" checked>
+                                <label class="form-check-label" for="autoStopLoss">
+                                    Automatic Stop Loss on all trades
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="riskWarnings" checked>
+                                <label class="form-check-label" for="riskWarnings">
+                                    Show risk warnings for high-volume trades
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- API Configuration -->
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-code me-2"></i>
+                        API Configuration
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="binanceApi" checked>
+                                <label class="form-check-label" for="binanceApi">
+                                    Enable Binance API Integration
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="realTimeData">
+                                <label class="form-check-label" for="realTimeData">
+                                    Real-time market data streaming
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="nvc-form-label">API Rate Limit</label>
+                            <select class="nvc-form-select">
+                                <option>Standard (100 req/min)</option>
+                                <option>High (500 req/min)</option>
+                                <option>Premium (1000 req/min)</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="nvc-card mb-4">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn nvc-btn nvc-btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Save All Settings
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-primary">
+                            <i class="fas fa-undo me-2"></i>
+                            Reset to Defaults
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-secondary">
+                            <i class="fas fa-download me-2"></i>
+                            Export Settings
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-success">
+                            <i class="fas fa-upload me-2"></i>
+                            Import Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Summary -->
+            <div class="nvc-card">
+                <div class="nvc-nvc-card-header">
+                    <h5 class="nvc-card-title mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Account Summary
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <div class="account-stats">
+                        <div class="stat-item">
+                            <div class="d-flex justify-content-between">
+                                <span>Account Type</span>
+                                <strong>Premium</strong>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="d-flex justify-content-between">
+                                <span>Trading Level</span>
+                                <strong>Level 3</strong>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="d-flex justify-content-between">
+                                <span>Available Balance</span>
+                                <strong>$125,450.00</strong>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="d-flex justify-content-between">
+                                <span>Trading Volume (30d)</span>
+                                <strong>$480,250.00</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.exchange-settings-container {
+    padding: 2rem 0;
+}
+
+.stat-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.account-stats {
+    padding: 1rem 0;
+}
+</style>
+</div>
+{% endblock %}

@@ -1,0 +1,460 @@
+{% extends "unified_base.html" %}
+{% from "components/nvc_components.html" import metric_card, action_card, account_card, transaction_row, form_input, form_select, notification_banner, progress_bar, stats_grid, loading_spinner, empty_state %}
+
+
+{% block title %}Exchange History - NVC Banking Platform{% endblock %}
+
+{% block content %}
+<div class="nvc-page-content">
+    <div class="container-fluid">
+    <!-- Exchange History Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-secondary">
+                <div class="nvc-nvc-card-header bg-secondary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0">
+                                <i class="fas fa-history me-2"></i>
+                                Exchange History
+                            </h3>
+                            <p class="mb-0">Complete record of your exchange transactions</p>
+                        </div>
+                        <a href="{{ url_for('exchange.exchange_dashboard') }}" class="btn nvc-btn nvc-btn-outline-light">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Exchange
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-info">
+                <div class="nvc-nvc-card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Filter Transactions
+                    </h5>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    <form method="GET" class="row align-items-end">
+                        <div class="col-md-3">
+                            <label class="nvc-form-label text-light">Exchange Type</label>
+                            <select name="type" class="nvc-form-select bg-dark text-light border-info">
+                                <option value="">All Types</option>
+                                <option value="internal" {% if request.args.get('type') == 'internal' %}selected{% endif %}>Internal Exchange</option>
+                                <option value="external" {% if request.args.get('type') == 'external' %}selected{% endif %}>External Exchange</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="nvc-form-label text-light">From Date</label>
+                            <input type="date" name="from_date" class="nvc-form-input bg-dark text-light border-info" 
+                                   value="{{ request.args.get('from_date', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="nvc-form-label text-light">To Date</label>
+                            <input type="date" name="to_date" class="nvc-form-input bg-dark text-light border-info" 
+                                   value="{{ request.args.get('to_date', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid gap-2 d-md-flex">
+                                <button type="submit" class="btn btn-info flex-fill">
+                                    <i class="fas fa-search me-2"></i>Filter
+                                </button>
+                                <a href="{{ url_for('exchange.exchange_history') }}" class="btn nvc-btn nvc-btn-outline-secondary">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Statistics -->
+    {% if exchange_history and exchange_history.transactions %}
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-dark border-primary">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-exchange-alt text-primary mb-2" class="nvc-fs-2rem"></i>
+                    <h6 class="text-light">Total Transactions</h6>
+                    <h4 class="text-primary">{{ exchange_history.total }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-dark border-success">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-check-circle text-success mb-2" class="nvc-fs-2rem"></i>
+                    <h6 class="text-light">Completed</h6>
+                    <h4 class="text-success">
+                        {{ exchange_history.transactions|selectattr('status.name', 'equalto', 'COMPLETED')|list|length }}
+                    </h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-dark border-warning">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-clock text-warning mb-2" class="nvc-fs-2rem"></i>
+                    <h6 class="text-light">Pending</h6>
+                    <h4 class="text-warning">
+                        {{ exchange_history.transactions|selectattr('status.name', 'equalto', 'PENDING')|list|length }}
+                    </h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="nvc-card bg-dark border-danger">
+                <div class="nvc-nvc-card-body text-center">
+                    <i class="fas fa-times-circle text-danger mb-2" class="nvc-fs-2rem"></i>
+                    <h6 class="text-light">Failed</h6>
+                    <h4 class="text-danger">
+                        {{ exchange_history.transactions|selectattr('status.name', 'equalto', 'FAILED')|list|length }}
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Transaction History Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="nvc-card bg-dark border-light">
+                <div class="nvc-nvc-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-list me-2"></i>Transaction History
+                    </h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm" data-action="custom-action">
+                            <i class="fas fa-download me-1"></i>Export CSV
+                        </button>
+                        <button type="button" class="btn nvc-btn nvc-btn-outline-light btn-sm" data-action="custom-action">
+                            <i class="fas fa-print me-1"></i>Print
+                        </button>
+                    </div>
+                </div>
+                <div class="nvc-nvc-card-body">
+                    {% if exchange_history and exchange_history.transactions %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover" id="exchangeHistoryTable">
+                                <thead class="table-secondary">
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Type</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th class="text-end">Amount Sent</th>
+                                        <th class="text-end">Amount Received</th>
+                                        <th class="text-end">Rate</th>
+                                        <th class="text-end">Fee</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for exchange in exchange_history.transactions %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ exchange.created_at.strftime('%Y-%m-%d') }}</strong><br>
+                                            <small class="text-light">{{ exchange.created_at.strftime('%H:%M:%S') }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if exchange.exchange_type.name == 'INTERNAL_EXCHANGE' %}bg-primary{% else %}bg-warning{% endif %}">
+                                                {{ exchange.exchange_type.name|replace('_', ' ')|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ exchange.from_currency }}</strong><br>
+                                            {% if exchange.from_account_id %}
+                                                <small class="text-light">Account: ****{{ exchange.from_account_id|string }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ exchange.to_currency }}</strong><br>
+                                            {% if exchange.to_account_id %}
+                                                <small class="text-light">Account: ****{{ exchange.to_account_id|string }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <strong>{{ "{:,.6f}".format(exchange.from_amount) }}</strong><br>
+                                            <small class="text-light">{{ exchange.from_currency }}</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong class="text-success">{{ "{:,.6f}".format(exchange.to_amount) }}</strong><br>
+                                            <small class="text-light">{{ exchange.to_currency }}</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong>{{ "{:.6f}".format(exchange.exchange_rate) }}</strong><br>
+                                            <small class="text-light">{{ exchange.from_currency }}/{{ exchange.to_currency }}</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong>{{ "{:,.6f}".format(exchange.fee_amount or 0) }}</strong><br>
+                                            <small class="text-light">{{ exchange.fee_currency or exchange.from_currency }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if exchange.status.name == 'COMPLETED' %}bg-success{% elif exchange.status.name == 'PENDING' %}bg-warning{% elif exchange.status.name == 'PROCESSING' %}bg-info{% else %}bg-danger{% endif %}">
+                                                {{ exchange.status.name|title }}
+                                            </span>
+                                            {% if exchange.status.name == 'COMPLETED' %}
+                                                <br><small class="text-success">
+                                                    <i class="fas fa-check me-1"></i>
+                                                    {{ exchange.completed_at.strftime('%H:%M') if exchange.completed_at else 'Confirmed' }}
+                                                </small>
+                                            {% elif exchange.status.name == 'PENDING' %}
+                                                <br><small class="text-warning">
+                                                    <i class="fas fa-clock me-1"></i>Processing
+                                                </small>
+                                            {% elif exchange.status.name == 'FAILED' %}
+                                                <br><small class="text-danger">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                                    {% if exchange.error_message %}
+                                                        {{ exchange.error_message[:20] }}...
+                                                    {% else %}
+                                                        Error occurred
+                                                    {% endif %}
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn nvc-btn nvc-btn-outline-info btn-sm" 
+                                                        data-action="custom-action" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {% if exchange.exchange_type.name == 'EXTERNAL_EXCHANGE' %}
+                                                    <button type="button" class="btn nvc-btn nvc-btn-outline-warning btn-sm" 
+                                                            data-action="custom-action" title="View on Binance">
+                                                        <i class="fas fa-external-link-alt"></i>
+                                                    </button>
+                                                {% endif %}
+                                                {% if exchange.status.name == 'COMPLETED' %}
+                                                    <button type="button" class="btn nvc-btn nvc-btn-outline-success btn-sm" 
+                                                            data-action="custom-action" title="Download Receipt">
+                                                        <i class="fas fa-receipt"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if pagination_data.pages > 1 %}
+                        <nav aria-label="Exchange history pagination">
+                            <ul class="pagination pagination-dark justify-content-center">
+                                {% if pagination_data.page > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link bg-dark text-light border-secondary" 
+                                           href="{{ url_for('exchange.exchange_history', page=pagination_data.page-1, **request.args) }}">
+                                            Previous
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page_num in range(1, pagination_data.pages + 1) %}
+                                    {% if page_num == pagination_data.page %}
+                                        <li class="page-item active">
+                                            <span class="page-link bg-info border-info">{{ page_num }}</span>
+                                        </li>
+                                    {% elif page_num in range(pagination_data.page - 2, pagination_data.page + 3) %}
+                                        <li class="page-item">
+                                            <a class="page-link bg-dark text-light border-secondary" 
+                                               href="{{ url_for('exchange.exchange_history', page=page_num, **request.args) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% elif page_num == 1 or page_num == pagination_data.pages %}
+                                        <li class="page-item">
+                                            <a class="page-link bg-dark text-light border-secondary" 
+                                               href="{{ url_for('exchange.exchange_history', page=page_num, **request.args) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% elif page_num == 2 or page_num == pagination_data.pages - 1 %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link bg-dark text-light border-secondary">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if pagination_data.page < pagination_data.pages %}
+                                    <li class="page-item">
+                                        <a class="page-link bg-dark text-light border-secondary" 
+                                           href="{{ url_for('exchange.exchange_history', page=pagination_data.page+1, **request.args) }}">
+                                            Next
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-chart-line text-light" style="font-size: 4rem;"></i>
+                            <h4 class="text-light mt-3">No Exchange History</h4>
+                            <p class="text-light mb-4">You haven't made any exchange transactions yet.</p>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <a href="{{ url_for('exchange.internal_exchange') }}" class="btn nvc-btn nvc-btn-primary">
+                                    <i class="fas fa-university me-2"></i>Start Internal Exchange
+                                </a>
+                                <a href="{{ url_for('exchange.external_exchange') }}" class="btn nvc-btn nvc-btn-warning">
+                                    <i class="fas fa-globe me-2"></i>External Exchange
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exchange Details Modal -->
+<div class="modal fade" id="exchangeDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark border-info">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Exchange Transaction Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="exchangeDetailsContent">
+                <!-- Details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn nvc-btn nvc-btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewDetails(exchangeId) {
+    fetch(`/exchange/api/transaction/${exchangeId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const transaction = data.transaction;
+                const detailsHtml = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-light">Transaction Information</h6>
+                            <table class="table table-dark table-sm">
+                                <tr><td><strong>Transaction ID:</strong></td><td>${transaction.id}</td></tr>
+                                <tr><td><strong>Type:</strong></td><td>${transaction.exchange_type}</td></tr>
+                                <tr><td><strong>Status:</strong></td><td><span class="badge bg-${getStatusColor(transaction.status)}">${transaction.status}</span></td></tr>
+                                <tr><td><strong>Created:</strong></td><td>${new Date(transaction.created_at).toLocaleString()}</td></tr>
+                                ${transaction.completed_at ? `<tr><td><strong>Completed:</strong></td><td>${new Date(transaction.completed_at).toLocaleString()}</td></tr>` : ''}
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-light">Exchange Details</h6>
+                            <table class="table table-dark table-sm">
+                                <tr><td><strong>From:</strong></td><td>${transaction.from_amount} ${transaction.from_currency}</td></tr>
+                                <tr><td><strong>To:</strong></td><td>${transaction.to_amount} ${transaction.to_currency}</td></tr>
+                                <tr><td><strong>Rate:</strong></td><td>${transaction.exchange_rate}</td></tr>
+                                <tr><td><strong>Fee:</strong></td><td>${transaction.fee_amount || 0} ${transaction.fee_currency || transaction.from_currency}</td></tr>
+                                ${transaction.external_transaction_id ? `<tr><td><strong>External ID:</strong></td><td>${transaction.external_transaction_id}</td></tr>` : ''}
+                            </table>
+                        </div>
+                    </div>
+                    ${transaction.error_message ? `<div class="alert nvc-nvc-alert-danger mt-3"><strong>Error:</strong> ${transaction.error_message}</div>` : ''}
+                `;
+                document.getElementById('exchangeDetailsContent').innerHTML = detailsHtml;
+                new bootstrap.Modal(document.getElementById('exchangeDetailsModal')).show();
+            } else {
+                alert('Error loading transaction details');
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'COMPLETED': 'success',
+        'PENDING': 'warning',
+        'PROCESSING': 'info',
+        'FAILED': 'danger',
+        'CANCELLED': 'secondary'
+    };
+    return colors[status] || 'secondary';
+}
+
+function viewBinanceOrder(externalId) {
+    if (externalId) {
+        window.open(`https://www.binance.com/en/my/orders/exchange/tradeorder?orderId=${externalId}`, '_blank');
+    } else {
+        alert('No external transaction ID available');
+    }
+}
+
+function downloadReceipt(exchangeId) {
+    window.open(`/exchange/api/receipt/${exchangeId}`, '_blank');
+}
+
+function exportToCSV() {
+    const table = document.getElementById('exchangeHistoryTable');
+    const rows = table.querySelectorAll('tr');
+    let csv = [];
+    
+    // Header row
+    const headerCells = rows[0].querySelectorAll('th');
+    const headers = Array.from(headerCells).slice(0, -1).map(th => th.textContent.trim()); // Exclude Actions column
+    csv.push(headers.join(','));
+    
+    // Data rows
+    for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].querySelectorAll('td');
+        const rowData = Array.from(cells).slice(0, -1).map(td => {
+            // Clean up the cell content
+            const text = td.textContent.trim().replace(/\s+/g, ' ').replace(/,/g, ';');
+            return `"${text}"`;
+        });
+        csv.push(rowData.join(','));
+    }
+    
+    // Download CSV
+    const csvContent = csv.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `exchange_history_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+// Auto-refresh for pending transactions
+document.addEventListener('DOMContentLoaded', function() {
+    const pendingCount = {{ exchange_history.transactions|selectattr('status.name', 'equalto', 'PENDING')|list|length if exchange_history else 0 }};
+    if (pendingCount > 0) {
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000); // Refresh after 30 seconds if there are pending transactions
+    }
+});
+</script>
+
+<style>
+@media print {
+    .btn, .card-header .btn-group, .pagination { display: none !important; }
+    .card { border: 1px solid #ddd !important; }
+    .table-dark { --bs-table-bg: white !important; color: black !important; }
+    .text-light, .text-white { color: black !important; }
+}
+</style>
+</div>
+{% endblock %}
