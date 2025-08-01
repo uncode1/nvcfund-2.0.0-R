@@ -83,6 +83,22 @@ X-Final-URL: /banking/transfers/new?channel=swift_transfer
 
 Use browser developer tools to inspect these headers when debugging routing issues.
 
+## Data Integrity and System Stability
+
+To prevent data loss or corruption, the platform is built with several safeguards.
+
+### 1. Atomic Database Transactions
+
+All database operations within a single API request are handled within a transaction. This ensures that a series of related changes either all succeed or all fail together, preventing partially updated or inconsistent data.
+
+### 2. Automatic Rollback on Error
+
+If an unhandled error occurs during a request (resulting in a 500-level error), the system automatically performs a **database rollback**. This cancels any database changes made during that failed request, ensuring the database remains in a clean, consistent state. This is a critical safeguard against data corruption from unexpected failures.
+
+### 3. Database Migrations
+
+Schema changes are managed through a migration system. This ensures that database structure changes are applied consistently and safely, preserving existing data.
+
 ## Log Categories and Locations
 
 ### Application Logs
@@ -257,9 +273,9 @@ gzip /var/log/nvc-banking/application.log.1
 
 ### Emergency Contacts
 
-- **Technical Lead**: technical-lead@nvcbank.com
-- **DevOps Team**: devops@nvcbank.com
-- **Security Team**: security@nvcbank.com
+- **Technical Lead**: technical-lead@nvcfund.com
+- **DevOps Team**: devops@nvcfund.com
+- **Security Team**: security@nvcfund.com
 
 ---
 

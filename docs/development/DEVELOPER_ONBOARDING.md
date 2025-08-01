@@ -80,11 +80,9 @@ nvcfund-2.0.0/
 │   │   ├── compliance/       # Compliance features
 │   │   ├── dashboard/        # Dashboard module
 │   │   └── core/             # Core utilities and extensions
-│   ├── static/               # Static assets (CSS, JS, images)
-│   ├── templates/            # Jinja2 templates
 │   ├── scripts/              # Utility scripts
 │   └── config.py             # Application configuration
-├── nvcfund-frontend/         # Frontend React application
+├── nvcfund-frontend/         # (Separate) Frontend application
 ├── tests/                    # Test suite
 ├── docs/                     # Documentation
 └── scripts/                  # Project scripts
@@ -103,10 +101,7 @@ modules/banking/
 ├── routes.py                # Flask routes
 ├── models.py                # Database models
 ├── services.py              # Business logic
-├── forms.py                 # WTForms (if applicable)
-├── templates/               # Module-specific templates
-└── api/                     # API endpoints
-```
+├── forms.py                 # WTForms for data validation
 
 ### Key Components
 
@@ -178,14 +173,14 @@ new_module_bp = Blueprint('new_module', __name__, url_prefix='/new-module')
 from . import routes
 
 # routes.py
-from flask import render_template, request, jsonify
+from flask import jsonify
 from flask_login import login_required
 from . import new_module_bp
 
 @new_module_bp.route('/')
 @login_required
 def index():
-    return render_template('new_module/index.html')
+    return jsonify({'message': 'Welcome to the new module API!'})
 
 # models.py
 from modules.core.extensions import db
@@ -229,61 +224,17 @@ python run_tests.py --coverage
 
 ## 🎨 Frontend Development
 
-### Template System
+### Headless Backend & React Frontend
 
-We use a **unified template system** with Jinja2:
+The NVC Banking Platform operates with a **headless architecture**. The Flask backend serves as a pure JSON API, and it does not render any HTML templates.
 
-```html
-<!-- Extend base template -->
-{% extends "unified_base.html" %}
+The frontend is a separate, modern **React Single-Page Application (SPA)**. All UI components, pages, and interactions are handled by the React codebase.
 
-<!-- Import components -->
-{% from "components/unified_navigation.html" import render_main_navigation %}
-{% from "components/unified_forms.html" import form_container, form_group %}
-
-{% block content %}
-<div class="container">
-    {{ render_main_navigation() }}
-    
-    {% call form_container("User Registration", "Create your account") %}
-        {{ form_group("Email", "email", "email", required=true) }}
-        {{ form_group("Password", "password", "password", required=true) }}
-    {% endcall %}
-</div>
-{% endblock %}
-```
-
-### CSS Framework
-
-Use our unified CSS system:
-
-```html
-<!-- Include unified CSS -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/unified-template-system.css') }}">
-
-<!-- Use unified classes -->
-<div class="nvc-card">
-    <button class="nvc-btn nvc-btn-primary" data-action="submit-form">
-        Submit
-    </button>
-</div>
-```
-
-### JavaScript Interactions
-
-Use data-action pattern instead of onclick:
-
-```html
-<!-- ❌ Don't use onclick -->
-<button onclick="deleteItem('123')">Delete</button>
-
-<!-- ✅ Use data-action -->
-<button data-action="delete-item" 
-        data-target="123" 
-        data-confirm="Are you sure?">
-    Delete
-</button>
-```
+**Key Points for Developers:**
+- **API-Driven**: All features are exposed through RESTful API endpoints. Your work on the backend will primarily involve creating and maintaining these endpoints.
+- **JSON Communication**: The backend communicates with the frontend exclusively through JSON.
+- **Decoupled Workflow**: Backend and frontend development can occur in parallel. Refer to the API documentation for endpoint contracts.
+- **No Template Engine**: You will not be working with Jinja2 or any other server-side template engine.
 
 ## 🔒 Security Guidelines
 

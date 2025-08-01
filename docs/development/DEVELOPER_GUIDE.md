@@ -20,62 +20,13 @@ The NVC Banking Platform is a comprehensive enterprise-grade banking application
 - **Backend**: Flask 3.0+ with Python 3.11+
 - **Frontend**: React 18.3.1 with TypeScript
 - **Database**: PostgreSQL 15+ with SQLAlchemy 2.0+
-- **UI System**: Unified template system with component library
 - **Security**: Banking-grade encryption and compliance frameworks
-
+ 
 ## UI Development
 
-### Template System
-For complete UI development guidelines, see [Unified UI Developer Guide](../DEVELOPER_GUIDE_UNIFIED_UI.md).
+The NVC Banking Platform utilizes a decoupled frontend-backend architecture. The frontend is a modern Single-Page Application (SPA) built with **React 18.3.1 and TypeScript**.
 
-**Quick Reference:**
-```html
-{% extends "unified_base.html" %}
-{% from "components/nvc_components.html" import metric_card, action_card %}
-```
-
-**Validation:**
-```bash
-python scripts/template_consistency_checker.py --check-all
-```
-
-## System Architecture
-
-### Backend Architecture
-```
-nvcfund-backend/
-├── app_factory.py          # Application factory pattern
-├── main.py                 # WSGI entry point
-├── config.py              # Configuration management
-├── modules/               # Modular architecture
-│   ├── auth/             # Authentication & user management
-│   ├── banking/          # Core banking operations
-│   ├── treasury/         # Treasury operations
-│   ├── sovereign/        # Sovereign banking functions
-│   ├── compliance/       # Regulatory compliance
-│   ├── security_center/  # Comprehensive data security framework
-│   │   ├── data_security.py              # Banking-grade encryption & transmission
-│   │   ├── secure_models.py              # Automatic field-level encryption
-│   │   ├── secure_routes.py              # Banking-grade route protection
-│   │   └── data_security_implementation.py # Platform-wide security
-│   ├── smart_contracts/  # Blockchain integration
-│   └── [30+ other modules]
-├── templates/            # Jinja2 templates
-└── static/              # Static assets
-```
-
-### Frontend Architecture
-```
-nvcfund-frontend/
-├── src/
-│   ├── components/       # Reusable React components
-│   ├── pages/           # Page components
-│   ├── services/        # API service layer
-│   ├── context/         # React context providers
-│   └── utils/           # Utility functions
-├── public/              # Public assets
-└── build/               # Production build output
-```
+All user interfaces are managed by the React application, which communicates with the Flask backend via a comprehensive JSON API. The backend is purely an API service and does not render any HTML templates.
 
 ## Development Environment Setup
 
@@ -328,8 +279,7 @@ modules/module_name/
 ├── routes.py            # Route handlers
 ├── models.py            # Database models
 ├── services.py          # Business logic
-├── api.py              # API endpoints
-├── templates/          # Module templates
+├── api.py               # API endpoints (often merged into routes.py)
 └── static/            # Module assets
 ```
 

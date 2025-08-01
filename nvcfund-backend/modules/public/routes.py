@@ -4,7 +4,7 @@ Professional public-facing pages with enhanced presentation and organization
 Version: 2.0.0 - Complete redesign for professional banking interface
 """
 
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
+from flask import Blueprint, request, jsonify
 from datetime import datetime
 from modules.utils.services import ErrorLoggerService
 from typing import Dict, Any, Optional
@@ -29,8 +29,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Create blueprint with template folder - no URL prefix for public routes
-public_bp = Blueprint('public', __name__,
-                     template_folder='templates')
+public_bp = Blueprint('public', __name__)
 
 # Import and register API blueprint
 from .api import public_api_bp
@@ -40,7 +39,7 @@ error_logger = ErrorLoggerService()
 
 # ===== UTILITY FUNCTIONS =====
 
-def handle_template_error(route_name: str, error: Exception, status_code: int = 500) -> tuple:
+def handle_api_error(route_name: str, error: Exception, status_code: int = 500) -> tuple:
     """Centralized error handling for template rendering"""
     logger.error(f"Error rendering {route_name}: {error}")
     error_logger.log_error(
@@ -52,7 +51,10 @@ def handle_template_error(route_name: str, error: Exception, status_code: int = 
             'ip_address': request.remote_addr
         }
     )
-    return render_template('public/500.html'), status_code
+    return jsonify({
+        'status': 'error',
+        'message': 'An internal server error occurred.'
+    }), status_code
 
 def validate_contact_form(form_data: Dict[str, str]) -> tuple[bool, Optional[str]]:
     """Validate contact form data"""
@@ -74,34 +76,49 @@ def validate_contact_form(form_data: Dict[str, str]) -> tuple[bool, Optional[str
 @public_bp.route('/')
 def index():
     """Main landing page - Professional banking homepage"""
-    try:
-        return render_template('public/index.html')
-    except Exception as e:
-        return handle_template_error('public.index', e)
+    return jsonify({
+        'status': 'success',
+        'page': 'home',
+        'message': 'Welcome to the NVC Banking Platform API.',
+        'version': '2.0.0'
+    })
 
 @public_bp.route('/about')
 def about():
     """About NVC Banking Platform - Company information and values"""
-    try:
-        return render_template('public/about.html')
-    except Exception as e:
-        return handle_template_error('public.about', e)
+    return jsonify({
+        'page': 'about',
+        'company_name': 'NVC Banking Platform',
+        'mission': 'To provide comprehensive enterprise-grade banking solutions with modern technologies and banking-grade security.',
+        'founded': 2024
+    })
 
 @public_bp.route('/services')
 def services():
     """Banking services overview - Comprehensive service catalog"""
-    try:
-        return render_template('public/services.html')
-    except Exception as e:
-        return handle_template_error('public.services', e)
+    return jsonify({
+        'page': 'services',
+        'services': [
+            'Core Banking Operations',
+            'Treasury Operations',
+            'Sovereign Banking Functions',
+            'Regulatory Compliance',
+            'Data Security Framework',
+            'Blockchain Integration'
+        ]
+    })
 
 @public_bp.route('/contact')
 def contact():
     """Professional contact page - Customer communication portal"""
-    try:
-        return render_template('public/contact.html')
-    except Exception as e:
-        return handle_template_error('public.contact', e)
+    return jsonify({
+        'page': 'contact',
+        'message': 'Please use the POST /contact/submit endpoint to send a message.',
+        'contact_details': {
+            'email': 'support@nvcfund.com',
+            'phone': '+1-800-NVC-BANK'
+        }
+    })
 
 # ===== CONTACT FORM PROCESSING =====
 
@@ -297,61 +314,67 @@ def api_contact_submit():
 @public_bp.route('/privacy-policy')
 def privacy_policy():
     """Privacy policy - Data protection and user privacy information"""
-    try:
-        return render_template('public/privacy_policy.html')
-    except Exception as e:
-        return handle_template_error('public.privacy_policy', e)
+    return jsonify({
+        'page': 'privacy_policy',
+        'last_updated': '2025-07-01',
+        'message': 'This endpoint would provide the full privacy policy text.'
+    })
 
 @public_bp.route('/terms-of-service')
 def terms_of_service():
     """Terms of service - Legal terms and conditions"""
-    try:
-        return render_template('public/terms_of_service.html')
-    except Exception as e:
-        return handle_template_error('public.terms_of_service', e)
+    return jsonify({
+        'page': 'terms_of_service',
+        'last_updated': '2025-07-01',
+        'message': 'This endpoint would provide the full terms of service text.'
+    })
 
 # ===== DOCUMENTATION AND RESOURCES =====
 
 @public_bp.route('/documentation')
 def documentation():
     """Documentation center - Comprehensive platform documentation"""
-    try:
-        return render_template('public/documentation.html')
-    except Exception as e:
-        return handle_template_error('public.documentation', e)
+    return jsonify({
+        'page': 'documentation',
+        'message': 'API and user documentation is available.',
+        'links': {
+            'api_docs': '/api-documentation',
+            'user_guide': '/user-guide'
+        }
+    })
 
 @public_bp.route('/api-documentation')
 @public_bp.route('/api_documentation')
 def api_documentation():
     """API documentation - Developer resources and API reference"""
-    try:
-        return render_template('public/api_documentation.html')
-    except Exception as e:
-        return handle_template_error('public.api_documentation', e)
+    return jsonify({
+        'page': 'api_documentation',
+        'message': 'This endpoint would serve OpenAPI/Swagger documentation for the platform.'
+    })
 
 @public_bp.route('/getting-started')
 def getting_started():
     """Getting started guide - Platform onboarding and setup"""
-    try:
-        return render_template('public/getting_started.html')
-    except Exception as e:
-        return handle_template_error('public.getting_started', e)
+    return jsonify({
+        'page': 'getting_started',
+        'message': 'This endpoint would provide a guide for new users and developers.'
+    })
 
 @public_bp.route('/user-guide')
 def user_guide():
     """User guide - Comprehensive platform usage instructions"""
-    try:
-        return render_template('public/user_guide.html')
-    except Exception as e:
-        return handle_template_error('public.user_guide', e)
+    return jsonify({
+        'page': 'user_guide',
+        'message': 'This endpoint would provide a comprehensive user guide.'
+    })
 
 @public_bp.route('/faq')
 def faq():
     """Frequently asked questions - Common queries and answers"""
-    try:
-        return render_template('public/faq.html')
-    except Exception as e:
-        return handle_template_error('public.faq', e)
+    return jsonify({
+        'page': 'faq',
+        'message': 'This endpoint would provide a list of frequently asked questions and answers.'
+    })
 
 # ===== NVCT STABLECOIN ROUTES =====
 
@@ -360,99 +383,95 @@ def faq():
 @public_bp.route('/nvct_whitepaper')
 def nvct_whitepaper():
     """NVCT Stablecoin whitepaper - Technical documentation and specifications"""
-    try:
-        return render_template('public/nvct_whitepaper.html')
-    except Exception as e:
-        return handle_template_error('public.nvct_whitepaper', e)
+    return jsonify({
+        'page': 'nvct_whitepaper',
+        'title': 'NVCT Stablecoin Whitepaper',
+        'message': 'This endpoint would provide the full text or a link to the whitepaper PDF.',
+        'download_link': '/download-whitepaper'
+    })
 
 @public_bp.route('/download-whitepaper')
 def download_whitepaper():
     """Download NVCT whitepaper - PDF download functionality"""
-    try:
-        flash('NVCT Whitepaper download will be available soon', 'info')
-        return redirect(url_for('public.nvct_whitepaper'))
-    except Exception as e:
-        logger.error(f"Error handling whitepaper download: {e}")
-        return redirect(url_for('public.nvct_whitepaper'))
+    # In a real application, this would serve a file.
+    # For now, it returns a JSON response with a placeholder link.
+    return jsonify({
+        'message': 'NVCT Whitepaper download will be available soon.',
+        'placeholder_url': 'https://cdn.nvcfund.com/nvct_whitepaper.pdf'
+    })
 
 # ===== SUPPORT AND CONTACT ROUTES =====
 
 @public_bp.route('/contact-support')
 def contact_support():
     """Contact support page - Dedicated customer support portal"""
-    try:
-        return render_template('public/contact_support.html')
-    except Exception as e:
-        return handle_template_error('public.contact_support', e)
+    return jsonify({
+        'page': 'contact_support',
+        'message': 'This endpoint provides information on how to contact support.'
+    })
 
 @public_bp.route('/public-documentation')
 def public_documentation():
     """Public documentation - General platform documentation"""
-    try:
-        return render_template('public/public_documentation.html')
-    except Exception as e:
-        return handle_template_error('public.public_documentation', e)
+    return jsonify({
+        'page': 'public_documentation',
+        'message': 'This endpoint provides general platform documentation.'
+    })
 
 # ===== INTERACTIVE FEATURES =====
 
 @public_bp.route('/chat/agent-management')
 def chat_agent_management():
     """Chat agent management - Customer service agent dashboard"""
-    try:
-        agent_data = {
-            'total_agents': 15,
-            'online_agents': 12,
-            'busy_agents': 8,
-            'available_agents': 4,
-            'average_response_time': '2.3 minutes',
-            'customer_satisfaction': 94.5
-        }
-        return render_template('public/chat_agent_management.html',
-                             agent_data=agent_data,
-                             page_title='Chat Agent Management')
-    except Exception as e:
-        return handle_template_error('public.chat_agent_management', e)
+    agent_data = {
+        'total_agents': 15,
+        'online_agents': 12,
+        'busy_agents': 8,
+        'available_agents': 4,
+        'average_response_time': '2.3 minutes',
+        'customer_satisfaction': 94.5
+    }
+    return jsonify({
+        'page_title': 'Chat Agent Management',
+        'data': agent_data
+    })
 
 @public_bp.route('/queue-management')
 def queue_management():
     """Queue management dashboard - Customer service queue monitoring"""
-    try:
-        queue_data = {
-            'total_in_queue': 25,
-            'average_wait_time': '3.5 minutes',
-            'longest_wait': '8.2 minutes',
-            'queue_categories': [
-                {'name': 'General Support', 'count': 12, 'avg_wait': '2.1 min'},
-                {'name': 'Technical Issues', 'count': 8, 'avg_wait': '4.2 min'},
-                {'name': 'Account Issues', 'count': 5, 'avg_wait': '5.8 min'}
-            ]
-        }
-        return render_template('public/queue_management.html',
-                             queue_data=queue_data,
-                             page_title='Queue Management')
-    except Exception as e:
-        return handle_template_error('public.queue_management', e)
+    queue_data = {
+        'total_in_queue': 25,
+        'average_wait_time': '3.5 minutes',
+        'longest_wait': '8.2 minutes',
+        'queue_categories': [
+            {'name': 'General Support', 'count': 12, 'avg_wait': '2.1 min'},
+            {'name': 'Technical Issues', 'count': 8, 'avg_wait': '4.2 min'},
+            {'name': 'Account Issues', 'count': 5, 'avg_wait': '5.8 min'}
+        ]
+    }
+    return jsonify({
+        'page_title': 'Queue Management',
+        'data': queue_data
+    })
 
 @public_bp.route('/ai-assistant')
 def ai_assistant():
     """AI assistant interface - Intelligent customer support system"""
-    try:
-        assistant_data = {
-            'assistant_name': 'NVCT Assistant',
-            'capabilities': [
-                'Account Information',
-                'Transaction History',
-                'Product Information',
-                'General Support'
-            ],
-            'availability': '24/7',
-            'languages': ['English', 'Spanish', 'French']
-        }
-        return render_template('public/ai_assistant.html',
-                             assistant_data=assistant_data,
-                             page_title='AI Assistant')
-    except Exception as e:
-        return handle_template_error('public.ai_assistant', e)
+    assistant_data = {
+        'assistant_name': 'NVCT Assistant',
+        'capabilities': [
+            'Account Information',
+            'Transaction History',
+            'Product Information',
+            'General Support'
+        ],
+        'availability': '24/7',
+        'languages': ['English', 'Spanish', 'French']
+    }
+    return jsonify({
+        'page_title': 'AI Assistant',
+        'data': assistant_data
+    })
 
 # ===== UTILITY AND SYSTEM ROUTES =====
 
@@ -473,24 +492,25 @@ def health_check():
             'error': str(e)
         }), 500
 
-@public_bp.route('/static')
-def static_redirect():
-    """Static resources redirect - Redirect to homepage"""
-    return redirect(url_for('public.index'))
-
 # ===== ERROR HANDLERS =====
 
 @public_bp.errorhandler(404)
 def not_found(error):
     """Handle 404 errors with professional error page"""
     logger.warning(f"404 error in public module: {request.url}")
-    return render_template('public/404.html'), 404
+    return jsonify({
+        'status': 'error',
+        'message': 'The requested resource was not found.'
+    }), 404
 
 @public_bp.errorhandler(500)
 def internal_error(error):
     """Handle 500 errors with professional error page"""
     logger.error(f"500 error in public module: {str(error)}")
-    return render_template('public/500.html'), 500
+    return jsonify({
+        'status': 'error',
+        'message': 'An internal server error occurred. Please try again later.'
+    }), 500
 
 # ===== MODULE INFORMATION =====
 
@@ -498,31 +518,21 @@ MODULE_INFO = {
     'name': 'NVC Banking Platform - Public Module',
     'version': '2.0.0',
     'description': 'Professional public-facing pages with enhanced presentation and organization',
-    'routes': [
+    'api_endpoints': [
         '/',
         '/about',
         '/services',
         '/contact',
-        '/privacy-policy',
-        '/terms-of-service',
-        '/documentation',
-        '/api-documentation',
-        '/getting-started',
-        '/user-guide',
-        '/faq',
-        '/nvct-whitepaper'
-    ],
-    'api_endpoints': [
         '/contact/submit',
         '/api/contact',
-        '/api/health'
+        '/api/health',
+        '/privacy-policy',
+        '/terms-of-service',
+        '/documentation'
     ],
     'features': [
-        'Professional contact form processing',
-        'Comprehensive information pages',
-        'Documentation center',
-        'Legal compliance pages',
-        'NVCT stablecoin information',
+        'Pure JSON API endpoints for all public-facing content.',
+        'Contact form submission via API.',
         'Health monitoring',
         'Enhanced error handling'
     ],

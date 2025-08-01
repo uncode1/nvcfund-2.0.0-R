@@ -595,13 +595,6 @@ server {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     
-    # Static files
-    location /static/ {
-        alias /home/nvcapp/nvc-banking-platform/nvcfund-backend/static/;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-    
     # API and application routes
     location / {
         proxy_pass http://127.0.0.1:5000;

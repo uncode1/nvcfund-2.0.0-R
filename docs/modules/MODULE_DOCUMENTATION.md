@@ -14,13 +14,10 @@ modules/module_name/
 ├── routes.py                # Flask routes and view functions
 ├── models.py                # Database models
 ├── services.py              # Business logic and services
-├── forms.py                 # WTForms (if applicable)
+├── forms.py                 # WTForms for data validation
 ├── api/                     # API endpoints
 │   ├── __init__.py
 │   └── endpoints.py
-├── templates/               # Module-specific templates
-│   └── module_name/
-└── static/                  # Module-specific static files (if any)
 ```
 
 ## Core Platform Modules (Alphabetical)
@@ -37,11 +34,11 @@ modules/module_name/
 
 **Status**: Active module in platform
 
-**Key Routes:**
-```python
-/accounts/                  # Account overview
-/accounts/create           # Create new account
-/accounts/{id}/details     # Account details
+**API Endpoints:**
+```
+GET /api/v1/accounts/                  # Account overview
+POST /api/v1/accounts/create           # Create new account
+GET /api/v1/accounts/{id}/details     # Account details
 ```
 
 ### 2. Admin Management Module (`admin_management/`)

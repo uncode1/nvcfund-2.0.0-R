@@ -13,7 +13,7 @@ This module provides comprehensive communication services including:
 import os
 import logging
 from datetime import datetime, date
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 from flask import render_template, current_app
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content, Attachment
@@ -55,20 +55,22 @@ class EmailService:
     def send_email(self, 
                    to_email: str,
                    subject: str,
-                   template_name: str,
-                   context: Dict[str, Any] = None,
+                   html_content: str,
                    from_email: str = None,
-                   attachments: List[Dict] = None) -> bool:
+                   attachments: List[Dict] = None,
+                   template_name_for_log: str = 'custom',
+                   context_for_log: Dict[str, Any] = None) -> bool:
         """
-        Send email using SendGrid with template rendering
+        Send email using SendGrid with pre-rendered HTML content.
         
         Args:
             to_email: Recipient email address
             subject: Email subject line
-            template_name: Template file name (without .html)
-            context: Template context variables
+            html_content: The HTML body of the email.
             from_email: Sender email (defaults to bank's official email)
-            attachments: List of attachment dictionaries
+            attachments: List of attachment dictionaries.
+            template_name_for_log: The name of the template used, for logging.
+            context_for_log: The context dictionary used, for logging.
             
         Returns:
             bool: True if email sent successfully
@@ -78,18 +80,9 @@ class EmailService:
                 logger.error("SendGrid client not initialized - missing API key")
                 return False
             
-            if not context:
-                context = {}
-            
             # Set default sender email
             if not from_email:
                 from_email = "noreply@nvcfund.com"
-            
-            # Render email template
-            html_content = self._render_email_template(template_name, context)
-            if not html_content:
-                logger.error(f"Failed to render email template: {template_name}")
-                return False
             
             # Create email message
             message = Mail(
@@ -113,15 +106,15 @@ class EmailService:
             response = self.client.send(message)
             
             if response.status_code in [200, 201, 202]:
-                logger.info(f"Email sent successfully to {to_email} using template {template_name}")
+                logger.info(f"Email sent successfully to {to_email} using template {template_name_for_log}")
                 
                 # Log communication for audit
                 self._log_communication(
                     to_email=to_email,
                     subject=subject,
-                    template_name=template_name,
+                    template_name=template_name_for_log,
                     status='sent',
-                    context=context
+                    context=context_for_log
                 )
                 return True
             else:
@@ -131,15 +124,6 @@ class EmailService:
         except Exception as e:
             logger.error(f"Error sending email to {to_email}: {str(e)}")
             return False
-    
-    def _render_email_template(self, template_name: str, context: Dict[str, Any]) -> Optional[str]:
-        """Render email template with context"""
-        try:
-            template_path = f"communications/email/{template_name}.html"
-            return render_template(template_path, **context)
-        except Exception as e:
-            logger.error(f"Error rendering email template {template_name}: {str(e)}")
-            return None
     
     def _log_communication(self, 
                           to_email: str,
@@ -438,13 +422,14 @@ class CommunicationScheduler:
                 'platform_name': 'NVC Banking Platform'
             }
             
-            html_content = self.email_templates['signup_verification'].format(**template_data)
+            html_content = self.email_templates.get('signup_verification', '').format(**template_data)
             
             return self.send_email(
                 to_email=to_email,
                 subject="Please Verify Your Email - NVC Banking Platform",
-                template_name="signup_verification_custom",
-                context=template_data
+                html_content=html_content,
+                template_name_for_log="signup_verification",
+                context_for_log=template_data
             )
             
         except Exception as e:
@@ -461,13 +446,14 @@ class CommunicationScheduler:
                 'platform_name': 'NVC Banking Platform'
             }
             
-            html_content = self.email_templates['two_factor_code'].format(**template_data)
+            html_content = self.email_templates.get('two_factor_code', '').format(**template_data)
             
             return self.send_email(
                 to_email=to_email,
                 subject=f"Your NVC Banking Verification Code: {verification_code}",
-                template_name="two_factor_code_custom",
-                context=template_data
+                html_content=html_content,
+                template_name_for_log="two_factor_code",
+                context_for_log=template_data
             )
             
         except Exception as e:
@@ -488,11 +474,14 @@ class CommunicationScheduler:
                 'location': transaction_data.get('location', 'N/A')
             }
             
+            html_content = self.email_templates.get('transaction_alert', '').format(**template_data)
+            
             return self.send_email(
                 to_email=to_email,
                 subject=f"Transaction Alert: {template_data['transaction_type']} - ${transaction_data.get('amount', 0):,.2f}",
-                template_name="transaction_alert_custom",
-                context=template_data
+                html_content=html_content,
+                template_name_for_log="transaction_alert",
+                context_for_log=template_data
             )
             
         except Exception as e:
@@ -513,11 +502,14 @@ class CommunicationScheduler:
                 'support_phone': '+1-800-NVC-SECURITY'
             }
             
+            html_content = self.email_templates.get('security_alert', '').format(**template_data)
+            
             return self.send_email(
                 to_email=to_email,
                 subject=f"🔒 Security Alert: {alert_type} - Immediate Action Required",
-                template_name="security_alert_custom",
-                context=template_data
+                html_content=html_content,
+                template_name_for_log="security_alert",
+                context_for_log=template_data
             )
             
         except Exception as e:
